@@ -8,6 +8,19 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      qa:
+        description: "Capture route screenshots and run the visual audits"
+        type: boolean
+        default: false
+      qa_themes:
+        description: "Comma-separated themes for the QA artifacts"
+        type: string
+        default: "light,dark,sepia,amoled"
+      qa_widths:
+        description: "Comma-separated widths for the QA screenshots"
+        type: string
+        default: "390,768,1440"
   # Strict navigation budgets run weekly instead of on every main push: the
   # hosted two-core runners cannot meet 1s/250ms, and a permanently red main
   # hides real regressions. The thresholds themselves are unchanged.
@@ -433,3 +446,93 @@ jobs:
         run: cargo test --manifest-path apps/native/src-tauri/Cargo.toml --lib --locked
       - name: Run native clippy
         run: cargo clippy --manifest-path apps/native/src-tauri/Cargo.toml --all-targets --locked -- -D warnings
+
+  # Manual visual evidence: route screenshots per theme/width plus the
+  # overflow, card-in-card and alignment audits. The authoring device no longer
+  # carries browser workload (owner decision, 2 Nov), so this runs on demand
+  # and publishes artifacts instead of gating every push. `--ref` selects the
+  # branch, and the artifacts are downloaded with `gh run download`.
+  qa-artifacts:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.qa }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build the workspace
+        run: pnpm build
+      - run: pnpm verify:bundle
+      # The hosted image already provides Chromium runtime libraries; fetch
+      # only the headless shell, as the other browser jobs do.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
+      - name: Serve the built app
+        run: |
+          set -eu
+          pnpm --filter @gys/web exec vite preview --host 127.0.0.1 --port 4173 --strictPort >/tmp/preview.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl -fsS -o /dev/null http://127.0.0.1:4173/GYSApp-Tauri/; then
+              echo "preview ready after ${attempt}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/preview.log
+          exit 1
+      - name: Capture route screenshots
+        env:
+          SHOT_WIDTHS: ${{ inputs.qa_widths }}
+          SHOT_THEMES: ${{ inputs.qa_themes }}
+          SHOT_DIR: ui-screenshots
+        run: pnpm --filter @gys/web exec node scripts/ui-screenshots.mjs
+      - name: Overflow and clipping audit
+        env:
+          UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
+          UI_AUDIT_VIEWPORTS: 320x720,390x844,768x1024,1440x900
+        run: |
+          set -o pipefail
+          pnpm ui:audit | tee ui-overflow-audit.json
+          jq -e '.problems | length == 0' ui-overflow-audit.json
+      - name: Card-in-card audit
+        env:
+          UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
+        run: |
+          set -o pipefail
+          pnpm ui:boxes | tee ui-box-audit.json
+          jq -e '.findings | length == 0' ui-box-audit.json
+      - name: Alignment audit
+        env:
+          UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
+        run: |
+          set -o pipefail
+          pnpm ui:consistency | tee ui-consistency-audit.json
+          jq -e '.findings | length == 0' ui-consistency-audit.json
+      - name: Upload route screenshots
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-screenshots-${{ github.run_id }}
+          path: apps/web/ui-screenshots
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload audit reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-audit-${{ github.run_id }}
+          path: |
+            ui-overflow-audit.json
+            ui-box-audit.json
+            ui-consistency-audit.json
+          if-no-files-found: warn
+          retention-days: 7

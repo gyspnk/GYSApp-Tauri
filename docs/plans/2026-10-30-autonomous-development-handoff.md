@@ -2815,12 +2815,15 @@ lokal hanya untuk melihat perubahan hidup.
   (dokumen/format/audit/secret), `web-build` (build + suite unit/policy +
   `verify:bundle`), `e2e-selective`/shard, `perf-budget` mingguan,
   `update-visual-baselines`.
-- Hosted visual: `.github/workflows/qa.yml` (dispatch manual) — satu job
-  `build`, lalu `screens` (screenshot rute × tema × lebar) dan `audits`
-  (overflow, kotak bersarang, perataan). Artefak: `ui-screenshots-<run>`,
-  `ui-audit-<run>`, `qa-build-<run>` (7 hari).
+- Hosted visual: job **`qa-artifacts` di `.github/workflows/ci.yml`** (dispatch
+  manual `-f qa=true`) — build sekali, lalu screenshot rute × tema × lebar dan
+  tiga audit (overflow, kotak bersarang, perataan). Artefak:
+  `ui-screenshots-<run>` dan `ui-audit-<run>` (7 hari). Job ini sengaja tinggal
+  di `ci.yml`, bukan workflow baru: `workflow_dispatch` hanya menemukan workflow
+  yang sudah ada di branch default, sedangkan `main` tidak disentuh.
 - Mengambil bukti:
   `gh run watch <id> --exit-status`,
+  `gh workflow run ci.yml --ref <branch> -f qa=true -f qa_themes=… -f qa_widths=…`,
   `gh run download <id> -n ui-screenshots-<id> -D /tmp/shots`,
   `gh run download <id> -n ui-audit-<id> -D /tmp/audits`.
 
@@ -2937,7 +2940,7 @@ sumber status, keputusan, backlog, dan NEXT. Jangan membuat rencana induk baru.
    dijalankan sebagai background job; lanjutkan pekerjaan lain sambil menunggu
    notifikasi.
 2. Verifikasi berat berjalan di GitHub Actions (`ci.yml` untuk fungsional,
-   `qa.yml` untuk screenshot/audit). Lokal cukup `test:loop` + preview. Bila
+   job `qa-artifacts` di `ci.yml` untuk screenshot/audit). Lokal cukup `test:loop` + preview. Bila
    mereproduksi kegagalan hosted: `test:e2e:changed` → `test:e2e:core` (≈3 mnt),
    bukan kebiasaan harian.
 3. Jangan rebuild `dist` saat ada run berjalan; pakai `GYS_E2E_PREBUILT=1`.
@@ -2963,7 +2966,8 @@ pnpm test:e2e:smoke
 Hosted (bukti utama):
 gh run list --workflow ci.yml --limit 5
 gh run watch <run-id> --exit-status
-gh workflow run qa.yml -f themes=light,dark,sepia,amoled -f widths=390,768,1440
+gh workflow run ci.yml --ref codex/autonomous-hardening-20261030 -f qa=true \
+  -f qa_themes=light,dark,sepia,amoled -f qa_widths=390,768,1440
 gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
 gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits
 node scripts/ci-timings.mjs --limit 5        # antrean/wall/durasi job hosted

@@ -147,9 +147,10 @@ pnpm build                                 # refresh dist so the preview shows t
 gh run list --workflow ci.yml --limit 5
 gh run watch <run-id> --exit-status
 
-#   QA artifacts (workflow_dispatch): route screenshots plus the overflow,
+#   QA artifacts (manual dispatch of CI): route screenshots plus the overflow,
 #   card-in-card and alignment audits, published as artifacts.
-gh workflow run qa.yml -f themes=light,dark,sepia,amoled -f widths=390,768,1440
+gh workflow run ci.yml --ref codex/autonomous-hardening-20261030 -f qa=true \
+  -f qa_themes=light,dark,sepia,amoled -f qa_widths=390,768,1440
 gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
 gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits
 node scripts/ci-timings.mjs                # measured wall time and slowest job per run
@@ -162,7 +163,7 @@ pnpm test:e2e:durations /tmp/e2e.json      # rank specs/tests from a JSON report
 
 `scripts/ci-timings.mjs` is the feedback loop for CI cost: it prints queue time,
 wall time, every job's duration and the slowest step, so the next optimisation
-(cache, shard, filter) is chosen from measurements. `qa.yml` builds once, then
+(cache, shard, filter) is chosen from measurements. the `qa-artifacts` job in `ci.yml` builds once, then
 captures screenshots and runs the audits on hosted runners for each theme and
 width; artifacts are retained for seven days.
 
