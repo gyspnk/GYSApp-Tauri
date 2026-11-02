@@ -1035,6 +1035,22 @@ h1 {
 .home-grid .home-suara-section {
   grid-area: suara;
 }
+/* Reserve the shelf's resting height so the testimony load cannot push the
+   page down when it replaces the spinner (measured CLS 0.084 on the hosted
+   home page, all of it this section). */
+.home-suara-section:has(> .loading-panel) {
+  min-height: 329px;
+}
+@media (max-width: 1023px) {
+  .home-suara-section:has(> .loading-panel) {
+    min-height: 384px;
+  }
+}
+@media (max-width: 599px) {
+  .home-suara-section:has(> .loading-panel) {
+    min-height: 346px;
+  }
+}
 .home-grid .home-literature-section {
   grid-area: literature;
 }
