@@ -3144,3 +3144,20 @@ Panel lanjutan kini membaca seperti satu formulir: label baris 0,75 rem warna
 `--muted`, jarak baris 10 px, kontrol tetap `--midi-control` 32/44. Diukur di
 390: panel 366 px, baris 334 px, select/soundfont 334×44, transpose 44×44,
 input tempo 74×44.
+
+### Putaran 50 — Bukti hosted untuk dock MIDI (2 Nov)
+
+QA `41445377888` (dispatch `qa=true`, tema `light,dark`, lebar
+`390,768,1440`) **sukses** dalam ±4m18s. Artefak yang diunduh:
+
+- `ui-screenshots-41445377888` — **66 PNG**, **0 overflow** menurut
+  `manifest.json`.
+- `ui-audit-41445377888` — overflow **96/0 masalah**, box **48/0 temuan**,
+  consistency **44/0 temuan**.
+- Enam potret baru `kidung-reader-midi-{390,768,1440}-{light,dark}.png`:
+  dock muncul setelah `.hymn-midi-toggle` diklik dan `.media-surface` terlihat.
+
+Bukti hosted ini menggantikan klaim lokal untuk desain dock. Yang **belum**
+dibuktikan hosted: panel lanjutan desktop dalam keadaan terbuka, karena QA
+masih memotret keadaan diam ditambah satu langkah klik; menambah langkah
+`steps` berikutnya adalah tuas termurah untuk itu.
