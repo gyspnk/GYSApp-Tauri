@@ -242,7 +242,7 @@ jobs:
     # Every routine push — a pull request or a direct `main` push — runs only
     # the specs its range can affect. The full shards stay for the nightly
     # schedule, a `full-ci` label and the release dispatch.
-    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && !contains(github.event.pull_request.labels.*.name, 'full-ci') && needs.changes.outputs.verified != 'true' }}
+    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && needs.changes.outputs.web == 'true' && !contains(github.event.pull_request.labels.*.name, 'full-ci') && needs.changes.outputs.verified != 'true' }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15

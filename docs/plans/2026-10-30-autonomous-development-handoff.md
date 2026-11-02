@@ -3075,7 +3075,8 @@ docs/tooling **0,5 mnt**.
 Kebijakan baru di `.github/workflows/ci.yml`:
 
 - **Push biasa ke `main` memakai `e2e-selective`** (spec yang terpengaruh rentang
-  push), bukan 856 tes. `GYS_E2E_BASE` = `github.event.before`,
+  push), bukan 856 tes. Push yang tidak menyentuh `apps/`/`packages/`/`scripts/`
+  melewati jalur browser sepenuhnya (`needs.changes.outputs.web != 'true'`). `GYS_E2E_BASE` = `github.event.before`,
   `GYS_E2E_HEAD` = `github.sha`.
 - **Shard penuh** hanya untuk jadwal malam (`0 18 * * *`), label `full-ci`, atau
   dispatch rilis (dispatch `-f qa=true` tetap hanya screenshot/audit).
@@ -3084,11 +3085,11 @@ Kebijakan baru di `.github/workflows/ci.yml`:
 - Gerbang hash pohon tetap: bila isi pohon sudah pernah hijau, jalur browser
   dilewati dengan menyebut run lama; marker disimpan setelah jalur hijau.
 
-| Jalur                          | Sebelum                               | Sesudah                                                |
-| ------------------------------ | ------------------------------------- | ------------------------------------------------------ |
-| Push `main` yang menyentuh web | 4 shard, **12,7 mnt** (`41380071830`) | selektif, target < 3 mnt (diukur pada push berikutnya) |
-| Push docs/tooling              | 0,5 mnt (`41381475091`)               | 0,5 mnt                                                |
-| Cakupan penuh                  | setiap push main                      | nightly 18:00 UTC + label `full-ci` + dispatch rilis   |
+| Jalur                          | Sebelum                               | Sesudah                                                                                 |
+| ------------------------------ | ------------------------------------- | --------------------------------------------------------------------------------------- |
+| Push `main` yang menyentuh web | 4 shard, **12,7 mnt** (`41380071830`) | selektif, **3,5 mnt** wall (`41391763891`; selektif 2,4 mnt, verify 0,5, web-build 0,7) |
+| Push docs/tooling              | 0,5 mnt (`41381475091`)               | 0,5 mnt                                                                                 |
+| Cakupan penuh                  | setiap push main                      | nightly 18:00 UTC + label `full-ci` + dispatch rilis                                    |
 
 ### Kontrak desain lama setelah merge ke main (2 Nov, putaran 45)
 
