@@ -273,6 +273,26 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     for (const spec of visualSpecs) specFiles.delete(spec);
   }
 
+  // Layout sweeps walk every route at every viewport; they are nightly
+  // coverage, and pulling them into a one-screen change is what made the
+  // routine path take minutes. A cascading style change still selects them.
+  const generalSweeps = new Set([
+    "e2e/responsive-layout-matrix.spec.ts",
+    "e2e/roadmap-ui-matrix.spec.ts",
+    "e2e/universal-usability.spec.ts",
+    "e2e/smoke.spec.ts",
+    "e2e/navigation-layout.spec.ts",
+    "e2e/accessibility.spec.ts",
+  ]);
+  const touchesLayout = changedFiles.some((file) =>
+    /(?:^|\/)(?:styles\/[^/]+\.css|[a-z-]+\.css|App\.tsx|icons\.tsx)$/.test(
+      file,
+    ),
+  );
+  if (!touchesLayout) {
+    for (const spec of generalSweeps) specFiles.delete(spec);
+  }
+
   if (!specFiles.size && !grepPatterns.size) {
     return {
       description:

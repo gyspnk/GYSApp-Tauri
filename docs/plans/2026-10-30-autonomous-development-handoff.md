@@ -2860,6 +2860,30 @@ lokal hanya untuk melihat perubahan hidup.
 | 2 Nov   | `41459728625` | dispatch regenerasi baseline                  | **2,1 mnt**; job visual 1,6 mnt; agregat kini lolos untuk dispatch non-QA (`db47ad6`)                                                                                    |
 | 2 Nov   | `41473910672` | selektif dipecah dua shard                    | **3,1 mnt** — lebih lambat: setup (install, unduh artefak, browser) terduplikasi dan Playwright membagi rata jumlah tes, bukan durasi (68s vs 101s); sharding dibatalkan |
 
+### Putaran 56 — Jalur selektif berhenti di kontrak fitur (2 Nov)
+
+Push `f518447` (satu berkas `kidung-catalog.tsx`) memilih **12 spec** dan
+memakan **9m23s** — `kidung-usability` sendiri 7m54 di runner. Penyebabnya:
+pemetaan menambahkan sapuan umum (`smoke`, `navigation-layout`, `accessibility`,
+`universal-usability`, `responsive-layout-matrix`, `roadmap-ui-matrix`) untuk
+hampir setiap perubahan fitur, ditambah sapuan lintas viewport di dalam spec.
+
+Aturan baru di `scripts/test-e2e-selective-core.mjs`:
+
+- sapuan umum hanya ikut bila perubahan menyentuh CSS/layout
+  (`^…styles/*.css`, `*.css`, `App.tsx`, `icons.tsx`); perubahan komponen
+  fitur memakai kontrak fiturnya sendiri;
+- sapuan lintas viewport di `e2e/kidung-usability.spec.ts` (`desktop dock bands`,
+  `44px at every reader width`, `wheel, swipe, and pinch`, `semantic chrome`)
+  ditandai **`@nightly`**; `apps/web/playwright.ci.config.ts` memakainya sebagai
+  `grepInvert` hanya saat `GYS_CI_ROUTINE=1` (job `e2e-selective`), sedangkan
+  shard malam tetap menjalankan semuanya.
+
+Rencana untuk push yang sama turun dari 12 spec menjadi **6**: `kidung-usability`,
+`kidung-loading`, `reader-data-loading`, `kidung-style-behavior`,
+`kidung-offline`, `playlist-parity`. Semua cakupan tetap ada di jalur malam;
+tidak ada tes yang dihapus.
+
 ### Putaran 55 — Katalog Kidung dicat dua tahap (2 Nov)
 
 Membuka `/kidung` dulu meng-commit seluruh **533 baris** dalam frame navigasi.

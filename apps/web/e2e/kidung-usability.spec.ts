@@ -659,7 +659,7 @@ test("MIDI Media Session publishes metadata and routes system transport actions"
     .toBe("paused");
 });
 
-test("Kidung desktop dock keeps metadata and adjustments in compact bands", async ({
+test("Kidung desktop dock keeps metadata and adjustments in compact bands @nightly", async ({
   page,
 }) => {
   test.setTimeout(45_000);
@@ -1059,7 +1059,7 @@ test("fullscreen lyrics keeps its controls localized and contained", async ({
   }
 });
 
-test("fullscreen lyrics controls keep 44px targets at every reader width", async ({
+test("fullscreen lyrics controls keep 44px targets at every reader width @nightly", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -1097,7 +1097,7 @@ test("fullscreen lyrics controls keep 44px targets at every reader width", async
   }
 });
 
-test("fullscreen lyrics wheel, swipe, and pinch work across reader widths", async ({
+test("fullscreen lyrics wheel, swipe, and pinch work across reader widths @nightly", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -1194,7 +1194,7 @@ test("fullscreen lyrics wheel, swipe, and pinch work across reader widths", asyn
   }
 });
 
-test("Kidung playlist and reader semantic chrome stays localized", async ({
+test("Kidung playlist and reader semantic chrome stays localized @nightly", async ({
   page,
 }) => {
   await preparePinnedReaderAssets(page);

@@ -48,9 +48,12 @@ test("extracted Kidung sections retain loading and playlist parity coverage", ()
       "e2e/kidung-offline.spec.ts",
       "e2e/kidung-usability.spec.ts",
       "e2e/playlist-parity.spec.ts",
-      "e2e/accessibility.spec.ts",
     ])
       assert.ok(plan.args.includes(spec), `${file} should select ${spec}`);
+    assert.ok(
+      !plan.args.includes("e2e/accessibility.spec.ts"),
+      `${file} leaves the all-route a11y sweep to the nightly run`,
+    );
     assert.ok(
       !plan.args.includes("e2e/visual.spec.ts"),
       `${file} keeps baselines on the nightly run`,
@@ -65,9 +68,12 @@ test("Faith text and gesture edits select reading contracts without unrelated me
       "faith-zoom",
       "reading-family-usability",
       "reading-direct-flow",
-      "accessibility",
     ])
       assert.ok(plan.args.includes(`e2e/${spec}.spec.ts`), `${file}: ${spec}`);
+    assert.ok(
+      !plan.args.includes("e2e/accessibility.spec.ts"),
+      `${file}: the a11y sweep belongs to the nightly run`,
+    );
     assert.ok(
       !plan.args.includes("e2e/visual-reading.spec.ts"),
       `${file}: baselines stay on the nightly run`,

@@ -319,6 +319,9 @@ jobs:
       - name: Run the browser contracts this range can affect
         env:
           GYS_E2E_PREBUILT: "1"
+          # One feature's contracts, not the four-viewport sweeps: those carry
+          # the `@nightly` tag and run in the scheduled shards.
+          GYS_CI_ROUTINE: "1"
           GYS_E2E_BASE: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
           GYS_E2E_HEAD: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
         run: node scripts/test-e2e-selective.mjs --config=playwright.ci.config.ts

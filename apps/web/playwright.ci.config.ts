@@ -10,5 +10,8 @@ export default defineConfig(baseConfig, {
   // The two @perf cases assert sub-second warm navigation. Hosted two-core
   // runners cannot meet them (nor can the 8-core ARM host), so they run in the
   // dedicated perf job on main pushes instead of every PR shard.
-  grepInvert: /@perf/,
+  // A routine look at one feature runs its own contracts; the four-viewport
+  // sweeps repeat what the nightly shards already cover, so they carry the
+  // `@nightly` tag and only run when the shards run.
+  grepInvert: process.env.GYS_CI_ROUTINE === "1" ? /@perf|@nightly/ : /@perf/,
 });

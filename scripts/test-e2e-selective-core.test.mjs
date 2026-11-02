@@ -90,18 +90,20 @@ test("Bible render modules include annotation migration and visual contracts wit
     "bible-verse-text.tsx",
   ]) {
     const result = resolveSelectiveTestArgs([`apps/web/src/${module}`], []);
-    for (const spec of [
-      "bible-annotations",
-      "navigation-layout",
-      "accessibility",
-    ]) {
+    for (const spec of ["bible-annotations", "reader-data-loading"]) {
       assert.ok(
         result.args.includes(`e2e/${spec}.spec.ts`),
         `${module}: ${spec}`,
       );
     }
-    // The `-linux` baselines are compared by the nightly full run; the
-    // selective path must not spend minutes re-checking them.
+    // Layout sweeps and baselines belong to the nightly full run; a feature
+    // edit pays for its own contracts, not for every route at every width.
+    for (const spec of ["navigation-layout", "accessibility", "smoke"]) {
+      assert.ok(
+        !result.args.includes(`e2e/${spec}.spec.ts`),
+        `${module}: ${spec} waits for the nightly run`,
+      );
+    }
     assert.ok(
       !result.args.includes("e2e/visual.spec.ts"),
       `${module}: visual baselines stay on the nightly run`,
