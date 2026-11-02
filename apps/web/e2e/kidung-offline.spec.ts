@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "allow" });
 
-test("prepared catalog opens previously unvisited Kidung sections offline", async ({
+test("prepared catalog opens previously unvisited Kidung sections offline @nightly", async ({
   page,
   context,
 }) => {

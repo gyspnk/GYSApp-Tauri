@@ -119,6 +119,23 @@ export function warmNavigation(): () => void {
       idle = window.requestIdleCallback(run, { timeout: 1000 });
     else timer = window.setTimeout(run, 100);
   };
+  // The first destination's payloads are what its first click actually waits
+  // for. Warm them once the current page has finished loading, so the fetch
+  // never competes with the page the reader is already looking at.
+  const warmPayloads = () => {
+    if (cancelled) return;
+    void preloadRoute("/kidung", { data: true }).catch(() => undefined);
+  };
+  if (document.readyState === "complete")
+    timer = window.setTimeout(warmPayloads, 150);
+  else
+    window.addEventListener(
+      "load",
+      () => {
+        timer = window.setTimeout(warmPayloads, 150);
+      },
+      { once: true },
+    );
   timer = window.setTimeout(next, 200);
   return () => {
     cancelled = true;

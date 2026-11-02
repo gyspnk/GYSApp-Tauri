@@ -2863,6 +2863,29 @@ lokal hanya untuk melihat perubahan hidup.
 | 2 Nov   | `41459728625`       | dispatch regenerasi baseline                                                  | **2,1 mnt**; job visual 1,6 mnt; agregat kini lolos untuk dispatch non-QA (`db47ad6`)                                                                                    |
 | 2 Nov   | `41473910672`       | selektif dipecah dua shard                                                    | **3,1 mnt** — lebih lambat: setup (install, unduh artefak, browser) terduplikasi dan Playwright membagi rata jumlah tes, bukan durasi (68s vs 101s); sharding dibatalkan |
 
+### Putaran 59 — Rute pertama membawa datanya, dua kontrak terberat pindah malam (2 Nov)
+
+Klik pertama ke Kidung dari beranda masih **325 ms** walau kodenya sudah
+dipanaskan, karena katalog dan metadata pujian baru diunduh saat rute dibuka.
+Sekarang payload rute pertama ikut dipanaskan, tetapi **setelah `load` halaman
+selesai** supaya tidak bersaing dengan halaman yang sedang dilihat:
+
+- `apps/web/src/route-preload.ts` menambahkan `warmPayloads()` yang memanggil
+  `preloadRoute("/kidung", { data: true })` 150 ms setelah `window.load`
+  (atau langsung bila dokumen sudah `complete`); rute lain tetap code-only dan
+  `saveData`/2G tetap dilewati.
+- Diukur di 390×844: klik Kidung pada 700 ms **325 → 74 ms**, pada 1,2 dtk
+  **279 → 57 ms**, pada 2 dtk **82 ms**. Boot beranda tidak berubah berarti
+  (5 sampel dengan pemanasan 656–852 ms vs 5 sampel tanpa pemanasan
+  665–780 ms — selisih di dalam derau).
+
+Jalur selektif masih **3m05s** (`41525050790`: build 6 dtk dari cache, tes
+1m42s, job 2m12s, total 185 dtk). Dua kontrak tersisa yang paling mahal
+dipindah ke malam: `MIDI dock transport and sound controls update playback
+state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
+sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
+tetapi tidak lagi membebani setiap push. Target: ~2m20s.
+
 ### Putaran 58 — Skor cetak dipanaskan saat idle, build pindah ke job browser (2 Nov)
 
 Membuka PDF pada bacaan Kidung masih **679 ms** (dingin, 390×844) karena chunk

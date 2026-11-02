@@ -465,7 +465,7 @@ test("MIDI auto-advance loads the next queued song when playback ends", async ({
   });
 });
 
-test("MIDI dock transport and sound controls update playback state", async ({
+test("MIDI dock transport and sound controls update playback state @nightly", async ({
   page,
 }) => {
   test.setTimeout(35_000);
