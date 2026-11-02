@@ -3094,22 +3094,3 @@
   color: var(--ink);
   overflow-wrap: anywhere;
 }
-
-.egys-google-origin-help {
-  flex-basis: 100%;
-  margin-top: 8px;
-  font-size: 0.75rem;
-  line-height: 1.45;
-  color: var(--muted);
-}
-
-.egys-google-origin-help > summary {
-  cursor: pointer;
-  min-height: 24px;
-  align-content: center;
-  color: var(--ink);
-}
-
-.egys-google-origin-help p {
-  margin: 6px 0 0;
-}

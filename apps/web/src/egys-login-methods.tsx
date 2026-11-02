@@ -109,15 +109,6 @@ export function EgysLoginMethods({
               </ul>
             </p>
           )}
-          <details className="egys-google-origin-help">
-            <summary>{translate(locale, "more.googleOriginHelp")}</summary>
-            <p>{translate(locale, "more.googleOriginMismatch")}</p>
-            <ul className="egys-google-origins">
-              {EGYS_GOOGLE_ORIGINS.map((entry) => (
-                <li key={entry}>{entry}</li>
-              ))}
-            </ul>
-          </details>
         </div>
       )}
     </>
