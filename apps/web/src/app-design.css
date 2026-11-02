@@ -5316,3 +5316,40 @@ body:has(.hymn-detail-page.is-text-viewer)
     line-height: 1.25;
   }
 }
+
+/* The reader footer reads as one floating control instead of a page-wide bar
+   with four loose buttons: same 44 px targets, grouped, centred under the
+   verse and clear of the home indicator. */
+.hymn-detail-page.is-text-viewer .hymn-text-footer:not(.is-all-verses),
+.hymn-detail-page.is-text-viewer .hymn-text-footer.is-all-verses {
+  width: min(100%, 24rem);
+  margin: 8px auto max(8px, env(safe-area-inset-bottom));
+  padding: 4px;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.hymn-detail-page.is-text-viewer .hymn-text-footer > button {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.hymn-detail-page.is-text-viewer .hymn-text-footer > button:enabled:hover {
+  background: var(--surface-soft);
+}
+
+.hymn-detail-page.is-text-viewer .hymn-text-footer > button:disabled {
+  background: transparent;
+}
+
+.hymn-detail-page.is-text-viewer .hymn-text-footer > span {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
