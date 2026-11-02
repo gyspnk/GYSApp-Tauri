@@ -24,7 +24,8 @@ const settleMs = Number(process.env.SHOT_SETTLE_MS ?? "900");
 const routes = [
   { slug: "beranda", path: "/", marker: ".home-page" },
   { slug: "sauh", path: "/sauh", marker: ".sauh-page, .online-content-page" },
-  { slug: "alkitab", path: "/bible/kejadian/1", marker: ".verse-text" },
+  // The reader opens on Kejadian 1; there is no chapter deep link.
+  { slug: "alkitab", path: "/bible", marker: ".verse-text" },
   { slug: "kidung", path: "/kidung", marker: ".hymn-page" },
   {
     slug: "kidung-reader",
@@ -152,4 +153,4 @@ const shots = manifest.filter((entry) => !entry.error).length;
 console.log(
   `${shots}/${manifest.length} screenshots, ${failures} problems → ${outDir}`,
 );
-if (failures > 0) process.exitCode = 1;
+process.exit(failures > 0 ? 1 : 0);

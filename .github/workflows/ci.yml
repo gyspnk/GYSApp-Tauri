@@ -518,13 +518,20 @@ jobs:
           done
           cat /tmp/preview.log
           exit 1
+      # Keep every artifact even when one check finds a problem: the audit
+      # reports are the reason this job exists, so a failing screenshot must
+      # not hide them. A final step turns the outcomes into the job status.
       - name: Capture route screenshots
+        id: shots
+        continue-on-error: true
         env:
           SHOT_WIDTHS: ${{ inputs.qa_widths }}
           SHOT_THEMES: ${{ inputs.qa_themes }}
           SHOT_DIR: ui-screenshots
         run: pnpm --filter @gys/web exec node scripts/ui-screenshots.mjs
       - name: Overflow and clipping audit
+        id: overflow
+        continue-on-error: true
         env:
           UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
           UI_AUDIT_VIEWPORTS: 320x720,390x844,768x1024,1440x900
@@ -533,6 +540,8 @@ jobs:
           pnpm ui:audit | tee ui-overflow-audit.json
           jq -e '.problems | length == 0' ui-overflow-audit.json
       - name: Card-in-card audit
+        id: boxes
+        continue-on-error: true
         env:
           UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
         run: |
@@ -540,12 +549,33 @@ jobs:
           pnpm ui:boxes | tee ui-box-audit.json
           jq -e '.findings | length == 0' ui-box-audit.json
       - name: Alignment audit
+        id: consistency
+        continue-on-error: true
         env:
           UI_AUDIT_THEMES: ${{ inputs.qa_themes }}
         run: |
           set -o pipefail
           pnpm ui:consistency | tee ui-consistency-audit.json
           jq -e '.findings | length == 0' ui-consistency-audit.json
+      - name: Fail when a QA check reported problems
+        if: ${{ always() }}
+        run: |
+          set -eu
+          failed=0
+          if [ "${{ steps.shots.outcome }}" = "failure" ]; then
+            echo "route screenshots reported problems"; failed=1
+          fi
+          if [ "${{ steps.overflow.outcome }}" = "failure" ]; then
+            echo "overflow audit reported problems"; failed=1
+          fi
+          if [ "${{ steps.boxes.outcome }}" = "failure" ]; then
+            echo "card-in-card audit reported problems"; failed=1
+          fi
+          if [ "${{ steps.consistency.outcome }}" = "failure" ]; then
+            echo "alignment audit reported problems"; failed=1
+          fi
+          if [ "$failed" = "1" ]; then exit 1; fi
+          echo "all QA checks passed"
       - name: Upload route screenshots
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
