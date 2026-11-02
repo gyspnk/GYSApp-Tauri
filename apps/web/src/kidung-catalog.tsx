@@ -1,6 +1,6 @@
 import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
-import { useSyncExternalStore } from "react";
+import { startTransition, useSyncExternalStore } from "react";
 import {
   useEffect,
   useDeferredValue,
@@ -138,10 +138,13 @@ export function HymnCatalog({
     setVisibleRows(FIRST_SCREEN_ROWS);
     const idle = window.requestIdleCallback;
     const cancelIdle = window.cancelIdleCallback;
+    // The rest of the catalogue is a low-priority update: React may interrupt
+    // it if the reader starts typing or taps another destination.
+    const reveal = () => startTransition(() => setVisibleRows(filtered.length));
     const handle =
       typeof idle === "function"
-        ? idle(() => setVisibleRows(filtered.length), { timeout: 200 })
-        : window.setTimeout(() => setVisibleRows(filtered.length), 50);
+        ? idle(reveal, { timeout: 200 })
+        : window.setTimeout(reveal, 50);
     return () => {
       if (typeof cancelIdle === "function") cancelIdle(handle);
       else window.clearTimeout(handle);
