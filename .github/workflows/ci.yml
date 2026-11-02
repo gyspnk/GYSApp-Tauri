@@ -357,7 +357,7 @@ jobs:
   # for ready PRs/main.
   e2e:
     if: ${{ always() }}
-    needs: [changes, e2e-selective, e2e-shard]
+    needs: [changes, e2e-selective, e2e-shard, update-visual-baselines]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -365,6 +365,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.qa }}" = "true" ]; then
             echo "QA-only dispatch: screenshots and audits, no browser suite."
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.qa }}" != "true" ] && [ "${{ needs.update-visual-baselines.result }}" = "success" ]; then
+            echo "Baseline regeneration dispatch: the visual job is this run's verification."
             exit 0
           fi
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ needs.changes.outputs.web }}" != "true" ]; then
