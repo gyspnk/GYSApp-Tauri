@@ -2845,9 +2845,24 @@ lokal hanya untuk melihat perubahan hidup.
 3. Jalankan, ukur lagi, catat sebelum→sesudah. Bila tidak membaik, kembalikan
    dan coba tuas lain (jangan menumpuk perubahan tanpa bukti).
 
-| Tanggal | Run           | Perubahan                              | Wall sebelum → sesudah |
-| ------- | ------------- | -------------------------------------- | ---------------------- |
-| 2 Nov   | `41368310260` | baseline PR selektif (tanpa perubahan) | 3,0 mnt                |
+| Tanggal | Run           | Perubahan                               | Wall sebelum → sesudah                                                                                        |
+| ------- | ------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 2 Nov   | `41368310260` | baseline PR selektif (tanpa perubahan)  | 3,0 mnt                                                                                                       |
+| 2 Nov   | `41370712244` | dispatch QA pertama                     | gagal: rute `/bible/kejadian/1` tidak ada (12 tangkapan timeout), audit tidak sempat jalan                    |
+| 2 Nov   | `41372225032` | dispatch QA, rute Alkitab diperbaiki    | **8m32s**; screenshot 217s (132 gambar, serial), overflow 110s (192 muat), boxes 79s (96), alignment 73s (88) |
+| 2 Nov   | `8de3b70`     | tangkapan 3 worker + tiga audit paralel | menunggu run berikutnya                                                                                       |
+
+Bukti artefak dari `41372225032` (semua diperiksa, bukan diasumsikan):
+`ui-screenshots` berisi 132 PNG (4 tema × 3 lebar × 11 rute) dengan
+`errors: 0, overflow: 0`; `ui-audit` berisi `192 checked / 0 problems`
+(overflow), `96 / 0` (boxes), `88 / 0` (alignment). Perbaikan Iman
+diverifikasi langsung dari `iman-1440-light.png` (teks mencapai tepi baris,
+PDF/Catatan rata kanan) dan `iman-390-light.png` (326 px, tidak berubah).
+
+Tuas berikutnya (dari data): screenshot 217s untuk 132 gambar = 1,6 s/gambar
+dan tiga audit 262s berjalan berurutan. Keduanya sekarang paralel; ukur lagi
+dan bandingkan, lalu pilih tuas berikutnya (mis. cakupan audit lebih ringan
+untuk dispatch harian, sapuan penuh tetap di jadwal mingguan).
 
 ## 7. Prompt handoff untuk sesi berikutnya
 
