@@ -366,7 +366,7 @@ async function prepareMidiDockFixture(page: Page, firstMidi = MIDI_FIXTURE) {
   });
 }
 
-test("Kidung MIDI dock keeps core playback visible and discloses advanced controls", async ({
+test("Kidung MIDI dock keeps core playback visible and discloses advanced controls @nightly", async ({
   page,
 }) => {
   test.setTimeout(45_000);
@@ -695,7 +695,7 @@ test("Kidung desktop dock keeps metadata and adjustments in compact bands @night
   }
 });
 
-test("wide Kidung catalog shares navigation and filters in one top row", async ({
+test("wide Kidung catalog shares navigation and filters in one top row @nightly", async ({
   page,
 }) => {
   for (const viewport of [
@@ -1479,7 +1479,7 @@ test("playlist rows keep low-frequency actions behind one touch-friendly menu", 
   await expectNoHorizontalOverflow(page);
 });
 
-test("Kidung dropdown surfaces stay anchored inside the viewport", async ({
+test("Kidung dropdown surfaces stay anchored inside the viewport @nightly", async ({
   page,
 }) => {
   for (const viewport of [

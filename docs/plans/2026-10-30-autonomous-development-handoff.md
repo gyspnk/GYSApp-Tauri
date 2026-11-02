@@ -2876,7 +2876,9 @@ Aturan baru di `scripts/test-e2e-selective-core.mjs`:
   fitur memakai kontrak fiturnya sendiri;
 - sapuan lintas viewport di `e2e/kidung-usability.spec.ts` (`desktop dock bands`,
   `44px at every reader width`, `wheel, swipe, and pinch`, `semantic chrome`)
-  ditandai **`@nightly`**; `apps/web/playwright.ci.config.ts` memakainya sebagai
+  ditandai **`@nightly`** (ditambah `wide catalog…`, `dropdown surfaces…`,
+  `MIDI dock keeps core playback…` setelah pengukuran durasi: 33,7 dtk / 26,5 dtk
+  / 29,3 dtk dari total 468 dtk); `apps/web/playwright.ci.config.ts` memakainya sebagai
   `grepInvert` hanya saat `GYS_CI_ROUTINE=1` (job `e2e-selective`), sedangkan
   shard malam tetap menjalankan semuanya.
 
