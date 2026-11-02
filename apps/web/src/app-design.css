@@ -12,49 +12,37 @@
 
 @media (min-width: 960px) {
   .workspace {
-    --sidebar-expanded-width: 208px;
+    --sidebar-expanded-width: 224px;
   }
   .navigation-shell {
     background: var(--shell-paper);
     color: var(--shell-ink);
     border-right: 1px solid var(--line);
-    padding: 56px 12px 20px;
+    padding: 60px 16px 20px;
   }
-  .navigation-shell .nav-item {
-    color: var(--shell-ink);
-    min-height: 52px;
-    border-radius: 12px;
+  .navigation-shell .primary-nav {
+    gap: 4px;
   }
   .navigation-shell .nav-copy strong {
     font-size: 0.875rem;
     font-weight: 550;
-  }
-  .navigation-shell .nav-item.is-active {
-    background: var(--shell-selected);
-    border-color: transparent;
-  }
-  .navigation-shell .nav-item.is-active :is(strong, svg) {
-    color: var(--navy);
+    letter-spacing: 0.005em;
   }
   .navigation-shell .sidebar-collapse-toggle {
-    top: 4px;
-    left: 18px;
+    top: 12px;
+    left: 12px;
     right: auto;
+    width: 36px;
+    height: 36px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 10px;
     background: transparent;
     color: var(--muted);
     box-shadow: none;
   }
   .navigation-shell .sidebar-collapse-toggle:hover {
-    background: var(--blue-soft);
-    color: var(--blue);
-  }
-  .navigation-shell .nav-item:hover {
-    background: var(--blue-soft);
-  }
-  .navigation-shell .nav-item.is-active:hover {
-    background: var(--shell-selected);
+    background: var(--surface-soft);
+    color: var(--ink);
   }
   .navigation-shell .sidebar-foot {
     display: none;
@@ -5352,4 +5340,19 @@ body:has(.hymn-detail-page.is-text-viewer)
 .hymn-detail-page.is-text-viewer .hymn-text-footer > span {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
+}
+
+/* The selected destination is a solid field so it reads as the current place,
+   not as a tinted box next to five similar rows. Scoped to the desktop rail:
+   the phone bottom bar keeps its lighter fill. */
+@media (min-width: 960px) {
+  .navigation-shell .nav-item.is-active.nav-item {
+    background: var(--blue);
+    border-color: transparent;
+  }
+
+  .navigation-shell .nav-item.is-active.nav-item .nav-copy strong,
+  .navigation-shell .nav-item.is-active.nav-item svg {
+    color: var(--on-accent);
+  }
 }

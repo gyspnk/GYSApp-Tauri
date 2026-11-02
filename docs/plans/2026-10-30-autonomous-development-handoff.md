@@ -3110,3 +3110,21 @@ Sisa 39 tes di enam berkas itu hijau lokal (3,1 mnt, `GYS_E2E_PREBUILT=1`),
 bundle tetap 179,6/180,0 KiB, dan `web-build` hosted untuk commit ini hanya 27
 detik (cache build kena), jadi kegagalan murni kontrak. Pelajaran: saat desain
 diunifikasi, perbarui kontrak di commit yang sama — bukan sesudah merge.
+
+### Sidebar desktop: satu baris per tujuan (2 Nov, putaran 47)
+
+Sidebar dinilai pemilik "masih sangat jelek": rel 208 px dengan kolom ikon
+56 px, label berjarak 12 px dari ikon tetapi ikon sendiri melayang di tengah
+kolom, dan baris aktif berupa kotak biru muda tipis. Sekarang:
+
+- Rel **224 px**, padding 16 px, baris **48 px** (ikon 20 px + label 14 px/550,
+  jarak 12 px), radius 12 px.
+- Baris aktif **bidang biru solid** (`--blue`) dengan teks/ikon
+  `--on-accent`; kontras terukur **5,47** (light), **9,58** (dark), **5,84**
+  (sepia), **9,58** (amoled) — semuanya di atas 4,5:1.
+- Hover memakai `--surface-soft`, bukan biru muda, supaya tidak bersaing dengan
+  keadaan aktif. Tombol lipat menjadi chevron tenang 36 px tanpa bingkai;
+  rel terlipat **80 px** dengan ikon di tengah.
+- Aturan lama yang saling menimpa di `05-responsive-refinements.css` dan
+  `app-design.css` diganti satu blok; kontrak `navigation-layout` +
+  `responsive-touch-targets` **47/47 (4,7 mnt)**.
