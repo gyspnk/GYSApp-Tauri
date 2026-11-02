@@ -20,11 +20,12 @@ test("appearance preference changes select the dedicated visual/usability contra
   assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
 });
 
-test("Kidung presentation changes select the dedicated Kidung usability and visual contracts", () => {
+test("Kidung presentation changes select the dedicated Kidung usability contracts", () => {
   const plan = resolveSelectiveTestArgs(["apps/web/src/kidung-ux.css"], []);
 
   assert.ok(plan.args.includes("e2e/kidung-usability.spec.ts"));
-  assert.ok(plan.args.includes("e2e/visual.spec.ts"));
+  // The `-linux` baselines belong to the nightly full run, not this path.
+  assert.ok(!plan.args.includes("e2e/visual.spec.ts"));
   assert.ok(plan.args.includes("e2e/navigation-layout.spec.ts"));
   assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
   assert.ok(plan.args.includes("e2e/universal-usability.spec.ts"));
@@ -47,10 +48,13 @@ test("extracted Kidung sections retain loading and playlist parity coverage", ()
       "e2e/kidung-offline.spec.ts",
       "e2e/kidung-usability.spec.ts",
       "e2e/playlist-parity.spec.ts",
-      "e2e/visual.spec.ts",
       "e2e/accessibility.spec.ts",
     ])
       assert.ok(plan.args.includes(spec), `${file} should select ${spec}`);
+    assert.ok(
+      !plan.args.includes("e2e/visual.spec.ts"),
+      `${file} keeps baselines on the nightly run`,
+    );
   }
 });
 
@@ -61,27 +65,30 @@ test("Faith text and gesture edits select reading contracts without unrelated me
       "faith-zoom",
       "reading-family-usability",
       "reading-direct-flow",
-      "visual-reading",
       "accessibility",
     ])
       assert.ok(plan.args.includes(`e2e/${spec}.spec.ts`), `${file}: ${spec}`);
+    assert.ok(
+      !plan.args.includes("e2e/visual-reading.spec.ts"),
+      `${file}: baselines stay on the nightly run`,
+    );
     assert.ok(!plan.args.includes("e2e/media-load.spec.ts"));
     assert.ok(!plan.description.startsWith("Full browser coverage"));
   }
 });
 
-test("shared composition changes retain shell, visual, gesture and responsive coverage", () => {
+test("shared composition changes retain shell, gesture and responsive coverage", () => {
   const plan = resolveSelectiveTestArgs(["apps/web/src/app-design.css"], []);
   for (const spec of [
     "smoke",
     "sidebar-collapse",
     "ux-refinement",
-    "visual",
-    "visual-reading",
     "faith-zoom",
     "accessibility",
     "roadmap-ui-matrix",
   ])
     assert.ok(plan.args.includes(`e2e/${spec}.spec.ts`), spec);
+  assert.ok(!plan.args.includes("e2e/visual.spec.ts"));
+  assert.ok(!plan.args.includes("e2e/visual-reading.spec.ts"));
   assert.ok(!plan.description.startsWith("Full browser coverage"));
 });
