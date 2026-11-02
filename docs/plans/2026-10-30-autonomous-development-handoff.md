@@ -2860,6 +2860,25 @@ lokal hanya untuk melihat perubahan hidup.
 | 2 Nov   | `41459728625` | dispatch regenerasi baseline                  | **2,1 mnt**; job visual 1,6 mnt; agregat kini lolos untuk dispatch non-QA (`db47ad6`)                                                                                    |
 | 2 Nov   | `41473910672` | selektif dipecah dua shard                    | **3,1 mnt** — lebih lambat: setup (install, unduh artefak, browser) terduplikasi dan Playwright membagi rata jumlah tes, bukan durasi (68s vs 101s); sharding dibatalkan |
 
+### Putaran 55 — Katalog Kidung dicat dua tahap (2 Nov)
+
+Membuka `/kidung` dulu meng-commit seluruh **533 baris** dalam frame navigasi.
+Sekarang baris pertama (**60**) dicat lebih dulu, sisanya ditambahkan saat
+`requestIdleCallback` (fallback 50 ms), jadi DOM akhirnya tetap 533 baris dan
+pencarian/count/deep-link tidak berubah.
+
+A/B pada host yang sama (390×844, preview 4173, 5 navigasi hangat):
+
+| Varian                 | klik → `h1`              |
+| ---------------------- | ------------------------ |
+| satu tahap (533 baris) | 145 / 148 / 179 / 191 ms |
+| dua tahap (60 → 533)   | **61 / 69 / 71 ms**      |
+
+Selisih ~90–120 ms per navigasi. Baris ke-533 muncul **+150–300 ms** setelah
+`h1`, dan kontrak yang menghitung baris tetap lulus: `kidung-loading` +
+`kidung-offline` **4/4 (31 dtk)**, subset metrik judul `kidung-usability`
+**11/11 (1,3 mnt)**.
+
 ### Putaran 54 — Suite unit keluar dari jalur kritis (2 Nov)
 
 `web-build` dulu menjalankan `pnpm test` setelah build, jadi setiap job browser

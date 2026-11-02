@@ -34,6 +34,8 @@ import { KidungLocalNav } from "./kidung-local-nav.js";
 import { readHymnViewerMode, writeHymnViewerMode } from "./hymn-view-mode.js";
 import { navigateSmooth } from "./route-transitions.js";
 
+const FIRST_SCREEN_ROWS = 60;
+
 export function HymnCatalog({
   locale,
   state,
@@ -123,6 +125,28 @@ export function HymnCatalog({
       return allItems.filter((item) => !item.assetCode);
     return searchHymns(searchIndex, deferredQuery, book);
   }, [allItems, book, deferredQuery, searchIndex]);
+  // Opening the catalogue used to commit all 533 rows in the navigation frame.
+  // Render a screenful first and append the rest when the browser is idle: the
+  // heading and the first rows paint immediately, and the full list still ends
+  // up in the DOM (search, counts and deep links keep working).
+  const [visibleRows, setVisibleRows] = useState(FIRST_SCREEN_ROWS);
+  useEffect(() => {
+    if (filtered.length <= FIRST_SCREEN_ROWS) {
+      setVisibleRows(filtered.length);
+      return;
+    }
+    setVisibleRows(FIRST_SCREEN_ROWS);
+    const idle = window.requestIdleCallback;
+    const cancelIdle = window.cancelIdleCallback;
+    const handle =
+      typeof idle === "function"
+        ? idle(() => setVisibleRows(filtered.length), { timeout: 200 })
+        : window.setTimeout(() => setVisibleRows(filtered.length), 50);
+    return () => {
+      if (typeof cancelIdle === "function") cancelIdle(handle);
+      else window.clearTimeout(handle);
+    };
+  }, [filtered.length, deferredQuery, book]);
   const listRef = useRef<HTMLOListElement>(null);
   const queue = useSyncExternalStore(
     subscribeMidiPlaylist,
@@ -316,7 +340,7 @@ export function HymnCatalog({
               </div>
             )}
           <ol className="pujian-list" ref={listRef}>
-            {filtered.map((item) => {
+            {filtered.slice(0, visibleRows).map((item) => {
               const inQueue = queueIds.has(item.id);
               return (
                 <li
