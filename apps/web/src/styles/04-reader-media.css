@@ -693,6 +693,9 @@
   }
   .global-search {
     max-height: calc(100vh - 16px);
+    /* dvh keeps the palette inside the visual viewport when the mobile URL bar
+       is showing; vh stays as the fallback for browsers without dvh. */
+    max-height: calc(100dvh - 16px);
     padding: 18px 14px;
     border-radius: 12px;
   }
