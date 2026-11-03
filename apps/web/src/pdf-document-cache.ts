@@ -3,7 +3,6 @@ import {
   GlobalWorkerOptions,
   type PDFDocumentProxy,
 } from "pdfjs-dist";
-import { isTauriShell } from "./native-platform.js";
 import { pdfDocumentSourceOptions } from "./pdf-utils.js";
 import { workerSrc } from "./pdf-worker.js";
 
@@ -113,9 +112,7 @@ export function createPdfDocumentCache<T>(
 
 export const pdfDocuments = createPdfDocumentCache<PDFDocumentProxy>(
   (src, data) => {
-    const task = getDocument(
-      pdfDocumentSourceOptions(src, data, isTauriShell()),
-    );
+    const task = getDocument(pdfDocumentSourceOptions(src, data));
     return {
       promise: task.promise,
       destroy: () => task.destroy(),

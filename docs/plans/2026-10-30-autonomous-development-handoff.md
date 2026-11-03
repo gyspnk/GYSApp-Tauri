@@ -3914,21 +3914,28 @@ px, klik peredup menutup menu (0 node), `bible-search-multi-book` +
 peredup 412×781 px (mulai 58 px dari atas), sheet 388×479 px, dan tap pada
 peredup menutup sheet (0 node).
 
-### Putaran 85 — WebView terpaket mengunduh PDF tanpa range (3 Nov)
+### Putaran 85 — Range PDF native dicoba, ternyata bukan penyebabnya (3 Nov)
 
 Run native `41670867680` (setelah batas waktu cache di `5defda0`) membuktikan
-perbaikannya bekerja: permintaan PDF **mulai terjadi** (`status 206`/`200` dari
-raw.githubusercontent) tetapi WebView2 membatalkannya (`net::ERR_ABORTED` lalu
-`net::ERR_FAILED`), jadi `canvas[data-pdf-rendered]` tak pernah muncul dan
-`diagnostics=[]` tetap kosong.
+batas waktu itu bekerja: permintaan PDF **mulai terjadi** (`status 206`/`200`
+dari raw.githubusercontent), tetapi WebView2 membatalkannya (`net::ERR_ABORTED`
+lalu `net::ERR_FAILED`), jadi `canvas[data-pdf-rendered]` tak pernah muncul.
 
-Perbaikan: `pdfDocumentSourceOptions(src, data, nativeShell)` di
-`apps/web/src/pdf-utils.ts` mengembalikan `disableRange: true` dan
-`rangeChunkSize: 5 * 1024 * 1024` saat `isTauriShell()` benar, sehingga WebView
-mengunduh file dalam satu permintaan; jalur web tetap memakai range 512 KiB.
-Diuji `apps/web/src/pdf.test.ts` + `pdf-document-cache.test.ts` **15/15**;
-bundle **163,4 KiB / 25 modul** (batas 180). Verifikasi akhir menunggu
-`edge-tts-native.yml`.
+Percobaan: `pdfDocumentSourceOptions(src, data, nativeShell)` memaksa
+`disableRange: true` + `rangeChunkSize` 5 MiB di shell terpaket. Run native
+berikutnya (`41679057081`, head `b4b0da9`) menunjukkan hasil yang sama —
+beberapa PDF bahkan gagal dengan `net::ERR_FAILED` tanpa respons sukses — dan
+langkah “cached PDF setelah reload” tetap tidak melukis kanvas. Karena tidak
+terbukti membantu dan justru memaksa unduhan penuh untuk PDF besar di perangkat
+pemilik, perubahan itu **dikembalikan** (`6ab01f1` di-revert pada kode
+`pdf-utils.ts` / `pdf-document-cache.ts` / `pdf.test.ts`); jalur web tetap range
+512 KiB seperti sebelumnya.
+
+Status B-37: perbaikan batas waktu tetap berlaku (browser: `literature-loading`
+
+- `literature-offline` **20/20**), sedangkan pemutaran ulang PDF dari cache
+  setelah reload di WebView2 masih merah di runner hosted — perlu bukti dari
+  mesin pemilik sebelum diklaim.
 
 ### Putaran 84 — Lingkup pencarian Alkitab bisa banyak kitab; palet warna jadi ikon (3 Nov)
 
