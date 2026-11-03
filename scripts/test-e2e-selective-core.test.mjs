@@ -168,3 +168,13 @@ test("PDF-only edits select rendering and reader regressions without the global 
   assert.ok(selection.args.includes("e2e/media-load.spec.ts"));
   assert.ok(!selection.args.includes("e2e/roadmap-ui-matrix.spec.ts"));
 });
+
+test("a Playwright config does not downgrade a design change to the core tier", () => {
+  const plan = resolveSelectiveTestArgs(
+    ["apps/web/playwright.ci.config.ts", "apps/web/src/app-design.css"],
+    [],
+  );
+  assert.ok(plan.args.includes("e2e/roadmap-ui-matrix.spec.ts"));
+  assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
+  assert.doesNotMatch(plan.description, /unclassified shared/);
+});

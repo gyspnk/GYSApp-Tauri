@@ -88,6 +88,10 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
 
   const unknownShared = changedFiles.filter((file) => {
     if (/\.test\.[cm]?[jt]sx?$/.test(file)) return false;
+    // A Playwright config changes how the suite runs, not what the app renders.
+    // Treating it as "unknown shared" used to downgrade a design change (for
+    // example app-design.css) to the core tier and skip the sweeps entirely.
+    if (/^apps\/web\/playwright[^/]*\.ts$/.test(file)) return false;
     if (file.startsWith("apps/web/e2e/") && file.endsWith(".spec.ts"))
       return false;
     if (

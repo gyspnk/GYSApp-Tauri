@@ -3936,6 +3936,17 @@ Push CSS lain yang lebih sempit (mis. `04-reader-media.css`) tetap **295 dtk**
 untuk jalur rutin; jalur "desain global" adalah trade-off cakupan yang
 disengaja (enam sweep + visual), dicatat apa adanya.
 
+### Putaran 96 — Config Playwright tidak lagi menurunkan cakupan sweep (3 Nov)
+
+Run `5b17c50` hanya menjalankan **90 tes core** padahal `app-design.css` ikut
+berubah: planner memperlakukan `apps/web/playwright.ci.config.ts` sebagai
+"unknown shared" sehingga jatuh ke tier core dan membuang pilihan sweep desain
+(231 tes). Sekarang berkas `apps/web/playwright*.ts` diabaikan dalam
+klasifikasi itu — ia mengubah cara suite berjalan, bukan yang dirender aplikasi.
+Tes regresi: `scripts/test-e2e-selective-core.test.mjs` (8/8) memastikan
+kombinasi config + `app-design.css` memilih `roadmap-ui-matrix` dan
+`responsive-layout-matrix`, bukan tier core.
+
 ### Putaran 95 — Hero terang juga solid; uji 6 worker di jalur selektif (3 Nov)
 
 Aturan ramp solid (46 %) sekarang berlaku untuk `light` dan `sepia` di ≥900 px;
