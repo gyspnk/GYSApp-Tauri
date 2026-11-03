@@ -3806,3 +3806,21 @@ Karena snapshot dibuat di luar repo ini, `imageSrcSet` tidak akan pernah terisi;
 percobaannya dibatalkan seluruhnya (kontrak, mapper, kartu, test) dan bundle
 tetap 162,6 KiB. Sauh tetap memakai `srcset` karena hero-nya berasal dari media
 WordPress live.
+
+### Putaran 78 — Ubin koleksi rata atas dan soak native memilih suara di tempatnya (3 Nov)
+
+Ubin `Lainnya` memakai `justify-content: center`; label “Sauh Bagi Jiwa” yang
+membungkus dua baris menggeser ikonnya lebih tinggi daripada dua ubin lain.
+Perubahan: `justify-content: flex-start` (dengan komentar), sehingga ketiga ikon
+berada di garis yang sama dan label mulai di baris yang sama.
+
+Soak native sebelumnya memilih suara lewat `settings.nth(1)` di
+`.drawer-speech-card`. Kartu itu sekarang hanya berisi satu `<select>` (mesin
+TTS); pemilih suara pindah ke `.audio-settings-inline select` di bagian Audio &
+Suara. Skrip kini membuka `/lainnya?section=audio`, membaca daftar opsi, dan —
+bila `id-ID-ArdiNeural` tidak ada — gagal dengan pesan yang menyebut daftar opsi
+dan B-35, bukan `Timeout 30000ms` tanpa nama. Ini juga membuat kegagalan katalog
+Edge (403) terbaca langsung dari log.
+
+Bukti: `apps/web/scripts/edge-tts-native-smoke.mjs` lolos `node --check`;
+pemilih suara terverifikasi ada di `/lainnya?section=audio` pada build lokal.

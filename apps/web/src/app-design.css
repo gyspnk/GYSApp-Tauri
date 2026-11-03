@@ -1024,7 +1024,9 @@
   }
   .more-library-link {
     flex-direction: column;
-    justify-content: center;
+    /* The three tiles share one row, so a wrapped label must not push its icon
+       higher than the others. */
+    justify-content: flex-start;
     text-align: center;
     min-height: 88px;
     padding: 12px 10px;
