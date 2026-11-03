@@ -2913,6 +2913,25 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 74 — Keterangan Sauh terbaca di ponsel (3 Nov)
+
+Artifact QA yang sudah menunggu halaman terisi (`ui-screenshots-41607230554`,
+**132/132 `settled: true`, 0 overflow**) memperlihatkan masalah nyata:
+di 390 px judul “Dipaksa Memikul Salib”, referensi, ayat, dan tombol duduk di
+atas ilustrasi dengan scrim hanya ±30 % di titik judul, sehingga tinta navy
+bertabrakan dengan gambar.
+
+Penyebabnya gradien panel keterangan (`.home-page .sauh-card-content`) baru
+mencapai 55 % surface pada 14 % tinggi panel, padahal judul berada di 8 % atas.
+Di ≤899 px ramp dibuat hampir opak lebih awal (72 % di 0 %, 90 % di 10 %,
+97 % di 26 %, solid 55 %); desktop tetap memakai ramp lama karena panelnya
+pendek dan foto masih ingin terlihat.
+
+Bukti: screenshot 320/390 menunjukkan judul, ayat, dan tombol di atas bidang
+solid; 1440 tidak berubah; `smoke`/`ui-polish`/`home-resilience` yang menyentuh
+Sauh **6/6 lolos**; CLS 390 tetap **0,0001** (throttle 400 kbps/4× CPU);
+`verify:bundle` tidak berubah.
+
 ### Putaran 73 — Screenshot QA menunggu halaman benar-benar terisi (3 Nov)
 
 Artifact `ui-screenshots-41602282099` (132 gambar) dipakai untuk menilai desain,

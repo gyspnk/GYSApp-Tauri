@@ -4948,6 +4948,22 @@ body:has(.hymn-detail-page.is-text-viewer)
     min-height: 340px;
   }
 }
+
+/* On phones the caption owns most of the card, so its top edge needs an almost
+   opaque surface: at 390 px the title used to land on the illustration with
+   only ~30 % surface behind it. Desktop keeps the wider fade because the
+   caption there is a short strip over the artwork. */
+@media (max-width: 899px) {
+  .home-page .sauh-card-content {
+    background: linear-gradient(
+      180deg,
+      rgba(var(--surface-rgb), 0.72) 0%,
+      rgba(var(--surface-rgb), 0.9) 10%,
+      rgba(var(--surface-rgb), 0.97) 26%,
+      var(--surface) 55%
+    ) !important;
+  }
+}
 /* Sauh reference sits beside the title instead of in a separate eyebrow row. */
 .home-page .sauh-title-row {
   display: flex;
@@ -5433,5 +5449,35 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
   .home-grid .home-literature-section:not(:has(.error-panel, .empty-inline)) {
     min-height: 359px;
+  }
+}
+
+/* Below 960 px the caption used to sit on top of the artwork behind a
+   translucent scrim; the loaded QA capture (run 41607230554) shows dark ink on
+   a mid-tone illustration, so the copy reads poorly. Use the same stacked
+   banner + solid panel layout the desktop already uses. Appended last because
+   this file loads after styles/05 and wins source order. */
+@media (max-width: 959px) {
+  .home-page .sauh-card-media {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    flex: 0 0 auto;
+  }
+  .home-page .sauh-card-media .sauh-image {
+    object-fit: cover;
+    object-position: center 25%;
+  }
+  .home-page .sauh-card-media .sauh-media-overlay {
+    display: none;
+  }
+  .home-page .sauh-card-content {
+    margin-top: 0;
+    flex: 0 0 auto;
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
