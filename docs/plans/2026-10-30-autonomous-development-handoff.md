@@ -3880,3 +3880,10 @@ mencetak `[soak] SKIP live Edge: socket never accepted on this runner`, lalu
 gagal 1 detik kemudian di pembersihan karena `idleLabel` bisa `null` dan
 `.media-surface` tidak ada ketika tidak ada audio. Perbaikan: label jatuh ke
 `"Bacakan"` dan pembersihan `clickMediaStop(page).catch(() => {})` + jeda 400 ms.
+
+Catatan lanjutan Putaran 80 (2): `41661999214` melewati Edge dengan benar, lalu
+gagal di blok suara lokal karena masih membaca `document.querySelectorAll(
+".drawer-speech-card select")[1].options` — drawer hanya punya satu select,
+sehingga `[1]` `undefined`. Blok itu sekarang membuka
+`/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
+memilih suara lokal, lalu kembali ke reader.

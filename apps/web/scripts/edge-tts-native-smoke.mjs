@@ -1277,15 +1277,24 @@ try {
   });
   let localSpeechPlayback;
   if (localSpeechVoice) {
+    // The drawer keeps only the engine select; the voice list lives in the
+    // audio settings section, so pick the local voice there.
+    await page.goto(nativeRouteUrl("/lainnya?section=audio", runtimeOrigin));
+    const localVoicePicker = page
+      .locator(".audio-settings-inline select")
+      .first();
+    await localVoicePicker.waitFor({ state: "visible", timeout: 20_000 });
     await page.waitForFunction(
       (voiceId) =>
         [
-          ...document.querySelectorAll(".drawer-speech-card select")[1].options,
+          ...(document.querySelector(".audio-settings-inline select")
+            ?.options ?? []),
         ].some((option) => option.value === voiceId),
       localSpeechVoice.id,
     );
-    await localSettings.nth(1).selectOption(localSpeechVoice.id);
-    await page.locator(".hamburger-drawer-close").click();
+    await localVoicePicker.selectOption(localSpeechVoice.id);
+    await page.goto(readerUrl);
+    await page.locator(".reader-speech-btn").waitFor({ state: "visible" });
     await page.evaluate(() => {
       const synthesis = window.speechSynthesis;
       const speak = synthesis.speak.bind(synthesis);
