@@ -2855,6 +2855,7 @@ lokal hanya untuk melihat perubahan hidup.
 | 2 Nov   | `41380071830`       | push `main`, suite penuh 856 tes                                              | **12,7 mnt** wall; shard 11,3 / 6,9 / 7,6 mnt — timpang karena Playwright membagi urutan tes                                                                             |
 | 2 Nov   | `41381475091`       | push docs/tooling melewati shard                                              | **12,7 → 0,5 mnt** (`changes.web=false`, agregator keluar 0 dengan alasan)                                                                                               |
 | 2 Nov   | `41484048779`       | jalur selektif: 12 spec → 6 spec (sapuan `@nightly`)                          | **9m23s → 4m21s**; `e2e-selective` 7m54 → 2m47                                                                                                                           |
+| 2 Nov   | `41549569250`       | spesifikasi saja (satu berkas sapuan)                                         | wall **2m35s**; `e2e-selective` 1m56                                                                                                                                     |
 | 2 Nov   | lokal (host 8-core) | tiga sapuan viewport terberat ikut `@nightly` (89 dtk dari 468 dtk kerja tes) | set rutin **64 → 61 tes, 122 → 114 dtk wall**                                                                                                                            |
 | 2 Nov   | `41504838935`       | push fitur Kidung di jalur rutin (61 tes; build 34 dtk, unit 47 dtk)          | wall **3m07**; `e2e-selective` **2m14** (dari 9m23 / 7m54)                                                                                                               |
 | 2 Nov   | `41525050790`       | push fitur Kidung, build di job selektif (bukan artefak)                      | wall **3m05**; `e2e-selective` **2m12** (build 6 dtk dari cache, tes 1m42)                                                                                               |
@@ -2927,7 +2928,7 @@ lebar untuk halaman dimuat ulang sebelum penyimpanan terjadi.
 Perbaikan ganda: `apps/web/src/App.tsx` menyimpan pilihan lebih dulu
 (`setSettings((current) => ({ ...current, locale }))`) lalu memuat tabel dan
 memicu render ulang; helper `switchLocale` di `e2e/smoke.spec.ts` menunggu
-`localStorage["gys-shel-settings-v1"].locale` benar-benar berubah (maks 10 dtk)
+`localStorage["gys-shell-settings-v1"].locale` benar-benar berubah (maks 10 dtk)
 sebelum navigasi. Dua tes terkait lulus **6,7 dtk / 10,3 dtk** di host ini.
 
 ### Putaran 64 — Sapuan lintas layar hanya untuk berkas desain global (3 Nov)
