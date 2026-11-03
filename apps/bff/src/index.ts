@@ -1450,7 +1450,13 @@ export function createApp(
   });
   app.get("/api/v1/auth/egys/whatsapp/track", async (c) => {
     const origin = c.req.header("origin");
-    const reference = getCookie(c, "egys_wa_reference");
+    const queryReference = c.req.query("reference");
+    const reference =
+      getCookie(c, "egys_wa_reference") ??
+      (typeof queryReference === "string" &&
+      /^[a-zA-Z0-9_-]{1,200}$/.test(queryReference)
+        ? queryReference
+        : undefined);
     const base = egysBase(c);
     if (!origin || !originList(c, config.allowedOrigins).includes(origin))
       return errorResponse(c, "FORBIDDEN", "Tracking origin is not allowed");
@@ -1539,14 +1545,29 @@ export function createApp(
       .object({
         otp: z.string().regex(/^[0-9]{4,12}$/),
         mobilephone: z.string().regex(/^\+?[0-9]{6,20}$/),
+        // The reference rides in the body because a partitioned cookie is not
+        // guaranteed to travel between the app origin and this worker domain
+        // (Chrome/Firefox/Safari differ). The cookie stays authoritative.
+        referenceid: z
+          .string()
+          .regex(/^[a-zA-Z0-9_-]{1,200}$/)
+          .optional(),
       })
       .safeParse(await c.req.json().catch(() => undefined));
-    const referenceid = getCookie(c, "egys_wa_reference");
-    if (!parsed.success || !referenceid)
+    const referenceid = parsed.success
+      ? (getCookie(c, "egys_wa_reference") ?? parsed.data.referenceid)
+      : undefined;
+    if (!parsed.success)
       return errorResponse(
         c,
         "VALIDATION_ERROR",
-        "WhatsApp code or login request is invalid",
+        "WhatsApp code or phone number is invalid",
+      );
+    if (!referenceid)
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "WhatsApp login request expired or was not started in this browser. Send the WhatsApp message again.",
       );
     try {
       const payload = await providerRequest(

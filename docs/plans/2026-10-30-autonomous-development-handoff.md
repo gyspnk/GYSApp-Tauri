@@ -2913,6 +2913,29 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 66 — Kode WhatsApp 400 di github.io: referensinya tidak ikut (3 Nov)
+
+Laporan pemilik: verifikasi kode WhatsApp e-GYS di `gyspnk.github.io/GYSApp-Tauri`
+berakhir **400**. Reproduksi langsung ke Worker terpasang:
+
+```
+POST /api/v1/auth/egys/whatsapp/confirm  {"otp":"1234","mobilephone":"628123456789"}
+→ 400 {"error":{"code":"VALIDATION_ERROR","message":"WhatsApp code or login request is invalid"}}
+```
+
+`/start` memang menyetel cookie `egys_wa_reference` (`HttpOnly; Secure;
+SameSite=None; Partitioned`), tetapi 400 itu keluar **sebelum** panggilan ke
+e-GYS: route `confirm` hanya membaca cookie, dan pada permintaan lintas situs
+github.io → workers.dev cookie partisi itu tidak selalu terkirim (perilaku
+berbeda antar peramban). Tanpa referensi, Worker menolak lebih dulu.
+
+Perbaikan: referensi ikut di badan permintaan (`referenceid`, divalidasi
+`^[a-zA-Z0-9_-]{1,200}$`), cookie tetap berwenang bila ada; URL tracking juga
+membawa `?reference=` sebagai cadangan. Pesan dibedakan: "kode atau nomor tidak
+valid" vs "sesi login kedaluwarsa/tidak dimulai di peramban ini — kirim ulang
+pesan WhatsApp". Bukti: `@gys/bff` **75/75** (termasuk kasus referensi di badan
+tanpa cookie dan kasus tanpa referensi), klien web **3/3**.
+
 ### Putaran 65 — Pilihan bahasa disimpan sebelum chunk-nya datang (3 Nov)
 
 Run `41559172236` gagal di `e2e/smoke.spec.ts` ("home and more fixed chrome

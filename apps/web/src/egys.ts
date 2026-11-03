@@ -308,11 +308,14 @@ export async function requestEgysProvider<T>(
   return body as T;
 }
 
-export function egysWhatsAppTrackingUrl(): string {
+export function egysWhatsAppTrackingUrl(reference?: string): string {
   const url = new URL(
     apiUrl("/api/v1/auth/egys/whatsapp/track"),
     window.location.href,
   );
+  // The cookie may not survive a cross-site request in every browser, so the
+  // reference also travels in the query; the worker still prefers the cookie.
+  if (reference) url.searchParams.set("reference", reference);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   return url.toString();
 }

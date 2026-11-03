@@ -63,6 +63,7 @@ export function EgysWhatsApp({
     const controller = new AbortController();
     const deadline = Date.now() + LOGIN_TIMEOUT_MS;
     let socket: WebSocket | undefined;
+    let reference = "";
     let launched = false;
     let confirming = false;
     let reconnect = 0;
@@ -112,7 +113,11 @@ export function EgysWhatsApp({
       const requestConfirm = () =>
         requestEgysProvider(
           "whatsapp/confirm",
-          { otp: code, mobilephone: providerPhone(mobilephone) },
+          {
+            otp: code,
+            mobilephone: providerPhone(mobilephone),
+            ...(reference ? { referenceid: reference } : {}),
+          },
           controller.signal,
           EGYS_REQUEST_TIMEOUT_MS,
         );
@@ -194,7 +199,7 @@ export function EgysWhatsApp({
     )
       .then((data) => {
         if (controller.signal.aborted) return;
-        const reference = data.referenceid ?? data.referenceId;
+        reference = data.referenceid ?? data.referenceId ?? "";
         const phone = data.mobilephone ?? data.mobilePhone;
         if (!reference || !phone || !data.content) {
           fail("Respons WhatsApp tidak valid. Tekan WhatsApp lagi.");
@@ -225,7 +230,7 @@ export function EgysWhatsApp({
           if (controller.signal.aborted || confirming) return;
           clearTimeout(reconnect);
           setStatus("Menghubungkan WhatsApp");
-          const current = new WebSocket(egysWhatsAppTrackingUrl());
+          const current = new WebSocket(egysWhatsAppTrackingUrl(reference));
           socket = current;
           current.onopen = () => {
             if (controller.signal.aborted || socket !== current) return;

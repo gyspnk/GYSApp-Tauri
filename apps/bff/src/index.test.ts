@@ -1546,7 +1546,42 @@ describe("BFF public boundary", () => {
           env,
         );
         expect(invalid.status).not.toBe(200);
-        expect(calls).toHaveLength(3);
+        // A browser that drops the partitioned cookie still verifies, because
+        // the reference travels with the code; the provider decides if it is
+        // stale, not the worker.
+        const withoutCookie = await app.request(
+          "/api/v1/auth/egys/whatsapp/confirm",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              otp: "123456",
+              mobilephone: "628987654321",
+              referenceid: "body-ref",
+            }),
+          },
+          env,
+        );
+        expect(await withoutCookie.json()).toEqual({ ok: true });
+        expect(calls[3]!.body).toContain("referenceid=body-ref");
+        expect(calls).toHaveLength(4);
+        const noReference = await app.request(
+          "/api/v1/auth/egys/whatsapp/confirm",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              otp: "123456",
+              mobilephone: "628987654321",
+            }),
+          },
+          env,
+        );
+        expect(noReference.status).toBe(400);
+        expect(await noReference.json()).toMatchObject({
+          error: { code: "VALIDATION_ERROR" },
+        });
+        expect(calls).toHaveLength(4);
       } finally {
         globalThis.fetch = originalFetch;
       }

@@ -75,3 +75,22 @@ describe("e-GYS client authentication boundary", () => {
     }
   });
 });
+
+describe("WhatsApp tracking URL", () => {
+  it("carries the reference so a dropped partition cookie cannot stall login", async () => {
+    vi.stubGlobal("window", {
+      location: { href: "https://gyspnk.github.io/GYSApp-Tauri/lainnya" },
+    });
+    try {
+      const { egysWhatsAppTrackingUrl } = await import("./egys.js");
+      const url = new URL(egysWhatsAppTrackingUrl("ref-123"));
+      expect(url.protocol).toBe("wss:");
+      expect(url.searchParams.get("reference")).toBe("ref-123");
+      expect(
+        new URL(egysWhatsAppTrackingUrl()).searchParams.has("reference"),
+      ).toBe(false);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
