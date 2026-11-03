@@ -282,14 +282,17 @@ test("web providers authenticate inline and refresh the detected account", async
     }),
   );
   let tracking: { send(data: string): void } | undefined;
-  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track*", (ws) => {
     tracking = ws;
     ws.send(JSON.stringify({ type: "info" }));
   });
   await page.route("**/api/v1/auth/egys/whatsapp/confirm", async (route) => {
+    // The reference also travels in the body: a partitioned cookie cannot be
+    // trusted between the Pages origin and the Worker.
     expect(route.request().postDataJSON()).toEqual({
       otp: "123456",
       mobilephone: "628987654321",
+      referenceid: "test-ref",
     });
     loggedIn = true;
     await route.fulfill({ json: { ok: true } });
@@ -388,7 +391,7 @@ test("a rejected confirm still signs in when the WhatsApp reply already created 
     }),
   );
   let tracking: { send(data: string): void } | undefined;
-  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track*", (ws) => {
     tracking = ws;
     ws.send(JSON.stringify({ type: "info" }));
   });
@@ -476,7 +479,7 @@ test("a profile that lags the confirmation is retried instead of failing", async
     }),
   );
   let tracking: { send(data: string): void } | undefined;
-  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track*", (ws) => {
     tracking = ws;
     ws.send(JSON.stringify({ type: "info" }));
   });
@@ -539,7 +542,7 @@ test("a slow profile keeps the countdown instead of the failure mark", async ({
     }),
   );
   let tracking: { send(data: string): void } | undefined;
-  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track*", (ws) => {
     tracking = ws;
     ws.send(JSON.stringify({ type: "info" }));
   });
@@ -592,7 +595,7 @@ test("a WhatsApp attempt that really fails shows the reason in the account card"
     }),
   );
   let tracking: { send(data: string): void } | undefined;
-  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track*", (ws) => {
     tracking = ws;
     ws.send(JSON.stringify({ type: "info" }));
   });
@@ -714,7 +717,7 @@ test("WhatsApp timeout removes its badge without closing the messaging tab", asy
       },
     }),
   );
-  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", () => {});
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track*", () => {});
   await context.route("https://api.whatsapp.com/**", (route) =>
     route.fulfill({ body: "WhatsApp" }),
   );
@@ -765,7 +768,7 @@ test("clicking WhatsApp again replaces the request and ignores the old socket", 
       },
     }),
   );
-  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track*", (ws) => {
     sockets.push(ws);
     ws.send(JSON.stringify({ type: "info" }));
   });
@@ -860,7 +863,7 @@ test("WhatsApp reconnects the same request and confirms the sender exactly once"
   await context.route("https://api.whatsapp.com/**", (route) =>
     route.fulfill({ body: "WhatsApp" }),
   );
-  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track", (ws) => {
+  await page.routeWebSocket("**/api/v1/auth/egys/whatsapp/track*", (ws) => {
     sockets.push(ws);
     ws.send(JSON.stringify({ type: "info" }));
   });
@@ -869,6 +872,7 @@ test("WhatsApp reconnects the same request and confirms the sender exactly once"
     expect(route.request().postDataJSON()).toEqual({
       otp: "123456",
       mobilephone: "628222222222",
+      referenceid: "reconnect-ref",
     });
     loggedIn = true;
     return route.fulfill({ json: { ok: true } });
