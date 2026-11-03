@@ -5499,10 +5499,11 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* Sepia's surface is cream, so the desktop fade left the illustration ghosting
-   through the caption and the verse (the card read as muddy). Keep the photo
-   band at the top and reach a solid surface sooner. */
+/* Light and sepia surfaces are pale enough that the desktop fade left the
+   illustration ghosting through the caption and the verse (the card read as
+   muddy). Keep the photo band at the top and reach a solid surface sooner. */
 @media (min-width: 900px) {
+  [data-theme="light"] .home-page .sauh-card-content,
   [data-theme="sepia"] .home-page .sauh-card-content {
     background: linear-gradient(
       180deg,

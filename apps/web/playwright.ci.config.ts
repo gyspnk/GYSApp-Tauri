@@ -8,7 +8,10 @@ export default defineConfig(baseConfig, {
   fullyParallel: true,
   // The routine set is short and the runner has four cores; the nightly shards
   // keep three so their long sweeps do not fight over layout frames.
-  workers: process.env.GYS_CI_ROUTINE === "1" ? 4 : 3,
+  workers:
+    process.env.GYS_CI_ROUTINE === "1"
+      ? Number(process.env.GYS_CI_WORKERS ?? 6)
+      : 3,
   // The two @perf cases assert sub-second warm navigation. Hosted two-core
   // runners cannot meet them (nor can the 8-core ARM host), so they run in the
   // dedicated perf job on main pushes instead of every PR shard.

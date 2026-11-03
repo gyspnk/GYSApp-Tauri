@@ -3936,6 +3936,17 @@ Push CSS lain yang lebih sempit (mis. `04-reader-media.css`) tetap **295 dtk**
 untuk jalur rutin; jalur "desain global" adalah trade-off cakupan yang
 disengaja (enam sweep + visual), dicatat apa adanya.
 
+### Putaran 95 — Hero terang juga solid; uji 6 worker di jalur selektif (3 Nov)
+
+Aturan ramp solid (46 %) sekarang berlaku untuk `light` dan `sepia` di ≥900 px;
+dark/amoled tetap memakai gradien lama karena bayangannya tidak mengganggu.
+Screenshot 1440 terang: pita foto ~155 px, judul + ayat di permukaan putih solid.
+
+Bersamaan, jalur selektif mencoba **6 worker** (dari 4) lewat
+`GYS_CI_WORKERS`/default 6 di `apps/web/playwright.ci.config.ts` untuk menguji
+apakah 231 tes sweep turun dari 533 dtk. Angka hasilnya dicatat di bawah setelah
+run selesai; kalau tidak membaik, default dikembalikan ke 4.
+
 ### Putaran 94 — Hero sepia berhenti membayang di teks (3 Nov)
 
 Di tema sepia, gradien hero desktop berhenti di 68 % (0,97) sehingga ilustrasi
