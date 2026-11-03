@@ -3936,6 +3936,20 @@ Push CSS lain yang lebih sempit (mis. `04-reader-media.css`) tetap **295 dtk**
 untuk jalur rutin; jalur "desain global" adalah trade-off cakupan yang
 disengaja (enam sweep + visual), dicatat apa adanya.
 
+### Putaran 97 — Baseline visual disegarkan dari artifact CI (3 Nov)
+
+Dispatch `41709316374` (regenerasi baseline) selesai; artifact
+`visual-baselines-41709316374` berisi 149 PNG. Dibandingkan byte-wise dengan
+pohon: **127 identik, 22 berbeda, 0 hilang** — drift menumpuk dari putaran
+sebelumnya (faith header, appearance, more, kidung reader, accent) karena jalur
+selektif sengaja melewati spec visual. Semua 22 PNG linux diadopsi dari artifact
+(aturan: hanya artifact CI yang dipakai, bukan render lokal).
+
+Catatan jujur: `home-1440x900-linux.png` **tidak berubah** meski ramp hero terang
+diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaan
+polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
+scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
+
 ### Putaran 96 — Config Playwright tidak lagi menurunkan cakupan sweep (3 Nov)
 
 Run `5b17c50` hanya menjalankan **90 tes core** padahal `app-design.css` ikut
