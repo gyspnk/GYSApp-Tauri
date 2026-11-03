@@ -3890,6 +3890,18 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 90 — Satu berkas spec boleh memakai semua worker (3 Nov)
+
+CI selektif untuk perubahan spec/komponen kidung masih **7,1 mnt**
+(`41690594658` → `e2e-selective` 18:17:31–18:24:42) karena Playwright hanya
+memecah per berkas, dan `apps/web/e2e/kidung-usability.spec.ts` (50 tes) jadi
+satu worker. `apps/web/playwright.config.ts` sekarang `fullyParallel: true`;
+setiap tes sudah membuat page sendiri, dan blok `test.describe.configure({
+mode: "serial" })` tetap dihormati.
+
+Diukur lokal 2 worker: `kidung-usability` **5,7 → 2,1 mnt** (50/50 lulus);
+`editorial-ui` + `navigation-layout` **8,4 → 3,3 mnt** (62/62 lulus).
+
 ### Putaran 89 — Judul kidung dua baris di ponsel (3 Nov)
 
 Aturan dua baris dulu hanya berlaku ≤359 px, jadi di 390 px judul panjang

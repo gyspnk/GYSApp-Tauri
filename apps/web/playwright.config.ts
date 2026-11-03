@@ -15,6 +15,9 @@ export default defineConfig({
   snapshotPathTemplate:
     "{testDir}/{testFilePath}-snapshots/{arg}-{platform}{ext}",
   workers: 2,
+  // Tests are independent (each builds its own page), so splitting one spec
+  // file across workers keeps the heaviest sweep from owning a single worker.
+  fullyParallel: true,
   use: {
     baseURL: "http://127.0.0.1:4173",
     // Keep glyph edges grayscale on local and hosted Linux runners. LCD
