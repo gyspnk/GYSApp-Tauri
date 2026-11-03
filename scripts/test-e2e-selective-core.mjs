@@ -289,8 +289,17 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       file,
     ),
   );
-  if (!touchesLayout) {
-    for (const spec of generalSweeps) specFiles.delete(spec);
+  // The nightly shards own the cross-screen sweeps. A feature stylesheet keeps
+  // only the overflow matrix (the sweep that has caught real defects in a
+  // single-screen change); the global design files still justify the full set,
+  // because they can move every screen at once.
+  const globalLayout = changedFiles.some((file) =>
+    /(?:^|\/)(?:app-design\.css|App\.tsx|icons\.tsx)$/.test(file),
+  );
+  const routineSweeps = new Set(["e2e/responsive-layout-matrix.spec.ts"]);
+  for (const spec of generalSweeps) {
+    const keep = touchesLayout && (globalLayout || routineSweeps.has(spec));
+    if (!keep) specFiles.delete(spec);
   }
 
   if (!specFiles.size && !grepPatterns.size) {

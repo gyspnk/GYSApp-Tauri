@@ -2912,6 +2912,25 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 64 — Sapuan lintas layar hanya untuk berkas desain global (3 Nov)
+
+Perubahan satu berkas CSS fitur (`kidung-ux.css`, `calm-liturgical.css`) dulu
+memilih **12 spec** — enam sapuan umum plus kontrak fitur — sehingga jalur
+rutin kembali 8 menit. Sekarang `scripts/test-e2e-selective-core.mjs` menyaring
+`generalSweeps`: berkas desain global (`app-design.css`, `App.tsx`,
+`icons.tsx`) tetap memilih seluruh sapuan, sedangkan CSS fitur hanya
+mempertahankan **`responsive-layout-matrix`** (satu-satunya sapuan yang pernah
+menangkap cacat nyata di perubahan satu layar). Sisanya milik shard malam.
+
+| Perubahan                     | Spec terpilih   |
+| ----------------------------- | --------------- |
+| `apps/web/src/kidung-ux.css`  | **7** (dari 12) |
+| `apps/web/src/app-design.css` | 9               |
+
+Dua tes perencana diperbarui (`test-e2e-selective-ui.test.mjs`) dan **12/12**
+tes perencana lulus. Run `41549569250` (spec saja, bukan CSS) sudah membuktikan
+jalur selektif **2m35s**; batas ini tidak mengubahnya.
+
 ### Putaran 63 — Sapuan layout diberi anggaran yang cukup (2 Nov)
 
 Run `41547058471` (push CSS `109b4dc`) menghabiskan **7m55s** dan gagal satu

@@ -13,11 +13,12 @@ test("appearance preference changes select the dedicated visual/usability contra
   );
 
   assert.ok(plan.args.includes("e2e/appearance-preferences.spec.ts"));
-  assert.ok(plan.args.includes("e2e/smoke.spec.ts"));
-  assert.ok(plan.args.includes("e2e/navigation-layout.spec.ts"));
-  assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
-  assert.ok(plan.args.includes("e2e/universal-usability.spec.ts"));
   assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
+  // The rest of the sweeps belong to the nightly shards.
+  assert.ok(!plan.args.includes("e2e/smoke.spec.ts"));
+  assert.ok(!plan.args.includes("e2e/navigation-layout.spec.ts"));
+  assert.ok(!plan.args.includes("e2e/accessibility.spec.ts"));
+  assert.ok(!plan.args.includes("e2e/universal-usability.spec.ts"));
 });
 
 test("Kidung presentation changes select the dedicated Kidung usability contracts", () => {
@@ -26,10 +27,10 @@ test("Kidung presentation changes select the dedicated Kidung usability contract
   assert.ok(plan.args.includes("e2e/kidung-usability.spec.ts"));
   // The `-linux` baselines belong to the nightly full run, not this path.
   assert.ok(!plan.args.includes("e2e/visual.spec.ts"));
-  assert.ok(plan.args.includes("e2e/navigation-layout.spec.ts"));
-  assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
-  assert.ok(plan.args.includes("e2e/universal-usability.spec.ts"));
   assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
+  assert.ok(!plan.args.includes("e2e/navigation-layout.spec.ts"));
+  assert.ok(!plan.args.includes("e2e/accessibility.spec.ts"));
+  assert.ok(!plan.args.includes("e2e/universal-usability.spec.ts"));
 });
 
 test("extracted Kidung sections retain loading and playlist parity coverage", () => {
