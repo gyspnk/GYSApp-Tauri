@@ -3927,6 +3927,15 @@ mode: "serial" })` tetap dihormati.
 Diukur lokal 2 worker: `kidung-usability` **5,7 → 2,1 mnt** (50/50 lulus);
 `editorial-ui` + `navigation-layout` **8,4 → 3,3 mnt** (62/62 lulus).
 
+Data lanjutan (3 Nov): push yang menyentuh `apps/web/src/app-design.css`
+memilih **231 tes di 9 berkas sweep** dan tetap memakan **533 dtk**
+(`4174caf`, selective 7,5 mnt) — `fullyParallel` tidak banyak menolong di
+jalur ini karena biaya turun ke render + snapshot, bukan penjadwalan berkas.
+Push CSS lain yang lebih sempit (mis. `04-reader-media.css`) tetap **295 dtk**
+(`41701513601`), dan push web biasa 155–245 dtk. Jadi target <3 mnt berlaku
+untuk jalur rutin; jalur "desain global" adalah trade-off cakupan yang
+disengaja (enam sweep + visual), dicatat apa adanya.
+
 ### Putaran 94 — Hero sepia berhenti membayang di teks (3 Nov)
 
 Di tema sepia, gradien hero desktop berhenti di 68 % (0,97) sehingga ilustrasi
