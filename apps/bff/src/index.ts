@@ -830,6 +830,16 @@ export function createApp(
     )
       return errorResponse(c, "FORBIDDEN", "Image source is not allowlisted");
 
+    // Cache API, not just headers: a Worker response on workers.dev is not
+    // stored by the CDN, so every hero image used to hit the origin again.
+    const edge =
+      typeof caches === "undefined"
+        ? undefined
+        : ((caches as unknown as { default?: Cache }).default ?? undefined);
+    const cacheKey = new Request(c.req.url, { method: "GET" });
+    const cached = edge ? await edge.match(cacheKey) : undefined;
+    if (cached) return cached;
+
     try {
       const upstream = await fetchOfficialImage(url, c.req.raw.signal);
       if (upstream) {
@@ -843,10 +853,22 @@ export function createApp(
         );
         c.header("access-control-allow-origin", "*");
         c.header("cross-origin-resource-policy", "cross-origin");
-        return new Response(upstream.body, {
+        const response = new Response(upstream.body, {
           status: 200,
           headers: c.res.headers,
         });
+        if (edge) {
+          const stored = edge
+            .put(cacheKey, response.clone())
+            .catch(() => undefined);
+          try {
+            c.executionCtx.waitUntil(stored);
+          } catch {
+            // No execution context (tests, preview): finish the write anyway.
+            await stored;
+          }
+        }
+        return response;
       }
     } catch {
       // Reader cancellation must not start another source request.

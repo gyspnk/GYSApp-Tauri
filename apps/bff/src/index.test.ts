@@ -1149,6 +1149,44 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("serves a repeated proxied image from the worker cache", async () => {
+    const originalFetch = globalThis.fetch;
+    const store = new Map<string, Response>();
+    vi.stubGlobal("caches", {
+      default: {
+        match: async (request: Request) => store.get(request.url)?.clone(),
+        put: async (request: Request, response: Response) => {
+          store.set(request.url, response.clone());
+        },
+      },
+    });
+    let upstreamCalls = 0;
+    globalThis.fetch = (async () => {
+      upstreamCalls += 1;
+      return new Response("image-bytes", {
+        status: 200,
+        headers: { "content-type": "image/png" },
+      });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const path = `/api/v1/content/image?url=${encodeURIComponent("https://tjc.org/id/wp-content/uploads/sites/43/cover.jpg")}`;
+      const first = await app.request(path);
+      const second = await app.request(path);
+      expect(first.status).toBe(200);
+      expect(second.status).toBe(200);
+      expect(await second.text()).toBe("image-bytes");
+      expect(upstreamCalls).toBe(1);
+    } finally {
+      globalThis.fetch = originalFetch;
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("keeps media error responses embeddable for the same UI origin", async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = (async () =>
