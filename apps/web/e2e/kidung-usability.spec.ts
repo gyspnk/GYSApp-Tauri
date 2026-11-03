@@ -34,11 +34,17 @@ type TestMediaSessionWindow = Window & {
 async function expectTarget(locator: Locator, min = 44) {
   const box = await locator.boundingBox();
   expect(box, "control should be visible and measurable").not.toBeNull();
+  // Six CI workers made a geometry read land before the row finished laying
+  // out, so the 5 s default poll expired while the control was still 0 px.
   await expect
-    .poll(async () => (await locator.boundingBox())?.width ?? 0)
+    .poll(async () => (await locator.boundingBox())?.width ?? 0, {
+      timeout: 10_000,
+    })
     .toBeGreaterThanOrEqual(min - 0.5);
   await expect
-    .poll(async () => (await locator.boundingBox())?.height ?? 0)
+    .poll(async () => (await locator.boundingBox())?.height ?? 0, {
+      timeout: 10_000,
+    })
     .toBeGreaterThanOrEqual(min - 0.5);
 }
 
@@ -1892,10 +1898,15 @@ test("Kidung default chord markers have clear space above their lyric lines", as
       }),
     );
   await expect
-    .poll(async () => {
-      const values = await gaps();
-      return values.length ? Math.min(...values) : -Infinity;
-    })
+    .poll(
+      async () => {
+        const values = await gaps();
+        return values.length ? Math.min(...values) : -Infinity;
+      },
+      // Chords arrive over the network; 6 workers on a 4-core runner needed
+      // more than the 5 s default before the markers existed.
+      { timeout: 15_000 },
+    )
     .toBeGreaterThanOrEqual(4);
 });
 

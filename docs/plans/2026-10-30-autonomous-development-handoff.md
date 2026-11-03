@@ -3983,6 +3983,23 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 104 — Poll geometri diberi ruang di enam worker (3 Nov)
+
+Push `23d98ea` merah di `e2e-selective` (run `41720846360`): dua tes
+`e2e/kidung-usability.spec.ts` gagal, keduanya **bukan** karena perubahan
+aplikasi —
+
+- baris 1844 “chord markers have clear space above their lyric lines”:
+  `expect.poll` mengembalikan `-Infinity` karena `.chord-visual-marker` belum
+  ada saat 5 dtk default habis;
+- baris 826 “phone Kidung catalog prioritizes…”: `expectTarget` membaca
+  `boundingBox()` 0 px saat baris belum selesai layout.
+
+Keduanya lulus 2/2 (6,8 dtk) saat dijalankan lokal dengan dua worker, jadi
+penyebabnya kontensi 6 worker di runner 4 vCPU. Perbaikannya bukan menambah
+retry: poll geometri di `expectTarget` kini `timeout: 10_000` dan poll jarak
+penanda chord `timeout: 15_000`, masing-masing dengan komentar alasannya.
+
 ### Putaran 103 — Literatur: katalog gagal ≠ judul tidak ada (3 Nov)
 
 Halaman detail literatur memakai satu cabang untuk dua keadaan berbeda
