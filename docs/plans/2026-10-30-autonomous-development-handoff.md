@@ -3887,3 +3887,23 @@ gagal di blok suara lokal karena masih membaca `document.querySelectorAll(
 sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
+
+### Putaran 82 — Soak native melewati Edge, lalu tertahan di PDF cache (3 Nov)
+
+Rangkaian dispatch `edge-tts-native.yml`:
+
+| run           | hasil | sebab                                                                                                                                                                                                                   |
+| ------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `41659581643` | gagal | skip Edge benar, lalu `idleLabel` null + tidak ada `.media-surface`                                                                                                                                                     |
+| `41661999214` | gagal | blok suara lokal membaca `select[1].options` (drawer hanya punya satu select)                                                                                                                                           |
+| `41664465743` | gagal | langkah PDF cache: `canvas[data-pdf-rendered="true"]` tidak muncul; log aplikasi mencatat tiga `Native WebView PDF request failed: net::ERR_FAILED` untuk `kr_master.pdf`, `050_Hanya Yesus.pdf`, `051B_Batu Zaman.pdf` |
+
+Perbaikan yang dikirim: skip Edge yang menyebut alasan + pembersihan toleran;
+pemilih suara lokal membaca `.audio-settings-inline select`; dan langkah PDF
+cache kini melempar pesan berisi request yang diblokir + delapan diagnostik
+`pdf*` terakhir, bukan timeout kosong.
+
+**B-37 (baru):** di runner Windows, WebView gagal mengambil PDF upstream
+(`net::ERR_FAILED`) dan replay dari cache tidak melukis canvas. Perlu bukti
+tambahan dari run berikutnya (diagnostik sudah dipasang) sebelum menyimpulkan
+apakah ini masalah jaringan runner atau cache PDF.

@@ -2001,7 +2001,21 @@ try {
   await page
     .locator('.pdf-reader-hymn canvas[data-pdf-rendered="true"]')
     .first()
-    .waitFor({ state: "visible", timeout: 45_000 });
+    .waitFor({ state: "visible", timeout: 45_000 })
+    .catch(async (error) => {
+      // B-37: when the cached PDF does not paint, say which requests were
+      // blocked and what the PDF runtime logged, instead of a bare timeout.
+      const diagnostics = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]")
+          .filter((event) => /pdf/i.test(event.scope))
+          .slice(-8),
+      );
+      throw new Error(
+        `Cached PDF did not render after reload (${String(error).slice(0, 120)}); blocked=${JSON.stringify(
+          blockedPdfRequests.slice(-4),
+        )}; diagnostics=${JSON.stringify(diagnostics)}`,
+      );
+    });
   assert.equal(
     blockedPdfRequests.includes(recoveryPdfAssetUrl),
     false,
