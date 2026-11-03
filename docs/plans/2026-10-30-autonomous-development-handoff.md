@@ -3983,6 +3983,20 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 108 — Kontrak cache-first Suara tahan beban runner (3 Nov)
+
+Run `41726896965` (`b9e6fa8`) merah di
+`e2e/suara-lifecycle.spec.ts` “home paints saved Suara content before slow
+live revalidation”: jendela 800 dtk untuk lukisan cache tidak tercapai saat
+empat worker berbagi runner 4 vCPU, padahal run berikutnya (`a3ce74e`) hijau
+tanpa perubahan kode aplikasi.
+
+Kontrak aslinya bukan “di bawah 800 dtk”, melainkan “cache tampil sebelum
+revalidasi live”. Jadi respons live buatan diperpanjang 1,2 → **3 dtk**, jendela
+cache dilonggarkan 800 → **1.500 dtk**, dan jendela data live 3 → **6 dtk** —
+urutan bukti tetap terjaga karena data live tidak mungkin muncul lebih dulu.
+Lokal **1/1 (4,6 dtk)**.
+
 ### Putaran 107
 
 Catatan kecil: baris `.detail-back` disembunyikan saat keadaan `missing`

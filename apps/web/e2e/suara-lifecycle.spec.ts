@@ -4,7 +4,9 @@ test("home paints saved Suara content before slow live revalidation", async ({
   page,
 }) => {
   await page.route("**/api/v1/content/suara-sejati", async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 1_200));
+    // Long enough that a cached paint can never be confused with the live
+    // response, even on a loaded four-core runner.
+    await new Promise((resolve) => setTimeout(resolve, 3_000));
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -26,9 +28,11 @@ test("home paints saved Suara content before slow live revalidation", async ({
 
   await page.goto("/GYSApp-Tauri/");
   await expect(page.getByText(/Menapaki Tiga Iman Bag/i)).toBeVisible({
-    timeout: 800,
+    // Run 41726896965 missed the 800 ms window while four workers shared the
+    // runner; the contract is "cached before live", not "under 800 ms".
+    timeout: 1_500,
   });
   await expect(page.getByText("Kesaksian terbaru")).toBeVisible({
-    timeout: 3_000,
+    timeout: 6_000,
   });
 });
