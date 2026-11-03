@@ -3753,6 +3753,25 @@ dengan teks terang).
 `overflow: 0`; tangkapan dialog memperlihatkan scrim, input fokus, dan status
 “Ketik minimal 2 karakter” di atas halaman yang meredup.
 
+### Putaran 77 — Halaman Iman punya judul yang terlihat (3 Nov)
+
+Audit screenshot 390/1440 menemukan `/iman` satu-satunya rute utama tanpa
+identitas visual: judulnya `sr-only`, sehingga halaman dibuka langsung dengan
+kolom pencarian sementara `/literatur` dan `/suara` menampilkan eyebrow + `h1`.
+
+Sekarang `apps/web/src/faith.tsx` memakai pola `section.page-intro` yang sama:
+eyebrow `faith.eyebrow` (“tjc.org · pokok iman”) dan `h1` berisi judul paket
+(`Dasar Kepercayaan`); `sr-only` dihapus. Kunci baru ditambahkan di ketiga
+katalog (id/en/zh) dan `e2e/faith-zoom.spec.ts` diperbarui: kontrak lama
+“h1 harus sr-only” diganti dengan “h1 terlihat” — sengaja, karena kontrak lama
+itulah yang menjaga ketidakkonsistenan.
+
+Bukti: screenshot 390 (light) dan 1440 (sepia); `faith-zoom` **8/8**,
+`faith-pdf` + `accessibility` **28/28 (3,4 mnt)**; `verify:bundle`
+**162,6 KiB / 24 modul**.
+Catatan jujur: commit `ba23cf7` menggabungkan perubahan header ini dengan
+perbaikan selector soak native — dua hal berbeda dalam satu commit.
+
 ### Putaran 76 — Benchmark native membuka PDF lewat tautan yang didukung (3 Nov)
 
 Job native gagal di penanda `gys-pdf-page-ready` bahkan setelah anggaran
