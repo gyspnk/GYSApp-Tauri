@@ -3968,6 +3968,14 @@ ke Kejadian/Yohanes; pintasan Perjanjian Baru mengisi 27 kitab) dan ikut
 390 px: pencarian “Allah” dengan Kejadian+Yohanes hanya mengembalikan Kejadian,
 label tombol “2 kitab”; bundle **162,7 KiB / 24 modul**.
 
+**Kontrak smoke menyusul.** `apps/web/e2e/smoke.spec.ts` “Bible search narrows
+results to a testament” masih memakai `.control-select-trigger` dan
+`getByRole("option")` dari select tunggal lama, sehingga run selektif `62bb178`
+gagal (timeout 40 dtk, `41681312404`). Diperbarui ke `.multiselect-trigger`,
+pintasan perjanjian, dan `checkbox "Yohanes PB"`; `smoke` +
+`bible-search-multi-book` **47/47 (2,8 mnt)**. Pelajaran yang sama seperti
+sebelumnya: kontrak diperbarui di commit yang sama dengan desainnya.
+
 ### Putaran 83 — Baca cache PDF berbatas waktu supaya tidak menggantung (3 Nov)
 
 B-37 menunjukkan pembaca PDF di WebView terpaket tidak pernah memulai permintaan

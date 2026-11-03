@@ -425,11 +425,10 @@ test("Bible search narrows results to a testament", async ({ page }) => {
     .click();
   await page.getByLabel("Cari Alkitab").fill("Allah");
   await page.locator(".bible-search-options-disclosure > summary").click();
-  const searchBook = page.locator(
-    ".bible-search-options .control-select-trigger",
-  );
+  const searchBook = page.locator(".multiselect-trigger");
   await searchBook.click();
-  await page.getByRole("option", { name: "Perjanjian Lama (39)" }).click();
+  await page.getByRole("button", { name: "Perjanjian Lama (39)" }).click();
+  await page.locator(".multiselect-footer button").click();
   await page.getByRole("button", { name: "Cari", exact: true }).click();
   await expect(page.locator(".result-item").first()).toBeVisible({
     timeout: 15_000,
@@ -446,8 +445,13 @@ test("Bible search narrows results to a testament", async ({ page }) => {
     )
     .toEqual({ hasOldTestament: true, hasNewTestament: false });
 
-  await searchBook.click({ force: true });
-  await page.getByRole("option", { name: "Perjanjian Baru (27)" }).click();
+  await searchBook.click();
+  await page
+    .getByRole("button", { name: /^Semua kitab$/ })
+    .first()
+    .click();
+  await page.getByRole("button", { name: "Perjanjian Baru (27)" }).click();
+  await page.locator(".multiselect-footer button").click();
   await page.getByRole("button", { name: "Cari", exact: true }).click();
   await expect
     .poll(() =>
@@ -461,8 +465,13 @@ test("Bible search narrows results to a testament", async ({ page }) => {
     )
     .toEqual({ hasOldTestament: false, hasNewTestament: true });
 
-  await searchBook.click({ force: true });
-  await page.getByRole("option", { name: "Yohanes", exact: true }).click();
+  await searchBook.click();
+  await page
+    .getByRole("button", { name: /^Semua kitab$/ })
+    .first()
+    .click();
+  await page.getByRole("checkbox", { name: "Yohanes PB", exact: true }).check();
+  await page.locator(".multiselect-footer button").click();
   await page.getByRole("button", { name: "Cari", exact: true }).click();
   await expect
     .poll(async () => {
