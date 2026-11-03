@@ -3830,3 +3830,16 @@ runner: pemilih suara menemukan `id-ID-ArdiNeural`. Kegagalannya pindah ke
 `waitForDiagnostic("tts.edge.receive")` tanpa pesan; `waitForDiagnostic` kini
 menyebut delapan diagnostik terakhir dan label tombol bacakan, dan batasnya
 dinaikkan ke 60 dtk untuk sintesis pertama.
+
+### Putaran 79 — Toolbar ayat membungkus di ponsel dan tombol tutupnya terlihat (3 Nov)
+
+Sembilan kontrol 44 px tidak muat dalam 366 px, jadi baris aksi memakai
+`overflow-x: auto`: tombol “Catatan ayat” dan tombol tutup berada di luar layar.
+Perubahan di `apps/web/src/styles/02-bible-and-settings.css` (blok ≤700 px):
+aksi `flex-wrap: wrap; overflow: visible; row-gap: 6px`, tombol tutup
+`position: absolute; top/right: 6px; width/height: 44px`, dan padding kanan
+toolbar 56 px supaya teks ayat tidak menabrak tombol tutup.
+
+Bukti: `scrollWidth - clientWidth` = **0** pada 320/390; tinggi panel
+**159 px** (390) dan **209 px** (320); semua kontrol ≥44 px;
+`bible-annotations` + `responsive-touch-targets` **8/8 (30,7 dtk)**.
