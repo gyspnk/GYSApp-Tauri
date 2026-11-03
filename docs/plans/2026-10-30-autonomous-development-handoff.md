@@ -3983,6 +3983,22 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 111 — Jaringan lambat berlabel “4G” juga mendapat gambar kecil (3 Nov)
+
+Sapuan vitals hosted ber-throttle (390, 400 kbps/4× CPU) menunjukkan LCP
+`/` 6,5 dtk, `/sauh` 7,7 dtk, `/suara` 6,6 dtk — semuanya elemen gambar. Aturan
+`prefersSmallImages` hanya melihat `saveData` dan label `2g/3g`, sedangkan
+banyak tautan lambat tetap dilabeli `4g`, sehingga kandidat 690–1.200 KiB tetap
+dipilih.
+
+Perbaikan di `apps/web/src/network-hints.ts`: `downlink` (Mbps) ikut dibaca dan
+nilai **≤ 1,5** diperlakukan seperti jaringan hemat, sehingga `LazyImage`
+memakai kandidat terkecil dan melepas `srcset`. Bukti di browser dengan
+`navigator.connection` disuntik: `{effectiveType:"4g", downlink:10}` → `srcset`
+penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
+`…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
+**9/9**; typecheck bersih; bundle tidak berubah.
+
 ### Putaran 110 — Judul dokumen dan fokus ikut berpindah halaman (3 Nov)
 
 Dua celah aksesibilitas nyata ditemukan saat menyapu hosted: `document.title`

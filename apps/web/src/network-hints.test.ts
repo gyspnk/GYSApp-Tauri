@@ -25,4 +25,17 @@ describe("prefersSmallImages", () => {
       false,
     );
   });
+
+  it("treats a 4g label with a slow downlink estimate as slow", () => {
+    expect(
+      prefersSmallImages({
+        connection: { effectiveType: "4g", downlink: 0.6 },
+      }),
+    ).toBe(true);
+    expect(
+      prefersSmallImages({
+        connection: { effectiveType: "4g", downlink: 10 },
+      }),
+    ).toBe(false);
+  });
 });
