@@ -554,12 +554,14 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
       className="page online-content-page suara-detail-page"
       data-testid="suara-detail-page"
     >
-      <div className="detail-back">
-        <Link className="text-button" to="/suara">
-          {translate(locale, "suara.backCollection")}
-        </Link>
-        <span>{translate(locale, "suara.title")}</span>
-      </div>
+      {state.status !== "missing" && (
+        <div className="detail-back">
+          <Link className="text-button" to="/suara">
+            {translate(locale, "suara.backCollection")}
+          </Link>
+          <span>{translate(locale, "suara.title")}</span>
+        </div>
+      )}
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
           <LoadingProgress label={translate(locale, "suara.detailLoading")} />

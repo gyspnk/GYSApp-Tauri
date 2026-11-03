@@ -3983,7 +3983,13 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
-### Putaran 107 — Kesaksian yang tidak ada memakai kartu pemulihan (3 Nov)
+### Putaran 107
+
+Catatan kecil: baris `.detail-back` disembunyikan saat keadaan `missing`
+supaya tautan “Kembali ke kesaksian” tidak muncul dua kali (breadcrumb + kartu);
+hasil 390: kartu 366×575, satu tautan, tanpa overflow.
+
+— Kesaksian yang tidak ada memakai kartu pemulihan (3 Nov)
 
 Detail Suara menyatukan dua keadaan: umpan yang gagal dimuat dan tautan yang
 memang tidak ada di koleksi. Keduanya menampilkan judul galat plus tombol
