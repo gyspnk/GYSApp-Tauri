@@ -3983,6 +3983,25 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 106 — Enam worker turun ke empat setelah dua flake (3 Nov)
+
+Enam worker memangkas jalur sweep desain dari **533 dtk** (`4174caf`) ke
+**444 dtk** (`41714421909`), tetapi dalam tiga push berikutnya muncul dua
+kegagalan yang tidak reproducible:
+
+- `41720846360` — dua tes `e2e/kidung-usability.spec.ts` kehabisan
+  `expect.poll` bawaan 5 dtk (geometri baris katalog dan jarak penanda chord)
+  saat 78 tes berjalan di 4 vCPU.
+- `41723760822` — `e2e/smoke.spec.ts:1149` kehabisan 5 dtk pada pemeriksaan
+  overflow katalog kidung.
+
+Keduanya lulus lokal dengan dua worker. Keputusan: default `GYS_CI_WORKERS`
+kembali **4** (bisa dinaikkan lewat env), dan poll yang mengukur geometri di
+kedua tempat diberi batas 10–15 dtk dengan komentar yang menyebut run id.
+Biaya jalur desain kembali ~~533 dtk, tapi build merah acak lebih mahal
+daripada 90 dtk. Tuas berikutnya yang tinggal keputusan pemilik: memecah sweep
+desain menjadi dua job paralel (~~+60 dtk menit runner untuk ~−150 dtk wall).
+
 ### Putaran 105 — Kontrak pemulihan ikut jalur selektif (3 Nov)
 
 Dua spec baru dari putaran 102–103 (`e2e/kidung-catalog-error.spec.ts`,

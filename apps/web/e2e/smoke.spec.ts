@@ -1143,8 +1143,12 @@ test("hymn catalog keeps search and collection controls in its header", async ({
     ),
   ).toHaveCount(0);
   await expect
-    .poll(() =>
-      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    .poll(
+      () =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      // Six workers on a four-core runner delayed the settle past the 5 s
+      // default (run 41723760822); the catalog header is layout-bound.
+      { timeout: 10_000 },
     )
     .toBe(true);
 });

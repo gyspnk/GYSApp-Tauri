@@ -7,10 +7,14 @@ export default defineConfig(baseConfig, {
   // layout contention observed at four workers. Local runs remain conservative.
   fullyParallel: true,
   // The routine set is short and the runner has four cores; the nightly shards
-  // keep three so their long sweeps do not fight over layout frames.
+  // keep three so their long sweeps do not fight over layout frames. Six
+  // workers cut the design sweep from 533 s to 444 s but produced two
+  // contention flakes in three runs (41720846360 kidung polls, 41723760822
+  // smoke overflow), so the routine default stays at four until the poll
+  // defaults are audited.
   workers:
     process.env.GYS_CI_ROUTINE === "1"
-      ? Number(process.env.GYS_CI_WORKERS ?? 6)
+      ? Number(process.env.GYS_CI_WORKERS ?? 4)
       : 3,
   // The two @perf cases assert sub-second warm navigation. Hosted two-core
   // runners cannot meet them (nor can the 8-core ARM host), so they run in the
