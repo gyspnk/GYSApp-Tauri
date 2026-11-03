@@ -3927,6 +3927,21 @@ mode: "serial" })` tetap dihormati.
 Diukur lokal 2 worker: `kidung-usability` **5,7 → 2,1 mnt** (50/50 lulus);
 `editorial-ui` + `navigation-layout` **8,4 → 3,3 mnt** (62/62 lulus).
 
+### Putaran 94 — Hero sepia berhenti membayang di teks (3 Nov)
+
+Di tema sepia, gradien hero desktop berhenti di 68 % (0,97) sehingga ilustrasi
+masih membayang di belakang judul dan ayat; kartu terbaca keruh. Aturan baru
+(discope `@media (min-width: 900px)` supaya ponsel tetap memakai ramp 0,72 yang
+sudah diperbaiki) membuat permukaan solid pada 46 %:
+
+`[data-theme="sepia"] .home-page .sauh-card-content` →
+`rgba(surface, 0) 0%, 0.78 12%, 0.96 30%, surface 46%, surface 100%`.
+
+Diukur 1440 sepia: pita foto tetap ~150 px di atas, judul dan ayat duduk di
+permukaan krem solid; 390 tidak berubah. `home-resilience` +
+`sauh-loading-layout` + `smoke -g home|Sauh|hero` **13/13 (14,7 dtk)**; bundle
+tidak berubah.
+
 ### Putaran 93 — Bylin Suara terbaca sebagai atribusi (3 Nov)
 
 Di `/suara/<slug>` baris pertama biasanya nama pembicara (“Sdri. … Gereja cabang
