@@ -2912,6 +2912,24 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 65 — Pilihan bahasa disimpan sebelum chunk-nya datang (3 Nov)
+
+Run `41559172236` gagal di `e2e/smoke.spec.ts` ("home and more fixed chrome
+follows English and Chinese locales", "feature-critical hymn actions follow the
+selected locale") meski lulus di host ini. Snapshot kegagalan menunjukkan
+combobox masih **ID** setelah `switchLocale` — jadi pilihan bahasa tidak
+tersimpan sebelum `page.goto` berikutnya.
+
+Penyebab: `setLocale` menunggu `loadLocaleMessages(locale)` (chunk en/zh)
+selesai, baru memanggil `setSettings`; di runner yang sibuk, jendela itu cukup
+lebar untuk halaman dimuat ulang sebelum penyimpanan terjadi.
+
+Perbaikan ganda: `apps/web/src/App.tsx` menyimpan pilihan lebih dulu
+(`setSettings((current) => ({ ...current, locale }))`) lalu memuat tabel dan
+memicu render ulang; helper `switchLocale` di `e2e/smoke.spec.ts` menunggu
+`localStorage["gys-shel-settings-v1"].locale` benar-benar berubah (maks 10 dtk)
+sebelum navigasi. Dua tes terkait lulus **6,7 dtk / 10,3 dtk** di host ini.
+
 ### Putaran 64 — Sapuan lintas layar hanya untuk berkas desain global (3 Nov)
 
 Perubahan satu berkas CSS fitur (`kidung-ux.css`, `calm-liturgical.css`) dulu

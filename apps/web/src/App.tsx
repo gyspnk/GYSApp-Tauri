@@ -178,11 +178,14 @@ function useAppSettings() {
     document.documentElement.dataset.theme = settings.theme;
   }, [settings.theme]);
   const setLocale = useCallback((locale: Locale) => {
-    // Switching to a shipped-elsewhere table waits for its chunk, so the first
-    // frame in the new language is already translated.
+    // Persist first: a reload right after the click must keep the choice even
+    // while the table chunk is still coming. The second update re-renders once
+    // the messages are in place, so the first frame in the new language is
+    // already translated.
+    setSettings((current) => ({ ...current, locale }));
     void loadLocaleMessages(locale)
       .catch(() => undefined)
-      .then(() => setSettings((current) => ({ ...current, locale })));
+      .then(() => setSettings((current) => ({ ...current })));
   }, []);
   const setTheme = useCallback((theme: Theme) => {
     // Freeze dropdown focus scroll before the lazy transition import can wait.

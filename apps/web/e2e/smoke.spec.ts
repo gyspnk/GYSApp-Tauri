@@ -9,6 +9,17 @@ async function switchLocale(page: Page, target: "EN" | "中文" | "ID") {
   });
   await page.getByRole("combobox", { name }).click();
   await page.getByRole("option", { name: target, exact: true }).click();
+  const locale = target === "中文" ? "zh" : target === "EN" ? "en" : "id";
+  // The shell writes the choice to storage; a reload before that write would
+  // silently keep the previous language.
+  await page.waitForFunction(
+    (next) => {
+      const raw = localStorage.getItem("gys-shell-settings-v1");
+      return raw ? JSON.parse(raw).locale === next : false;
+    },
+    locale,
+    { timeout: 10_000 },
+  );
 }
 
 async function ensureSettingOpen(page: Page, setting: string) {
