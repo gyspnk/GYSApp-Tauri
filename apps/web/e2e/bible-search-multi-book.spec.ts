@@ -12,6 +12,19 @@ async function openSearch(page: import("@playwright/test").Page) {
   return trigger;
 }
 
+test("the phone sheet dims the page and closes on the scrim", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const trigger = await openSearch(page);
+  await trigger.click();
+  await expect(page.locator(".multiselect-menu")).toBeVisible();
+  const scrim = page.locator(".multiselect-scrim");
+  await expect(scrim).toBeVisible();
+  await scrim.click({ position: { x: 4, y: 4 } });
+  await expect(page.locator(".multiselect-menu")).toHaveCount(0);
+});
+
 test.describe("Bible search book scope", () => {
   test("several books can be selected and limit the search", async ({
     page,
