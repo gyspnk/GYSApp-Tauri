@@ -119,7 +119,6 @@ test("unknown shared code broadens coverage even beside a known feature", () => 
   for (const path of [
     "apps/web/src/service-worker-updates.ts",
     "apps/web/src/snapshot-selector.ts",
-    "apps/web/src/styles/00-tokens.css",
     "packages/domain/src/cache.ts",
     "apps/web/public/sw.js",
     "pnpm-lock.yaml",
@@ -176,5 +175,16 @@ test("a Playwright config does not downgrade a design change to the core tier", 
   );
   assert.ok(plan.args.includes("e2e/roadmap-ui-matrix.spec.ts"));
   assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
+  assert.doesNotMatch(plan.description, /unclassified shared/);
+});
+
+test("a numbered stylesheet keeps the cross-screen sweeps", () => {
+  const plan = resolveSelectiveTestArgs(
+    ["apps/web/src/styles/01-foundations-and-layout.css"],
+    [],
+  );
+  assert.ok(plan.args.includes("e2e/roadmap-ui-matrix.spec.ts"));
+  assert.ok(plan.args.includes("e2e/responsive-layout-matrix.spec.ts"));
+  assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
   assert.doesNotMatch(plan.description, /unclassified shared/);
 });

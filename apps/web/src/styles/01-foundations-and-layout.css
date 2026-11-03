@@ -260,6 +260,9 @@ a:focus-visible {
   width: min(720px, 100%);
   min-width: 0;
   max-height: min(720px, 80vh);
+  /* dvh follows the visual viewport when the phone URL bar is showing; vh is
+     the fallback for browsers without dvh support. */
+  max-height: min(720px, 80dvh);
   overflow: auto;
   overscroll-behavior: contain;
   padding: 24px;

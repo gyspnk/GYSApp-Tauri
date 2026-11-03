@@ -100,6 +100,10 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       )
     )
       return true;
+    // Any stylesheet under src/ is global; let it reach the design branch
+    // instead of the unclassified fallback (which skips every sweep).
+    if (/^apps\/web\/src\/(?:styles\/[^/]+|[^/]+)\.css$/.test(file))
+      return false;
     if (!file.startsWith("apps/web/src/")) return false;
     return !/(?:bible|sql|pericope|cross-ref|sauh|suara|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|faith|reading-zoom|app-design\.css|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
       file,
@@ -243,6 +247,11 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     }
 
     if (
+      // Every stylesheet under src/ is global: the numbered layers hold the
+      // layout, tokens and responsive rules the whole app shares. Treating them
+      // as ordinary source silently dropped the cross-screen sweeps.
+      (/^apps\/web\/src\/(styles\/[^/]+\.css|[^/]+\.css)$/.test(file) &&
+        !file.includes("test")) ||
       file.includes("app-design.css") ||
       file.includes("App.tsx") ||
       file.includes("styles.css") ||
@@ -298,7 +307,9 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
   // single-screen change); the global design files still justify the full set,
   // because they can move every screen at once.
   const globalLayout = changedFiles.some((file) =>
-    /(?:^|\/)(?:app-design\.css|App\.tsx|icons\.tsx)$/.test(file),
+    /(?:^|\/)(?:app-design\.css|App\.tsx|icons\.tsx|styles\/[^/]+\.css)$/.test(
+      file,
+    ),
   );
   const routineSweeps = new Set(["e2e/responsive-layout-matrix.spec.ts"]);
   for (const spec of generalSweeps) {

@@ -3936,6 +3936,26 @@ Push CSS lain yang lebih sempit (mis. `04-reader-media.css`) tetap **295 dtk**
 untuk jalur rutin; jalur "desain global" adalah trade-off cakupan yang
 disengaja (enam sweep + visual), dicatat apa adanya.
 
+### Putaran 99 — Stylesheet lapisan tidak lagi turun ke tier core (3 Nov)
+
+Push `f6e9596` (mengubah `apps/web/src/styles/01-foundations-and-layout.css`)
+tetap menjalankan **90 tes core**, bukan sweep desain: planner mengenali
+`app-design.css`/`styles.css` tetapi tidak `styles/01-*.css`, sehingga berkas
+itu jatuh ke fallback "unclassified shared". Dua perbaikan:
+
+1. Whitelist `unknownShared`: semua `apps/web/src/**/*.css` dianggap global.
+2. `globalLayout` sekarang mencakup `styles/<layer>.css`, jadi keenam sweep
+   lintas layar dipertahankan (sebelumnya hanya matriks overflow).
+
+Regresi: `scripts/test-e2e-selective-core.test.mjs` bertambah kasus
+`styles/01-foundations-and-layout.css` → wajib memuat `roadmap-ui-matrix`,
+`responsive-layout-matrix`, `accessibility`; **9/9 lulus**. Diverifikasi manual:
+stylesheet → 9 spec, `app-design.css` → 9 spec, `pdf.tsx` tetap 4 spec.
+
+Sekalian: panel pencarian memakai `max-height: min(720px, 80dvh)` (fallback
+`80vh`) supaya tidak melewati visual viewport saat URL bar ponsel muncul;
+`ui-polish`/`accessibility -g search` **5/5**.
+
 ### Putaran 98 — Cincin fokus pencarian memakai token (3 Nov)
 
 `.global-search-form input` memakai `box-shadow: 0 0 0 4px color-mix(in srgb,
