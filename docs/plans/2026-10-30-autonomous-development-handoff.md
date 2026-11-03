@@ -3900,6 +3900,13 @@ tampil (`onDocumentReady` di `apps/web/src/pdf.tsx` →
 `shouldAutoCachePdf` (`apps/web/src/pdf-auto-cache.ts`): dilewati bila bytes
 sudah lokal, `saveData` aktif, atau tautan 2G; 3G tetap menyimpan.
 
+Batas ukuran: satu buletin Warta ternyata **90,8 MB** (probe `Range: bytes=0-0`
+lewat `/api/v1/content/pdf` → `content-range: bytes 0-0/90868320`), jadi
+penyimpanan otomatis dibatasi **12 MB** (`MAX_AUTO_CACHE_BYTES`), dicek dari
+`content-range` satu-byte sebelum mengunduh (`apps/web/src/pdf-remote-size.ts`)
+— dokumen besar tetap memakai tombol “Unduh PDF” eksplisit. Diuji: warta 90 MB
+**tidak** tersimpan, Pelita Kecil kecil **tersimpan**.
+
 Diukur lokal (1440, tanpa throttle): buka pertama **8,0 dtk**, cache tertulis
 (`literature-pdf:warta-…`), buka kedua setelah muat ulang **1,7 dtk** dengan
 **0 permintaan PDF ke jaringan**. Unit `pdf-auto-cache` **4/4**,

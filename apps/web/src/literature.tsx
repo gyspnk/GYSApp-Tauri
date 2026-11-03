@@ -82,6 +82,7 @@ async function readCachedLiteraturePdf(
 
 import { withDeadline } from "./with-deadline.js";
 import { shouldAutoCachePdf } from "./pdf-auto-cache.js";
+import { fetchPdfTotalBytes } from "./pdf-remote-size.js";
 
 import {
   getCachedLiteratureCatalog,
@@ -1010,15 +1011,26 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     )
       return;
     pdfAutoCacheStarted.current = true;
-    void assetStore
-      .download(pdfAsset, undefined, validateLiteraturePdf)
-      .then(() => {
-        if (pdfAssetRef.current !== pdfAsset) return;
-        setDownloadStatus("ready");
-      })
-      .catch(() => {
+    void (async () => {
+      const bytes = await fetchPdfTotalBytes(pdfAsset.url);
+      if (
+        !shouldAutoCachePdf({
+          data: pdfData,
+          saveData: connection?.saveData,
+          effectiveType: connection?.effectiveType,
+          bytes,
+        })
+      ) {
         pdfAutoCacheStarted.current = false;
-      });
+        return;
+      }
+      try {
+        await assetStore.download(pdfAsset, undefined, validateLiteraturePdf);
+        if (pdfAssetRef.current === pdfAsset) setDownloadStatus("ready");
+      } catch {
+        pdfAutoCacheStarted.current = false;
+      }
+    })();
   };
 
   const resumePage =

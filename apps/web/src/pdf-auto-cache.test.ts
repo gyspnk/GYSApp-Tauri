@@ -10,6 +10,11 @@ describe("shouldAutoCachePdf", () => {
     expect(shouldAutoCachePdf({ data: new Uint8Array([1]) })).toBe(false);
   });
 
+  it("skips documents larger than the auto-cache ceiling", () => {
+    expect(shouldAutoCachePdf({ bytes: 90_868_320 })).toBe(false);
+    expect(shouldAutoCachePdf({ bytes: 4_000_000 })).toBe(true);
+  });
+
   it("skips data-saver and 2G links", () => {
     expect(shouldAutoCachePdf({ saveData: true })).toBe(false);
     expect(shouldAutoCachePdf({ effectiveType: "2g" })).toBe(false);
