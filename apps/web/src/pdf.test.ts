@@ -45,6 +45,16 @@ describe("PDF reader controls", () => {
       disableStream: true,
     });
 
+    const nativeOptions = pdfDocumentSourceOptions(
+      "https://cdn.example/kr.pdf",
+      undefined,
+      true,
+    );
+    expect(nativeOptions).toMatchObject({
+      disableRange: true,
+      rangeChunkSize: 5 * 1024 * 1024,
+    });
+
     const bytes = new Uint8Array([1, 2, 3]);
     const dataOptions = pdfDocumentSourceOptions("ignored", bytes);
     expect(dataOptions).toEqual({ data: bytes });

@@ -3888,6 +3888,22 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 85 — WebView terpaket mengunduh PDF tanpa range (3 Nov)
+
+Run native `41670867680` (setelah batas waktu cache di `5defda0`) membuktikan
+perbaikannya bekerja: permintaan PDF **mulai terjadi** (`status 206`/`200` dari
+raw.githubusercontent) tetapi WebView2 membatalkannya (`net::ERR_ABORTED` lalu
+`net::ERR_FAILED`), jadi `canvas[data-pdf-rendered]` tak pernah muncul dan
+`diagnostics=[]` tetap kosong.
+
+Perbaikan: `pdfDocumentSourceOptions(src, data, nativeShell)` di
+`apps/web/src/pdf-utils.ts` mengembalikan `disableRange: true` dan
+`rangeChunkSize: 5 * 1024 * 1024` saat `isTauriShell()` benar, sehingga WebView
+mengunduh file dalam satu permintaan; jalur web tetap memakai range 512 KiB.
+Diuji `apps/web/src/pdf.test.ts` + `pdf-document-cache.test.ts` **15/15**;
+bundle **163,4 KiB / 25 modul** (batas 180). Verifikasi akhir menunggu
+`edge-tts-native.yml`.
+
 ### Putaran 84 — Lingkup pencarian Alkitab bisa banyak kitab; palet warna jadi ikon (3 Nov)
 
 Permintaan pemilik: multi-select kitab belum ada, dan pemilih warna khusus tampil

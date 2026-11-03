@@ -35,6 +35,7 @@ export type PdfDocumentSourceOptions =
       rangeChunkSize: number;
       disableAutoFetch: true;
       disableStream: true;
+      disableRange?: true;
     };
 
 /**
@@ -45,13 +46,19 @@ export type PdfDocumentSourceOptions =
 export function pdfDocumentSourceOptions(
   src: string,
   data?: Uint8Array,
+  nativeShell = false,
 ): PdfDocumentSourceOptions {
   if (data) return { data: data.slice() };
+  // WebView2 answers a range request with 206 and then aborts it, so PDF.js
+  // never finishes the document (native soak: “Native WebView PDF request
+  // failed … net::ERR_ABORTED”). A packaged shell downloads the file in one
+  // request instead; the web keeps the range path it already streams well.
   return {
     url: src,
-    rangeChunkSize: 512 * 1024,
+    rangeChunkSize: nativeShell ? 5 * 1024 * 1024 : 512 * 1024,
     disableAutoFetch: true,
     disableStream: true,
+    ...(nativeShell ? { disableRange: true as const } : {}),
   };
 }
 
