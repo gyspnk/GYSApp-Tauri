@@ -101,6 +101,39 @@ export function getAccentForeground(color: string): string | undefined {
     : "#ffffff";
 }
 
+function parseRgb(value: string): [number, number, number] | null {
+  const match = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(value);
+  return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : null;
+}
+
+/** Resolve any CSS colour (hex, var(), color-mix()) to RGB channels. */
+function resolveToRgb(value: string): [number, number, number] | null {
+  // Tests and native shells provide a partial document without a DOM.
+  if (
+    typeof document === "undefined" ||
+    typeof document.createElement !== "function" ||
+    !document.body
+  ) {
+    return null;
+  }
+  const probe = document.createElement("span");
+  probe.style.color = value;
+  probe.style.display = "none";
+  document.body.appendChild(probe);
+  const resolved = getComputedStyle(probe).color;
+  probe.remove();
+  return parseRgb(resolved);
+}
+
+function toHex([red, green, blue]: [number, number, number]): string {
+  return `#${[red, green, blue]
+    .map((channel) => Math.round(channel).toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+/** Recompute the composed accent foreground when the theme changes. */
+let themeWatcher: MutationObserver | null = null;
+
 export function applyAccentToDocument(color: string): void {
   if (typeof document === "undefined") return;
   syncNativeAccent(color || DEFAULT_ACCENT_COLOR);
@@ -112,6 +145,9 @@ export function applyAccentToDocument(color: string): void {
     root.style.removeProperty("--blue");
     root.style.removeProperty("--blue-soft");
     root.style.removeProperty("--navy");
+    root.style.removeProperty("--on-accent-strong");
+    themeWatcher?.disconnect();
+    themeWatcher = null;
   } else {
     root.style.setProperty("--accent", color);
     const foreground = getAccentForeground(color);
@@ -132,6 +168,31 @@ export function applyAccentToDocument(color: string): void {
       "--navy",
       `color-mix(in srgb, ${color} 20%, var(--ink))`,
     );
+
+    // `--blue` is this accent mixed toward the theme ink, so the foreground
+    // chosen for the raw accent no longer fits it (black on the olive mix
+    // measured 3.63:1). Pick the foreground from the composed colour.
+    const ink = resolveToRgb("var(--ink)");
+    const accent = parseRgb(color) ?? resolveToRgb(color);
+    if (ink && accent) {
+      const mixed = accent.map(
+        (channel, index) => channel * 0.3 + ink[index]! * 0.7,
+      ) as [number, number, number];
+      root.style.setProperty(
+        "--on-accent-strong",
+        getAccentForeground(toHex(mixed)) ?? "#ffffff",
+      );
+    }
+
+    if (typeof MutationObserver !== "undefined" && !themeWatcher) {
+      themeWatcher = new MutationObserver(() => {
+        applyAccentToDocument(currentAccent);
+      });
+      themeWatcher.observe(root, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+      });
+    }
   }
 }
 

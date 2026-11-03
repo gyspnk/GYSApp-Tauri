@@ -1038,16 +1038,20 @@ h1 {
 /* Reserve the shelf's resting height so the testimony load cannot push the
    page down when it replaces the spinner (measured CLS 0.084 on the hosted
    home page, all of it this section). */
-.home-suara-section:has(> .loading-panel) {
+/* The shelf swaps its loading panel for the loaded cards, and for one frame
+   the section has no children at all: the row collapses and everything below
+   jumps up (measured shift at t=8,2 s, y611 h233 -> y0 h0). Reserve the resting
+   height for the whole section, not only while the spinner is mounted. */
+.home-suara-section {
   min-height: 329px;
 }
 @media (max-width: 1023px) {
-  .home-suara-section:has(> .loading-panel) {
+  .home-suara-section {
     min-height: 384px;
   }
 }
 @media (max-width: 599px) {
-  .home-suara-section:has(> .loading-panel) {
+  .home-suara-section {
     min-height: 346px;
   }
 }

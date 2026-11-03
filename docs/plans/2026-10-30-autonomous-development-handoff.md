@@ -2913,6 +2913,49 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 68 — Beranda tidak lagi bergeser; aksen kustom tetap terbaca (3 Nov)
+
+CLS beranda hasil hosted **0,0845**. Diselidiki dengan Playwright + CDP
+(400 kbps, latensi 300 ms, CPU 4×) di 390/768/1024/1440: 0,0845 / 0,0899 /
+0,0414 / 0,0329. Entri `layout-shift` menunjuk `SECTION.home-suara-section`,
+tetapi pelacakan kotak tiap 200 ms menunjukkan yang tumbuh adalah dua kotak
+lain: `.verse-panel` **185 → 460 px** saat gambar+teks tiba dan
+`.home-literature-section` **249 → 359 px**. Bagian Suara sudah punya
+reservasi, jadi entri itu hanya "yang bergerak" — bukan penyebabnya.
+
+Reservasi tinggi istirahat ditulis di akhir `apps/web/src/app-design.css`
+(berkas itu dimuat setelah `01-foundations-and-layout.css` dan
+`05-responsive-refinements.css`; salinan di dua berkas itu ternyata mati karena
+`.home-grid .verse-panel { min-height: 0 }` di baris ~3631 menang urutan
+sumber):
+
+- `.home-grid .verse-panel:not(:has(.sauh-offline-state))` 340 px, 460 px
+  ≤959 px, 400 px 960–1199 px;
+- `.home-grid .home-literature-section:not(:has(.error-panel, .empty-inline))`
+  337 px, 359 px ≤959 px dan 960–1199 px;
+- `.home-suara-section` 329/384/346 px tanpa syarat di
+  `01-foundations-and-layout.css` (sebelumnya `:has(> .loading-panel)`, dan
+  ada satu frame tanpa anak sama sekali sehingga baris sempat kolaps).
+
+| Lebar | CLS sebelum | CLS sesudah |
+| ----- | ----------- | ----------- |
+| 390   | 0,0845      | **0,0001**  |
+| 768   | 0,0899      | **0,0003**  |
+| 1024  | 0,0414      | **0,0002**  |
+| 1440  | 0,0329      | **0,0001**  |
+
+Uji `editorial-ui` lalu menangkap bug laten aksen kustom: `#ffff00` menjadi
+`--blue: color-mix(accent 30%, --ink)` (olive `#606b29`) tetapi `--on-accent`
+tetap dihitung dari aksen mentah (hitam) → **3,63:1** pada baris nav aktif.
+Perbaikan: `apps/web/src/accent-color.ts` menyelesaikan `var(--ink)` lewat span
+tersembunyi (`getPropertyValue` mengembalikan teks mentah), mencampur 30/70,
+lalu menetapkan `--on-accent-strong`; `MutationObserver` pada `data-theme`
+menghitung ulang saat tema berganti. Baris nav memakai
+`var(--on-accent-strong, var(--on-accent))` → **#ffffff**, 5,8:1.
+
+Bukti: `editorial-ui -g "custom accent"` **2/2**, unit aksen+i18n **8/8**,
+`verify:bundle` **162,5 KiB / 24 modul**, build hijau.
+
 ### Putaran 67 — "Laporkan masalah" membuka email ke pemilik (3 Nov)
 
 Formulir laporan sebelumnya mem-POST ke `/api/v1/report`; di perangkat yang

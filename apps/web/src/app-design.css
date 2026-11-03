@@ -5353,7 +5353,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 
   .navigation-shell .nav-item.is-active.nav-item .nav-copy strong,
   .navigation-shell .nav-item.is-active.nav-item svg {
-    color: var(--on-accent);
+    color: var(--on-accent-strong, var(--on-accent));
   }
 }
 
@@ -5405,3 +5405,33 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 
 /* Scope-pair frame verified against kidung-compact-motion + responsive-touch-targets. */
+
+/* The verse panel and the literature shelf grow when their data lands (verse
+   185 -> 460 px, literature 249 -> 359 px at 390 px on a 400 kbps link), which
+   shifted the whole grid: CLS 0.0845. Reserve the measured resting height so
+   the first frame already owns the row; the offline/empty states keep their
+   own size. */
+.home-grid .verse-panel:not(:has(.sauh-offline-state)) {
+  min-height: 340px;
+}
+.home-grid .home-literature-section:not(:has(.error-panel, .empty-inline)) {
+  min-height: 337px;
+}
+
+@media (max-width: 959px) {
+  .home-grid .verse-panel:not(:has(.sauh-offline-state)) {
+    min-height: 460px;
+  }
+  .home-grid .home-literature-section:not(:has(.error-panel, .empty-inline)) {
+    min-height: 359px;
+  }
+}
+
+@media (min-width: 960px) and (max-width: 1199px) {
+  .home-grid .verse-panel:not(:has(.sauh-offline-state)) {
+    min-height: 400px;
+  }
+  .home-grid .home-literature-section:not(:has(.error-panel, .empty-inline)) {
+    min-height: 359px;
+  }
+}
