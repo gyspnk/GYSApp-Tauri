@@ -105,7 +105,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     if (/^apps\/web\/src\/(?:styles\/[^/]+|[^/]+)\.css$/.test(file))
       return false;
     if (!file.startsWith("apps/web/src/")) return false;
-    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|faith|reading-zoom|app-design\.css|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
+    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|online-content|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|faith|reading-zoom|app-design\.css|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
       file,
     );
   });
@@ -169,8 +169,9 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       grepPatterns.add("Sauh|home|online content");
     }
 
-    if (file.includes("suara")) {
+    if (file.includes("suara") || file.includes("online-content")) {
       specFiles.add("e2e/suara-lifecycle.spec.ts");
+      specFiles.add("e2e/suara-recovery.spec.ts");
       specFiles.add("e2e/smoke.spec.ts");
       grepPatterns.add("Suara|online content");
     }

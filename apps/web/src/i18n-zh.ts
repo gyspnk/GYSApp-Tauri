@@ -58,6 +58,9 @@ export const zhMessages: Record<string, string> = {
   "suara.coverAlt": "{title} 的封面",
   "suara.detailLoading": "正在打开见证…",
   "suara.detailErrorTitle": "无法在应用中打开此见证。",
+  "suara.detailNotFound": "未找到见证",
+  "suara.detailNotFoundBody":
+    "该链接不在 Suara Sejati 合集中。请检查链接，或返回合集。",
   "suara.detailErrorBody": "官方文章暂时无法加载。请重试或打开官方来源。",
   "suara.detailRetry": "重试",
   "suara.officialSource": "官方来源 ↗",

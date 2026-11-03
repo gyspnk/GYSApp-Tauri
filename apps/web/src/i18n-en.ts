@@ -60,6 +60,9 @@ export const enMessages: Record<string, string> = {
   "suara.coverAlt": "Cover of {title}",
   "suara.detailLoading": "Opening testimony…",
   "suara.detailErrorTitle": "This testimony could not be opened in the app.",
+  "suara.detailNotFound": "Testimony not found",
+  "suara.detailNotFoundBody":
+    "This link is not in the Suara Sejati collection. Check the link, or go back to the collection.",
   "suara.detailErrorBody":
     "The official article could not be loaded. Try again or open the official source.",
   "suara.detailRetry": "Try again",

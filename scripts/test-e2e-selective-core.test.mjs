@@ -200,4 +200,10 @@ test("recovery cards keep their own contracts on literature and kidung edits", (
   const kidung = resolveSelectiveTestArgs(["apps/web/src/kidung.tsx"], []);
   assert.ok(kidung.args.includes("e2e/kidung-catalog-error.spec.ts"));
   assert.ok(kidung.args.includes("e2e/kidung-hymn-alias.spec.ts"));
+
+  const suara = resolveSelectiveTestArgs(
+    ["apps/web/src/online-content.tsx"],
+    [],
+  );
+  assert.ok(suara.args.includes("e2e/suara-recovery.spec.ts"));
 });

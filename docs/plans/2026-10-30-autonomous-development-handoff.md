@@ -3983,6 +3983,25 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 107 — Kesaksian yang tidak ada memakai kartu pemulihan (3 Nov)
+
+Detail Suara menyatukan dua keadaan: umpan yang gagal dimuat dan tautan yang
+memang tidak ada di koleksi. Keduanya menampilkan judul galat plus tombol
+“Coba lagi”, padahal mengulang tautan yang tidak ada tidak akan pernah berhasil.
+
+`apps/web/src/online-content.tsx` sekarang punya keadaan `missing`: bila umpan
+berhasil dimuat tetapi `postId` tidak ada, halaman menampilkan
+`.route-recovery` (ikon, `h1` “Kesaksian tidak ditemukan”, salinan baru
+`suara.detailNotFound` + `suara.detailNotFoundBody` id/en/zh) dan tautan
+“Kembali ke kesaksian”; kegagalan jaringan tetap memakai panel galat dengan
+“Coba lagi”.
+
+Bukti: spec baru `e2e/suara-recovery.spec.ts`, kontrak lama
+`e2e/suara-detail.spec.ts` diperbarui secara sadar (dulu menuntut tombol
+“retry” untuk tautan yang tidak ada), seluruh spec Suara **6/6 (21,5 dtk)`;
+perencana selektif kini mengenali `online-content`sebagai berkas fitur dan
+menjalankan`suara-recovery`, dengan uji perencana **10/10**.
+
 ### Putaran 106 — Enam worker turun ke empat setelah dua flake (3 Nov)
 
 Enam worker memangkas jalur sweep desain dari **533 dtk** (`4174caf`) ke

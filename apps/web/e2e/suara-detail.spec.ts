@@ -205,7 +205,7 @@ test("Suara detail localizes ready state and stays contained across devices", as
   expect(errors).toEqual([]);
 });
 
-test("Suara detail exposes localized loading and retryable missing-post state", async ({
+test("Suara detail exposes localized loading and a recovery card for a missing post", async ({
   page,
 }) => {
   await installSuaraFixtures(page, { feedDelayMs: 700 });
@@ -235,17 +235,16 @@ test("Suara detail exposes localized loading and retryable missing-post state", 
     "min-height",
     "290px",
   );
-  // A missing post is a real detail failure: the localized status remains
-  // actionable while the diagnostic message stays available for debugging.
-  await expect(detail.getByRole("alert")).toBeVisible();
+  // A link that is not in the feed is not retryable: the reader gets the
+  // recovery card and a way back to the collection instead of a retry loop.
+  const card = detail.locator(".route-recovery");
+  await expect(card).toBeVisible();
   await expect(
-    detail.getByText(localeCopy.en.error, { exact: false }),
+    card.getByRole("heading", { name: "Testimony not found" }),
   ).toBeVisible();
-  await expect(
-    detail.getByRole("button", { name: localeCopy.en.retry }),
-  ).toBeVisible();
-  await detail.getByRole("button", { name: localeCopy.en.retry }).click();
-  await expect(detail.getByRole("alert")).toBeVisible({ timeout: 10_000 });
+  await expect(card).toContainText("not in the Suara Sejati collection");
+  await card.getByRole("link", { name: "Back to testimonies" }).click();
+  await expect(page).toHaveURL(/\/GYSApp-Tauri\/suara$/);
 
   expect(errors).toEqual([]);
 });

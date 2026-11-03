@@ -452,6 +452,7 @@ type SuaraState =
       previewOnly?: boolean;
       contentPending?: boolean;
     }
+  | { status: "missing" }
   | { status: "error"; post?: SuaraSejatiPost; message: string };
 
 export function SuaraDetailPage({ locale }: { locale: Locale }) {
@@ -476,7 +477,10 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
     void (async () => {
       const posts = await fetchSuara(controller.signal);
       let post = posts.find((item) => item.id === postId);
-      if (!post) throw new Error("Suara Sejati tidak ditemukan");
+      if (!post) {
+        if (!controller.signal.aborted) setState({ status: "missing" });
+        return;
+      }
       if (controller.signal.aborted) return;
       const cached = getCachedArticle(post.url);
       setState({
@@ -560,6 +564,25 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
         <div className="loading-panel" role="status">
           <LoadingProgress label={translate(locale, "suara.detailLoading")} />
         </div>
+      )}
+      {state.status === "missing" && (
+        <section
+          className="route-recovery"
+          role="status"
+          aria-live="polite"
+          aria-labelledby="suara-detail-missing-title"
+        >
+          <div className="route-recovery-mark" aria-hidden="true">
+            <Icon name="faith" size={25} />
+          </div>
+          <h1 id="suara-detail-missing-title">
+            {translate(locale, "suara.detailNotFound")}
+          </h1>
+          <p>{translate(locale, "suara.detailNotFoundBody")}</p>
+          <Link className="primary-button" to="/suara">
+            {translate(locale, "suara.backCollection")}
+          </Link>
+        </section>
       )}
       {state.status === "error" && (
         <div className="error-panel" role="alert">

@@ -76,6 +76,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "suara.coverAlt": "Sampul {title}",
     "suara.detailLoading": "Membuka kesaksian…",
     "suara.detailErrorTitle": "Kesaksian belum dapat dibuka di aplikasi.",
+    "suara.detailNotFound": "Kesaksian tidak ditemukan",
+    "suara.detailNotFoundBody":
+      "Tautan ini tidak ada di koleksi Suara Sejati. Periksa tautannya, atau kembali ke koleksi.",
     "suara.detailErrorBody":
       "Artikel resmi belum dapat dimuat. Coba lagi atau buka sumber resminya.",
     "suara.detailRetry": "Coba lagi",
