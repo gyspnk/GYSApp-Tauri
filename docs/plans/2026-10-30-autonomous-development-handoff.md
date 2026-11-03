@@ -3888,6 +3888,19 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 89 — Judul kidung dua baris di ponsel (3 Nov)
+
+Aturan dua baris dulu hanya berlaku ≤359 px, jadi di 390 px judul panjang
+terpotong “Pujilah Allah Yang Mah…”. Ambangnya dinaikkan ke 599 px di
+`apps/web/src/app-design.css`: judul memakai dua baris 0,8125 rem/1,25 dan
+tetap muat di dalam kontrol 44 px — hero 390 tetap **366×52** (batas
+`kidung-density` ≤56 px), 320 tetap 296×52 dan berakhir “Pujilah Allah…”.
+Terukur: h1 390 menjadi 122×37 (dua baris penuh), 320 52×37, 768 219×24
+(satu baris, di luar media query).
+
+Bukti: `kidung-density` + `mobile-scroll-kidung` + `kidung-section-navigation`
+**21/21 (1,2 mnt)**; screenshot 320/390/768.
+
 ### Putaran 88 — Gambar utama hemat byte di jaringan lambat (3 Nov)
 
 Tujuan “tanpa membebani device” juga berarti tidak mengunduh gambar 740 px di
