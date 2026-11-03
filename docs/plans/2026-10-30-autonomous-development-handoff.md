@@ -2913,6 +2913,29 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 70 — Proxy gambar menyimpan hasilnya di cache edge (3 Nov)
+
+Respons Worker di `*.workers.dev` tidak disimpan CDN hanya karena punya header
+`cache-control`, jadi setiap kunjungan memuat ulang berkas yang sama dari S3
+(hero 689 KB terukur 2,0–3,2 dtk per permintaan). Route
+`/api/v1/content/image` sekarang memakai Cache API:
+
+- `caches.default` dicek sebelum `fetchOfficialImage`; hasil disimpan 7 hari
+  (`max-age=604800`, `stale-while-revalidate=2592000`), penulisan lewat
+  `executionCtx.waitUntil()` dengan fallback `await` saat tidak ada context
+  (tes/miniflare);
+- header diagnostik `x-gys-cache: hit|miss` supaya bukti bisa diperiksa dari
+  luar;
+- tipe `CacheStorage` di lingkungan ini tidak punya `default`, jadi aksesnya
+  memakai cast sempit, bukan `any`.
+
+Bukti: BFF **76/76** (tes baru: dua permintaan berurutan, `caches` palsu,
+upstream hanya dipanggil sekali), typecheck hijau. Diukur hosted
+(`gysapp-tauri-bff.pas-presensi.workers.dev`, berkas 136 KB): `miss` 2,0–2,3 dtk,
+`hit` 0,47–0,85 dtk. Jujur: rasio hit belum deterministik di `workers.dev`
+(permintaan bisa mendarat di PoP berbeda, terlihat miss setelah dua hit), jadi
+angka ini adalah batas atas manfaat untuk pengunjung berulang, bukan jaminan.
+
 ### Putaran 69 — Gambar utama Sauh memilih ukuran, bukan selalu aslinya (3 Nov)
 
 Kartu "Bacaan hari ini" selalu mengunduh berkas asli dari WordPress. Hari ini
