@@ -81,6 +81,7 @@ async function readCachedLiteraturePdf(
 }
 
 import { withDeadline } from "./with-deadline.js";
+import { shouldAutoCachePdf } from "./pdf-auto-cache.js";
 
 import {
   getCachedLiteratureCatalog,
@@ -989,6 +990,37 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     }
   };
 
+  const pdfAutoCacheStarted = useRef(false);
+  // A PDF that already rendered from the network is saved in the background so
+  // the next open is local (and works offline); large files and data-saver
+  // links keep using the explicit download button.
+  const autoCachePdf = () => {
+    if (!pdfAsset || pdfAutoCacheStarted.current) return;
+    const connection = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    if (
+      !shouldAutoCachePdf({
+        data: pdfData,
+        saveData: connection?.saveData,
+        effectiveType: connection?.effectiveType,
+      })
+    )
+      return;
+    pdfAutoCacheStarted.current = true;
+    void assetStore
+      .download(pdfAsset, undefined, validateLiteraturePdf)
+      .then(() => {
+        if (pdfAssetRef.current !== pdfAsset) return;
+        setDownloadStatus("ready");
+      })
+      .catch(() => {
+        pdfAutoCacheStarted.current = false;
+      });
+  };
+
   const resumePage =
     progress?.location?.kind === "page" &&
     isResumeLocationValid(
@@ -1376,6 +1408,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
                       title={item.title}
                       progressKey={`literature:${item.id}:${resourceVersion}`}
                       onPageChange={onPageChange}
+                      onDocumentReady={autoCachePdf}
                     />
                   </Suspense>
                 ) : (

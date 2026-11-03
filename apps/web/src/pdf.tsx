@@ -474,6 +474,7 @@ export function PdfReader({
   locale = "id",
   progressKey,
   onPageChange,
+  onDocumentReady,
   chordOverlays,
   chordsVisible = false,
   variant = "default",
@@ -490,6 +491,8 @@ export function PdfReader({
   locale?: Locale;
   progressKey?: string;
   onPageChange?: (page: number, totalPages: number) => void;
+  /** Fires once when the first page of the document has painted. */
+  onDocumentReady?: () => void;
   chordOverlays?: Record<string, PdfChordOverlayMarker[]>;
   chordsVisible?: boolean;
   variant?: "default" | "hymn";
@@ -645,6 +648,12 @@ export function PdfReader({
     setStatus("ready");
     setHasPainted(true);
   }, []);
+  const documentReadyNotified = useRef(false);
+  useEffect(() => {
+    if (status !== "ready" || documentReadyNotified.current) return;
+    documentReadyNotified.current = true;
+    onDocumentReady?.();
+  }, [status, onDocumentReady]);
   const markPageError = useCallback(() => {
     setLoadPhase("error");
     setStatus("error");

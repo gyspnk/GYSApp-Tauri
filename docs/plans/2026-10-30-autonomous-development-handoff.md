@@ -3890,6 +3890,22 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 91 — PDF yang sudah terbuka menyimpan dirinya (3 Nov)
+
+Membuka PDF literatur dari jaringan masih **8,0 dtk** (14 permintaan range),
+jadi membuka ulang dokumen yang sama tetap menunggu. Sekarang PDF yang berhasil
+dirender dari jaringan disimpan diam-diam ke cache aset setelah halaman pertama
+tampil (`onDocumentReady` di `apps/web/src/pdf.tsx` →
+`autoCachePdf` di `apps/web/src/literature.tsx`), dengan kebijakan
+`shouldAutoCachePdf` (`apps/web/src/pdf-auto-cache.ts`): dilewati bila bytes
+sudah lokal, `saveData` aktif, atau tautan 2G; 3G tetap menyimpan.
+
+Diukur lokal (1440, tanpa throttle): buka pertama **8,0 dtk**, cache tertulis
+(`literature-pdf:warta-…`), buka kedua setelah muat ulang **1,7 dtk** dengan
+**0 permintaan PDF ke jaringan**. Unit `pdf-auto-cache` **4/4**,
+`literature-loading` + `literature-offline` **20/20**, bundle tetap
+**162,7 KiB / 24 modul**.
+
 ### Putaran 90 — Satu berkas spec boleh memakai semua worker (3 Nov)
 
 CI selektif untuk perubahan spec/komponen kidung masih **7,1 mnt**
