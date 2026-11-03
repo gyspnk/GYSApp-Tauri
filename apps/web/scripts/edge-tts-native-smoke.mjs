@@ -1034,10 +1034,31 @@ try {
     .getByRole("button", { name: "Tutup ayat terpilih" })
     .click();
 
+  const readerUrl = page.url();
   const settings = await openSpeechSettings(page);
   await settings.nth(0).selectOption("edge");
-  await settings.nth(1).selectOption("id-ID-ArdiNeural");
   await page.locator(".hamburger-drawer-close").click();
+
+  // The drawer keeps one select (the engine); the voice picker lives in the
+  // audio settings section. Picking the voice there also proves the Edge
+  // catalogue reached this install — when the provider answers 403 (B-35) the
+  // option is absent and the old code just timed out for 30 s.
+  await page.goto(nativeRouteUrl("/lainnya?section=audio", runtimeOrigin));
+  const voiceSelect = page.locator(".audio-settings-inline select").first();
+  await voiceSelect.waitFor({ state: "visible", timeout: 20_000 });
+  const voiceValues = await voiceSelect
+    .locator("option")
+    .evaluateAll((nodes) => nodes.map((node) => node.value));
+  if (!voiceValues.includes("id-ID-ArdiNeural")) {
+    throw new Error(
+      `Edge voice catalogue has no id-ID-ArdiNeural (options: ${
+        voiceValues.filter(Boolean).join(", ") || "none"
+      }) — check the provider on this machine (B-35)`,
+    );
+  }
+  await voiceSelect.selectOption("id-ID-ArdiNeural");
+  await page.goto(readerUrl);
+  await page.locator(".reader-speech-btn").waitFor({ state: "visible" });
 
   const readerButton = page.locator(".reader-speech-btn");
   const idleLabel = await readerButton.getAttribute("aria-label");
