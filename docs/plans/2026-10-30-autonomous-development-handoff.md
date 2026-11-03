@@ -3888,6 +3888,37 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 84 — Lingkup pencarian Alkitab bisa banyak kitab; palet warna jadi ikon (3 Nov)
+
+Permintaan pemilik: multi-select kitab belum ada, dan pemilih warna khusus tampil
+sebagai kotak di dalam lingkaran.
+
+**Multi-select kitab.** `BibleSearchOptions` (packages/domain/src/bible.ts) kini
+punya `books?: readonly string[]`; penyaringnya
+`if (searchOptions.books?.length && !searchOptions.books.includes(verse.book)) return false;`
+dan daftar kosong berarti semua kitab. Komponen baru
+`apps/web/src/multi-select.tsx` (+ `multi-select.css`) dipakai di panel pencarian:
+tombol menampilkan ringkasan (“Semua kitab”, “2 kitab”, atau nama grup), menu
+tetap terbuka saat kotak dicentang (perilaku multi-seleksi yang benar), ada
+pencarian kitab, pintasan “Semua kitab / Perjanjian Lama (39) / Perjanjian Baru
+(27)”, label grup PL/PB per baris, dan di ≤599 px menu menjadi sheet penuh dengan
+tombol OK. Di 390 px tombol 97×44 px, sheet 366×479 px.
+
+**Palet warna khusus.** Input `type="color"` tidak lagi menggambar chip kotak di
+dalam lingkaran: ia dibungkus `label.highlight-custom` berisi ikon `palette`
+(baru di `apps/web/src/icons.tsx`) dan input transparan di atasnya, sehingga
+lingkaran 36 px (44 px di layar sentuh) menampilkan ikon palet dan tap di mana pun
+membuka pemilih warna platform; cincin fokus memakai `--focus`.
+
+**Bukti.** Unit domain baru “filters by several selected books at once”:
+`packages/domain/src/bible.test.ts` **8/8**; spec baru
+`apps/web/e2e/bible-search-multi-book.spec.ts` **2/2** (dua kitab membatasi hasil
+ke Kejadian/Yohanes; pintasan Perjanjian Baru mengisi 27 kitab) dan ikut
+`playwright.core.config.ts`; `bible-annotations` + `accessibility` +
+`responsive-touch-targets` **33 lolos** setelah palet 44 px; pemeriksaan browser
+390 px: pencarian “Allah” dengan Kejadian+Yohanes hanya mengembalikan Kejadian,
+label tombol “2 kitab”; bundle **162,7 KiB / 24 modul**.
+
 ### Putaran 83 — Baca cache PDF berbatas waktu supaya tidak menggantung (3 Nov)
 
 B-37 menunjukkan pembaca PDF di WebView terpaket tidak pernah memulai permintaan

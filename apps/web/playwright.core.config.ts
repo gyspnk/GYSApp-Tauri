@@ -33,5 +33,6 @@ export default defineConfig(baseConfig, {
     "**/kidung-hymn-alias.spec.ts",
     "**/kidung-catalog-error.spec.ts",
     "**/midi-control-unification.spec.ts",
+    "**/bible-search-multi-book.spec.ts",
   ],
 });

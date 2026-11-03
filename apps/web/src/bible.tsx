@@ -181,7 +181,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   );
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchBook, setSearchBook] = useState("all");
+  const [searchBooks, setSearchBooks] = useState<string[]>([]);
   const [exactPhrase, setExactPhrase] = useState(false);
   const [wholeWord, setWholeWord] = useState(false);
   const [searchFiltersOpen, setSearchFiltersOpen] = useState(false);
@@ -1125,14 +1125,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       const results = await searchClient.search(
         requestedQuery,
         {
-          ...(searchBook === "all" ||
-          searchBook === "old" ||
-          searchBook === "new"
-            ? {}
-            : { book: searchBook }),
-          ...(searchBook === "old" || searchBook === "new"
-            ? { testament: searchBook }
-            : {}),
+          ...(searchBooks.length ? { books: searchBooks } : {}),
           exactPhrase,
           wholeWord,
         },
@@ -1545,8 +1538,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
         setQuery={setQuery}
         searchFiltersOpen={searchFiltersOpen}
         setSearchFiltersOpen={setSearchFiltersOpen}
-        searchBook={searchBook}
-        setSearchBook={setSearchBook}
+        searchBooks={searchBooks}
+        setSearchBooks={setSearchBooks}
         books={books}
         exactPhrase={exactPhrase}
         setExactPhrase={setExactPhrase}
@@ -1965,21 +1958,24 @@ export function BiblePage({ locale }: { locale: Locale }) {
                     />
                   );
                 })}
-                <input
-                  type="color"
-                  aria-label={translate(locale, "bible.customHighlightColor")}
-                  value={customHighlightColors[0] ?? "#b54747"}
-                  onChange={(event) => {
-                    const color = event.currentTarget.value.toLowerCase();
-                    setCustomHighlightColors((current) =>
-                      [
-                        color,
-                        ...current.filter((entry) => entry !== color),
-                      ].slice(0, MAX_CUSTOM_HIGHLIGHT_COLORS),
-                    );
-                    setVerseHighlight(activeToolbarVerse.id, color);
-                  }}
-                />
+                <label className="highlight-custom">
+                  <Icon name="palette" size={18} />
+                  <input
+                    type="color"
+                    aria-label={translate(locale, "bible.customHighlightColor")}
+                    value={customHighlightColors[0] ?? "#b54747"}
+                    onChange={(event) => {
+                      const color = event.currentTarget.value.toLowerCase();
+                      setCustomHighlightColors((current) =>
+                        [
+                          color,
+                          ...current.filter((entry) => entry !== color),
+                        ].slice(0, MAX_CUSTOM_HIGHLIGHT_COLORS),
+                      );
+                      setVerseHighlight(activeToolbarVerse.id, color);
+                    }}
+                  />
+                </label>
               </div>
               <button
                 className="quiet-button"

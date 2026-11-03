@@ -57,9 +57,18 @@ export type IconName =
   | "playlistAddCheck"
   | "musicNote"
   | "queueMusic"
-  | "swapVert";
+  | "swapVert"
+  | "palette";
 
 const ICON_PATHS: Record<IconName, ReactNode> = {
+  palette: (
+    <>
+      <path d="M12 3a9 9 0 1 0 0 18h1.2a2.3 2.3 0 0 0 1.6-3.9 1.9 1.9 0 0 1 1.3-3.2H18a3 3 0 0 0 3-3 9 9 0 0 0-9-7.9Z" />
+      <circle cx="7.5" cy="11" r="1.1" />
+      <circle cx="10" cy="7.2" r="1.1" />
+      <circle cx="14.4" cy="7" r="1.1" />
+    </>
+  ),
   home: (
     <>
       <path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 20z" />

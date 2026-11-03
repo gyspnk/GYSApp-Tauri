@@ -23,6 +23,8 @@ export type BibleRepositoryOptions = {
 
 export type BibleSearchOptions = {
   book?: string;
+  /** Restrict to these numeric book ids (multi-select scope). */
+  books?: readonly string[];
   /** TB canon split: bookOrder <= 39 is the Old Testament. */
   testament?: "old" | "new";
   exactPhrase?: boolean;
@@ -237,6 +239,11 @@ export class BibleRepository {
       phrases.length === 0 ? parseTypedReference(query) : undefined;
     const passesSearchOptions = (verse: BibleVerse) => {
       if (searchOptions.book && verse.book !== searchOptions.book) return false;
+      if (
+        searchOptions.books?.length &&
+        !searchOptions.books.includes(verse.book)
+      )
+        return false;
       if (
         searchOptions.testament === "old" &&
         verse.bookOrder > OLD_TESTAMENT_BOOKS

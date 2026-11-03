@@ -2,7 +2,7 @@ import type { Dispatch, SetStateAction, RefObject, FormEvent } from "react";
 import type { BibleBook } from "@gys/contracts";
 import { sanitizeBibleText, type BibleVerse } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
-import { Select } from "./select.js";
+import { MultiSelect } from "./multi-select.js";
 import { HighlightedText } from "./bible-verse-text.js";
 export const SEARCH_RESULTS_PAGE_SIZE = 40;
 function cleanVerse(verse: BibleVerse) {
@@ -19,7 +19,7 @@ type BibleSearchPanelProps = {
     query?: string,
   ) => Promise<void>;
   searchFiltersOpen: boolean;
-  searchBook: string;
+  searchBooks: readonly string[];
   books: BibleBook[];
   exactPhrase: boolean;
   wholeWord: boolean;
@@ -30,7 +30,7 @@ type BibleSearchPanelProps = {
   searchedQuery: string;
   setQuery: Dispatch<SetStateAction<string>>;
   setSearchFiltersOpen: Dispatch<SetStateAction<boolean>>;
-  setSearchBook: Dispatch<SetStateAction<string>>;
+  setSearchBooks: Dispatch<SetStateAction<string[]>>;
   setExactPhrase: Dispatch<SetStateAction<boolean>>;
   setWholeWord: Dispatch<SetStateAction<boolean>>;
   setSearchResults: Dispatch<SetStateAction<BibleVerse[]>>;
@@ -51,8 +51,8 @@ export function BibleSearchPanel({
   setQuery,
   searchFiltersOpen,
   setSearchFiltersOpen,
-  searchBook,
-  setSearchBook,
+  searchBooks,
+  setSearchBooks,
   books,
   exactPhrase,
   setExactPhrase,
@@ -111,27 +111,32 @@ export function BibleSearchPanel({
           >
             <summary>{translate(locale, "bible.searchFilters")}</summary>
             <div className="bible-search-options">
-              <Select
-                value={searchBook}
-                onChange={setSearchBook}
+              <MultiSelect
+                values={searchBooks}
+                onChange={setSearchBooks}
                 label={translate(locale, "bible.book")}
-                options={[
+                emptyLabel={translate(locale, "bible.allBooks")}
+                countLabel={(count) =>
+                  translate(locale, "bible.booksSelected", { count })
+                }
+                searchPlaceholder={translate(locale, "bible.searchBooks")}
+                options={books.map((candidate, index) => ({
+                  value: String(candidate.id),
+                  label: candidate.name,
+                  group:
+                    index < 39
+                      ? translate(locale, "bible.oldTestamentShort")
+                      : translate(locale, "bible.newTestamentShort"),
+                }))}
+                groups={[
                   {
-                    value: "all",
-                    label: translate(locale, "bible.allBooks"),
-                  },
-                  {
-                    value: "old",
                     label: translate(locale, "bible.oldTestament"),
+                    values: books.slice(0, 39).map((b) => String(b.id)),
                   },
                   {
-                    value: "new",
                     label: translate(locale, "bible.newTestament"),
+                    values: books.slice(39).map((b) => String(b.id)),
                   },
-                  ...books.map((candidate) => ({
-                    value: String(candidate.id),
-                    label: candidate.name,
-                  })),
                 ]}
               />
               <label className="check-option">

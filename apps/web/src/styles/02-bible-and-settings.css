@@ -874,14 +874,48 @@
   border-color: var(--ink);
   box-shadow: 0 0 0 2px var(--surface);
 }
-.selected-verse-highlights input[type="color"] {
+.selected-verse-highlights .highlight-custom {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
   width: 36px;
   height: 36px;
-  padding: 2px;
   border: 1px solid var(--line-strong);
   border-radius: 50%;
   background: var(--surface);
+  color: var(--ink);
   cursor: pointer;
+}
+
+.selected-verse-highlights .highlight-custom:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.selected-verse-highlights .highlight-custom:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* The native picker keeps its function but not its square chip: the label's
+   palette glyph is the visible control, and the input sits invisibly on top so
+   a tap anywhere on the circle opens the platform colour sheet. */
+.selected-verse-highlights .highlight-custom input[type="color"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .selected-verse-highlights .highlight-custom {
+    width: 44px;
+    height: 44px;
+  }
 }
 .bible-note-field {
   display: grid;
@@ -2602,7 +2636,8 @@
     border-color: var(--ink);
     box-shadow: 0 0 0 2px var(--surface);
   }
-  .selected-verse-highlights input[type="color"] {
+  .selected-verse-highlights .highlight-custom,
+  .selected-verse-highlights .highlight-custom input[type="color"] {
     width: 44px;
     min-width: 44px;
     height: 44px;

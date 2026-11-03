@@ -235,6 +235,45 @@ describe("BibleRepository", () => {
     ).toEqual([]);
   });
 
+  it("filters by several selected books at once", async () => {
+    const repository = new BibleRepository([
+      {
+        id: "1:1:1",
+        book: "1",
+        bookOrder: 1,
+        chapter: 1,
+        verse: 1,
+        text: "Pada mulanya Allah menciptakan langit dan bumi.",
+      },
+      {
+        id: "43:3:16",
+        book: "43",
+        bookOrder: 43,
+        chapter: 3,
+        verse: 16,
+        text: "Karena begitu besar kasih Allah akan dunia ini.",
+      },
+      {
+        id: "45:8:28",
+        book: "45",
+        bookOrder: 45,
+        chapter: 8,
+        verse: 28,
+        text: "Allah turut bekerja dalam segala sesuatu untuk mendatangkan kebaikan.",
+      },
+    ]);
+    expect(
+      (await repository.search("Allah", { books: ["1", "45"] })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["1:1:1", "45:8:28"]);
+    expect(
+      (await repository.search("Allah", { books: [] })).map(
+        (verse) => verse.id,
+      ),
+    ).toEqual(["1:1:1", "43:3:16", "45:8:28"]);
+  });
+
   it("filters by testament using the canonical book order", async () => {
     const repository = new BibleRepository([
       {
