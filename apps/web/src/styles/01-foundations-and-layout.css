@@ -325,8 +325,13 @@ a:focus-visible {
   outline: none;
 }
 .global-search-form input:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 15%, transparent);
+  border-color: var(--line-strong);
+}
+/* The keyboard ring uses the shared token instead of a 15% tint: the tint only
+   reached ~1,2:1 against the field, under the 3:1 non-text contrast minimum. */
+.global-search-form input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
 }
 .global-search-status {
   margin: 18px 0 0;

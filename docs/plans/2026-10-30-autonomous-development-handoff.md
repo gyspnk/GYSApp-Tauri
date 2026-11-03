@@ -3936,6 +3936,19 @@ Push CSS lain yang lebih sempit (mis. `04-reader-media.css`) tetap **295 dtk**
 untuk jalur rutin; jalur "desain global" adalah trade-off cakupan yang
 disengaja (enam sweep + visual), dicatat apa adanya.
 
+### Putaran 98 — Cincin fokus pencarian memakai token (3 Nov)
+
+`.global-search-form input` memakai `box-shadow: 0 0 0 4px color-mix(in srgb,
+var(--blue) 15%, transparent)` sebagai indikator fokus — tint 15% di atas
+`--surface-soft` hanya sekitar **1,2:1**, di bawah minimum non-teks 3:1, dan
+border biru 1 px membuat cincin ganda yang berat. Sekarang `:focus-visible`
+memakai `outline: 3px solid var(--focus); outline-offset: 1px` (token yang sama
+dengan kontrol lain) dan border tetap `--line-strong`, jadi hanya satu cincin.
+Terukur di 1440: `outline: rgb(0, 113, 156) solid 3px`, offset 1 px, `box-shadow:
+none`; screenshot fokus menunjukkan satu cincin bersih.
+
+Bukti: `accessibility -g search` **3/3**, `ui-polish` **14/14 (57,1 dtk)**.
+
 ### Putaran 97 — Baseline visual disegarkan dari artifact CI (3 Nov)
 
 Dispatch `41709316374` (regenerasi baseline) selesai; artifact
