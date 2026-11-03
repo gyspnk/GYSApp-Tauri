@@ -717,6 +717,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "literature.format.pdf": "PDF",
     "literature.detailLoading": "Membuka detail literatur…",
     "literature.detailNotFound": "Literatur tidak ditemukan",
+    "literature.detailNotFoundBody":
+      "Judul ini tidak ada di katalog literatur. Periksa tautannya, atau kembali ke katalog.",
     "literature.backToCatalog": "Kembali ke katalog",
     "literature.backToLiterature": "Semua literatur",
     "literature.readInApp": "Baca di aplikasi",

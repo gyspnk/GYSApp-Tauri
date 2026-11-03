@@ -676,6 +676,7 @@ export const zhFeatureMessages: Record<string, string> = {
   "literature.format.pdf": "PDF",
   "literature.detailLoading": "正在打开文献详情…",
   "literature.detailNotFound": "未找到文献",
+  "literature.detailNotFoundBody": "该文献不在目录中。请检查链接，或返回目录。",
   "literature.backToCatalog": "返回目录",
   "literature.backToLiterature": "全部文献",
   "literature.readInApp": "在应用中阅读",

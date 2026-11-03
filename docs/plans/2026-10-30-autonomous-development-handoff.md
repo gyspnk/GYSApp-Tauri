@@ -3983,6 +3983,26 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 103 — Literatur: katalog gagal ≠ judul tidak ada (3 Nov)
+
+Halaman detail literatur memakai satu cabang untuk dua keadaan berbeda
+(`catalogState.status === "error" || !item`) dengan pesan “Literatur tidak
+ditemukan” dan panel polos. Kalau katalognya yang gagal dimuat, pesan itu
+salah: aplikasi mengklaim judulnya tidak ada padahal katalognya yang tidak
+terbaca.
+
+Sekarang `apps/web/src/literature.tsx` memisahkan keduanya:
+
+- katalog gagal → kartu `.route-recovery` dengan `literature.errorTitle`,
+  `common.errorBody`, dan tombol “Coba lagi” yang memanggil `retryCatalog`;
+- judul tidak ada → kartu `.route-recovery` dengan `literature.detailNotFound`,
+  kalimat baru `literature.detailNotFoundBody` (id/en/zh) dan tombol
+  “Kembali ke katalog”.
+
+Bukti: `e2e/literature-recovery.spec.ts` (baru) memeriksa kartu pemulihan,
+salinan, dan navigasi kembali; `literature-recovery` +
+`literature-loading` + `literature-offline` **21/21 (28,4 dtk)**; `tsc` bersih.
+
 ### Putaran 102 — Pujian yang tidak ada memakai kartu pemulihan (3 Nov)
 
 `/kidung/<id-tidak-dikenal>` sebelumnya menampilkan `.error-panel` selebar

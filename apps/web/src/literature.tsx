@@ -1065,15 +1065,52 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
         </div>
       </div>
     );
-  if (catalogState.status === "error" || !item)
+  if (catalogState.status === "error")
     return (
       <div className="page">
-        <div className="error-panel" role="alert">
-          <strong>{translate(locale, "literature.detailNotFound")}</strong>
-          <Link className="quiet-button" to="/literatur">
+        <section
+          className="route-recovery"
+          role="status"
+          aria-live="polite"
+          aria-labelledby="literature-detail-error-title"
+        >
+          <div className="route-recovery-mark" aria-hidden="true">
+            <Icon name="book" size={25} />
+          </div>
+          <h1 id="literature-detail-error-title">
+            {translate(locale, "literature.errorTitle")}
+          </h1>
+          <p>{translate(locale, "common.errorBody")}</p>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={retryCatalog}
+          >
+            {translate(locale, "home.retry")}
+          </button>
+        </section>
+      </div>
+    );
+  if (!item)
+    return (
+      <div className="page">
+        <section
+          className="route-recovery"
+          role="status"
+          aria-live="polite"
+          aria-labelledby="literature-detail-missing-title"
+        >
+          <div className="route-recovery-mark" aria-hidden="true">
+            <Icon name="book" size={25} />
+          </div>
+          <h1 id="literature-detail-missing-title">
+            {translate(locale, "literature.detailNotFound")}
+          </h1>
+          <p>{translate(locale, "literature.detailNotFoundBody")}</p>
+          <Link className="primary-button" to="/literatur">
             {translate(locale, "literature.backToCatalog")}
           </Link>
-        </div>
+        </section>
       </div>
     );
   if (directArticleRead && item.format === "article")

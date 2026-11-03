@@ -689,6 +689,8 @@ export const enFeatureMessages: Record<string, string> = {
   "literature.format.pdf": "PDF",
   "literature.detailLoading": "Opening literature details…",
   "literature.detailNotFound": "Literature not found",
+  "literature.detailNotFoundBody":
+    "This title is not in the literature catalogue. Check the link, or go back to the catalogue.",
   "literature.backToCatalog": "Back to catalog",
   "literature.backToLiterature": "All literature",
   "literature.readInApp": "Read in app",
