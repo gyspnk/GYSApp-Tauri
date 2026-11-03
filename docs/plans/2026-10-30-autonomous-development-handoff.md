@@ -3798,3 +3798,11 @@ terpaket. Langkah berikutnya, soak media, gagal pada selector lama
 `.verse-panel .section-heading small`; hero sekarang memakai
 `.sauh-reference` di dalam `.sauh-title-row`, jadi selector tersebut
 diselaraskan (tidak ada perubahan aplikasi).
+
+**Catatan (3 Nov, percobaan yang dibatalkan):** `srcset` juga dicoba untuk
+sampul Suara, tetapi feed-nya dibaca dari snapshot `apps/web/public/offline/suara-sejati.json`
+yang sudah berbentuk kontrak (`imageUrl` saja, tanpa `media_details.sizes`).
+Karena snapshot dibuat di luar repo ini, `imageSrcSet` tidak akan pernah terisi;
+percobaannya dibatalkan seluruhnya (kontrak, mapper, kartu, test) dan bundle
+tetap 162,6 KiB. Sauh tetap memakai `srcset` karena hero-nya berasal dari media
+WordPress live.
