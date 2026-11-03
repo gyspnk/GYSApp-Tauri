@@ -1964,9 +1964,19 @@
 .report-card .primary-button {
   justify-self: start;
 }
-.report-card .form-status {
+.report-card .form-status,
+.report-card .report-email-hint {
   color: var(--muted);
   font-size: 0.6875rem;
+}
+.report-card .report-email-hint a {
+  color: var(--blue);
+}
+@media (min-width: 900px) {
+  .report-card textarea {
+    /* A report reads and edits better as a column than as a 1130px line. */
+    max-width: 46rem;
+  }
 }
 
 .media-surface {

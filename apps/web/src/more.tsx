@@ -8,6 +8,7 @@ import {
   type FormEvent,
 } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { buildReportMailto, REPORT_EMAIL } from "./report-mailto.js";
 import {
   type AccountProfile,
   type AssetManifestV1,
@@ -409,9 +410,6 @@ export function MorePage({
   const [report, setReport] = useState(
     () => localStorage.getItem("gys-report-draft") ?? "",
   );
-  const [reportStatus, setReportStatus] = useState<
-    "idle" | "sending" | "error"
-  >("idle");
   const [notice, setNotice] = useState("");
   const [diagnostics, setDiagnostics] = useState<DiagnosticEvent[]>(() =>
     getDiagnostics(),
@@ -770,35 +768,21 @@ export function MorePage({
     setDiagnostics(getDiagnostics());
     show(translate(locale, "more.diagnosticsCleared"));
   };
-  const submitReport = async (event: FormEvent<HTMLFormElement>) => {
+  const submitReport = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const message = report.trim();
-    if (!message || reportStatus === "sending") return;
-    setReportStatus("sending");
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), 8_000);
-    try {
-      const base = import.meta.env.VITE_BFF_BASE_URL?.trim();
-      if (!base) throw new Error("BFF not configured");
-      const response = await fetch(`${base.replace(/\/$/, "")}/api/v1/report`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ category: "web", message }),
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error("Report failed");
-      setReport("");
-      localStorage.removeItem("gys-report-draft");
-      setReportStatus("idle");
-      show(translate(locale, "more.reportReceived"));
-    } catch (error) {
-      recordDiagnostic("warn", "feedback.submit", error);
-      setReportStatus("error");
-      show(translate(locale, "more.reportDraftSaved"));
-      localStorage.setItem("gys-report-draft", message);
-    } finally {
-      window.clearTimeout(timer);
-    }
+    if (!message) return;
+    // The report leaves through the reader's own mail client, so it needs no
+    // BFF round trip and lands at the address the owner actually reads.
+    window.location.href = buildReportMailto(message, {
+      locale,
+      path: window.location.pathname,
+      search: window.location.search,
+      subject: translate(locale, "more.reportSubject"),
+    });
+    localStorage.removeItem("gys-report-draft");
+    setReport("");
+    show(translate(locale, "more.reportMailOpened"));
   };
 
   const exportBackup = async () => {
@@ -1735,7 +1719,7 @@ export function MorePage({
                 maxLength={2_000}
                 onChange={(event) => {
                   setReport(event.target.value);
-                  if (reportStatus === "error") setReportStatus("idle");
+                  localStorage.setItem("gys-report-draft", event.target.value);
                 }}
                 rows={3}
                 placeholder={translate(locale, "more.reportPlaceholder")}
@@ -1743,18 +1727,18 @@ export function MorePage({
               <button
                 className="primary-button"
                 type="submit"
-                disabled={!report.trim() || reportStatus === "sending"}
+                disabled={!report.trim()}
               >
-                {reportStatus === "sending"
-                  ? translate(locale, "more.sending")
-                  : translate(locale, "more.sendReport")}
+                {translate(locale, "more.sendReport")}
               </button>
               <small className="form-status" aria-live="polite">
-                {reportStatus === "error"
-                  ? translate(locale, "more.draftSaved")
-                  : translate(locale, "more.characterCount", {
-                      count: report.length,
-                    })}
+                {translate(locale, "more.characterCount", {
+                  count: report.length,
+                })}
+              </small>
+              <small className="report-email-hint">
+                {translate(locale, "more.reportEmailTo")}{" "}
+                <a href={`mailto:${REPORT_EMAIL}`}>{REPORT_EMAIL}</a>
               </small>
             </form>
             <section

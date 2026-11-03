@@ -830,9 +830,11 @@ export const enFeatureMessages: Record<string, string> = {
     "Deletes notes, reading progress, preferences, cache, and offline data on this device.",
   "more.reportProblem": "Report a problem",
   "more.reportPlaceholder": "Describe the problem or suggestion here…",
-  "more.sending": "Sending…",
   "more.sendReport": "Send report",
-  "more.draftSaved": "Draft saved on this device.",
+  "more.reportSubject": "GYSApp problem report",
+  "more.reportMailOpened":
+    "Your mail app is open. Send the message from there.",
+  "more.reportEmailTo": "Or write to",
   "more.characterCount": "{count}/2,000 characters",
   "more.diagnostics": "Device diagnostics",
   "more.diagnosticsLog": "Device diagnostics log",
@@ -901,9 +903,6 @@ export const enFeatureMessages: Record<string, string> = {
   "more.nativeLoginOpened": "The official e-GYS login page was opened.",
   "more.nativeLoginFailed":
     "The e-GYS login page could not be opened. Try again.",
-  "more.reportReceived": "Report received. Thank you.",
-  "more.reportDraftSaved":
-    "Report saved as a draft; send it again when online.",
   "more.backupPasswordTooShort":
     "Use a backup password of at least 8 characters.",
   "more.backupExported": "Encrypted backup saved.",

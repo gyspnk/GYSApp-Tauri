@@ -270,6 +270,10 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("textbox", { name: "Pesan laporan" }),
     ).toBeVisible();
+    // The report leaves through the reader's own mail client.
+    await expect(
+      page.getByRole("link", { name: "thengilbert@gmail.com" }),
+    ).toHaveAttribute("href", "mailto:thengilbert@gmail.com");
   });
 
   test("global search trigger keeps localized visible and accessible copy", async ({

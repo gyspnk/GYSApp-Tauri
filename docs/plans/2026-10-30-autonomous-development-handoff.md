@@ -2913,6 +2913,34 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 67 — "Laporkan masalah" membuka email ke pemilik (3 Nov)
+
+Formulir laporan sebelumnya mem-POST ke `/api/v1/report`; di perangkat yang
+tidak punya BFF terkonfigurasi hasilnya hanya draft lokal, bukan laporan. Sesuai
+permintaan pemilik, laporan sekarang keluar lewat aplikasi email pembaca:
+
+- `apps/web/src/report-mailto.ts` — `REPORT_EMAIL = "thengilbert@gmail.com"` dan
+  `buildReportMailto(message, { locale, path, search, subject, now })`; badan
+  email berisi pesan + halaman + bahasa + waktu ISO, subjek memakai
+  `more.reportSubject` yang diterjemahkan (id/en/zh).
+- `apps/web/src/more.tsx` — submit menulis `window.location.href = mailto…`,
+  menyimpan draft terakhir di `localStorage`, dan menampilkan
+  `more.reportMailOpened`; di bawah tombol ada tautan `mailto:` yang bisa
+  diklik langsung bila aplikasi email tidak terbuka otomatis.
+- `apps/web/src/styles/02-bible-and-settings.css` — teks bantuan 0,6875 rem,
+  textarea dibatasi `max-width: 46rem` di ≥900 px supaya tidak jadi satu baris
+  1130 px; `apps/web/src/styles/…` tetap memakai radius 8 yang sudah ada.
+- i18n: tambah `more.reportSubject`, `more.reportMailOpened`,
+  `more.reportEmailTo`; hapus `more.sending`, `more.reportReceived`,
+  `more.draftSaved`, `more.reportDraftSaved` (kini tak terpakai; penjaga
+  unused-key lolos).
+
+Bukti: `apps/web/src/report-mailto.test.ts` **2/2** (alamat, subjek, isi pesan,
+halaman + query, bahasa, waktu), `i18n.test.ts` **4/4**; spec a11y kini juga
+memeriksa `href="mailto:thengilbert@gmail.com"`; `accessibility` (report form)
+**1/1**, `more-device-data` + `settings-data-integrity` **11/11**; render 390 dan
+1440 diperiksa (tautan email terlihat, textarea 736 px di desktop).
+
 ### Putaran 66 — Kode WhatsApp 400 di github.io: referensinya tidak ikut (3 Nov)
 
 Laporan pemilik: verifikasi kode WhatsApp e-GYS di `gyspnk.github.io/GYSApp-Tauri`

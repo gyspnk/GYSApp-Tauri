@@ -857,9 +857,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
       "Menghapus catatan, progres baca, preferensi, cache, dan data offline di perangkat ini.",
     "more.reportProblem": "Laporkan masalah",
     "more.reportPlaceholder": "Tuliskan kendala atau saran perbaikan di sini…",
-    "more.sending": "Mengirim…",
     "more.sendReport": "Kirim laporan",
-    "more.draftSaved": "Draft tersimpan di perangkat.",
+    "more.reportSubject": "Laporan masalah GYSApp",
+    "more.reportMailOpened": "Aplikasi email dibuka. Kirim pesannya dari sana.",
+    "more.reportEmailTo": "Atau kirim manual ke",
     "more.characterCount": "{count}/2.000 karakter",
     "more.diagnostics": "Diagnostik perangkat",
     "more.diagnosticsLog": "Log diagnostik perangkat",
@@ -929,9 +930,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.nativeLoginOpened": "Halaman login resmi e-GYS sudah dibuka.",
     "more.nativeLoginFailed":
       "Halaman login e-GYS belum dapat dibuka. Coba lagi.",
-    "more.reportReceived": "Laporan diterima. Terima kasih.",
-    "more.reportDraftSaved":
-      "Laporan disimpan sebagai draft; kirim kembali saat online.",
     "more.backupPasswordTooShort":
       "Gunakan kata sandi backup minimal 8 karakter.",
     "more.backupExported": "Backup terenkripsi berhasil disimpan.",
