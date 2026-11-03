@@ -3983,6 +3983,26 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 109 — Preload font yang selalu 404 dihapus (3 Nov)
+
+Sapuan hosted (16 muat halaman: 8 rute × 390/1440) menemukan dua permintaan
+gagal di **setiap** halaman: `/GYSApp-Tauri/assets/fonts/gys-reading-sans.woff2`
+dan `source-serif-4.woff2`, keduanya 404.
+
+Sebabnya `apps/web/index.html` mem-preload jalur sumber font. Vite memberi nama
+ber-hash pada font yang dirujuk CSS, dan URL di `<link href>` tidak ditulis
+ulang, jadi yang diminta selalu jalur yang tidak ada — dua permintaan sia-sia
+plus dua baris galat konsol per halaman, tanpa manfaat apa pun.
+
+Kedua `<link rel="preload">` dihapus (font tetap ditemukan lewat CSS, sudah
+ber-hash); penjaga regresi `apps/web/src/index-html.test.ts` memastikan
+`index.html` tidak lagi memuat jalur `assets/fonts/*.woff2` dan tetap
+mem-preload `offline/sauh.json`. Bukti gagal-dulu: menambahkan kembali satu
+baris preload membuat uji merah, setelah dihapus **2/2 hijau**. Build tidak lagi
+memuat rujukan jalur font sumber (0 kemunculan di `dist/index.html`).
+
+Bukti hosted setelah deploy dicatat di laporan putaran ini (sapuan 404 ulang).
+
 ### Putaran 108 — Kontrak cache-first Suara tahan beban runner (3 Nov)
 
 Run `41726896965` (`b9e6fa8`) merah di

@@ -8,20 +8,9 @@
     />
     <meta name="theme-color" content="#ffffff" />
     <script vite-ignore src="%BASE_URL%startup.js"></script>
-    <link
-      rel="preload"
-      href="%BASE_URL%assets/fonts/gys-reading-sans.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="%BASE_URL%assets/fonts/source-serif-4.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
+    <!-- The fonts are referenced from CSS, so Vite emits them with content
+         hashes; a preload with the source path cannot be rewritten and 404s on
+         the deployed site, so the stylesheet discovery is the only request. -->
     <!-- The home hero comes from this 8 KiB shelf: starting it with the head
          saves a request round trip after React boots (LCP 5,4 dtk hosted). -->
     <link rel="preload" href="%BASE_URL%offline/sauh.json" as="fetch" />
