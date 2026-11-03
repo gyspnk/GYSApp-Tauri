@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
+import { promisify } from "node:util";
 import { chromium } from "@playwright/test";
 
 export async function allocatePort() {
@@ -15,6 +16,38 @@ export async function allocatePort() {
     listener.close((error) => (error ? fail(error) : ok())),
   );
   return port;
+}
+
+const runCommand = promisify(execFile);
+
+/** Explain why the DevTools endpoint never came up, so a red run is diagnosable. */
+async function launchFailureDetail(port, app) {
+  const parts = [`exit=${app.exitCode ?? "running"}`];
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/json/list`);
+    parts.push(`devtools=${response.status}`);
+    if (response.ok) {
+      const targets = await response.json();
+      parts.push(
+        `targets=${targets.map((target) => `${target.type}:${target.url}`).join(" ") || "none"}`,
+      );
+    }
+  } catch {
+    parts.push("devtools=unreachable");
+  }
+  try {
+    const { stdout } = await runCommand("reg", [
+      "query",
+      "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\Clients\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+      "/v",
+      "pv",
+    ]);
+    const version = /pv\s+REG_SZ\s+(\S+)/.exec(stdout);
+    parts.push(`webview2=${version?.[1] ?? "unknown"}`);
+  } catch {
+    parts.push("webview2=query-failed");
+  }
+  return parts.join("; ");
 }
 
 export async function launchNative(executable, profile) {
@@ -113,7 +146,11 @@ export async function launchNative(executable, profile) {
       } catch {}
       await delay(100);
     }
-    assert.ok(endpoint, "WebView2 DevTools did not start");
+    if (!endpoint) {
+      assert.fail(
+        `WebView2 DevTools did not start (${await launchFailureDetail(port, app)})`,
+      );
+    }
     browser = await chromium.connectOverCDP(endpoint.webSocketDebuggerUrl, {
       timeout: 30000,
     });
