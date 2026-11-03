@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender-route-stubs.mjs",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test",

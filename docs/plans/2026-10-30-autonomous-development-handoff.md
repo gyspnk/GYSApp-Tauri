@@ -3983,6 +3983,19 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 112 — Tautan dalam mendapat status 200 di GitHub Pages (3 Nov)
+
+Sapuan hosted 16 pemuatan menemukan `/GYSApp-Tauri/lainnya` menjawab **404**
+(walau aplikasi tetap tampil lewat `404.html`). Tautan yang dibagikan jadi
+berstatus “tidak ada” di crawler dan alat pemantau.
+
+Perbaikan: `apps/web/scripts/prerender-route-stubs.mjs`, dijalankan setelah
+`vite build`, menyalin `dist/index.html` ke satu direktori per rute statis
+(`alkitab`, `kidung`, `iman`, `literatur`, `suara`, `lainnya`, `sauh`). Rute
+dinamis (reader) tetap memakai `404.html` yang juga mem-boot aplikasi. Tidak ada
+HTML tambahan yang diunduh pengguna: berkas hanya berbeda pada permintaan
+dokumen.
+
 ### Putaran 111 — Jaringan lambat berlabel “4G” juga mendapat gambar kecil (3 Nov)
 
 Sapuan vitals hosted ber-throttle (390, 400 kbps/4× CPU) menunjukkan LCP
