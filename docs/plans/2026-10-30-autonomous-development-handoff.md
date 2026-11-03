@@ -3983,6 +3983,28 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 110 — Judul dokumen dan fokus ikut berpindah halaman (3 Nov)
+
+Dua celah aksesibilitas nyata ditemukan saat menyapu hosted: `document.title`
+selalu `GYSApp` di semua rute, dan setelah menekan tautan navigasi
+`document.activeElement` tetap di tautan itu (pengguna keyboard/pembaca layar
+tidak diberi tahu halaman sudah berganti).
+
+Perbaikan: `apps/web/src/route-a11y.ts` (`routeTitle`, `focusRouteHeading`) dan
+satu efek di `Shell` (`apps/web/src/App.tsx`) yang, setiap `location.pathname`
+berubah, menetapkan `judul · GYSApp` lalu memfokuskan `h1` di `#main-content`
+dengan `tabIndex=-1`. Pencarian judul diulang lewat `requestAnimationFrame`
+(maks 120 frame) karena layar berbasis data sempat merender loader sebelum
+`h1` ada; fokus hanya dipindah pada navigasi berikutnya, bukan muat pertama.
+
+Bukti: `route-a11y.test.ts` **2/2** (judul gabungan, spasi dirapikan);
+`e2e/route-announcement.spec.ts` **2/2** — muat langsung `/alkitab` berjudul
+“Alkitab · GYSApp”, dan klik “Literatur” dari `/lainnya` membuat
+`document.activeElement` menjadi `H1` “Literatur”. Probe sebelum perbaikan
+mencatat `activeElement: A.nav-item`, jadi uji ini memang menangkap celahnya.
+Regresi tetangga: `accessibility` + `menu-motion` + `more-section-deeplink`
+**45/45 (3,6 mnt)**; spec baru masuk `playwright.core.config.ts`.
+
 ### Putaran 109 — Preload font yang selalu 404 dihapus (3 Nov)
 
 Sapuan hosted (16 muat halaman: 8 rute × 390/1440) menemukan dua permintaan

@@ -25,6 +25,7 @@ export default defineConfig(baseConfig, {
   reporter: [["line"]],
   testMatch: [
     "**/smoke.spec.ts",
+    "**/route-announcement.spec.ts",
     "**/settings-data-integrity.spec.ts",
     "**/more-section-deeplink.spec.ts",
     "**/more-device-data.spec.ts",

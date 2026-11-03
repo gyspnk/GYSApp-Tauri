@@ -17,6 +17,7 @@ import {
   RouteErrorBoundary,
 } from "./route-frames.js";
 import { useReadinessMarker } from "./readiness.js";
+import { focusRouteHeading, routeTitle } from "./route-a11y.js";
 import { useMenuPresence } from "./use-menu-presence.js";
 import {
   Component,
@@ -465,6 +466,29 @@ function Shell({
   }, []);
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [location.pathname]);
+  const firstRouteRef = useRef(true);
+  useEffect(() => {
+    // A routed page can paint its heading a frame or two after the shell (the
+    // data-backed screens render a loader first), so keep looking briefly.
+    let retries = 0;
+    let handle = 0;
+    const apply = () => {
+      const main = document.getElementById("main-content");
+      const heading = main?.querySelector("h1") ?? null;
+      if (!heading) {
+        if (retries++ < 120) handle = requestAnimationFrame(apply);
+        return;
+      }
+      document.title = routeTitle(heading.textContent);
+      if (firstRouteRef.current) {
+        firstRouteRef.current = false;
+        return;
+      }
+      focusRouteHeading(main);
+    };
+    handle = requestAnimationFrame(apply);
+    return () => cancelAnimationFrame(handle);
   }, [location.pathname]);
   const midiStatus = useSyncExternalStore(
     midiPlayer.subscribe,
