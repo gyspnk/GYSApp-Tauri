@@ -17,12 +17,12 @@ const profile = await mkdtemp(resolve(tmpdir(), "gysapp-benchmark-"));
 const runs = [];
 let session;
 let previousMode;
-async function marked(page, marker) {
+async function marked(page, marker, timeout = 15_000) {
   try {
     await page.waitForFunction(
       (name) => performance.getEntriesByName(name).length > 0,
       marker,
-      { timeout: 15000, polling: 100 },
+      { timeout, polling: 100 },
     );
   } catch (error) {
     const diagnostic = await page
@@ -155,7 +155,12 @@ try {
       ),
     );
     await page.goto(nativeRoute("/kidung/hymn-001", origin));
-    row.pdfFirstPageMs = (await marked(page, "gys-pdf-page-ready")).elapsed;
+    // The packaged app verifies the chord catalogue (≈250 requests) right
+    // after startup; on the Windows runner that storm can delay the first PDF
+    // page well past 15 s. Give the marker a wider, explicit budget.
+    row.pdfFirstPageMs = (
+      await marked(page, "gys-pdf-page-ready", 45_000)
+    ).elapsed;
     await page
       .locator(".pdf-reader canvas[data-pdf-rendered='true']")
       .first()
