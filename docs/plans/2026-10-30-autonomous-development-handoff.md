@@ -3888,6 +3888,17 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 87 — Peluncuran WebView2 yang gagal sekarang menjelaskan dirinya (3 Nov)
+
+Run native `41676425965` gagal sebelum soak: `WebView2 DevTools did not start`
+dengan `nativePid`, `exitCode: null`, dan `processOutput: ""` — tidak ada
+informasi untuk membedakan runtime WebView2 yang hilang dari aplikasi yang
+menggantung. `launchNative()` di `apps/web/scripts/native-session.mjs` sekarang
+menyertakan `exit=<kode|running>; devtools=<status|unreachable>;
+targets=<tipe:url …>; webview2=<versi runtime>` pada pesan kegagalan, dibaca
+dari port DevTools dan kunci registry Edge WebView2. Tidak ada perubahan
+perilaku saat peluncuran berhasil; `node --check` + Prettier hijau.
+
 ### Putaran 86 — Sheet pilih kitab punya latar peredup (3 Nov)
 
 Di ponsel sheet pemilih kitab melayang di atas isi halaman tanpa peredup, jadi
@@ -3898,7 +3909,10 @@ tidak terbaca sebagai lapisan modal. Ditambahkan `.multiselect-scrim` (tombol
 bergulir saat sheet terbuka; menekan peredup menutup sheet dan mengembalikan
 fokus ke pemicu. Diukur pada emulasi Pixel 7: peredup 412×781 px, sheet 388×479
 px, klik peredup menutup menu (0 node), `bible-search-multi-book` +
-`accessibility` **26/26 (3,3 mnt)**.
+`accessibility` **26/26 (3,3 mnt)**; build hosted
+`https://gyspnk.github.io/GYSApp-Tauri/alkitab` dengan emulasi Pixel 7:
+peredup 412×781 px (mulai 58 px dari atas), sheet 388×479 px, dan tap pada
+peredup menutup sheet (0 node).
 
 ### Putaran 85 — WebView terpaket mengunduh PDF tanpa range (3 Nov)
 
