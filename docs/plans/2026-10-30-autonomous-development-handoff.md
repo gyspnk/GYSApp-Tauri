@@ -2913,6 +2913,22 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 71 — Shelf beranda mulai dari `<head>` (3 Nov)
+
+`offline/sauh.json` (8 KiB) baru diminta setelah React boot, jadi kartu renungan
+dan gambarnya menunggu satu perjalanan penuh. `apps/web/index.html` sekarang
+memuatnya lewat `<link rel="preload" as="fetch">`, dan hero sudah memakai
+`loading="eager"` + `fetchPriority="high"` (tidak diubah).
+
+Hosted 390, sebelum → sesudah: `sauh.json` mulai **4441 → 336 ms**, permintaan
+gambar pertama **4731 → 1931 ms**, LCP **5396 → 4904 ms**; di 1440 `sauh.json`
+mulai 227 ms, gambar 1650 ms, LCP 4552 ms. CI/Pages `8413293` hijau.
+
+Jujur: elemen LCP di beranda adalah blok teks renungan (`BLOCKQUOTE`), bukan
+gambar, jadi preload ini mempercepat isi dan gambar yang dilihat pengguna, tetapi
+tidak banyak menggeser angka LCP; sisa biaya terbesar ada di TTFB dokumen
+(~1 dtk dari host ini) dan CSS 75 KiB.
+
 ### Putaran 70 — Proxy gambar menyimpan hasilnya di cache edge (3 Nov)
 
 Respons Worker di `*.workers.dev` tidak disimpan CDN hanya karena punya header
