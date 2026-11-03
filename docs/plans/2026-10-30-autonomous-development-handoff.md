@@ -3824,3 +3824,9 @@ Edge (403) terbaca langsung dari log.
 
 Bukti: `apps/web/scripts/edge-tts-native-smoke.mjs` lolos `node --check`;
 pemilih suara terverifikasi ada di `/lainnya?section=audio` pada build lokal.
+
+Percobaan keempat (`41654666587`) membuktikan katalog Edge **tersedia** di
+runner: pemilih suara menemukan `id-ID-ArdiNeural`. Kegagalannya pindah ke
+`waitForDiagnostic("tts.edge.receive")` tanpa pesan; `waitForDiagnostic` kini
+menyebut delapan diagnostik terakhir dan label tombol bacakan, dan batasnya
+dinaikkan ke 60 dtk untuk sintesis pertama.

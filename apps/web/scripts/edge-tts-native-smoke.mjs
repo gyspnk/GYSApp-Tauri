@@ -274,14 +274,40 @@ async function cachePinnedFile(
 }
 
 async function waitForDiagnostic(page, scope, timeout = 30_000) {
-  await page.waitForFunction(
-    (target) =>
-      JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").some(
-        (event) => event.scope === target,
-      ),
-    scope,
-    { timeout },
-  );
+  try {
+    await page.waitForFunction(
+      (target) =>
+        JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").some(
+          (event) => event.scope === target,
+        ),
+      scope,
+      { timeout },
+    );
+  } catch (error) {
+    // A bare "waitForFunction timed out" hides why the provider stayed silent:
+    // dump what the app did record so the log names the failure (B-35).
+    const snapshot = await page.evaluate(() => {
+      const events = JSON.parse(
+        localStorage.getItem("gys-diagnostics-v1") ?? "[]",
+      );
+      const label = document
+        .querySelector(".reader-speech-btn")
+        ?.getAttribute("aria-label");
+      return {
+        recent: events
+          .slice(-8)
+          .map((event) => `${event.scope ?? "?"}:${event.id ?? "?"}`),
+        label: label ?? "",
+      };
+    });
+    throw new Error(
+      `Diagnostic "${scope}" never arrived within ${timeout} ms (${String(
+        error,
+      ).slice(0, 120)}). Recent: ${
+        snapshot.recent.join(" | ") || "none"
+      }; reader label: ${snapshot.label || "none"}`,
+    );
+  }
   return await page.evaluate((target) => {
     const events = JSON.parse(
       localStorage.getItem("gys-diagnostics-v1") ?? "[]",
@@ -1068,7 +1094,7 @@ try {
     ),
   );
   await readerButton.click();
-  await waitForDiagnostic(page, "tts.edge.receive");
+  await waitForDiagnostic(page, "tts.edge.receive", 60_000);
   await clickMediaStop(page);
   await page.waitForFunction(
     (label) =>
