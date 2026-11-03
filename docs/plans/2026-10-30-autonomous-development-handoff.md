@@ -3843,3 +3843,21 @@ toolbar 56 px supaya teks ayat tidak menabrak tombol tutup.
 Bukti: `scrollWidth - clientWidth` = **0** pada 320/390; tinggi panel
 **159 px** (390) dan **209 px** (320); semua kontrol ≥44 px;
 `bible-annotations` + `responsive-touch-targets` **8/8 (30,7 dtk)**.
+
+### Putaran 80 — Uji native melewati Edge yang tak bisa dijangkau, dengan alasan (3 Nov)
+
+Runner Windows tidak pernah menerima `tts.edge.handshake` (socket dibuka dua kali,
+tidak pernah diterima), jadi seluruh soak mati di langkah suara dan tidak ada
+bukti untuk langkah sesudahnya. `apps/web/scripts/edge-tts-native-smoke.mjs`
+sekarang: menunggu `tts.edge.receive` dalam blok `try`, memeriksa apakah
+`tts.edge.handshake` pernah tercatat; bila tidak, mencetak
+`SKIP live Edge: socket never accepted on this runner — …` dan melewati blok
+assertion suara Edge (stop playback tetap dijalankan), lalu melanjutkan soak.
+Bila handshake ada tetapi audio tidak datang, error aslinya tetap dilempar.
+
+Sekalian: pemilih suara di langkah ganti-suara dan langkah restore tidak lagi
+memakai `select` kedua di drawer (drawer hanya punya satu select, yaitu mesin);
+keduanya membuka `/lainnya?section=audio` dan memilih `.audio-settings-inline select`.
+
+Bukti: `node --check` bersih, `npx prettier` bersih; dispatch
+`edge-tts-native.yml` dijalankan untuk membuktikan langkah sesudahnya berjalan.
