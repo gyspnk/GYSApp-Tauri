@@ -2928,6 +2928,12 @@
   .audio-setting-select {
     min-height: 44px;
   }
+  /* A range input is a touch target too: give the thumb a 44 px band so a
+     phone user does not have to aim at a 20 px strip. */
+  .audio-setting-row input[type="range"] {
+    height: 44px;
+    margin-block: -12px;
+  }
 }
 .audio-setting-row input[type="range"] {
   width: 180px;

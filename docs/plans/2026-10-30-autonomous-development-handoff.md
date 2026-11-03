@@ -3861,3 +3861,16 @@ keduanya membuka `/lainnya?section=audio` dan memilih `.audio-settings-inline se
 
 Bukti: `node --check` bersih, `npx prettier` bersih; dispatch
 `edge-tts-native.yml` dijalankan untuk membuktikan langkah sesudahnya berjalan.
+
+### Putaran 81 — Slider audio dapat pita sentuh 44 px (3 Nov)
+
+Di `/lainnya?section=audio` slider “Kecepatan Baca” dan “Tinggi Nada” hanya
+setinggi ~20 px, jadi jempol harus membidik strip tipis. Blok
+`@media (hover: none), (pointer: coarse)` di
+`apps/web/src/styles/02-bible-and-settings.css` sekarang memberi
+`.audio-setting-row input[type="range"]` tinggi **44 px** dengan margin blok
+-12 px supaya jarak visual antar-baris tidak melebar.
+
+Bukti: `boundingBox()` pada 390 sentuh = **44 × 334 px**;
+`responsive-touch-targets` + `settings-data-integrity` **14/14 (21,0 dtk)**;
+screenshot 390 gelap.
