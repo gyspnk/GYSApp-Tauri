@@ -3983,6 +3983,29 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 101 — Anggaran CSS dan boot diukur ulang (3 Nov)
+
+Hosted (`gyspnk.github.io`, tanpa throttle, dari container ini): `load` 3180 ms,
+DCL 2708 ms, **FCP 1580 ms**; `index-*.js` 87 KB transfer (479 ms),
+`index-*.css` 76 KB (439 ms), `startup.js` 1 KB, `sauh.json` 8 KB — semuanya
+mulai ~740 ms karena TTFB GitHub Pages di jalur ini ~700 ms.
+
+Cakupan CSS diukur dengan `CSS.startRuleUsageTracking`: berkas
+`index-*.css` **451 KiB mentah**, tetapi hanya **44 KiB terpakai di `/`,
+35 KiB di `/kidung`, 33 KiB di `/alkitab`** (7–10 %). Keputusan: **tidak**
+memecah per rute atau menyalin critical CSS ke `index.html`. Kaskade lima
+lapisan bergantung urutan, dan flash-of-unstyled-content akan lebih mahal
+daripada ~440 ms yang bisa dihemat di tautan ini. Angka ini dicatat sebagai
+anggaran, bukan target optimasi berikutnya.
+
+Sisi JS: entri masih memuat `midi-player`, `midi-queue`, `speech-player`,
+`edge-speech`, dan `@gys/contracts` (`dist` 98 KiB mentah) secara statis karena
+singleton audio dipakai `useSyncExternalStore` di level App; menundanya butuh
+loader baru — dicatat sebagai tuas JS berikutnya, bukan pekerjaan cepat.
+
+Verifikasi ulang kontrak MIDI di semua breakpoint: `midi-control-unification`
+**8/8 (18,3 s)**.
+
 ### Putaran 100 — Hasil uji 6 worker + flake egys (3 Nov)
 
 Push `e74c153` (stylesheet lapisan) akhirnya memilih sweep penuh: **231 tes,
