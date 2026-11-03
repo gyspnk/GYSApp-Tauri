@@ -2913,6 +2913,34 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 72 — Sinkronisasi chord tidak lagi membebani kunjungan pertama (3 Nov)
+
+`syncChordsOnStartup()` dijalankan 500 ms setelah shell hidup dan memverifikasi
+**seluruh** katalog chord terhadap lock file: 250 permintaan, beberapa MB, pada
+setiap kunjungan beranda — termasuk pengunjung yang belum pernah membuka
+Kidung. Terukur di hosted: permintaan gambar pertama tertunda sampai 4,7 dtk.
+
+Perbaikan:
+
+- `apps/web/src/chord-sync-gate.ts` (`chordStartupSyncAllowed`): sinkronisasi
+  hanya jalan bila `gys-kidung-visited === "1"`, `saveData` mati, dan tipe
+  koneksi bukan `2g`/`3g`; `App.tsx` memanggilnya lewat `requestIdleCallback`
+  (timeout 3 dtk) setelah jeda 500 ms.
+- `apps/web/src/kidung-page.tsx` menulis flag itu saat pembaca benar-benar
+  membuka Kidung (pola yang sama dengan `gys-bible-visited`).
+- Unit `src/chord-sync-gate.test.ts` **4/4** (tanpa flag, normal, metered/3g,
+  storage diblokir).
+
+Hosted 390, sesudah: **0 permintaan chord** pada kunjungan beranda baru (dari
+250), gambar pertama mulai ~1,5 dtk (median 3 run), LCP 4004 ms (median; 3524 /
+4004 / 5568) dari sebelumnya 5396 ms. Reader `/kidung/hymn-001` tetap memuat
+chord saat tombol chord ditekan (2 permintaan) dan menulis flag kunjungan.
+
+Catatan proses: commit pertama gate ini (`3f3f67a`) memakai `git commit -am`
+sehingga dua berkas baru tertinggal; build Pages gagal `Module not found:
+./chord-sync-gate.js`. Perbaikannya `24a4218`. Pelajaran: periksa `git status`
+untracked sebelum commit, jangan hanya `-a`.
+
 ### Putaran 71 — Shelf beranda mulai dari `<head>` (3 Nov)
 
 `offline/sauh.json` (8 KiB) baru diminta setelah React boot, jadi kartu renungan
