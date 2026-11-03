@@ -3905,7 +3905,9 @@ lewat `/api/v1/content/pdf` → `content-range: bytes 0-0/90868320`), jadi
 penyimpanan otomatis dibatasi **12 MB** (`MAX_AUTO_CACHE_BYTES`), dicek dari
 `content-range` satu-byte sebelum mengunduh (`apps/web/src/pdf-remote-size.ts`)
 — dokumen besar tetap memakai tombol “Unduh PDF” eksplisit. Diuji: warta 90 MB
-**tidak** tersimpan, Pelita Kecil kecil **tersimpan**.
+**tidak** tersimpan, Pelita Kecil kecil **tersimpan**. Cache juga berhenti
+menyimpan otomatis begitu total aset tersimpan melewati **80 MB**
+(`MAX_CACHED_BYTES`); unduhan eksplisit tetap jalan.
 
 Diukur lokal (1440, tanpa throttle): buka pertama **8,0 dtk**, cache tertulis
 (`literature-pdf:warta-…`), buka kedua setelah muat ulang **1,7 dtk** dengan

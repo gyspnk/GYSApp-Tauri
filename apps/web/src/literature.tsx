@@ -1019,6 +1019,7 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           saveData: connection?.saveData,
           effectiveType: connection?.effectiveType,
           bytes,
+          cachedBytes: assetStore.stats().bytes,
         })
       ) {
         pdfAutoCacheStarted.current = false;

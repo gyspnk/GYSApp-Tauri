@@ -15,6 +15,11 @@ describe("shouldAutoCachePdf", () => {
     expect(shouldAutoCachePdf({ bytes: 4_000_000 })).toBe(true);
   });
 
+  it("stops when the cache already holds a lot", () => {
+    expect(shouldAutoCachePdf({ cachedBytes: 90 * 1024 * 1024 })).toBe(false);
+    expect(shouldAutoCachePdf({ cachedBytes: 10 * 1024 * 1024 })).toBe(true);
+  });
+
   it("skips data-saver and 2G links", () => {
     expect(shouldAutoCachePdf({ saveData: true })).toBe(false);
     expect(shouldAutoCachePdf({ effectiveType: "2g" })).toBe(false);
