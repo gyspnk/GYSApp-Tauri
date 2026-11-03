@@ -838,7 +838,11 @@ export function createApp(
         : ((caches as unknown as { default?: Cache }).default ?? undefined);
     const cacheKey = new Request(c.req.url, { method: "GET" });
     const cached = edge ? await edge.match(cacheKey) : undefined;
-    if (cached) return cached;
+    if (cached) {
+      const headers = new Headers(cached.headers);
+      headers.set("x-gys-cache", "hit");
+      return new Response(cached.body, { status: cached.status, headers });
+    }
 
     try {
       const upstream = await fetchOfficialImage(url, c.req.raw.signal);
@@ -857,6 +861,7 @@ export function createApp(
           status: 200,
           headers: c.res.headers,
         });
+        c.header("x-gys-cache", "miss");
         if (edge) {
           const stored = edge
             .put(cacheKey, response.clone())
