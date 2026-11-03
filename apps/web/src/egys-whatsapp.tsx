@@ -26,6 +26,25 @@ const LOGIN_TIMEOUT_MS = 120_000;
  * number is normalized before confirmation: no `+`, no separators, and local
  * `0…` numbers become `62…`.
  */
+const REFERENCE_KEY = "gys-wa-reference";
+
+function readStoredReference(): string {
+  try {
+    return window.sessionStorage.getItem(REFERENCE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function storeReference(reference: string): void {
+  try {
+    if (reference) window.sessionStorage.setItem(REFERENCE_KEY, reference);
+    else window.sessionStorage.removeItem(REFERENCE_KEY);
+  } catch {
+    // Private modes can refuse session storage; the in-memory value still works.
+  }
+}
+
 export function providerPhone(raw: string): string {
   let digits = raw.replace(/[^0-9]/g, "");
   if (digits.startsWith("0")) digits = `62${digits.slice(1)}`;
@@ -116,7 +135,9 @@ export function EgysWhatsApp({
           {
             otp: code,
             mobilephone: providerPhone(mobilephone),
-            ...(reference ? { referenceid: reference } : {}),
+            ...(reference || readStoredReference()
+              ? { referenceid: reference || readStoredReference() }
+              : {}),
           },
           controller.signal,
           EGYS_REQUEST_TIMEOUT_MS,
@@ -156,7 +177,10 @@ export function EgysWhatsApp({
         // sync delay rather than a failed login. Keep the countdown (and the
         // WhatsApp success message) honest instead of flashing the red "!".
         const result = await pollProfile([0, 350, 800, 1500, 3000, 5000, 8000]);
-        if (result === true) return;
+        if (result === true) {
+          storeReference("");
+          return;
+        }
         if (controller.signal.aborted) return;
         const late =
           "Login WhatsApp diterima, tetapi profil akun belum siap. Muat ulang halaman ini sebentar lagi.";
@@ -200,6 +224,7 @@ export function EgysWhatsApp({
       .then((data) => {
         if (controller.signal.aborted) return;
         reference = data.referenceid ?? data.referenceId ?? "";
+        storeReference(reference);
         const phone = data.mobilephone ?? data.mobilePhone;
         if (!reference || !phone || !data.content) {
           fail("Respons WhatsApp tidak valid. Tekan WhatsApp lagi.");
