@@ -52,6 +52,10 @@ import { installMediaSessionBridge } from "./media-session.js";
 import { speechPlayer } from "./speech-player.js";
 import { Select } from "./select.js";
 import { recordDiagnostic } from "./diagnostics.js";
+import {
+  chordStartupSyncAllowed,
+  type StartupConnection,
+} from "./chord-sync-gate.js";
 import { installHeadphoneDisconnectGuard } from "./headphone-guard.js";
 import { useScreenWakeLock } from "./wake-lock.js";
 import { installDailyReminder } from "./daily-reminder.js";
@@ -651,12 +655,37 @@ function RoutedApp() {
   reminderLocale.current = locale;
   useEffect(() => installDailyReminder(() => reminderLocale.current), []);
   useEffect(() => {
+    // Every chord in the catalogue is verified against the lock file, so the
+    // sync is ~250 requests. It only pays off for a reader who has opened the
+    // songbook, and it must never run on a metered connection: on a first home
+    // visit it used to compete with the page itself (measured: image requests
+    // pushed from 1,9 dtk to 4,7 dtk).
+    const connection = (
+      navigator as Navigator & { connection?: StartupConnection }
+    ).connection;
+    if (
+      !chordStartupSyncAllowed(
+        window.localStorage,
+        connection ? { connection } : {},
+      )
+    )
+      return;
+    let idle: number | undefined;
     const timer = window.setTimeout(() => {
-      void import("./chords.js")
-        .then((module) => module.syncChordsOnStartup())
-        .catch((error) => recordDiagnostic("info", "chord.sync", error));
+      const run = () => {
+        void import("./chords.js")
+          .then((module) => module.syncChordsOnStartup())
+          .catch((error) => recordDiagnostic("info", "chord.sync", error));
+      };
+      idle =
+        typeof window.requestIdleCallback === "function"
+          ? window.requestIdleCallback(run, { timeout: 3000 })
+          : window.setTimeout(run, 0);
     }, 500);
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      if (idle !== undefined) window.cancelIdleCallback(idle);
+    };
   }, []);
   useEffect(() => installMidiQueueCoordinator(), []);
   useEffect(() => installMediaSessionBridge(), []);

@@ -200,6 +200,15 @@ export function KidungPage({ locale }: { locale: Locale }) {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const section = searchParams.get("section");
+  // Remember the visit: the chord cache is only verified on startup for a
+  // reader who has actually opened the songbook (see App.tsx).
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("gys-kidung-visited", "1");
+    } catch {
+      // Private mode: the startup sync simply stays off.
+    }
+  }, []);
   if (!songId && section === "settings")
     return <Navigate to="/lainnya?section=kidung" replace />;
   const canonical = songId ? canonicalHymnId(songId) : undefined;
