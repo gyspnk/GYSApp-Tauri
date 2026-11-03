@@ -299,6 +299,7 @@ export const SauhPostSchema = z.object({
   body: z.string().min(1),
   url: z.string().url(),
   imageUrl: z.string().url().optional(),
+  imageSrcSet: z.string().min(1).optional(),
   updatedAt: z.string().datetime({ offset: true }),
   source: z.literal("tjc.org"),
 });

@@ -226,6 +226,8 @@ export function SauhPage({ locale }: { locale: Locale }) {
               className="online-article-image"
               wrapperClassName="sauh-article-image-wrap"
               src={state.post.imageUrl}
+              imageSrcSet={state.post.imageSrcSet}
+              sizes="(min-width: 960px) 900px, 100vw"
               fallbackTitle={state.post.title}
               fallbackCategory={translate(
                 locale,

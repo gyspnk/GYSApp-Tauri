@@ -251,6 +251,34 @@ function featuredImageUrl(value: unknown): string | undefined {
   ].find(isTjcImageUrl);
 }
 
+/** Responsive variants so a card can pick a 768 px file instead of the
+    original, which is often well over 1 MB. */
+function featuredImageSrcSet(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const sizes = (value as FeaturedMedia).media_details?.sizes;
+  if (!sizes) return undefined;
+  const byWidth = new Map<number, string>();
+  for (const size of Object.values(sizes)) {
+    if (!size || typeof size !== "object") continue;
+    const url = size.source_url;
+    const width = Number((size as { width?: unknown }).width);
+    if (
+      typeof url !== "string" ||
+      !Number.isFinite(width) ||
+      width <= 0 ||
+      !isTjcImageUrl(url) ||
+      byWidth.has(width)
+    )
+      continue;
+    byWidth.set(width, url);
+  }
+  if (byWidth.size < 2) return undefined;
+  return [...byWidth.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([width, url]) => `${url} ${width}w`)
+    .join(", ");
+}
+
 /** Convert the WordPress post shape used by the upstream into our stable contract. */
 export function parseSauhPosts(value: unknown): SauhPost[] {
   if (!Array.isArray(value)) {
@@ -319,6 +347,9 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
     const embeddedImage = featuredImageUrl(
       post._embedded?.["wp:featuredmedia"]?.[0],
     );
+    const srcSet = featuredImageSrcSet(
+      post._embedded?.["wp:featuredmedia"]?.[0],
+    );
     const candidate = {
       id:
         typeof post.slug === "string"
@@ -330,6 +361,7 @@ export function parseSauhPosts(value: unknown): SauhPost[] {
       body,
       url: sourceUrl,
       ...(isTjcImageUrl(embeddedImage) ? { imageUrl: embeddedImage } : {}),
+      ...(srcSet ? { imageSrcSet: srcSet } : {}),
       updatedAt: parsedUpdatedAt.toISOString(),
       source: "tjc.org" as const,
     };

@@ -2913,6 +2913,36 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 69 — Gambar utama Sauh memilih ukuran, bukan selalu aslinya (3 Nov)
+
+Kartu "Bacaan hari ini" selalu mengunduh berkas asli dari WordPress. Hari ini
+berkasnya PNG **960 px / 1,2 MB**; WordPress sudah menyediakan `-768x486`
+(**689 KB**) dan `-300x190` (**136 KB**). Di 390 px aplikasi tetap meminta yang
+1,2 MB.
+
+- `packages/contracts/src/index.ts`: `SauhPostSchema` menambah
+  `imageSrcSet` opsional.
+- `apps/web/src/sauh.ts`: `featuredImageSrcSet()` membaca `media_details.sizes`,
+  menyaring host gambar tjc, membuang duplikat lebar, mengurutkan naik, dan
+  mengembalikan `url 150w, …` (tidak dipakai bila variant < 2).
+- `apps/web/src/lazy-image.tsx`: prop `imageSrcSet`/`sizes`; tiap URL dileratkan
+  lewat `resolveProxiedImageUrl()` dan `srcSet` hanya dipasang selama kandidat
+  pertama yang dipakai (fallback adalah berkas lain tanpa deskriptor).
+- `apps/web/src/home.tsx` hero memakai
+  `sizes="(min-width: 1024px) 1000px, 100vw"`; `apps/web/src/online-content.tsx`
+  halaman Sauh memakai `(min-width: 960px) 900px, 100vw`.
+
+Bukti: `src/sauh.test.ts` **22/22** (termasuk urutan 150/300/768 dan host asing
+yang dibuang), unit web **544/544**, kontrak **20/20**, `verify:bundle`
+**162,5 KiB / 24 modul**. Diukur di preview: 390 px meminta
+`Dipaksa-Memikul-Salib-768x486.png` (689 KB), 1440 px tetap memilih 960w karena
+slot `sizes` 1000 px hanya dipenuhi berkas asli.
+
+Catatan jujur: penghematan terbesar ada di ponsel (1,2 MB → 689 KB). Di desktop
+belum berubah karena WordPress tidak menyediakan variant di atas 960 px; PNG
+juga membuat kedua ukuran tetap berat. Konversi ke WebP butuh langkah build
+gambar di sisi BFF, belum dikerjakan.
+
 ### Putaran 68 — Beranda tidak lagi bergeser; aksen kustom tetap terbaca (3 Nov)
 
 CLS beranda hasil hosted **0,0845**. Diselidiki dengan Playwright + CDP

@@ -88,6 +88,8 @@ function ImageContent({
   fallbackCategoryKey,
   fetchPriority,
   onLoad,
+  imageSrcSet,
+  sizes,
 }: {
   locale?: Locale;
   src?: string | undefined;
@@ -101,6 +103,8 @@ function ImageContent({
   fallbackCategoryKey?: string | undefined;
   fetchPriority?: "high" | "low" | "auto" | undefined;
   onLoad?: (() => void) | undefined;
+  imageSrcSet?: string | undefined;
+  sizes?: string | undefined;
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
@@ -117,6 +121,18 @@ function ImageContent({
     ),
   ];
   const effectiveSrc = candidates[attempt];
+  // The responsive list only describes the first candidate; the fallbacks are
+  // different files with no descriptors.
+  const responsive = effectiveSrc === candidates[0] ? imageSrcSet : undefined;
+  const effectiveSrcSet = responsive
+    ?.split(",")
+    .map((entry) => {
+      const [url, descriptor] = entry.trim().split(/\s+/);
+      const proxied = url ? resolveProxiedImageUrl(url) : undefined;
+      return proxied && descriptor ? `${proxied} ${descriptor}` : null;
+    })
+    .filter((entry): entry is string => Boolean(entry))
+    .join(", ");
   const imageFailed = () => {
     if (attempt + 1 < candidates.length) {
       setLoaded(false);
@@ -192,6 +208,8 @@ function ImageContent({
         <img
           ref={imageRef}
           src={effectiveSrc}
+          srcSet={effectiveSrcSet || undefined}
+          sizes={effectiveSrcSet ? sizes : undefined}
           alt={alt}
           className={`${className} img-with-skeleton ${loaded ? "is-loaded" : ""}`}
           loading={loading}

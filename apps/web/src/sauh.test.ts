@@ -121,6 +121,55 @@ describe("Sauh feed normalization", () => {
     );
   });
 
+  it("offers the mirrored sizes as a responsive list, largest last", () => {
+    const posts = parseSauhPosts([
+      {
+        id: 83,
+        slug: "responsive-sizes",
+        date: "2026-08-16T00:00:00.000Z",
+        link: "https://tjc.org/id/sauh/responsive-sizes/",
+        title: { rendered: "Ukuran responsif" },
+        content: { rendered: "<p>Isi renungan dengan ukuran gambar.</p>" },
+        _embedded: {
+          "wp:featuredmedia": [
+            {
+              source_url: "https://tjc.org/id/wp-content/uploads/hero.png",
+              media_details: {
+                sizes: {
+                  medium_large: {
+                    source_url:
+                      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-768x512.png",
+                    width: 768,
+                  },
+                  thumbnail: {
+                    source_url:
+                      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-150x150.png",
+                    width: 150,
+                  },
+                  medium: {
+                    source_url:
+                      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-300x200.png",
+                    width: 300,
+                  },
+                  hostile: {
+                    source_url: "https://evil.example/hero-900.png",
+                    width: 900,
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    expect(posts[0]?.imageSrcSet).toBe(
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-150x150.png 150w, " +
+        "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-300x200.png 300w, " +
+        "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-768x512.png 768w",
+    );
+  });
+
   it("sanitizes a string-form title before it reaches the home reader", () => {
     const posts = parseSauhPosts([
       {

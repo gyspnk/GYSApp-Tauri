@@ -306,6 +306,8 @@ export function HomePage({ locale }: { locale: Locale }) {
                 className="sauh-image"
                 wrapperClassName="sauh-image-wrap"
                 src={selectedToday.imageUrl}
+                imageSrcSet={selectedToday.imageSrcSet}
+                sizes="(min-width: 1024px) 1000px, 100vw"
                 fallbackTitle={selectedToday.title}
                 fallbackCategoryKey="renungan"
                 fallbackCategory={translate(
