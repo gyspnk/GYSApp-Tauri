@@ -3927,6 +3927,23 @@ mode: "serial" })` tetap dihormati.
 Diukur lokal 2 worker: `kidung-usability` **5,7 → 2,1 mnt** (50/50 lulus);
 `editorial-ui` + `navigation-layout` **8,4 → 3,3 mnt** (62/62 lulus).
 
+### Putaran 92 — Palet pencarian muat di viewport ponsel; sweep CSS terukur ulang (3 Nov)
+
+`apps/web/src/styles/04-reader-media.css`: panel pencarian di ponsel memakai
+`max-height: calc(100dvh - 16px)` (baris `100vh` tetap sebagai fallback), supaya
+palet tidak terpotong saat address bar peramban muncul; spesifikasi
+`ui-polish` + `menu-motion` **29/29 (1,5 mnt)**.
+
+Sekaligus mengukur ulang jalur CSS global setelah `fullyParallel`:
+
+| Push                    | Sebelum                                      | Sesudah                                            |
+| ----------------------- | -------------------------------------------- | -------------------------------------------------- |
+| CSS global (enam sweep) | **541 dtk** (`41688785206`, selective 7 mnt) | **295 dtk** (`41701513601`, selective **209 dtk**) |
+| Sumber web biasa        | 155–203 dtk                                  | 155–245 dtk                                        |
+
+Jadi target <3 mnt hampir tercapai untuk semua jalur rutin; sisa biaya ada di
+setup job + build, bukan lagi di eksekusi tes.
+
 ### Putaran 89 — Judul kidung dua baris di ponsel (3 Nov)
 
 Aturan dua baris dulu hanya berlaku ≤359 px, jadi di 390 px judul panjang
