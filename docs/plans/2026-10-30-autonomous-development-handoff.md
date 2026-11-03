@@ -2913,6 +2913,26 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 75 — Pintasan koleksi di Lainnya menjadi kartu (3 Nov)
+
+Artifact QA `ui-screenshots-41609769060` (132/132 `settled`, 0 overflow)
+memperlihatkan tiga pintasan koleksi (Literatur, Suara Sejati, Sauh Bagi Jiwa)
+sebagai teks tanpa bidang di atas satu baris lebar: chevron jauh dari label dan
+tidak ada batas yang menjelaskan bahwa ketiganya bisa diklik.
+
+`.more-library-link` sekarang memakai bidang kartu yang sama dengan sisa
+halaman: `padding: 12px 16px`, `border: 1px solid var(--line)`,
+`border-radius: var(--radius-control)`, `background: var(--surface)`; hover
+tetap menyalakan `--blue-soft`. Di ≤1199 px (tile bertumpuk) isinya
+`justify-content: center`, `min-height: 88px`, `gap: 8px` supaya label tidak
+menyisakan pita kosong di bawah.
+
+Bukti: screenshot 1440/768/390 (light/dark) — tiga kartu sejajar dengan
+chevron di kanan pada desktop, tile rapi di tablet/ponsel; spec `smoke`,
+`more-device-data`, `more-section-deeplink`, `settings-data-integrity`,
+`accessibility`, `navigation-layout` **82/82 lolos (6,5 mnt)**;
+`verify:bundle` **162,6 KiB / 24 modul** (tidak berubah).
+
 ### Putaran 74 — Keterangan Sauh terbaca di ponsel (3 Nov)
 
 Artifact QA yang sudah menunggu halaman terisi (`ui-screenshots-41607230554`,

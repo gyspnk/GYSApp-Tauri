@@ -916,10 +916,12 @@
   align-items: center;
   gap: 14px;
   min-height: 72px;
-  padding: 12px 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  /* The three collection shortcuts looked like bare text on the full-width
+     row; give each one the same card surface as the rest of the settings. */
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
 }
 .more-library-icon {
   display: grid;
@@ -1022,11 +1024,11 @@
   }
   .more-library-link {
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     text-align: center;
-    min-height: 96px;
-    padding: 14px 10px;
-    gap: 10px;
+    min-height: 88px;
+    padding: 12px 10px;
+    gap: 8px;
   }
   .more-library-link strong {
     font-size: 0.875rem;
