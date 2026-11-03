@@ -3631,11 +3631,13 @@ Kebijakan baru di `.github/workflows/ci.yml`:
 - Gerbang hash pohon tetap: bila isi pohon sudah pernah hijau, jalur browser
   dilewati dengan menyebut run lama; marker disimpan setelah jalur hijau.
 
-| Jalur                          | Sebelum                               | Sesudah                                                                                 |
-| ------------------------------ | ------------------------------------- | --------------------------------------------------------------------------------------- |
-| Push `main` yang menyentuh web | 4 shard, **12,7 mnt** (`41380071830`) | selektif, **3,5 mnt** wall (`41391763891`; selektif 2,4 mnt, verify 0,5, web-build 0,7) |
-| Push docs/tooling              | 0,5 mnt (`41381475091`)               | 0,5 mnt                                                                                 |
-| Cakupan penuh                  | setiap push main                      | nightly 18:00 UTC + label `full-ci` + dispatch rilis                                    |
+| Jalur                                       | Sebelum                               | Sesudah                                                                                                                           |
+| ------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Push `main` yang menyentuh web              | 4 shard, **12,7 mnt** (`41380071830`) | selektif, **3,5 mnt** wall (`41391763891`; selektif 2,4 mnt, verify 0,5, web-build 0,7)                                           |
+| Push docs/tooling                           | 0,5 mnt (`41381475091`)               | 0,5 mnt                                                                                                                           |
+| Push `main` yang menyentuh `app-design.css` | 8,5 mnt (`41688785206`)               | selektif **9,0 mnt** wall: enam sweep lintas layar (matrix, roadmap, usability, smoke, navigasi, a11y) — disengaja, bukan regresi |
+| Push `main` fitur kecil (hero/title)        | —                                     | **155–203 dtk** (`41683954920`, `41685957619`)                                                                                    |
+| Cakupan penuh                               | setiap push main                      | nightly 18:00 UTC + label `full-ci` + dispatch rilis                                                                              |
 
 ### Kontrak desain lama setelah merge ke main (2 Nov, putaran 45)
 
