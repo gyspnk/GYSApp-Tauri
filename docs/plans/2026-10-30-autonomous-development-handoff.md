@@ -3874,3 +3874,9 @@ setinggi ~20 px, jadi jempol harus membidik strip tipis. Blok
 Bukti: `boundingBox()` pada 390 sentuh = **44 × 334 px**;
 `responsive-touch-targets` + `settings-data-integrity` **14/14 (21,0 dtk)**;
 screenshot 390 gelap.
+
+Catatan lanjutan Putaran 80: percobaan pertama (`41659581643`) berhasil
+mencetak `[soak] SKIP live Edge: socket never accepted on this runner`, lalu
+gagal 1 detik kemudian di pembersihan karena `idleLabel` bisa `null` dan
+`.media-surface` tidak ada ketika tidak ada audio. Perbaikan: label jatuh ke
+`"Bacakan"` dan pembersihan `clickMediaStop(page).catch(() => {})` + jeda 400 ms.

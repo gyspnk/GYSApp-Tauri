@@ -1087,7 +1087,8 @@ try {
   await page.locator(".reader-speech-btn").waitFor({ state: "visible" });
 
   const readerButton = page.locator(".reader-speech-btn");
-  const idleLabel = await readerButton.getAttribute("aria-label");
+  const idleLabel =
+    (await readerButton.getAttribute("aria-label")) ?? "Bacakan";
   const previousSpeechDiagnostics = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").map(
       (event) => event.id,
@@ -1115,16 +1116,10 @@ try {
     );
   }
   if (!edgeReachable) {
-    await clickMediaStop(page);
-    await page
-      .waitForFunction(
-        (label) =>
-          document
-            .querySelector(".reader-speech-btn")
-            ?.getAttribute("aria-label") === label,
-        idleLabel,
-      )
-      .catch(() => {});
+    // Nothing was synthesized, so there may be no media surface at all; stop
+    // only if one exists and never fail the soak on the cleanup.
+    await clickMediaStop(page).catch(() => {});
+    await page.waitForTimeout(400);
   }
   if (edgeReachable) {
     await clickMediaStop(page);
