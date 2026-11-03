@@ -136,6 +136,15 @@ async function capture(browser) {
           .first()
           .waitFor({ state: "visible", timeout: 20_000 });
       }
+      // A route marker only proves the shell mounted; the shelf, verse and
+      // catalogue arrive over fetch afterwards. Waiting for the network to go
+      // quiet captures the loaded design instead of the skeleton, and the
+      // manifest records whether that wait succeeded so a slow route is
+      // visible in the artifact rather than silently screenshotted early.
+      const settled = await page
+        .waitForLoadState("networkidle", { timeout: 12_000 })
+        .then(() => true)
+        .catch(() => false);
       await page.evaluate(() => document.fonts.ready);
       await page.waitForTimeout(settleMs);
       const metrics = await page.evaluate(() => {
@@ -186,6 +195,7 @@ async function capture(browser) {
         height,
         theme,
         overflow,
+        settled,
         ...metrics,
         ...(stepShots.length ? { steps: stepShots } : {}),
       };

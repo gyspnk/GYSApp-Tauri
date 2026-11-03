@@ -2913,6 +2913,21 @@ state` (19,4 dtk) dan `prepared catalog opens previously unvisited Kidung
 sections offline` (20,8 dtk) — keduanya tetap dijalankan pada shard malam,
 tetapi tidak lagi membebani setiap push. Target: ~2m20s.
 
+### Putaran 73 — Screenshot QA menunggu halaman benar-benar terisi (3 Nov)
+
+Artifact `ui-screenshots-41602282099` (132 gambar) dipakai untuk menilai desain,
+tetapi beberapa gambar ternyata masih menampilkan skeleton: `beranda-390-light`
+memperlihatkan “Memuat Sauh Bagi Jiwa…” walau penanda rute `.home-page` sudah
+tampil. Penanda hanya membuktikan shell ter-mount; isi shelf datang lewat fetch
+sesudahnya.
+
+`apps/web/scripts/ui-screenshots.mjs` sekarang menunggu jaringan tenang
+(`waitForLoadState("networkidle", { timeout: 12_000 })`) setelah penanda rute,
+lalu mencatat `settled: true|false` di `manifest.json` supaya rute yang lambat
+terlihat di artifact, bukan diam-diam difoto terlalu awal. Bukti lokal (subset
+390/light): **11/11 rute `settled: true`**, dan `beranda-390-light.png` berubah
+dari skeleton menjadi kartu Sauh yang terisi.
+
 ### Putaran 72 — Sinkronisasi chord tidak lagi membebani kunjungan pertama (3 Nov)
 
 `syncChordsOnStartup()` dijalankan 500 ms setelah shell hidup dan memverifikasi
