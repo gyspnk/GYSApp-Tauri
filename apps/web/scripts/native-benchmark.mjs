@@ -16,7 +16,6 @@ assert.ok(
 const profile = await mkdtemp(resolve(tmpdir(), "gysapp-benchmark-"));
 const runs = [];
 let session;
-let previousMode;
 async function marked(page, marker, timeout = 15_000) {
   try {
     await page.waitForFunction(
@@ -145,21 +144,14 @@ try {
       );
       assert.ok(await page.locator(".result-item").count());
     }
-    previousMode = await page.evaluate(() =>
-      localStorage.getItem("gys-hymn-view-mode-v1"),
-    );
-    await page.evaluate(() =>
-      localStorage.setItem(
-        "gys-hymn-view-mode-v1",
-        JSON.stringify({ version: 1, modes: { "hymn-001": "pdf" } }),
-      ),
-    );
-    await page.goto(nativeRoute("/kidung/hymn-001", origin));
-    // The packaged app verifies the chord catalogue (≈250 requests) right
-    // after startup; on the Windows runner that storm can delay the first PDF
-    // page well past 15 s. Give the marker a wider, explicit budget.
+    // The reader keeps its presentation in memory only, so a seeded
+    // localStorage key is ignored; the documented `?mode=pdf` link is what
+    // opens the PDF surface on a cold launch.
+    await page.goto(nativeRoute("/kidung/hymn-001?mode=pdf", origin));
+    // A cold packaged launch still pays the first PDF chunk download; give the
+    // marker a wider, explicit budget than the 15 s default.
     row.pdfFirstPageMs = (
-      await marked(page, "gys-pdf-page-ready", 45_000)
+      await marked(page, "gys-pdf-page-ready", 30_000)
     ).elapsed;
     await page
       .locator(".pdf-reader canvas[data-pdf-rendered='true']")
@@ -183,11 +175,6 @@ try {
       ),
     );
     row.processMemory = memory;
-    await page.evaluate((value) => {
-      if (value === null) localStorage.removeItem("gys-hymn-view-mode-v1");
-      else localStorage.setItem("gys-hymn-view-mode-v1", value);
-    }, previousMode);
-    previousMode = undefined;
     runs.push(row);
     console.log(
       `[native-benchmark] sample ${run + 1}/${samples} shell=${row.processShellMs.toFixed(1)}ms`,
@@ -235,13 +222,6 @@ try {
   await writeFile(output, JSON.stringify(result, null, 2));
   console.log(JSON.stringify({ output, ...result, runs: undefined }));
 } finally {
-  if (session && previousMode !== undefined)
-    await session.page
-      .evaluate((value) => {
-        if (value === null) localStorage.removeItem("gys-hymn-view-mode-v1");
-        else localStorage.setItem("gys-hymn-view-mode-v1", value);
-      }, previousMode)
-      .catch(() => undefined);
   await session?.close();
   await rm(profile, { recursive: true, force: true }).catch(() => undefined);
 }

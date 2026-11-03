@@ -3752,3 +3752,22 @@ dengan teks terang).
 `pencarian-global`. Validasi lokal 390 light: **11 rute + 3 langkah**, semua
 `overflow: 0`; tangkapan dialog memperlihatkan scrim, input fokus, dan status
 “Ketik minimal 2 karakter” di atas halaman yang meredup.
+
+### Putaran 76 — Benchmark native membuka PDF lewat tautan yang didukung (3 Nov)
+
+Job native gagal di penanda `gys-pdf-page-ready` bahkan setelah anggaran
+diturunkan ke 45 dtk. Diagnostik menunjukkan pembaca berada di mode teks dan
+tidak ada penanda PDF sama sekali, padahal chunk PDF sudah terunduh.
+
+Akar masalah bukan aplikasi: `apps/web/src/hymn-view-mode.ts` menyimpan mode di
+memori sesi sejak `3023476` (“simplify session settings”, 8 Okt) dan test
+`e2e/hymn-session-mode.spec.ts` justru menegaskan bahwa reload mulai dari teks.
+Benchmark masih menyemai `localStorage["gys-hymn-view-mode-v1"]`, kunci yang
+sudah tidak dibaca aplikasi — jadi PDF tidak pernah terbuka dan penanda tidak
+mungkin muncul.
+
+Perbaikan: benchmark membuka `nativeRoute("/kidung/hymn-001?mode=pdf")`, tautan
+yang memang didukung router (diverifikasi lokal: `gys-pdf-page-ready` muncul dan
+`canvas[data-pdf-rendered='true']` ada); sisa kode `previousMode` dihapus dan
+anggaran penanda menjadi 30 dtk dengan komentar yang jujur. Bukti lama “PDF
+native lambat” dicabut; yang benar adalah benchmark mengukur mode teks.
