@@ -71,6 +71,7 @@ const CORE_SPECS = [
   "e2e/more-device-data.spec.ts",
   "e2e/account-menu.spec.ts",
   "e2e/egys-v1.spec.ts",
+  "e2e/route-announcement.spec.ts",
 ];
 
 export function resolveSelectiveTestArgs(changedFiles, userArgs) {

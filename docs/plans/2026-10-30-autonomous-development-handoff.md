@@ -4003,7 +4003,13 @@ Bukti: `route-a11y.test.ts` **2/2** (judul gabungan, spasi dirapikan);
 `document.activeElement` menjadi `H1` “Literatur”. Probe sebelum perbaikan
 mencatat `activeElement: A.nav-item`, jadi uji ini memang menangkap celahnya.
 Regresi tetangga: `accessibility` + `menu-motion` + `more-section-deeplink`
-**45/45 (3,6 mnt)**; spec baru masuk `playwright.core.config.ts`.
+**45/45 (3,6 mnt)**; spec baru masuk `playwright.core.config.ts` **dan**
+`CORE_SPECS` di `scripts/test-e2e-selective-core.mjs` (planner **10/10**), supaya
+perubahan shell seperti `App.tsx` otomatis menguji kontrak ini.
+
+Bukti hosted setelah deploy `1c0bce9`: muat langsung `/alkitab` →
+`Alkitab · GYSApp`; dari `/lainnya` klik “Literatur” → judul
+`Literatur · GYSApp` dan `document.activeElement` = `H1` “Literatur”.
 
 ### Putaran 109 — Preload font yang selalu 404 dihapus (3 Nov)
 
