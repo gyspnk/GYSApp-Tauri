@@ -628,6 +628,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.searchPlaceholder": "Cari nomor atau kata…",
     "faith.clearSearch": "Hapus pencarian",
     "faith.list": "Daftar dasar kepercayaan",
+    "faith.eyebrow": "tjc.org · pokok iman",
     "faith.topic": "Pokok {number}",
     "faith.copySection": "Salin bagian",
     "faith.copyShare": "Bagikan",

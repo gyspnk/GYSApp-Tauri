@@ -590,6 +590,7 @@ export const zhFeatureMessages: Record<string, string> = {
   "faith.searchPlaceholder": "搜索编号或关键词…",
   "faith.clearSearch": "清除搜索",
   "faith.list": "信仰基础列表",
+  "faith.eyebrow": "tjc.org · 信仰要道",
   "faith.topic": "要点 {number}",
   "faith.copySection": "复制段落",
   "faith.copyShare": "复制 / 分享",

@@ -3771,3 +3771,11 @@ yang memang didukung router (diverifikasi lokal: `gys-pdf-page-ready` muncul dan
 `canvas[data-pdf-rendered='true']` ada); sisa kode `previousMode` dihapus dan
 anggaran penanda menjadi 30 dtk dengan komentar yang jujur. Bukti lama “PDF
 native lambat” dicabut; yang benar adalah benchmark mengukur mode teks.
+
+Native run `41648555966` (setelah perbaikan tautan PDF) mencatat langkah
+**“Benchmark 30 packaged process relaunches and local content” = success** —
+bukti pertama bahwa penanda `gys-pdf-page-ready` memang muncul di build
+terpaket. Langkah berikutnya, soak media, gagal pada selector lama
+`.verse-panel .section-heading small`; hero sekarang memakai
+`.sauh-reference` di dalam `.sauh-title-row`, jadi selector tersebut
+diselaraskan (tidak ada perubahan aplikasi).

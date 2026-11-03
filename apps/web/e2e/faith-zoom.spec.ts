@@ -141,7 +141,11 @@ for (const width of [320, 1440]) {
       await expect(page.locator(".faith-hint, .connection-status")).toHaveCount(
         0,
       );
-      await expect(page.locator(".faith-page h1")).toHaveClass("sr-only");
+      // The page now shows its title like Literatur/Suara; it used to be
+      // screen-reader-only, which left the route without a visible identity.
+      const heading = page.locator(".faith-page h1");
+      await expect(heading).toBeVisible();
+      await expect(heading).toHaveCSS("white-space", "normal");
       const bounds = await page.locator(".faith-page").boundingBox();
       for (const selector of [".faith-search-bar", ".faith-row"]) {
         const box = await page.locator(selector).first().boundingBox();

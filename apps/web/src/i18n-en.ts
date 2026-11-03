@@ -601,6 +601,7 @@ export const enFeatureMessages: Record<string, string> = {
   "faith.searchPlaceholder": "Search number or keyword…",
   "faith.clearSearch": "Clear search",
   "faith.list": "List of faith foundations",
+  "faith.eyebrow": "tjc.org · faith topics",
   "faith.topic": "Topic {number}",
   "faith.copySection": "Copy section",
   "faith.copyShare": "Copy / share",

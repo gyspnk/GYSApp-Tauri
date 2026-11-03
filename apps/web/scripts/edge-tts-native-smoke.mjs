@@ -639,7 +639,7 @@ try {
     "Packaged Home recovery did not render its official Sauh snapshot",
   );
   const recoveredHomeSauhReference = await homeFailurePage
-    .locator(".verse-panel .section-heading small")
+    .locator(".verse-panel .sauh-reference")
     .textContent();
   if (packagedSauhReference)
     assert.equal(recoveredHomeSauhReference, packagedSauhReference);

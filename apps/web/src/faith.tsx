@@ -365,9 +365,12 @@ export function FaithPage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page faith-page" ref={pageRef}>
-      <h1 className="sr-only">
-        {group?.title ?? translate(locale, "nav.iman")}
-      </h1>
+      <section className="page-intro faith-intro">
+        <div>
+          <p className="date-line">{translate(locale, "faith.eyebrow")}</p>
+          <h1>{group?.title ?? translate(locale, "nav.iman")}</h1>
+        </div>
+      </section>
       {!pack && (
         <div className="loading-panel" role="status">
           <LoadingProgress label={translate(locale, "faith.loading")} />
