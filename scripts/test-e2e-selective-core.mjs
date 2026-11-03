@@ -192,6 +192,8 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     ) {
       specFiles.add("e2e/navigation-layout.spec.ts");
       specFiles.add("e2e/smoke.spec.ts");
+      specFiles.add("e2e/kidung-catalog-error.spec.ts");
+      specFiles.add("e2e/kidung-hymn-alias.spec.ts");
       grepPatterns.add("hymn|Kidung|MIDI|chord");
     }
 
@@ -212,6 +214,9 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
 
     if (file.includes("literature") || file.includes("literatur")) {
       specFiles.add("e2e/smoke.spec.ts");
+      specFiles.add("e2e/literature-recovery.spec.ts");
+      specFiles.add("e2e/literature-loading.spec.ts");
+      specFiles.add("e2e/literature-offline.spec.ts");
       grepPatterns.add("literature");
     }
 

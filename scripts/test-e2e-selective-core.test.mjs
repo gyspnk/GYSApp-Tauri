@@ -188,3 +188,16 @@ test("a numbered stylesheet keeps the cross-screen sweeps", () => {
   assert.ok(plan.args.includes("e2e/accessibility.spec.ts"));
   assert.doesNotMatch(plan.description, /unclassified shared/);
 });
+
+test("recovery cards keep their own contracts on literature and kidung edits", () => {
+  const literature = resolveSelectiveTestArgs(
+    ["apps/web/src/literature.tsx"],
+    [],
+  );
+  assert.ok(literature.args.includes("e2e/literature-recovery.spec.ts"));
+  assert.ok(literature.args.includes("e2e/literature-loading.spec.ts"));
+
+  const kidung = resolveSelectiveTestArgs(["apps/web/src/kidung.tsx"], []);
+  assert.ok(kidung.args.includes("e2e/kidung-catalog-error.spec.ts"));
+  assert.ok(kidung.args.includes("e2e/kidung-hymn-alias.spec.ts"));
+});

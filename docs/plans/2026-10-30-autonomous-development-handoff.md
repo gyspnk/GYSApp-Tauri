@@ -3983,6 +3983,21 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 105 — Kontrak pemulihan ikut jalur selektif (3 Nov)
+
+Dua spec baru dari putaran 102–103 (`e2e/kidung-catalog-error.spec.ts`,
+`e2e/kidung-hymn-alias.spec.ts`, `e2e/literature-recovery.spec.ts`) tidak
+terdaftar di perencana `scripts/test-e2e-selective-core.mjs`: perubahan pada
+`apps/web/src/kidung.tsx` atau `apps/web/src/literature.tsx` hanya memilih
+smoke + grep, sehingga kontrak pemulihan tidak pernah dijalankan sebelum
+merge.
+
+Sekarang cabang kidung menambahkan kedua spec kidung, dan cabang literatur
+menambahkan `literature-recovery`, `literature-loading`, dan
+`literature-offline`. Uji perencana baru “recovery cards keep their own
+contracts on literature and kidung edits” menjaga pemetaan ini; **10/10**
+`node --test scripts/test-e2e-selective-core.test.mjs`.
+
 ### Putaran 104 — Poll geometri diberi ruang di enam worker (3 Nov)
 
 Push `23d98ea` merah di `e2e-selective` (run `41720846360`): dua tes
