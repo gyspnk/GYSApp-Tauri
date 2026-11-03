@@ -3888,6 +3888,35 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 83 — Baca cache PDF berbatas waktu supaya tidak menggantung (3 Nov)
+
+B-37 menunjukkan pembaca PDF di WebView terpaket tidak pernah memulai permintaan
+jaringan setelah `page.reload()`: `blocked` hanya berisi URL chord dan
+`diagnostics=[]`, sementara panel tetap di “Menyiapkan PDF…”. Penyebabnya efek
+di `apps/web/src/literature.tsx` menunggu `readCachedLiteraturePdf()` (baca
+IndexedDB) tanpa batas, jadi `preparedAsset` tidak pernah diisi dan viewer PDF
+tidak pernah dipasang.
+
+Perbaikan: helper baru `apps/web/src/with-deadline.ts`
+
+```ts
+export async function withDeadline<T>(
+  work: Promise<T>,
+  timeoutMs: number,
+  fallback: T,
+): Promise<T>;
+```
+
+dipakai di `apps/web/src/literature.tsx` dengan
+`CACHED_PDF_READ_TIMEOUT = 4_000`; bila cache tidak menjawab dalam 4 detik,
+`pdfData` menjadi `undefined` dan viewer tetap dipasang sehingga mengambil jalur
+jaringan seperti biasa. Bukti: `apps/web/src/with-deadline.test.ts` **3/3**
+(hasil kerja, jatuh ke fallback saat menggantung, error tetap diteruskan),
+typecheck bersih, bundle tetap **162,6 KiB / 24 modul**.
+
+Status: mitigasi terkirim; verifikasi akhir tetap butuh `edge-tts-native.yml`
+hijau pada langkah PDF (`gys-pdf-page-ready`/`canvas[data-pdf-rendered]`).
+
 ### Putaran 82 — Soak native melewati Edge, lalu tertahan di PDF cache (3 Nov)
 
 Rangkaian dispatch `edge-tts-native.yml`:

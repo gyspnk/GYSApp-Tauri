@@ -64,6 +64,8 @@ function validateLiteraturePdf(bytes: Uint8Array): void {
     throw new Error("Downloaded resource is not a PDF");
 }
 
+const CACHED_PDF_READ_TIMEOUT = 4_000;
+
 async function readCachedLiteraturePdf(
   asset: AssetManifestItem,
 ): Promise<Uint8Array | undefined> {
@@ -77,6 +79,8 @@ async function readCachedLiteraturePdf(
     return undefined;
   }
 }
+
+import { withDeadline } from "./with-deadline.js";
 
 import {
   getCachedLiteratureCatalog,
@@ -808,7 +812,11 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
     setPreparedAsset(undefined);
     setDownloadStatus(pdfAsset ? "checking" : "idle");
     if (pdfAsset) {
-      void readCachedLiteraturePdf(pdfAsset)
+      void withDeadline(
+        readCachedLiteraturePdf(pdfAsset),
+        CACHED_PDF_READ_TIMEOUT,
+        undefined,
+      )
         .catch(() => undefined)
         .then((data) => {
           if (cancelled) return;
