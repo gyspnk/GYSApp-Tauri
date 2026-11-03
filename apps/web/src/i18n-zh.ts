@@ -542,6 +542,7 @@ export const zhFeatureMessages: Record<string, string> = {
   "kidung.pdfFailed": "PDF 加载失败",
   "kidung.pdfRetry": "请检查网络或缓存后重试。",
   "kidung.notFound": "未找到诗歌",
+  "kidung.notFoundBody": "这首诗歌不在目录中。请检查链接，或返回诗歌列表。",
   "kidung.settingsMidiPlayer": "MIDI 播放器",
   "kidung.settingsCompactPlayer": "以紧凑模式开始",
   "kidung.settingsCrossfade": "歌曲淡入淡出",

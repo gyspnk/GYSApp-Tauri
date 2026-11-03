@@ -580,6 +580,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.pdfFailed": "PDF gagal dimuat",
     "kidung.pdfRetry": "Periksa koneksi atau cache, lalu coba lagi.",
     "kidung.notFound": "Pujian tidak ditemukan",
+    "kidung.notFoundBody":
+      "Pujian ini tidak ada di katalog. Periksa tautannya, atau kembali ke daftar kidung.",
     "kidung.settingsMidiPlayer": "Pemutar MIDI",
     "kidung.settingsCompactPlayer": "Mulai dalam mode ringkas",
     "kidung.settingsCrossfade": "Transisi antar lagu",

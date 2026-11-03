@@ -1074,12 +1074,23 @@ export function HymnDetail({
   if (state.status === "error" || !item)
     return (
       <div className="page">
-        <div className="error-panel" role="alert">
-          <strong>{translate(locale, "kidung.notFound")}</strong>
-          <Link className="quiet-button" to="/kidung">
+        <section
+          className="route-recovery"
+          role="status"
+          aria-live="polite"
+          aria-labelledby="kidung-not-found-title"
+        >
+          <div className="route-recovery-mark" aria-hidden="true">
+            <Icon name="music" size={25} />
+          </div>
+          <h1 id="kidung-not-found-title">
+            {translate(locale, "kidung.notFound")}
+          </h1>
+          <p>{translate(locale, "kidung.notFoundBody")}</p>
+          <Link className="primary-button" to="/kidung">
             {translate(locale, "kidung.back")}
           </Link>
-        </div>
+        </section>
       </div>
     );
   const show = (message: string) => {

@@ -41,3 +41,20 @@ test("a reader whose catalogue failed says so instead of claiming the song is go
     page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
   ).toBeVisible({ timeout: 15_000 });
 });
+
+test("an unknown hymn id gets the recovery card, not a bare alert", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung/tidak-ada");
+  const card = page.locator(".route-recovery");
+  await expect(card).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Pujian tidak ditemukan" }),
+  ).toBeVisible();
+  await expect(card).toContainText("Pujian ini tidak ada di katalog");
+  await card.getByRole("link", { name: "← Semua kidung" }).click();
+  await expect(page).toHaveURL(/\/GYSApp-Tauri\/kidung$/);
+  await expect(page.locator(".pujian-item").first()).toBeVisible({
+    timeout: 15_000,
+  });
+});

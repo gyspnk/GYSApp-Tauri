@@ -553,6 +553,8 @@ export const enFeatureMessages: Record<string, string> = {
   "kidung.pdfFailed": "PDF failed to load",
   "kidung.pdfRetry": "Check your connection or cache, then try again.",
   "kidung.notFound": "Hymn not found",
+  "kidung.notFoundBody":
+    "This hymn is not in the catalogue. Check the link, or go back to the hymn list.",
   "kidung.settingsMidiPlayer": "MIDI player",
   "kidung.settingsCompactPlayer": "Start in compact mode",
   "kidung.settingsCrossfade": "Song crossfade",

@@ -3983,6 +3983,25 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 102 — Pujian yang tidak ada memakai kartu pemulihan (3 Nov)
+
+`/kidung/<id-tidak-dikenal>` sebelumnya menampilkan `.error-panel` selebar
+halaman dengan judul tebal dan tombol biru di kiri atas, meninggalkan ruang
+kosong besar di bawahnya — pola yang sama dengan 404 sudah ada
+(`.route-recovery`), tapi tidak dipakai di sini.
+
+Sekarang cabang `state.status === "error" || !item` di `apps/web/src/kidung.tsx`
+merender `.route-recovery` dengan ikon musik, `h1` “Pujian tidak ditemukan”,
+kalimat baru `kidung.notFoundBody` (id/en/zh) dan tombol primer
+“← Semua kidung”. Bola: 390 → kartu **366×634**, 1440 → **1216×560**, tanpa
+overflow horizontal.
+
+Bukti: `e2e/kidung-catalog-error.spec.ts` mendapat kasus “an unknown hymn id
+gets the recovery card, not a bare alert” yang juga memverifikasi tombol kembali
+mendarat di katalog; spec itu **3/3 (4,4 dtk)**, dan
+`kidung-catalog-error` + `kidung-hymn-alias` + `kidung-section-navigation`
+**10/10 (16,1 dtk)**. `tsc` bersih, `i18n.test.ts` **4/4**.
+
 ### Putaran 101 — Anggaran CSS dan boot diukur ulang (3 Nov)
 
 Hosted (`gyspnk.github.io`, tanpa throttle, dari container ini): `load` 3180 ms,
