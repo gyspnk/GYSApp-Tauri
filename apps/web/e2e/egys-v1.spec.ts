@@ -98,6 +98,9 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     });
     await expect(heading).toBeVisible();
     await account.locator("summary").click();
+    // Wait for the disclosure itself to close: the role query below can match
+    // while React is still re-rendering, which flaked the hidden assertion.
+    await expect(account).not.toHaveAttribute("open");
     await expect(
       account.getByRole("button", { name: "Login dengan Google", exact: true }),
     ).toBeHidden();

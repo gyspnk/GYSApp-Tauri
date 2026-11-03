@@ -3983,6 +3983,20 @@ diubah, karena spec visual memblokir gambar eksternal — hero jatuh ke permukaa
 polos tanpa foto, jadi perubahan scrim tidak terlihat di baseline. Verifikasi
 scrim tetap lewat screenshot QA (`qa=true`) yang memuat gambar asli.
 
+### Putaran 100 — Hasil uji 6 worker + flake egys (3 Nov)
+
+Push `e74c153` (stylesheet lapisan) akhirnya memilih sweep penuh: **231 tes,
+6 worker, 5,4 mnt waktu tes, total 444 dtk** (`41714421909`). Sebelumnya jalur
+yang sama **533 dtk** dengan 4 worker (`4174caf`), jadi 6 worker memberi
+**−17 %** dan tetap dipakai (aturan di Putaran 95: kembalikan ke 4 bila tidak
+membaik). Sisa biaya ada di setup + build + render snapshot, bukan penjadwalan.
+
+Flake `e2e/egys-v1.spec.ts` “Apple and WhatsApp remain available before Google
+loads” (`toBeHidden` gagal lalu lulus di retry): asersi menunggu role query
+sementara React masih me-render ulang. Sekarang tes menunggu state disclosure
+(`await expect(account).not.toHaveAttribute("open")`) sebelum menilai tombol
+tersembunyi; **6/6** lulus pada enam lebar.
+
 ### Putaran 96 — Config Playwright tidak lagi menurunkan cakupan sweep (3 Nov)
 
 Run `5b17c50` hanya menjalankan **90 tes core** padahal `app-design.css` ikut
