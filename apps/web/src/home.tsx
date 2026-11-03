@@ -3,6 +3,7 @@ import { useReadinessMarker } from "./readiness.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { LiteratureItem } from "@gys/contracts";
+import { prefersSmallImages } from "./network-hints.js";
 import { translate, type Locale } from "./i18n.js";
 import {
   fetchSauh,
@@ -308,6 +309,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                 src={selectedToday.imageUrl}
                 imageSrcSet={selectedToday.imageSrcSet}
                 sizes="(min-width: 1024px) 1000px, 100vw"
+                preferSmall={prefersSmallImages()}
                 fallbackTitle={selectedToday.title}
                 fallbackCategoryKey="renungan"
                 fallbackCategory={translate(

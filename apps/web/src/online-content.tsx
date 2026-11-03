@@ -3,6 +3,7 @@ import { Icon } from "./icons.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
+import { prefersSmallImages } from "./network-hints.js";
 import { translate, type Locale } from "./i18n.js";
 import {
   fetchSauh,
@@ -228,6 +229,7 @@ export function SauhPage({ locale }: { locale: Locale }) {
               src={state.post.imageUrl}
               imageSrcSet={state.post.imageSrcSet}
               sizes="(min-width: 960px) 900px, 100vw"
+              preferSmall={prefersSmallImages()}
               fallbackTitle={state.post.title}
               fallbackCategory={translate(
                 locale,

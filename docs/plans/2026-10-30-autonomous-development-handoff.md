@@ -3888,6 +3888,28 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 88 — Gambar utama hemat byte di jaringan lambat (3 Nov)
+
+Tujuan “tanpa membebani device” juga berarti tidak mengunduh gambar 740 px di
+ponsel 3G. `LazyImage` sekarang menerima `preferSmall`; di mode itu ia memilih
+kandidat `srcset` terkecil yang masih ≥ 300 px (`pickSmallCandidate` di
+`apps/web/src/srcset.ts`), memproksikannya, dan melepas `srcset` supaya browser
+tidak menaikkan pilihan. Sinyalnya dari `prefersSmallImages`
+(`apps/web/src/network-hints.ts`): `saveData` atau `effectiveType` 2g/3g.
+
+Dipasang di hero beranda (`apps/web/src/home.tsx`) dan hero artikel Sauh
+(`apps/web/src/online-content.tsx`). Diuji dengan `navigator.connection`
+disuntik: 4G tetap memakai `…jpg 740w` + `srcset`; 3G memakai
+`…-300x200.jpg` tanpa `srcset`. Untuk artikel hari ini itu **101.194 → 15.827
+byte** (‑84%); pada artikel PNG 1,2 MB sebelumnya penghematannya jauh lebih
+besar. LCP diukur ulang dengan CDP 400 kbps/4× CPU: elemen LCP adalah teks
+`blockquote`, jadi angka LCP tidak berubah berarti (6,4–7,6 dtk, variasi host);
+manfaatnya di byte terunduh, bukan di LCP.
+
+Bukti: `src/srcset.test.ts` + `src/network-hints.test.ts` + `lazy-image.test.ts`
+**15/15**; `home-resilience` + `sauh-loading-layout` **9/9**; bundle
+**162,7 KiB / 24 modul**.
+
 ### Putaran 87 — Peluncuran WebView2 yang gagal sekarang menjelaskan dirinya (3 Nov)
 
 Run native `41676425965` gagal sebelum soak: `WebView2 DevTools did not start`

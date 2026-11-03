@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { translate, type Locale } from "./i18n.js";
 import { getCoverDataUri } from "./cover-generator.js";
+import { pickSmallCandidate } from "./srcset.js";
 
 export type LazyImageState = "loading" | "loaded" | "missing" | "error";
 
@@ -90,6 +91,7 @@ function ImageContent({
   onLoad,
   imageSrcSet,
   sizes,
+  preferSmall = false,
 }: {
   locale?: Locale;
   src?: string | undefined;
@@ -105,25 +107,32 @@ function ImageContent({
   onLoad?: (() => void) | undefined;
   imageSrcSet?: string | undefined;
   sizes?: string | undefined;
+  /** Use the narrowest responsive candidate (metered or slow connections). */
+  preferSmall?: boolean | undefined;
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const imageRef = useRef<HTMLImageElement>(null);
+  const smallest = preferSmall ? pickSmallCandidate(imageSrcSet) : undefined;
+  const primary = smallest
+    ? (resolveProxiedImageUrl(smallest) ?? smallest)
+    : src;
   const candidates = [
     ...new Set(
       [
-        resolveProxiedImageUrl(src),
-        resolveOriginalImageUrl(src),
-        resolveOriginalImageUrl(src, true),
-        src,
+        resolveProxiedImageUrl(primary),
+        resolveOriginalImageUrl(primary),
+        resolveOriginalImageUrl(primary, true),
+        primary,
       ].filter((value): value is string => Boolean(value)),
     ),
   ];
   const effectiveSrc = candidates[attempt];
   // The responsive list only describes the first candidate; the fallbacks are
   // different files with no descriptors.
-  const responsive = effectiveSrc === candidates[0] ? imageSrcSet : undefined;
+  const responsive =
+    effectiveSrc === candidates[0] && !smallest ? imageSrcSet : undefined;
   const effectiveSrcSet = responsive
     ?.split(",")
     .map((entry) => {
