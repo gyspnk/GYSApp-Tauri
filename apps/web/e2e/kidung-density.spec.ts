@@ -41,6 +41,19 @@ for (const { width, touch } of [
       // The reader chrome clamps to 44-56px; at 1440 the 56px control plus the
       // hero's 4px padding is the documented ceiling, not a 48px mouse budget.
       expect(metrics.header.height).toBeLessThanOrEqual(touch ? 56 : 64);
+      // At 390px the hero keeps its 52px height while the title gets two lines;
+      // the full name must fit, otherwise the clamp silently eats words.
+      if (width === 390) {
+        const title = page.locator(".hymn-text-title h1");
+        const titleBox = await title.boundingBox();
+        expect(titleBox!.height).toBeGreaterThan(30);
+        expect(titleBox!.height).toBeLessThanOrEqual(metrics.header.height);
+        expect(
+          await title.evaluate(
+            (node) => node.scrollHeight > node.clientHeight + 1,
+          ),
+        ).toBe(false);
+      }
       // The phone dock gained one intentional row (progress under the title), so
       // its ceiling moved from 104 to 128; the desktop dock is unchanged.
       expect(metrics.dock.height).toBeLessThanOrEqual(touch ? 128 : 84);

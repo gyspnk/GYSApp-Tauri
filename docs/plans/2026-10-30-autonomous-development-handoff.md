@@ -3903,6 +3903,12 @@ Terukur: h1 390 menjadi 122×37 (dua baris penuh), 320 52×37, 768 219×24
 Bukti: `kidung-density` + `mobile-scroll-kidung` + `kidung-section-navigation`
 **21/21 (1,2 mnt)**; screenshot 320/390/768.
 
+Kontraknya dijaga: `apps/web/e2e/kidung-density.spec.ts` di 390 px sekarang
+memeriksa judul setinggi >30 px (dua baris), tidak melebihi tinggi hero, dan
+`scrollHeight` tidak terpotong. Dibuktikan gagal-dulu: dengan ambang
+dikembalikan ke 359 px, tes 390 px **gagal**; setelah ambang 599 px, **4/4
+lulus**.
+
 ### Putaran 88 — Gambar utama hemat byte di jaringan lambat (3 Nov)
 
 Tujuan “tanpa membebani device” juga berarti tidak mengunduh gambar 740 px di

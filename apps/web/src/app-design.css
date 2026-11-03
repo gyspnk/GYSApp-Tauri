@@ -2309,7 +2309,7 @@
 .hymn-detail-page.is-text-viewer .hymn-text-footer > span {
   font-size: clamp(0.75rem, calc(0.625rem + 0.4vw), 1rem);
 }
-@media (max-width: 359px) {
+@media (max-width: 599px) {
   .hymn-detail-page.is-text-viewer .detail-hero {
     flex-wrap: wrap;
   }
