@@ -125,6 +125,18 @@ export function MultiSelect({
         <Icon name="chevronDown" size={16} />
       </button>
       {menuPresent && (
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="multiselect-scrim"
+          onClick={() => {
+            setOpen(false);
+            triggerRef.current?.focus();
+          }}
+        />
+      )}
+      {menuPresent && (
         <div
           className="multiselect-menu"
           role="dialog"

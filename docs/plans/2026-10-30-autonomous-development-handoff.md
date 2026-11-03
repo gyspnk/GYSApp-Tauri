@@ -3888,6 +3888,18 @@ sehingga `[1]` `undefined`. Blok itu sekarang membuka
 `/lainnya?section=audio`, menunggu opsi di `.audio-settings-inline select`,
 memilih suara lokal, lalu kembali ke reader.
 
+### Putaran 86 — Sheet pilih kitab punya latar peredup (3 Nov)
+
+Di ponsel sheet pemilih kitab melayang di atas isi halaman tanpa peredup, jadi
+tidak terbaca sebagai lapisan modal. Ditambahkan `.multiselect-scrim` (tombol
+`aria-hidden`, `tabIndex={-1}`) yang menutup semua di bawah topbar
+(`inset: var(--topbar-height, 58px) 0 0 0`), `z-index: 39`, warna
+`rgb(8 15 30 / 38%)`, `touch-action: none` supaya halaman di belakang tidak ikut
+bergulir saat sheet terbuka; menekan peredup menutup sheet dan mengembalikan
+fokus ke pemicu. Diukur pada emulasi Pixel 7: peredup 412×781 px, sheet 388×479
+px, klik peredup menutup menu (0 node), `bible-search-multi-book` +
+`accessibility` **26/26 (3,3 mnt)**.
+
 ### Putaran 85 — WebView terpaket mengunduh PDF tanpa range (3 Nov)
 
 Run native `41670867680` (setelah batas waktu cache di `5defda0`) membuktikan
