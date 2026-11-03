@@ -22,6 +22,9 @@
       type="font/woff2"
       crossorigin
     />
+    <!-- The home hero comes from this 8 KiB shelf: starting it with the head
+         saves a request round trip after React boots (LCP 5,4 dtk hosted). -->
+    <link rel="preload" href="%BASE_URL%offline/sauh.json" as="fetch" />
     <link rel="stylesheet" href="/src/startup.css" />
     <meta name="description" content="GYSApp — Gereja Yesus Sejati" />
     <link
