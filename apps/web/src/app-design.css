@@ -3824,6 +3824,18 @@ body:has(.hymn-detail-page.is-text-viewer)
   line-height: 1.8;
   color: var(--ink);
 }
+/* The byline names the speaker; quotation marks made it read as a quote. */
+.online-article-byline {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-style: normal;
+  letter-spacing: 0.01em;
+  text-align: start;
+}
+.online-article-byline em {
+  font-style: normal;
+}
 .online-article-body > p {
   margin-block: 0 1em;
   text-align: justify;

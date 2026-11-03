@@ -3927,6 +3927,18 @@ mode: "serial" })` tetap dihormati.
 Diukur lokal 2 worker: `kidung-usability` **5,7 → 2,1 mnt** (50/50 lulus);
 `editorial-ui` + `navigation-layout` **8,4 → 3,3 mnt** (62/62 lulus).
 
+### Putaran 93 — Bylin Suara terbaca sebagai atribusi (3 Nov)
+
+Di `/suara/<slug>` baris pertama biasanya nama pembicara (“Sdri. … Gereja cabang
+…”). Baris itu dikirim dengan tanda kutip, jadi `renderSuaraInline` mengubahnya
+menjadi `<em class="suara-quote">`: satu baris miring, rata tengah, terbungkus
+kutip — terbaca seperti kutipan, bukan atribusi.
+
+`apps/web/src/online-content.tsx` sekarang `stripQuotationMarks()` untuk baris
+bylin, dan `.online-article-byline` (yang ternyata sudah ada dan memang miring,
+dengan garis biru kiri) mendapat teks tanpa kutip. `apps/web/src/suara-byline.test.ts`
+**3/3**; `suara-detail` + `suara-catalog` **3/3 (18,2 dtk)**; screenshot 1440.
+
 ### Putaran 92 — Palet pencarian muat di viewport ponsel; sweep CSS terukur ulang (3 Nov)
 
 `apps/web/src/styles/04-reader-media.css`: panel pencarian di ponsel memakai

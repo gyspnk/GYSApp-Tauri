@@ -40,6 +40,14 @@ function isSuaraByline(text: string): boolean {
   return /Gereja.*cabang|Sdr\.|Sdri\./i.test(trimmed) && trimmed.length < 140;
 }
 
+export function stripQuotationMarks(text: string): string {
+  return text
+    .trim()
+    .replace(/^["“'‘]+/, "")
+    .replace(/["”'’]+$/, "")
+    .trim();
+}
+
 function renderSuaraInline(text: string): React.ReactNode[] {
   const nodes: React.ReactNode[] = [];
   const verseRe = /(\([^)]*\d+:\d+[^)]*\))/g;
@@ -85,7 +93,7 @@ function SuaraParagraphs({ text }: { text: string }) {
   return (
     <div className="online-article-body suara-article-body">
       {hasByline && (
-        <p className="online-article-byline">{renderSuaraInline(first)}</p>
+        <p className="online-article-byline">{stripQuotationMarks(first)}</p>
       )}
       {bodyParas.map((paragraph, index) => (
         <p key={`${index}-${paragraph.slice(0, 16)}`}>
