@@ -4056,7 +4056,12 @@ jalur selektif:
   plus satu unduhan latar (auto-cache Putaran 91), jadi jumlah request dihitung
   sampai status `ready`; dan anggaran waktu dinding (15 s / 8 s) hanya ditegakkan
   di CI karena host bersama ini mencatat 15–36 s untuk halaman yang sama
-  (`kidung-tablet` 16,5 s, `bible-desktop` 35,9 s). **2/2**.
+  (`kidung-tablet` 16,5 s, `bible-desktop` 35,9 s). **2/2**.**Bukti penuh bertanggal (4 Nov):** dispatch `ci.yml` untuk `2ebea67` →
+  run **`41785582562`** `success`, keempat shard hijau (`e2e-shard (1)`
+  06:27:41→06:34:33, `(2)` 3 m 28 s, `(3)` 3 m 44 s, `(4)` 3 m 31 s; total 7 m 47 s),
+  `update-visual-baselines` juga hijau dengan **0 diff** terhadap pohon. Jadi `main`
+  kembali punya bukti suite penuh bertanggal setelah nightly 3 Nov merah, dan
+  perbaikan kontrak `chord-startup` (`a956073`) terbukti pada jalur penuh.
 
 ### Putaran 120 — Nightly merah karena kontrak sync chord yang usang (4 Nov)
 
