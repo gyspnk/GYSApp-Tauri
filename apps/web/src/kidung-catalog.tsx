@@ -120,6 +120,10 @@ export function HymnCatalog({
     () => [...new Set(allItems.map((item) => item.book))].sort(),
     [allItems],
   );
+  const songCount = useMemo(
+    () => allItems.filter((item) => !item.assetCode).length,
+    [allItems],
+  );
   const filtered = useMemo(() => {
     if (!deferredQuery.trim() && book === "all")
       return allItems.filter((item) => !item.assetCode);
@@ -185,9 +189,18 @@ export function HymnCatalog({
   };
   return (
     <div className="page hymn-page">
+      <section className="page-intro kidung-intro">
+        <div>
+          <p className="date-line">{translate(locale, "kidung.eyebrow")}</p>
+          <h1>{translate(locale, "page.kidungTitle")}</h1>
+        </div>
+        <span className="pack-badge">
+          {translate(locale, "kidung.itemCount", { count: songCount })}
+        </span>
+      </section>
+
       <div className="kidung-index-toolbar">
         <div className="kidung-controls-field">
-          <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
           <KidungLocalNav active="songs" locale={locale} />
           {state.status === "ready" && (
             <div className="kidung-header-filter">

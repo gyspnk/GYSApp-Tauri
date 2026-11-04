@@ -483,6 +483,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.chordLayer": "Lapisan chord",
     "kidung.search": "Cari lagu",
     "kidung.searchPlaceholder": "Nomor atau judul…",
+    "kidung.eyebrow": "Pujian dan penyembahan",
+    "kidung.itemCount": "{count} lagu",
     "kidung.collection": "Koleksi",
     "kidung.allCollections": "Semua",
     "kidung.navigation": "Navigasi Kidung",

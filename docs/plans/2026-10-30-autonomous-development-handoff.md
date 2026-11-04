@@ -4206,6 +4206,26 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Putaran 139 — Katalog kidung punya judul yang terlihat (4 Nov)
+
+Halaman `/kidung` satu-satunya rute utama yang tidak menampilkan judul: `<h1>`
+ditulis `sr-only` di dalam toolbar, jadi pembaca hanya melihat deretan kontrol
+(“Semua”, “Aa”, pencarian) tanpa nama halaman — dan saat katalog gagal, layar
+benar-benar tidak punya judul. `/suara` dan `/literatur` memakai pola
+`.page-intro` (eyebrow + h1 + badge jumlah).
+
+Ditambahkan `section.page-intro.kidung-intro` di `src/kidung-catalog.tsx`
+dengan eyebrow baru `kidung.eyebrow` dan badge `kidung.itemCount` (id/en/zh),
+`<h1>` pindah keluar toolbar, dan jumlah lagu dihitung dari item tanpa
+`assetCode` (533). Diukur: intro **137 px** di 390 dan **106 px** di 1440,
+badge “533 lagu”, daftar tetap 533 baris.
+
+Verifikasi: `tsc -b` bersih; `kidung-section-navigation` +
+`kidung-loading` + `kidung-catalog-error` + `kidung-density` **15/15 (40,9
+dtk)**; `kidung-style-behavior` + `responsive-touch-targets` **13/13 (37,3
+dtk)**; axe 390 tema terang/gelap/sepia/amoled **0 pelanggaran**; bundle
+**163,2/180,0 KiB**.
+
 ### Putaran 138 — Preload Sauh akhirnya benar-benar dipakai (4 Nov)
 
 `index.html` sudah memasang `<link rel="preload" as="fetch">` untuk

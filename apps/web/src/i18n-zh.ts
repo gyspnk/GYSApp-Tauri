@@ -445,6 +445,8 @@ export const zhFeatureMessages: Record<string, string> = {
   "kidung.chordLayer": "和弦层",
   "kidung.search": "搜索诗歌",
   "kidung.searchPlaceholder": "编号或标题…",
+  "kidung.eyebrow": "赞美与敬拜",
+  "kidung.itemCount": "{count} 首",
   "kidung.collection": "合集",
   "kidung.allCollections": "全部",
   "kidung.navigation": "诗歌导航",
