@@ -4232,6 +4232,15 @@ injeksi tepat sebelum `</head>`), `route-announcement` + `runtime-health`
 `dist/iman/index.html`, `dist/kidung/index.html`, `dist/kidung/hymn-001/index.html`,
 dan `dist/index.html`.
 
+**Hasil hosted (390 px, 1,6 Mbps, CPU 4×, `serviceWorkers: "block"`):** chunk
+rute diminta pada **924–1 419 ms** (sebelumnya 5 285 ms untuk `faith-*`);
+LCP `/iman` **5,2–5,9 dtk** (sebelumnya 7,29 dtk pada sampel yang sama).
+`/alkitab` kunjungan pertama **14,6–14,8 dtk** karena 1,7 MB pack harus
+diunduh; **muat ulang dengan SW hangat: LCP 1,49 dtk** (`transferSize: 0`).
+Angka `/alkitab` 6,4 dtk yang tercatat lebih awal berasal dari cache SW versi
+lama yang masih mem-precache JSON mentah 7,6 MB, jadi bukan pembanding yang
+setara.
+
 ### Putaran 144 — Pack Alkitab dikirim terkompresi (4 Nov)
 
 GitHub Pages menyajikan `offline/bible/tb-reader.json` **tanpa
