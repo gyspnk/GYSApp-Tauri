@@ -4206,6 +4206,37 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Putaran 142 — Snapshot Sauh dipercaya sehari, bukan hanya “hari ini” (4 Nov)
+
+`fetchSauh` sudah memakai pola stale-while-revalidate: snapshot paket
+`offline/sauh.json` diadu dengan permintaan jaringan, lalu `publishSauhUpdate`
+menyegarkan kartu di tempat. Masalahnya, snapshot hanya boleh dicat kalau ia
+memuat entri **bertanggal hari ini** (`verifiedTodaySnapshot`), sementara API
+resmi saat ini menyajikan pos baru (`sbj261105`, “Eli, Eli, Lama
+Sabakhtani?”) sehingga kunjungan pertama tetap menunggu **~3,6 dtk** untuk
+konten yang sama.
+
+Perbaikan dua sisi:
+
+1. **Build menjemput snapshot segar.** `scripts/fetch-sauh-snapshot.mjs`
+   membaca `VITE_BFF_BASE_URL`, mengambil `/api/v1/content/sauh` dengan batas
+   15 dtk, memvalidasi lewat `normaliseSnapshot()` (id/title/verse/body/url
+   https/updatedAt), lalu menulis `public/offline/sauh.json` dengan
+   `{items, fetchedAt}`. Setiap kegagalan mempertahankan berkas yang sudah
+   ada dan hanya mencetak alasan — build tidak pernah gagal karena ini.
+   Dipasang di `.github/workflows/pages.yml` tepat sebelum `pnpm build`.
+2. **Klien mempercayai `fetchedAt` selama 24 jam.** `trustedSnapshot(posts,
+fetchedAt, now)` mengembalikan entri hari ini bila ada; kalau tidak, ia
+   memakai seluruh isi snapshot asalkan `fetchedAt` berumur ≤24 jam (dan tidak
+   di masa depan). Di luar itu snapshot ditolak supaya bacaan basi tidak
+   pernah tampil sebagai renungan hari ini.
+
+Verifikasi: `vitest run src/sauh.test.ts` **26/26** (empat kasus baru untuk
+`trustedSnapshot`), `node --test scripts/fetch-sauh-snapshot.test.mjs`
+**4/4**, `tsc -b` bersih, `pnpm --filter @gys/web build` hijau. Bukti
+fungsional: dengan `**/api/v1/**` diblokir total, beranda tetap menampilkan
+pos hari ini dari snapshot — sebelumnya jalur itu berakhir di kartu galat.
+
 ### Putaran 141 — Bukti blur dari artefak hosted (4 Nov)
 
 QA dispatch `41861567032` (setelah `897403d` dan `0fe35cc`) menghasilkan

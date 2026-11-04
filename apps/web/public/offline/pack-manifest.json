@@ -43,8 +43,8 @@
     {
       "id": "sauh-feed",
       "path": "offline/sauh.json",
-      "bytes": 22208,
-      "sha256": "100365498892621d909c83ac762939d93912633d27457b6ac8bb58d4be97e0f0"
+      "bytes": 4296,
+      "sha256": "dd8fefdfc09ea6db7de82e601b79ff18361d5c5977c4188079aaf55c57380e73"
     },
     {
       "id": "literature-catalog",

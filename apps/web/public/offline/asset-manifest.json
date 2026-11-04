@@ -73,11 +73,11 @@
       "kind": "pack",
       "source": "local",
       "path": "offline/sauh.json",
-      "version": "100365498892621d909c83ac762939d93912633d27457b6ac8bb58d4be97e0f0",
-      "sha256": "100365498892621d909c83ac762939d93912633d27457b6ac8bb58d4be97e0f0",
-      "bytes": 22208,
+      "version": "dd8fefdfc09ea6db7de82e601b79ff18361d5c5977c4188079aaf55c57380e73",
+      "sha256": "dd8fefdfc09ea6db7de82e601b79ff18361d5c5977c4188079aaf55c57380e73",
+      "bytes": 4296,
       "status": "available",
-      "lastUpdated": "2026-10-11T14:44:32.743Z"
+      "lastUpdated": "2026-11-04T18:03:13.849Z"
     },
     {
       "id": "literature-catalog",

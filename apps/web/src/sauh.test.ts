@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
+import type { SauhPost } from "@gys/contracts";
 import {
   firstParagraph,
   expectedSauhSlug,
   onlyTodaySauh,
   parseSauhPosts,
   selectTodaySauh,
+  trustedSnapshot,
   sauhNetworkCandidates,
   stripHtml,
 } from "./sauh.js";
@@ -586,5 +588,39 @@ describe("Sauh feed normalization", () => {
     expect(getCachedSauh()).toBeUndefined();
     await expect(fetchSauh()).rejects.toThrow(/belum dapat diambil/i);
     vi.unstubAllGlobals();
+  });
+});
+
+describe("trustedSnapshot", () => {
+  const post = (id: string, updatedAt: string): SauhPost => ({
+    id,
+    title: "Judul",
+    verse: "Ayat",
+    body: "Isi",
+    url: "https://tjc.org/id/sauh/example",
+    updatedAt,
+    source: "tjc.org",
+  });
+  const now = Date.parse("2026-11-04T05:00:00.000Z");
+  const todays = post("sbj261104", "2026-11-04T00:00:00.000Z");
+  const older = post("sbj261102", "2026-11-02T00:00:00.000Z");
+
+  it("keeps today's entry even when the snapshot is old", () => {
+    expect(
+      trustedSnapshot([todays, older], now - 5 * 24 * 60 * 60_000, now),
+    ).toEqual([todays]);
+  });
+
+  it("paints a build-fresh shelf whose newest entry is not today", () => {
+    expect(trustedSnapshot([older], now - 60 * 60_000, now)).toEqual([older]);
+  });
+
+  it("refuses a shelf confirmed more than a day ago", () => {
+    expect(trustedSnapshot([older], now - 25 * 60 * 60_000, now)).toEqual([]);
+  });
+
+  it("refuses an unstamped or future-dated shelf", () => {
+    expect(trustedSnapshot([older], undefined, now)).toEqual([]);
+    expect(trustedSnapshot([older], now + 60_000, now)).toEqual([]);
   });
 });

@@ -40,6 +40,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify:generated
       - run: pnpm verify:docs
+      # Refresh the packaged Sauh shelf so the first paint can use today's
+      # entry instead of waiting ~3,6 s for the live BFF request; the script
+      # keeps the committed file whenever the fetch fails.
+      - run: pnpm --filter @gys/web exec node scripts/fetch-sauh-snapshot.mjs
+        env:
+          VITE_BFF_BASE_URL: ${{ vars.VITE_BFF_BASE_URL }}
       - run: pnpm build
       - run: pnpm verify:bundle
       - uses: actions/upload-pages-artifact@v3

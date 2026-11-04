@@ -474,6 +474,43 @@ export function verifiedTodaySnapshot(
   return selectTodaySauh(posts, now);
 }
 
+const SNAPSHOT_TRUST_MS = 24 * 60 * 60_000;
+
+/**
+ * The packaged shelf is written by the hosted build, so `fetchedAt` records
+ * when the deploy confirmed it against the live API. Within a day the snapshot
+ * is the same content the network would return, so the first paint may use it
+ * even when the publisher has not posted today; beyond that, only a genuine
+ * today's entry may be painted (stale reading is never shown as today's).
+ */
+export function trustedSnapshot(
+  posts: SauhPost[],
+  fetchedAt: number | undefined,
+  now = Date.now(),
+): SauhPost[] {
+  const todays = selectTodaySauh(posts, new Date(now));
+  if (todays.length) return todays;
+  if (fetchedAt === undefined) return [];
+  const age = now - fetchedAt;
+  if (age < 0 || age > SNAPSHOT_TRUST_MS) return [];
+  return posts;
+}
+
+async function loadSnapshotShelf(): Promise<{
+  items: SauhPost[];
+  fetchedAt?: number;
+}> {
+  const response = await fetch(STATIC_URL, { cache: "default" });
+  if (!response.ok) throw new Error(`Sauh snapshot failed: ${response.status}`);
+  const payload: unknown = await response.json();
+  const raw = (payload as { fetchedAt?: unknown } | null)?.fetchedAt;
+  const parsed = typeof raw === "string" ? Date.parse(raw) : Number.NaN;
+  return {
+    items: parseNormalizedSauh(payload),
+    ...(Number.isFinite(parsed) ? { fetchedAt: parsed } : {}),
+  };
+}
+
 function parseNormalizedSauh(value: unknown): SauhPost[] {
   const candidates =
     Array.isArray(value) || !value || typeof value !== "object"
@@ -659,8 +696,8 @@ export async function fetchSauh(
   const shared = (async () => {
     const offline = typeof navigator !== "undefined" && !navigator.onLine;
     if (offline) {
-      const snapshot = await request(STATIC_URL);
-      const selected = verifiedTodaySnapshot(snapshot);
+      const shelf = await loadSnapshotShelf();
+      const selected = trustedSnapshot(shelf.items, shelf.fetchedAt);
       if (selected.length) {
         storeSauh(dayKey, selected);
         return selected;
@@ -690,9 +727,9 @@ export async function fetchSauh(
     // was fresh enough to embed today's own entry; otherwise resolving it
     // to `undefined` hands control straight to the live network result so
     // stale content can never be painted as today's reflection.
-    const snapshot = request(STATIC_URL).then(
-      (items) => {
-        const selected = verifiedTodaySnapshot(items);
+    const snapshot = loadSnapshotShelf().then(
+      (shelf) => {
+        const selected = trustedSnapshot(shelf.items, shelf.fetchedAt);
         return selected.length
           ? { source: "snapshot" as const, items: selected }
           : undefined;
