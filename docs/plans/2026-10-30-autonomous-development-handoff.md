@@ -4253,6 +4253,45 @@ Perbaikan:
 Verifikasi: `vitest run src/bible-pack-loader.test.ts` **5/5**
 (inflate+share, fallback 404, retry, invalid pack, both-fail), `tsc -b`
 bersih, `pnpm --filter @gys/web build` menulis kedua berkas ke `dist`,
+`runtime-health` **3/3**, `scripts/verify-service-worker.test.mjs` **24/24**,
+dan `-g "Bible"` **87 lulus / 6 visual + 1 flake** (uji visual memang berbeda
+di host ini; `cache-playback-regressions` lulus 4/4 saat dijalankan sendiri).
+
+**Hasil hosted (390 px, 1,6 Mbps, CPU 4×):** berkas yang diunduh
+`tb-reader.json.gz`, **1 661 KiB** lewat jaringan (dari 7 939 KiB), ayat
+pertama tampil dari pack itu. LCP 5,9–6,2 dtk pada tiga run yang memakai cache
+Service Worker dan 15,3 dtk pada run yang masih mengunduh penuh — varians
+host besar, jadi klaim yang jujur: **byte turun 79 %, LCP belum terbukti
+turun** karena boot JS + parse pack masih mendominasi.
+
+### Putaran 143 — Pack Alkitab dikirim terkompresi (4 Nov)
+
+GitHub Pages menyajikan `offline/bible/tb-reader.json` **tanpa
+`content-encoding`**: `content-length: 7939120` untuk setiap kunjungan
+pertama ke `/alkitab` (≈40 dtk pada 1,6 Mbps). Itu biaya terbesar yang
+tersisa di jalur “instan”.
+
+Perbaikan:
+
+- `scripts/gzip-bible-pack.mjs` menulis `tb-reader.json.gz` dengan
+  `gzipSync(level 9)` dan **mtime 0** supaya build berulang menghasilkan byte
+  identik. Ukuran: **7 939 120 B → 1 704 234 B (1,63 MB)**.
+- `src/bible-pack-loader.ts` mencoba `${url}.gz` lebih dulu saat
+  `DecompressionStream` tersedia, mengembanginya lewat
+  `response.body.pipeThrough(new DecompressionStream("gzip"))`, lalu jatuh ke
+  JSON biasa kalau berkas .gz tidak ada atau gagal — shell lama tetap jalan.
+- `public/sw.js` mem-precache **kedua** berkas (`tb-reader.json` dan
+  `tb-reader.json.gz`). Versi cache sengaja **tidak** dinaikkan: percobaan
+  `v25 → v26` memecahkan tiga uji aktivasi di
+  `scripts/verify-service-worker.test.mjs` (fixture memakai nama cache versi
+  tertentu), dan shell lama tetap berfungsi karena pemuat jatuh ke JSON biasa
+  bila `.gz` tidak ada. Biaya instal PWA naik ~1,7 MB, tetapi setiap kunjungan
+  pertama menghemat 6,2 MB.
+- `apps/web/package.json` `build` menjalankan skrip gzip sebelum Vite.
+
+Verifikasi: `vitest run src/bible-pack-loader.test.ts` **5/5**
+(inflate+share, fallback 404, retry, invalid pack, both-fail), `tsc -b`
+bersih, `pnpm --filter @gys/web build` menulis kedua berkas ke `dist`,
 `runtime-health` **1/1**, dan `-g "Bible"` **87 lulus / 6 visual + 1 flake**
 (uji visual memang berbeda di host ini; `cache-playback-regressions` lulus
 4/4 saat dijalankan sendiri).
