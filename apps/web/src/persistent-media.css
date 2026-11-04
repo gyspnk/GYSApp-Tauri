@@ -222,7 +222,7 @@
   .media-surface.persistent-media:not(.is-minimized) {
     left: 8px;
     right: 8px;
-    bottom: calc(84px + env(safe-area-inset-bottom));
+    bottom: max(12px, env(safe-area-inset-bottom));
     grid-template-columns: minmax(0, 1fr) auto auto auto;
     gap: 6px;
     padding: 12px;
@@ -248,32 +248,9 @@
     grid-column: 3;
     grid-row: 2;
   }
-  .media-surface.persistent-media:not(.is-minimized) > .media-close-button {
-    display: none;
-  }
   .media-surface.persistent-media:not(.is-minimized) > .media-minimize {
     grid-column: 4;
     grid-row: 2;
-  }
-  .media-surface.persistent-media.is-minimized,
-  .app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized,
-  .media-surface.persistent-media.is-rail-player.is-minimized {
-    left: 8px;
-    right: 8px;
-    bottom: calc(84px + env(safe-area-inset-bottom));
-    width: auto;
-    grid-template-columns: minmax(0, 1fr) 44px 44px;
-  }
-  .media-surface.persistent-media.is-minimized > .media-mini-context {
-    display: grid;
-    grid-column: 1;
-    padding: 0;
-  }
-  .media-surface.persistent-media.is-minimized > .media-control {
-    grid-column: 2;
-  }
-  .media-surface.persistent-media.is-minimized > .media-minimize {
-    grid-column: 3;
   }
   .faith-page .faith-row {
     gap: 8px;

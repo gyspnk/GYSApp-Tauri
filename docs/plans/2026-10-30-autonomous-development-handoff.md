@@ -4025,6 +4025,39 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 121 — Dock desktop memakai rel samping lagi; fokus halaman tidak merebut overlay (4 Nov)
+
+Nightly 3 Nov (`41734483556`, ketiga shard) merah, jadi `main` tidak punya bukti
+suite penuh bertanggal. Akar shard 1: `e2e/chord-startup.spec.ts` masih menuntut
+verifikasi katalog chord pada kunjungan pertama, padahal gerbang
+`chordStartupSyncAllowed` (Putaran 72) hanya menjalankannya untuk pembaca yang
+pernah membuka Kidung. Kontraknya diperbarui (`a956073`) dan ditambah kasus
+"kunjungan pertama tidak menyentuh katalog chord".
+
+Shard 2 dan 3 menyisakan lima kegagalan sungguhan yang tidak pernah terpilih di
+jalur selektif:
+
+- **Dock desktop.** `apps/web/src/persistent-media.css` punya blok
+  `@media (min-width: 900px)` yang melebarkan dock **minimized** selebar layar
+  (1424 px), menaruh dock terbuka 84 px di atas tepi bawah, dan menyembunyikan
+  tombol tutup. Sekarang dock minimized kembali ke rel samping (191 px, `left:
+16px`), dock terbuka menempel dasar (`bottom: max(12px, …)`, tepi 888 px), dan
+  kedua tombol keluar terlihat. `e2e/media-dock.spec.ts` **11/11 (37 s)**.
+  Catatan proses: patch pertama salah masuk ke blok `max-width: 599px` yang
+  teksnya identik, yang merusak uji ponsel; file dikembalikan lalu patch
+  diterapkan hanya setelah penanda `min-width: 900px`.
+- **Fokus rute.** Efek `focusRouteHeading` di `apps/web/src/App.tsx` merebut
+  fokus dari tombol "Tutup" pada pembaca langsung. Sekarang efek melewati
+  pemindahan fokus bila fokus sudah berada di dalam
+  `[role="dialog"], .literature-reader-panel, .media-surface`; kontrak
+  `e2e/reading-direct-flow.spec.ts` memeriksa `#main-content h1` (sejalan dengan
+  `route-announcement`). **10/10**.
+- **Runtime baseline.** Dua kasus: pembaca PDF wajar memicu satu probe ukuran
+  plus satu unduhan latar (auto-cache Putaran 91), jadi jumlah request dihitung
+  sampai status `ready`; dan anggaran waktu dinding (15 s / 8 s) hanya ditegakkan
+  di CI karena host bersama ini mencatat 15–36 s untuk halaman yang sama
+  (`kidung-tablet` 16,5 s, `bible-desktop` 35,9 s). **2/2**.
+
 ### Putaran 120 — Nightly merah karena kontrak sync chord yang usang (4 Nov)
 
 Nightly `41734483556` gagal di ketiga shard. Penyebab pertama bukan flake:

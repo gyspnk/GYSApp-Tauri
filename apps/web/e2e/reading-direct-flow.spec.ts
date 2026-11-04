@@ -77,7 +77,7 @@ test("literature PDF opens directly, resumes, and closes back to the shelf", asy
   await reader.getByRole("button", { name: "Tutup" }).click();
   await expect(page).toHaveURL(/\/literatur$/);
   await expect(page.locator(".literature-reader-panel")).toHaveCount(0);
-  await expect(page.locator("#main-content")).toBeFocused();
+  await expect(page.locator("#main-content h1")).toBeFocused();
 });
 
 test("literature PDF overlay keeps localized actions reachable across widths", async ({
@@ -191,7 +191,7 @@ test("literature PDF overlay keeps localized actions reachable across widths", a
         await expect(focusable.last()).toBeFocused();
         await close.press("Enter");
         await expect(page).toHaveURL(/\/literatur$/);
-        await expect(page.locator("#main-content")).toBeFocused();
+        await expect(page.locator("#main-content h1")).toBeFocused();
       }
     }
   }

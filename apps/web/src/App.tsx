@@ -485,7 +485,16 @@ function Shell({
         firstRouteRef.current = false;
         return;
       }
-      focusRouteHeading(main);
+      // A direct reader or dialog may already have claimed focus while this
+      // page was still painting its heading; moving it again would yank the
+      // user out of the overlay they just opened.
+      const active = document.activeElement;
+      const overlayFocused =
+        active instanceof Element &&
+        active.closest(
+          '[role="dialog"], .literature-reader-panel, .media-surface',
+        ) !== null;
+      if (!overlayFocused) focusRouteHeading(main);
     };
     handle = requestAnimationFrame(apply);
     return () => cancelAnimationFrame(handle);
