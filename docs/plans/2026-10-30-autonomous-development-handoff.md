@@ -4206,6 +4206,23 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Putaran 141 — Bukti blur dari artefak hosted (4 Nov)
+
+QA dispatch `41861567032` (setelah `897403d` dan `0fe35cc`) menghasilkan
+artefak `ui-screenshots-41861567032` (**168 PNG**, 24,3 MB) dan
+`ui-audit-41861567032`. Tangkapan `pencarian-global-1440-dark.png` dan
+`pencarian-global-1440-light.png` menunjukkan latar halaman **buram** di
+belakang panel pencarian — bukti bahwa perbaikan urutan `backdrop-filter`
+sampai ke build hosted, bukan hanya preview lokal. Audit yang menyertai:
+overflow **192 muat, 0 temuan**, card-in-card **96 muat, 0 temuan**,
+alignment **88 muat, 0 temuan**.
+
+Catatan operasional: job `qa-artifacts` menggantung setelah semua langkah
+selesai dan artefak terunggah (runner tidak menyelesaikan job), jadi run
+dibatalkan setelah artefak diunduh; artefaknya utuh. Job screenshot kini
+menangkap 168 gambar dengan 19 permukaan blur — pantau durasinya di run
+berikutnya karena blur menambah biaya raster di runner tanpa GPU.
+
 ### Putaran 140 — Efek kaca hilang karena minifier CSS (4 Nov)
 
 `.search-backdrop` dideklarasikan `backdrop-filter: blur(8px)` lalu
