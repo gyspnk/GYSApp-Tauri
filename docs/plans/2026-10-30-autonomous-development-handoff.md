@@ -4222,13 +4222,12 @@ Perbaikan:
   `DecompressionStream` tersedia, mengembanginya lewat
   `response.body.pipeThrough(new DecompressionStream("gzip"))`, lalu jatuh ke
   JSON biasa kalau berkas .gz tidak ada atau gagal — shell lama tetap jalan.
-- `public/sw.js` mem-precache **kedua** berkas (`tb-reader.json` dan
-  `tb-reader.json.gz`). Versi cache sengaja **tidak** dinaikkan: percobaan
-  `v25 → v26` memecahkan tiga uji aktivasi di
+- `public/sw.js` mem-precache **hanya** `tb-reader.json.gz`, sehingga instal
+  PWA turun dari 7,6 MB (JSON mentah) ke **1,7 MB**. Versi cache sengaja
+  **tidak** dinaikkan: percobaan `v25 → v26` memecahkan tiga uji aktivasi di
   `scripts/verify-service-worker.test.mjs` (fixture memakai nama cache versi
-  tertentu), dan shell lama tetap berfungsi karena pemuat jatuh ke JSON biasa
-  bila `.gz` tidak ada. Biaya instal PWA naik ~1,7 MB, tetapi setiap kunjungan
-  pertama menghemat 6,2 MB.
+  tertentu). Shell lama tetap berfungsi karena pemuat jatuh ke JSON biasa bila
+  `.gz` tidak tersedia (browser tanpa `DecompressionStream`).
 - `apps/web/package.json` `build` menjalankan skrip gzip sebelum Vite.
 
 Verifikasi: `vitest run src/bible-pack-loader.test.ts` **5/5**

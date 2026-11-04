@@ -17,9 +17,9 @@ const CORE = [
   "index.html",
   "startup.js",
   "manifest.webmanifest",
-  // The reader fetches the gzip sibling; the plain 7,6 MB JSON stays for
-  // browsers without DecompressionStream and for old cached shells.
-  "offline/bible/tb-reader.json",
+  // The reader inflates the gzip pack (1,7 MB). Precaching the plain 7,6 MB
+  // JSON as well would triple the install size for no runtime benefit; the
+  // loader falls back to that URL over the network when the API is missing.
   "offline/bible/tb-reader.json.gz",
   "offline/bible/manifest.json",
   "offline/hymn-catalog.json",
