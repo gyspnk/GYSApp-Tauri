@@ -4069,6 +4069,19 @@ Verifikasi: `suara-detail` + `catalog-discovery` **7/7 (28,2 dtk)**; tangkapan
 390 px menunjukkan hanya “Kembali ke kesaksian”, bar kemajuan, lalu
 “SUARA SEJATI · 19/12/2023”.
 
+### Putaran 136 — Takaran baca Alkitab di layar lebar (4 Nov)
+
+Di 1440 px baris ayat selebar **1 192 px** (`.verse-row` x 236) sehingga satu
+baris menampung ~150 karakter — jauh di atas takaran baca 45–75 karakter yang
+dipakai halaman lain. `.bible-reader .verse-list` sekarang dibatasi
+`max-width: 46rem` dan `margin-inline: auto` pada `≥1200 px`, jadi kolom ayat
+**712 px (~86 karakter)** dan terpusat; toolbar, dropdown pasal, dan rel tetap
+lebar penuh. Di bawah 1200 px tidak berubah.
+
+Terukur: 390 → 366 px (penuh), 1024 → 776 px (penuh), 1200 → 712 px,
+1440 → 712 px. Spesifikasi `bible-zoom`, `bible-annotations`,
+`reading-direct-flow`, `editorial-ui` **34/34 (2,6 mnt)**.
+
 ### Putaran 135 — Gambar Sauh memakai srcset dari Worker (4 Nov)
 
 Kontrak `SauhPost` sudah punya `imageSrcSet` dan klien sudah memilih kandidat

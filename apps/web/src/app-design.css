@@ -5444,6 +5444,16 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 /* Scope-pair frame verified against kidung-compact-motion + responsive-touch-targets. */
 
+/* Scripture at desktop width otherwise runs ~150 characters per line. Cap the
+   column at a readable measure and centre it; the toolbar and the rail keep the
+   full width. */
+@media (min-width: 1200px) {
+  .bible-reader .verse-list {
+    max-width: 46rem;
+    margin-inline: auto;
+  }
+}
+
 /* The verse panel and the literature shelf grow when their data lands (verse
    185 -> 460 px, literature 249 -> 359 px at 390 px on a 400 kbps link), which
    shifted the whole grid: CLS 0.0845. Reserve the measured resting height so
