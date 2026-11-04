@@ -38,14 +38,17 @@ import {
   BrowserRouter,
   Link,
   Navigate,
-  NavLink,
   Outlet,
   Route,
   Routes,
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { DESTINATIONS, type Destination } from "./navigation.js";
+import {
+  DESTINATIONS,
+  destinationForPath,
+  type Destination,
+} from "./navigation.js";
 import { loadLocaleMessages, translate, type Locale } from "./i18n.js";
 import { midiPlayer } from "./midi-player.js";
 import { installMidiQueueCoordinator } from "./midi-queue.js";
@@ -231,15 +234,10 @@ function Navigation({ locale }: { locale: Locale }) {
     opacity: number;
   }>({ top: 0, left: 0, width: 0, height: 0, opacity: 0 });
 
-  const activePath = useMemo(() => {
-    const matched = DESTINATIONS.find((destination) =>
-      destination.path === "/"
-        ? location.pathname === "/"
-        : location.pathname === destination.path ||
-          location.pathname.startsWith(`${destination.path}/`),
-    );
-    return matched?.path ?? "/";
-  }, [location.pathname]);
+  const activePath = useMemo(
+    () => destinationForPath(location.pathname),
+    [location.pathname],
+  );
 
   const updateIndicator = useCallback(() => {
     // Desktop selection is painted by the link; skip measurements as its
@@ -308,7 +306,7 @@ function Navigation({ locale }: { locale: Locale }) {
             .then((module) => module.preloadRoute(destination.path))
             .catch(() => undefined);
         return (
-          <NavLink
+          <Link
             key={destination.path}
             ref={(el) => {
               if (el) itemsRef.current.set(destination.path, el);
@@ -317,10 +315,8 @@ function Navigation({ locale }: { locale: Locale }) {
             onPointerEnter={preload}
             onFocus={preload}
             to={destination.path}
-            end={destination.path === "/"}
-            className={({ isActive }) =>
-              `nav-item${isActive ? " is-active" : ""}`
-            }
+            className={`nav-item${destination.path === activePath ? " is-active" : ""}`}
+            aria-current={destination.path === activePath ? "page" : undefined}
             aria-label={label}
             title={label}
             data-nav-label={label}
@@ -329,7 +325,7 @@ function Navigation({ locale }: { locale: Locale }) {
             <span className="nav-copy">
               <strong>{label}</strong>
             </span>
-          </NavLink>
+          </Link>
         );
       })}
     </nav>

@@ -4055,6 +4055,22 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 131 — Rel samping menandai “Lainnya” untuk halaman koleksi (4 Nov)
+
+`/suara`, `/literatur`, dan `/sauh` bukan tujuan rel, jadi `activePath`
+jatuh ke fallback `"/"`: di 320–959 px indikator geser berhenti di **Beranda**
+(salah tempat), dan di ≥960 px tidak ada item yang `aria-current="page"`.
+`src/navigation.ts` sekarang punya `destinationForPath(pathname)` dengan
+`COLLECTION_ROOTS = ["/suara", "/literatur", "/sauh"]` → `"/lainnya"`;
+`App.tsx` memakai fungsi itu untuk kelas `is-active`, `aria-current`, dan
+indikator, dan item rel menjadi `Link` biasa supaya `NavLink` tidak menimpa
+`aria-current` dengan状态 internalnya.
+
+Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
+→ Lainnya aktif (`aria-current="page"`), `/bible` → Alkitab, `/` → Beranda;
+desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
+`ui-session-refinement` **18/18 (1,2 mnt)**.
+
 ### Putaran 130 — Katalog kidung dua kolom di desktop (4 Nov)
 
 Pada 1440 px katalog masih satu kolom **1 160 px**: judul di kiri, tombol
