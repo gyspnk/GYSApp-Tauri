@@ -4001,8 +4001,13 @@ Bukti hosted setelah deploy `43575af`: `/lainnya`, `/alkitab`, `/iman`,
 mengalihkan ke bentuk berakhiran `/`), sedangkan rute pembaca dinamis
 `/kidung/hymn-001` tetap **404** dengan shell aplikasi — batas yang jujur:
 tautan statis kini tidak lagi berstatus “tidak ditemukan”, tautan reader masih.
-Rute statis baru wajib ditambahkan ke daftar `routes` di
-`apps/web/scripts/prerender-route-stubs.mjs`.
+Daftar pertama masih melewatkan rute **kanonik** `/bible` (yang jadi tujuan
+redirect `/alkitab`) sehingga halaman Alkitab tetap 404 pada tingkat dokumen;
+sekarang 9 rute distub, termasuk `/bible` dan `/more`. Daftarnya tinggal di
+`apps/web/src/static-routes.ts` dan uji `apps/web/src/static-routes.test.ts`
+membandingkannya dengan setiap `<Route path="…">` di `apps/web/src/App.tsx`
+(kecuali `/`, `*`, dan rute ber-parameter), sehingga rute statis baru tidak bisa
+lagi lolos tanpa stub.
 
 ### Putaran 111 — Jaringan lambat berlabel “4G” juga mendapat gambar kecil (3 Nov)
 

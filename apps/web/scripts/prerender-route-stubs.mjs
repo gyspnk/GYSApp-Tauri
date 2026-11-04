@@ -5,14 +5,17 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+// Keep in sync with apps/web/src/static-routes.ts (a unit test enforces it).
 const routes = [
-  "alkitab",
+  "sauh",
+  "suara",
+  "bible",
   "kidung",
   "iman",
   "literatur",
-  "suara",
   "lainnya",
-  "sauh",
+  "more",
+  "alkitab",
 ];
 const dist = join(process.cwd(), "dist");
 const shell = await readFile(join(dist, "index.html"), "utf8");
