@@ -4069,6 +4069,20 @@ Verifikasi: `suara-detail` + `catalog-discovery` **7/7 (28,2 dtk)**; tangkapan
 390 px menunjukkan hanya “Kembali ke kesaksian”, bar kemajuan, lalu
 “SUARA SEJATI · 19/12/2023”.
 
+### Putaran 135 — Gambar Sauh memakai srcset dari Worker (4 Nov)
+
+Kontrak `SauhPost` sudah punya `imageSrcSet` dan klien sudah memilih kandidat
+kecil (`pickSmallCandidate`) untuk perangkat hemat data, tetapi Worker hanya
+mengirim `imageUrl` ukuran penuh. Akibatnya di 390 px file hero tetap
+ratusan KiB. `apps/bff/src/sauh.ts` sekarang membangun srcset dari
+`media_details.sizes` (lebar unik, host resmi saja, minimal dua kandidat),
+persis format yang dipakai `apps/web/src/sauh.ts`, dan menyertakannya di
+payload ternormalisasi. `apps/bff/src/sauh.test.ts` menambah satu kasus:
+kandidat 300w/768w terurut dan host asing (`evil.example`) dibuang —
+**77/77**.
+
+Efek ukuran harus diukur di hosted setelah Worker ter-deploy.
+
 ### Putaran 134 — Permintaan Sauh dimulai dari <head> (4 Nov)
 
 LCP `/sauh` di hosted masih **8,31 dtk** (390 px, 1,6 Mbps). Rantainya: HTML →

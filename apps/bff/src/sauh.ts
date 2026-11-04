@@ -133,7 +133,10 @@ const TJC_IMAGE_HOSTS = [
 type FeaturedMedia = {
   source_url?: unknown;
   media_details?: {
-    sizes?: Record<string, { source_url?: unknown } | undefined>;
+    sizes?: Record<
+      string,
+      { source_url?: unknown; width?: unknown } | undefined
+    >;
   };
 };
 
@@ -173,6 +176,38 @@ function featuredImageUrl(value: unknown): string | undefined {
     sizes?.medium?.source_url,
     sizes?.thumbnail?.source_url,
   ].find(isTjcImageUrl);
+}
+
+/**
+ * Responsive candidates from the publisher's media sizes, so a phone fetches a
+ * 300–768 px file instead of the full-width original (often > 1 MB). Mirrors
+ * `featuredImageSrcSet` in the web client, which uses it for direct WordPress
+ * fetches; the Worker path must produce the same shape.
+ */
+function featuredImageSrcSet(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const sizes = (value as FeaturedMedia).media_details?.sizes;
+  if (!sizes) return undefined;
+  const byWidth = new Map<number, string>();
+  for (const size of Object.values(sizes)) {
+    if (!size || typeof size !== "object") continue;
+    const url = size.source_url;
+    const width = Number(size.width);
+    if (
+      typeof url !== "string" ||
+      !Number.isFinite(width) ||
+      width <= 0 ||
+      !isTjcImageUrl(url) ||
+      byWidth.has(width)
+    )
+      continue;
+    byWidth.set(width, url);
+  }
+  if (byWidth.size < 2) return undefined;
+  return [...byWidth.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([width, url]) => `${url} ${width}w`)
+    .join(", ");
 }
 
 /** Sauh is a daily reflection; never expose a stale multi-day feed to clients. */
@@ -232,9 +267,9 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
       Number.isNaN(parsedUpdatedAt.getTime())
     )
       continue;
-    const imageUrl = featuredImageUrl(
-      post._embedded?.["wp:featuredmedia"]?.[0],
-    );
+    const media = post._embedded?.["wp:featuredmedia"]?.[0];
+    const imageUrl = featuredImageUrl(media);
+    const srcSet = featuredImageSrcSet(media);
     const parsed = SauhPostSchema.safeParse({
       id:
         typeof post.slug === "string"
@@ -246,6 +281,7 @@ export function normalizeSauhPosts(value: unknown): SauhPost[] {
       body,
       url,
       ...(imageUrl ? { imageUrl } : {}),
+      ...(srcSet ? { imageSrcSet: srcSet } : {}),
       updatedAt: parsedUpdatedAt.toISOString(),
       source: "tjc.org",
     });

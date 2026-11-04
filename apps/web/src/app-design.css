@@ -5504,12 +5504,12 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* Light and sepia surfaces are pale enough that the desktop fade left the
-   illustration ghosting through the caption and the verse (the card read as
-   muddy). Keep the photo band at the top and reach a solid surface sooner. */
+/* The desktop caption overlaps the photo by ~200 px, so the old fade left the
+   illustration ghosting through the verse in every theme (the card read as
+   muddy in light and sepia; in dark the verse sat on bright sky). Keep the
+   photo band at the top and reach a solid surface sooner, in all themes. */
 @media (min-width: 900px) {
-  [data-theme="light"] .home-page .sauh-card-content,
-  [data-theme="sepia"] .home-page .sauh-card-content {
+  .home-page .sauh-card-content {
     background: linear-gradient(
       180deg,
       rgba(var(--surface-rgb), 0.35) 0%,

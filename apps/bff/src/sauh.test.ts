@@ -121,6 +121,48 @@ describe("BFF Sauh normalization", () => {
     );
   });
 
+  it("emits responsive candidates ordered by width and drops foreign hosts", () => {
+    const posts = normalizeSauhPosts([
+      {
+        id: 6,
+        slug: "responsive-srcset",
+        date: "2026-08-15T00:00:00.000Z",
+        link: "https://tjc.org/id/sauh/responsive-srcset/",
+        title: { rendered: "Renungan srcset" },
+        content: { rendered: "<p>Isi renungan srcset.</p>" },
+        _embedded: {
+          "wp:featuredmedia": [
+            {
+              source_url: "https://tjc.org/id/wp-content/uploads/full.jpg",
+              media_details: {
+                sizes: {
+                  medium_large: {
+                    source_url:
+                      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-768x512.jpg",
+                    width: 768,
+                  },
+                  medium: {
+                    source_url:
+                      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-300x200.jpg",
+                    width: 300,
+                  },
+                  evil: {
+                    source_url: "https://evil.example/hero-999.jpg",
+                    width: 999,
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    expect(posts[0]?.imageSrcSet).toBe(
+      "https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-300x200.jpg 300w, https://tjcorguploads.s3.amazonaws.com/tjcorg/hero-768x512.jpg 768w",
+    );
+  });
+
   it("keeps the complete readable reflection body for the viewer", () => {
     const posts = normalizeSauhPosts([
       {
