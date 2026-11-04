@@ -4060,6 +4060,19 @@ di-preload (italic serta Noto tetap sesuai permintaan), dengan `crossorigin`
 karena font diambil dalam mode CORS. Diukur lokal dengan CDP 400 kbps: unduhan
 font sekarang mulai **430 ms** bersama CSS/JS, bukan setelah CSS selesai.
 
+Hasil hosted setelah deploy (390 px, CDP 400 kbps / 300 ms / 4× CPU, LCP
+terakhir):
+
+| Rute         |   Sebelum |      Sesudah |   Selisih |
+| ------------ | --------: | -----------: | --------: |
+| `/sauh`      | 10,09 dtk | **8,31 dtk** | −1,78 dtk |
+| `/suara`     | 11,16 dtk | **8,26 dtk** | −2,90 dtk |
+| `/literatur` |  7,63 dtk | **5,40 dtk** | −2,23 dtk |
+
+Unduhan font di hosted mulai 770–1174 ms (sebelumnya setelah CSS selesai),
+dan elemen LCP tetap gambar/teks yang sama sehingga penurunan berasal dari
+berkurangnya byte, bukan dari elemen LCP yang berbeda.
+
 Verifikasi: `pnpm verify:generated` hijau (provenance + lisensi + hash), unit
 **585/585**, `pnpm verify:bundle` **163,1 KiB** (anggaran 180; font tidak masuk
 hitungan JS), build bersih, screenshot `/` 1440 dan `/alkitab` 390 dengan serif
