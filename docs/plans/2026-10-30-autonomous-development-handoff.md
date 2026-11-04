@@ -4223,6 +4223,15 @@ Verifikasi: `vitest run src/index-html.test.ts` **2/2**;
 `sauh-lifecycle` + `home-resilience` **3/3 (11,5 dtk)**; `smoke -g "Sauh|home"`
 **4/4 (19,4 dtk)**.
 
+Diukur di hosted sesudah deploy (`41846369638`): 390 px / 1,6 Mbps → permintaan
+`offline/sauh.json` **1×**, kartu memuat pos live, tetapi **LCP tetap 7,7 / 8,6 /
+7,7 dtk** karena elemen LCP adalah foto hero, bukan shelf. Foto hero sudah
+lewat proxy Worker (`/api/v1/content/image`, lihat `lazy-image.tsx`) dengan
+cache 7 hari, dan `<link rel="preload">` untuk API-nya sudah dipasang
+`bff-hints.mjs`; sisa waktu adalah TTFB WordPress (~2,2 dtk dingin, 0,58 dtk
+hangat per colo) ditambah transfer foto. Tidak ada tuas aplikasi yang tersisa
+untuk itu — dicatat sebagai batas, bukan bug.
+
 ### Putaran 130 — Katalog kidung dua kolom di desktop (4 Nov)
 
 Pada 1440 px katalog masih satu kolom **1 160 px**: judul di kiri, tombol
