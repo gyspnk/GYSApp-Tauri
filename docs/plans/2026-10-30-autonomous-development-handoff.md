@@ -4025,6 +4025,24 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 113 — Laporan transpose: build lama, label aksidental diperjelas (4 Nov)
+
+Laporan pemilik: tombol + / − transpose “tidak berpengaruh di chord”. Semua
+permukaan diuji ulang dan **tidak ada yang gagal**: header pembaca, dock MIDI
+390, panel layar penuh, pemilih nada dasar, saat MIDI diputar, maupun versi
+hosted (`D, Bm, A, G` → `D♯, Cm, A♯, G♯` → `E, C♯m, B, A`, label nada ikut).
+Pemilik lalu memastikan “sekarang sudah bisa” setelah memuat ulang, jadi
+penyebabnya build lama di peramban, bukan kode.
+
+Satu cacat nyata yang ditemukan saat menelusuri: tombol aksidental di chrome PDF
+berlabel “Notasi chord”, padahal aksinya mengganti ♯/♭; pemilih yang sama di
+panel pembaca juga memakai label itu. Diperbaiki: `kidung.notation` kini
+“Tanda nada” / “Accidental” / “升降号” untuk pemilih, dan tombol PDF memakai kunci
+baru `kidung.accidentalSwitch` (“Ganti tanda ♯/♭”). Kontrak
+`apps/web/e2e/kidung-control-sync.spec.ts` ikut diperbarui (nama combobox).
+`kidung-control-sync` **5/5 (30,8 dtk)**, i18n **4/4**, typecheck bersih, build
+hijau.
+
 ### Putaran 110 — Judul dokumen dan fokus ikut berpindah halaman (3 Nov)
 
 Dua celah aksesibilitas nyata ditemukan saat menyapu hosted: `document.title`

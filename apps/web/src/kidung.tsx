@@ -2482,7 +2482,10 @@ export function HymnDetail({
                             )
                           }
                           aria-pressed={accidental === "flat"}
-                          aria-label={translate(locale, "kidung.notation")}
+                          aria-label={translate(
+                            locale,
+                            "kidung.accidentalSwitch",
+                          )}
                           title={translate(
                             locale,
                             accidental === "sharp"

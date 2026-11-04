@@ -47,7 +47,7 @@ for (const { width, touch } of [
       const reader = page.locator(".hymn-music-settings");
       await expect(reader.locator(".media-music-controls")).toHaveCount(1);
       await expect(
-        reader.getByRole("combobox", { name: "Notasi chord", exact: true }),
+        reader.getByRole("combobox", { name: "Tanda nada", exact: true }),
       ).toContainText("Flat");
       const instrument = reader.getByRole("combobox", {
         name: "Instrumen MIDI",
@@ -96,7 +96,7 @@ for (const { width, touch } of [
       await activate(".media-advanced-summary");
       await openReaderMusic();
       await expect(
-        reader.getByRole("combobox", { name: "Notasi chord", exact: true }),
+        reader.getByRole("combobox", { name: "Tanda nada", exact: true }),
       ).toContainText("Sharp");
       await readerTempo.fill("116");
       await readerTempo.press("Enter");
