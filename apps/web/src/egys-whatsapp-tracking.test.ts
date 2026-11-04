@@ -174,3 +174,25 @@ describe("describeUnmatchedTrackingFrame", () => {
     expect(describeUnmatchedTrackingFrame([1, 2], reference)).toBeNull();
   });
 });
+
+describe("wrapped relay payloads", () => {
+  it("confirms from a frame that nests the payload under data", () => {
+    expect(
+      parseWhatsAppTrackingEvent(
+        {
+          type: "message",
+          data: { refid: reference, otp: "4821", sender: "628987654321" },
+        },
+        reference,
+      ),
+    ).toEqual({ type: "confirm", otp: "4821", senderPhone: "628987654321" });
+  });
+
+  it("names nested keys when the payload still cannot confirm", () => {
+    const text = describeUnmatchedTrackingFrame(
+      { type: "message", data: { foo: 1 } },
+      reference,
+    );
+    expect(text).toContain("data.foo");
+  });
+});

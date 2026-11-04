@@ -4043,7 +4043,11 @@ Jadi kegagalan ada di frame konfirmasi. Dua celah ditutup:
    diam-diam sehingga hitungan habis tanpa pesan. Socket-nya sendiri dibuka
    untuk satu referensi, jadi frame tanpa referensi kini diterima; frame yang
    menyebut referensi **berbeda** tetap ditolak.
-2. Frame yang tidak dikenali tidak meninggalkan jejak. Fungsi baru
+2. Relay yang membungkus payload (`{type, data: {...}}`) juga membuat frame
+   valid terlihat asing. Parser kini mencari `otp`, nomor pengirim, dan
+   referensi di envelope `data`/`payload`/`result`/`message` sebelum menyerah,
+   dan laporan frame asing menyebut key bertingkat (`data.foo`).
+3. Frame yang tidak dikenali tidak meninggalkan jejak. Fungsi baru
    `describeUnmatchedTrackingFrame(payload, reference)` mencatat sekali per
    percobaan ke scope `egys.whatsapp.tracking.unmatched` berisi daftar key dan
    potongan JSON 300 karakter dengan deretan angka ≥5 digit disamarkan.

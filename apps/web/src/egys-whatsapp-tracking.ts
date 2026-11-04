@@ -82,9 +82,28 @@ export function parseWhatsAppTrackingEvent(
       message: typeof record.message === "string" ? record.message : "",
     };
 
-  const otp = normalizeOtp(readField(record, OTP_KEYS));
-  const senderPhone = normalizeSenderPhone(readField(record, SENDER_KEYS));
-  const eventReference = readField(record, REFERENCE_KEYS);
+  // Some relays wrap the payload (`{type, data: {...}}`) instead of flattening
+  // it; look through the common envelopes before giving up on the frame.
+  const scopes = [
+    record,
+    record.data,
+    record.payload,
+    record.result,
+    record.message,
+  ].filter(
+    (value): value is Record<string, unknown> =>
+      Boolean(value) && typeof value === "object" && !Array.isArray(value),
+  );
+  const read = (keys: readonly string[]) => {
+    for (const scope of scopes) {
+      const value = readField(scope, keys);
+      if (value !== undefined) return value;
+    }
+    return undefined;
+  };
+  const otp = normalizeOtp(read(OTP_KEYS));
+  const senderPhone = normalizeSenderPhone(read(SENDER_KEYS));
+  const eventReference = read(REFERENCE_KEYS);
   // A confirmation must belong to this attempt. Comparing the stringified
   // values accepts the service returning the reference as a number. A frame
   // that names no reference at all is accepted because the socket itself was
@@ -118,7 +137,15 @@ export function describeTrackingGap(
   const parsed = parseWhatsAppTrackingEvent(payload, reference);
   if (!parsed || parsed.type !== "incomplete") return null;
   const record = payload as Record<string, unknown>;
-  const keys = Object.keys(record).sort().join(",");
+  const nested = ["data", "payload", "result", "message"].flatMap((key) => {
+    const value = record[key];
+    return value && typeof value === "object" && !Array.isArray(value)
+      ? Object.keys(value as Record<string, unknown>).map(
+          (inner) => `${key}.${inner}`,
+        )
+      : [];
+  });
+  const keys = [...Object.keys(record), ...nested].sort().join(",");
   return `reference matched but fields were incomplete (otp=${parsed.otp ? "ok" : "missing"}, sender=${parsed.senderPhone ? "ok" : "missing"}, keys=${keys})`;
 }
 
@@ -134,7 +161,17 @@ export function describeUnmatchedTrackingFrame(
   if (!payload || typeof payload !== "object" || Array.isArray(payload))
     return null;
   const record = payload as Record<string, unknown>;
-  const keys = Object.keys(record).sort().join(",");
+  // Name the nested keys as well: a relay that wraps the payload changes the
+  // shape at the envelope, and that is exactly what support needs to see.
+  const nested = ["data", "payload", "result", "message"].flatMap((key) => {
+    const value = record[key];
+    return value && typeof value === "object" && !Array.isArray(value)
+      ? Object.keys(value as Record<string, unknown>).map(
+          (inner) => `${key}.${inner}`,
+        )
+      : [];
+  });
+  const keys = [...Object.keys(record), ...nested].sort().join(",");
   const raw = JSON.stringify(payload)
     .replace(/[0-9]{5,}/g, "…")
     .slice(0, 300);
