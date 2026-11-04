@@ -8,11 +8,15 @@ and the accompanying SIL Open Font License files.
 - GYS Reading Sans is a renamed subset of Source Sans 3. Adobe reserves the name
   "Source", so the derivative's internal family and PostScript names are changed.
 - Source Serif 4 has normal and italic faces so scripture emphasis is retained.
+  Both faces are instance-fixed at optical size 16 (`opsz=16`) while keeping the
+  full weight axis: the optical axis was 55% of each file and the app already
+  sets sizes from 0.75rem to 3rem, so dropping it halves the transfer without
+  losing a single weight.
 - Noto Serif SC covers the Chinese characters used by the checked-in UI. Other
   characters in user content fall back to available system fonts.
 
 Regenerate from the repository root with Python, `fonttools==4.61.1`, and
-`brotli==1.2.0` installed:
+`brotli==1.2.0` installed (the generator instances the serif `opsz` axis at 16):
 
 ```sh
 python scripts/generate-editorial-fonts.py

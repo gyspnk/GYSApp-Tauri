@@ -4025,6 +4025,39 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 116 — Font serif dipangkas 56% tanpa kehilangan bobot (4 Nov)
+
+Hosted, tautan lambat (390 px, 400 kbps / 300 ms / 4× CPU): resource terbesar
+sebelum perubahan adalah **Source Serif 4 234 KiB** dan **italic 199 KiB** —
+bersama GYS Reading Sans 71 KiB, tiga berkas font Latin itu ~504 KiB, lebih
+besar daripada JS (87 KiB) dan CSS (76 KiB) digabung. LCP di `/literatur` dan
+`/sauh` karena itu didominasi teks yang menunggu font.
+
+Penyebab: kedua berkas serif membawa dua axis variabel, `wght` 200–900 dan
+`opsz` 8–60; axis optik itu sekitar **55% isi berkas**, padahal aplikasi memakai
+ukuran teks 0.75rem–3rem dan tidak pernah memanggil `opsz` secara eksplisit.
+
+Perubahan: `scripts/generate-editorial-fonts.py` sekarang meng-instance kedua
+serif pada `opsz=16` (axis `wght` tetap utuh, jadi tidak ada bold palsu), lalu
+regenerasi dijalankan dengan versi fonttools/brotli yang dipin di README dan
+`provenance.json` mencatat `instanced: { axes: { opsz: 16 } }` per berkas.
+
+| Berkas                        |   Sebelum |       Sesudah |                        Selisih |
+| ----------------------------- | --------: | ------------: | -----------------------------: |
+| `source-serif-4.woff2`        | 233,9 KiB | **103,1 KiB** |                     −130,8 KiB |
+| `source-serif-4-italic.woff2` | 199,0 KiB |  **80,1 KiB** |                     −118,9 KiB |
+| `gys-reading-sans.woff2`      |  71,2 KiB |      71,2 KiB |        regenerasi byte-identik |
+| `noto-serif-sc.woff2`         | 207,1 KiB | **197,2 KiB** | −9,9 KiB (korpus zh bertambah) |
+
+Total transfer font Latin turun **~250 KiB per kunjungan dingin** (≈5 detik pada
+400 kbps) dan tidak ada bobot yang hilang.
+
+Verifikasi: `pnpm verify:generated` hijau (provenance + lisensi + hash), unit
+**585/585**, `pnpm verify:bundle` **163,1 KiB** (anggaran 180; font tidak masuk
+hitungan JS), build bersih, screenshot `/` 1440 dan `/alkitab` 390 dengan serif
+baru terbaca sama (judul, ayat, label). Baseline visual 149 berkas perlu
+diregenerasi lewat `ci.yml` dispatch karena metrik glyph bergeser tipis.
+
 ### Putaran 115 — Konfirmasi tracking tanpa referensi diterima, frame asing dicatat (4 Nov)
 
 Pemilik melaporkan login WhatsApp masih gagal. Probe ke Worker ter-deploy:

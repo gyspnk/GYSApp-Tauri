@@ -13,6 +13,7 @@ import urllib.request
 import brotli
 from fontTools import __version__ as fonttools_version, subset
 from fontTools.ttLib import TTFont
+from fontTools.varLib import instancer
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "apps/web/src/assets/fonts"
@@ -53,10 +54,21 @@ for family, filename, name, expected_digest in SOURCES:
         chars = set(range(0x20, 0x250)) | set(range(0x1e00, 0x1f00)) | set(range(0x2000, 0x2070)) | set(range(0x20a0, 0x20d0)) | {0x2212}
     sub.populate(unicodes=chars)
     sub.subset(font)
+    instanced = None
+    if family == "sourceserif4":
+        # The optical-size axis was 55% of each serif file while the app sizes
+        # text from 0.75rem to 3rem, i.e. the axis mostly repeated what the
+        # weight axis already carries. Instancing opsz=16 keeps every weight
+        # (no faux bold) and cuts ~250 KiB from a cold load on a slow link.
+        instancer.instantiateVariableFont(font, {"opsz": 16}, inplace=True)
+        instanced = {"axes": {"opsz": 16}}
     font.flavor = "woff2"
     target = OUTPUT / (name + ".woff2")
     font.save(target)
     generated = target.read_bytes()
-    records.append({"file": target.name, "source": url, "sourceSha256": expected_digest, "sha256": hashlib.sha256(generated).hexdigest(), "bytes": len(generated), "license": name + "-OFL.txt"})
+    record = {"file": target.name, "source": url, "sourceSha256": expected_digest, "sha256": hashlib.sha256(generated).hexdigest(), "bytes": len(generated), "license": name + "-OFL.txt"}
+    if instanced is not None:
+        record["instanced"] = instanced
+    records.append(record)
     print(target.name, len(generated), flush=True)
 (OUTPUT / "provenance.json").write_text(json.dumps({"sourceCommit": COMMIT, "fontTools": fonttools_version, "brotli": brotli.__version__, "fonts": records}, indent=2) + "\n")

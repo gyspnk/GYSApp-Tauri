@@ -15,24 +15,34 @@
       "file": "source-serif-4.woff2",
       "source": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/sourceserif4/SourceSerif4%5Bopsz%2Cwght%5D.ttf",
       "sourceSha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
-      "sha256": "ac9b62a255d26958fcece659b2309e70fd8a0c11952bcc46fce0a432270f9f4e",
-      "bytes": 239500,
-      "license": "source-serif-4-OFL.txt"
+      "sha256": "cd9634d1128dc7f8d009e57d9f8a47e5a5da1bf0258d2fa1d0c746645c8e241b",
+      "bytes": 105532,
+      "license": "source-serif-4-OFL.txt",
+      "instanced": {
+        "axes": {
+          "opsz": 16
+        }
+      }
     },
     {
       "file": "source-serif-4-italic.woff2",
       "source": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/sourceserif4/SourceSerif4-Italic%5Bopsz%2Cwght%5D.ttf",
       "sourceSha256": "15fbc7e4679489a501998c3669272637a6646388ef7e4bd77eebb5bf967a1f42",
-      "sha256": "0e48b360dda0b3b037394e58698fdca3c2bcdd0297b9ed3330563a712668be41",
-      "bytes": 203748,
-      "license": "source-serif-4-italic-OFL.txt"
+      "sha256": "05012302f0ab310fa1b0e4c721ca9b2ebe0c5f61e815838f467f7e62823f6bfa",
+      "bytes": 81980,
+      "license": "source-serif-4-italic-OFL.txt",
+      "instanced": {
+        "axes": {
+          "opsz": 16
+        }
+      }
     },
     {
       "file": "noto-serif-sc.woff2",
       "source": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notoserifsc/NotoSerifSC%5Bwght%5D.ttf",
       "sourceSha256": "050080d9255a86808f2945bffac582b31ef32bc36411ce29563b4961670c66f9",
-      "sha256": "b94e48aaee7496c79bcefd821f1179ede108acbf9bdd8a6ec3e8afc59ba4d542",
-      "bytes": 212108,
+      "sha256": "d094b29fe4fd459ae8cd47bfc5798b85f8cd1de8d754a2b5031525edef4ebce5",
+      "bytes": 201904,
       "license": "noto-serif-sc-OFL.txt"
     }
   ]
