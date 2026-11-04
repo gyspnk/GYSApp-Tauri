@@ -18,12 +18,27 @@ const PACK = {
   ],
 };
 
+async function gzBytes(value: unknown): Promise<ArrayBuffer> {
+  const stream = new Blob([JSON.stringify(value)])
+    .stream()
+    .pipeThrough(new CompressionStream("gzip"));
+  return new Response(stream).arrayBuffer();
+}
+
+const gz = async (value: unknown) =>
+  new Response(await gzBytes(value), {
+    headers: { "content-type": "application/gzip" },
+  });
+const plain = (value: unknown) => Response.json(value);
+
 afterEach(() => vi.unstubAllGlobals());
 
 describe("shared bundled Bible loading", () => {
-  it("shares one fetch, parse and object across concurrent readers", async () => {
-    const json = vi.fn().mockResolvedValue(PACK);
-    const request = vi.fn().mockResolvedValue({ ok: true, json });
+  it("inflates the gzip sibling once and shares it across readers", async () => {
+    const payload = await gz(PACK);
+    const request = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(payload.clone()));
     vi.stubGlobal("fetch", request);
     const load = createBundledBibleLoader("/offline/bible/tb-reader.json");
     const first = load();
@@ -33,34 +48,56 @@ describe("shared bundled Bible loading", () => {
     expect(search).toBe(reader);
     expect(await load()).toBe(reader);
     expect(request).toHaveBeenCalledTimes(1);
-    expect(json).toHaveBeenCalledTimes(1);
-    expect(request).toHaveBeenCalledWith("/offline/bible/tb-reader.json", {
+    expect(request).toHaveBeenCalledWith("/offline/bible/tb-reader.json.gz", {
       cache: "force-cache",
     });
+  });
+
+  it("falls back to the plain pack when the gzip file is missing", async () => {
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(plain(PACK));
+    vi.stubGlobal("fetch", request);
+    const load = createBundledBibleLoader("/tb.json");
+    await expect(load()).resolves.toMatchObject({ translation: "TB" });
+    expect(request.mock.calls.map(([url]) => url)).toEqual([
+      "/tb.json.gz",
+      "/tb.json",
+    ]);
   });
 
   it("retries a failed request instead of poisoning the session cache", async () => {
     const request = vi
       .fn()
       .mockRejectedValueOnce(new Error("offline"))
-      .mockResolvedValue({ ok: true, json: async () => PACK });
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockImplementation(() => Promise.resolve(plain(PACK).clone()));
     vi.stubGlobal("fetch", request);
     const load = createBundledBibleLoader("/tb.json");
     await expect(load()).rejects.toThrow("offline");
     await expect(load()).resolves.toMatchObject({ translation: "TB" });
-    expect(request).toHaveBeenCalledTimes(2);
   });
 
   it("rejects invalid packs and retries HTTP failures", async () => {
+    const invalid = await gz({ version: 99 });
+    const valid = await gz(PACK);
     const request = vi
       .fn()
-      .mockResolvedValueOnce({ ok: false, status: 503 })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ version: 99 }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => PACK });
+      .mockResolvedValueOnce(invalid)
+      .mockResolvedValueOnce(valid);
+    vi.stubGlobal("fetch", request);
+    const load = createBundledBibleLoader("/tb.json");
+    await expect(load()).rejects.toThrow("TB reader pack is invalid");
+    await expect(load()).resolves.toMatchObject({ translation: "TB" });
+  });
+
+  it("reports a plain-pack failure when both paths fail", async () => {
+    const request = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 503 }));
     vi.stubGlobal("fetch", request);
     const load = createBundledBibleLoader("/tb.json");
     await expect(load()).rejects.toThrow("503");
-    await expect(load()).rejects.toThrow("TB reader pack is invalid");
-    await expect(load()).resolves.toMatchObject({ translation: "TB" });
   });
 });

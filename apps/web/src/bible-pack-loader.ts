@@ -33,17 +33,39 @@ async function parseBundledPack(json: unknown): Promise<BibleReaderPack> {
   return json;
 }
 
+/**
+ * GitHub Pages serves the 7,6 MB pack without content-encoding. The build
+ * writes a deterministic `.json.gz` sibling (~1,7 MB); inflate it in the
+ * browser and fall back to the plain file when the API or the request is
+ * unavailable, so an old cached shell keeps working.
+ */
+async function readPackJson(url: string): Promise<unknown> {
+  if (typeof DecompressionStream !== "undefined") {
+    try {
+      const response = await fetch(`${url}.gz`, { cache: "force-cache" });
+      if (response.ok && response.body) {
+        const inflated = response.body.pipeThrough(
+          new DecompressionStream("gzip"),
+        );
+        return await new Response(inflated).json();
+      }
+    } catch {
+      /* fall through to the plain pack */
+    }
+  }
+  const response = await fetch(url, { cache: "force-cache" });
+  if (!response.ok)
+    throw new Error(`TB reader pack failed: ${response.status}`);
+  return response.json();
+}
+
 export function createBundledBibleLoader(
   url: string,
 ): () => Promise<BibleReaderPack> {
   let pending: Promise<BibleReaderPack> | undefined;
   return () => {
-    pending ??= fetch(url, { cache: "force-cache" })
-      .then(async (response) => {
-        if (!response.ok)
-          throw new Error(`TB reader pack failed: ${response.status}`);
-        return parseBundledPack(await response.json());
-      })
+    pending ??= readPackJson(url)
+      .then(parseBundledPack)
       .catch((error: unknown) => {
         pending = undefined;
         throw error;

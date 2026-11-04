@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build && node scripts/prerender-route-stubs.mjs",
+    "build": "node scripts/gzip-bible-pack.mjs && vite build && node scripts/prerender-route-stubs.mjs",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --config vitest.config.ts",
     "test:scripts": "node --test scripts/bff-hints.test.mjs scripts/fetch-sauh-snapshot.test.mjs scripts/font-preload.test.mjs scripts/hymn-stubs.test.mjs",
