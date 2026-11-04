@@ -4055,6 +4055,22 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 127 — Hanya serif yang di-preload (4 Nov)
+
+Di tautan 1,6 Mbps, `/sauh` menunggu 76 KB CSS + 174 KB font + 87 KB JS secara
+bersamaan sebelum paint pertama. A/B pada build yang sama (preload serif+sans
+vs serif saja, CDP 1,6 Mbps/150 ms, cache dimatikan):
+
+| Ukuran      | serif+sans | serif saja   |
+| ----------- | ---------- | ------------ |
+| FCP `/sauh` | 2 124 ms   | **1 720 ms** |
+| CSS selesai | 2 061 ms   | **1 662 ms** |
+| LCP `/sauh` | 8 864 ms   | **7 612 ms** |
+
+Sans tetap dimuat lewat stylesheet (bukan preload), jadi tidak ada teks yang
+menunggu selamanya; `apps/web/scripts/font-preload.mjs` sekarang hanya memilih
+`source-serif-4-*.woff2`, dan test-nya mengunci perilaku itu.
+
 ### Putaran 126 — Judul dokumen menunggu heading, bukan jumlah frame (4 Nov)
 
 Uji dengan tautan lambat (390 px, CDP 400 kbps/300 ms/4× CPU) menunjukkan

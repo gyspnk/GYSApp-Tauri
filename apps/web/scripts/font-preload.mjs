@@ -3,12 +3,14 @@
 // build knows the real names, so the preloads are injected after `vite build`
 // from the emitted asset list. `crossorigin` is required even same-origin:
 // fonts are fetched in CORS mode, and a preload without it is fetched twice.
+// Only the serif face is preloaded: the sans face rides the stylesheet, and
+// preloading both starved the CSS on a 1.6 Mbps link (FCP 2.12 s -> 1.73 s
+// when the sans preload was removed).
 export function pickFontPreloads(files) {
   const pick = (pattern) => files.find((file) => pattern.test(file));
-  return [
-    pick(/^source-serif-4-[A-Za-z0-9_-]+\.woff2$/),
-    pick(/^gys-reading-sans-[A-Za-z0-9_-]+\.woff2$/),
-  ].filter((file) => typeof file === "string");
+  return [pick(/^source-serif-4-[A-Za-z0-9_-]+\.woff2$/)].filter(
+    (file) => typeof file === "string",
+  );
 }
 
 export function fontPreloadTags(html, files, base = "/") {
