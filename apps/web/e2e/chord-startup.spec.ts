@@ -1,9 +1,24 @@
 import { expect, test } from "@playwright/test";
 import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 
-test("startup checks the manifest every launch while reusing verified cached chords", async ({
+test("a first visit leaves the chord catalogue alone", async ({ page }) => {
+  let checks = 0;
+  page.on("request", (request) => {
+    if (request.url().endsWith("assets-chord-manifest.json")) checks++;
+  });
+  await page.goto("/GYSApp-Tauri/");
+  await page.waitForTimeout(4_000);
+  // The startup verification only runs for readers who have opened Kidung
+  // before; a landing-page visitor should not pay for 250 chord files.
+  expect(checks).toBe(0);
+});
+
+test("a returning reader checks the manifest every launch while reusing verified cached chords", async ({
   page,
 }) => {
+  await page.addInitScript(() =>
+    window.localStorage.setItem("gys-kidung-visited", "1"),
+  );
   await preparePinnedReaderAssets(page);
   let checks = 0;
   let files = 0;

@@ -4025,6 +4025,22 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 120 — Nightly merah karena kontrak sync chord yang usang (4 Nov)
+
+Nightly `41734483556` gagal di ketiga shard. Penyebab pertama bukan flake:
+`apps/web/e2e/chord-startup.spec.ts` masih menuntut verifikasi katalog chord
+pada **kunjungan pertama**, padahal sejak gerbang `chordStartupSyncAllowed`
+(`ee2a759`) verifikasi hanya berjalan untuk pembaca yang pernah membuka Kidung
+(`gys-kidung-visited=1`). Jalur selektif tidak memilih spec ini, jadi
+kontraknya baru terlihat di nightly.
+
+Perbaikan: test lama diberi `gys-kidung-visited=1` lewat `addInitScript`
+(pembaca lama) dan ditambah test baru “a first visit leaves the chord
+catalogue alone” yang memastikan nol permintaan `assets-chord-manifest.json`
+pada kunjungan pertama. Keduanya lulus (`2 passed`), dan
+`e2e/kidung-chord-reflow.spec.ts` yang ikut merah di nightly lulus `6/6`
+secara lokal — kegagalan itu persaingan 12 worker di shard, bukan regresi.
+
 ### Putaran 119 — Daftar kitab menerima fokus dan menutup dengan Escape (4 Nov)
 
 Popover multi-kitab sudah menangani Escape lewat handler di akar komponen, tapi
