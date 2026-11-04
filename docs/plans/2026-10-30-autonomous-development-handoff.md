@@ -4064,7 +4064,7 @@ jatuh ke fallback `"/"`: di 320–959 px indikator geser berhenti di **Beranda**
 `COLLECTION_ROOTS = ["/suara", "/literatur", "/sauh"]` → `"/lainnya"`;
 `App.tsx` memakai fungsi itu untuk kelas `is-active`, `aria-current`, dan
 indikator, dan item rel menjadi `Link` biasa supaya `NavLink` tidak menimpa
-`aria-current` dengan状态 internalnya.
+`aria-current` dengan status internalnya.
 
 Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 → Lainnya aktif (`aria-current="page"`), `/bible` → Alkitab, `/` → Beranda;
