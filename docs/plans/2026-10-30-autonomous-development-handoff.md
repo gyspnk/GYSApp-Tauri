@@ -4081,7 +4081,13 @@ payload ternormalisasi. `apps/bff/src/sauh.test.ts` menambah satu kasus:
 kandidat 300w/768w terurut dan host asing (`evil.example`) dibuang —
 **77/77**.
 
-Efek ukuran harus diukur di hosted setelah Worker ter-deploy.
+Hasil terukur di hosted setelah deploy: `imageUrl` ternyata **sudah** berkas
+740w (101 194 B), sedangkan srcset menambah kandidat 47w (1 435 B), 150w
+(6 371 B), 200w (10 099 B), 300w (15 827 B). Jadi untuk perangkat 390 px DPR 2
+browser tetap memilih 740w — **belum ada perubahan LCP terukur** (7,1–9,6 dtk,
+varians host besar). Nilainya baru muncul bila WordPress mengirim original
+besar atau di layar sangat kecil; field ini juga membuat jalur Worker setara
+dengan jalur WordPress langsung di klien.
 
 ### Putaran 134 — Permintaan Sauh dimulai dari <head> (4 Nov)
 
@@ -4113,7 +4119,12 @@ disambungkan ke `pnpm test`.
 
 Bukti build: dengan `VITE_BFF_BASE_URL=https://bff.example.workers.dev`,
 `dist/index.html` dan `dist/sauh/index.html` berisi preload, `dist/bible/`
-tidak. Efek waktu harus diukur di hosted setelah deploy.
+tidak. Di hosted (1,6 Mbps, 390 px) preload memang mulai lebih awal
+(**978–1 010 ms**, initiator `link`), tetapi JSON baru selesai **≈3,6 dtk**
+karena TTFB Worker ke tjc.org **2,2 dtk** (permintaan ketiga 0,58 dtk saat
+cache sudah hangat). LCP `/sauh` terukur 7,1–9,6 dtk dan didominasi varians
+jaringan + latensi upstream, bukan lagi waktu tunggu boot. Cron pemanas tidak
+dipakai karena cache Worker bersifat per-colo.
 
 ### Putaran 133 — Katalog kidung pendek mengisi layar (4 Nov)
 
