@@ -411,6 +411,7 @@ export function MorePage({
     () => localStorage.getItem("gys-report-draft") ?? "",
   );
   const [notice, setNotice] = useState("");
+  const [buildId, setBuildId] = useState<string | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticEvent[]>(() =>
     getDiagnostics(),
   );
@@ -748,6 +749,25 @@ export function MorePage({
   useEffect(() => {
     setDiagnostics(getDiagnostics());
     return subscribeDiagnostics(() => setDiagnostics(getDiagnostics()));
+  }, []);
+  // The build id lets support confirm which bundle a device actually runs:
+  // a stale tab looks identical otherwise, which already cost a transpose
+  // investigation on 4 Nov.
+  useEffect(() => {
+    let active = true;
+    void fetch(`${import.meta.env.BASE_URL}offline-shell-assets.json`, {
+      cache: "no-store",
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((value: { buildId?: unknown } | null) => {
+        if (!active) return;
+        const id = typeof value?.buildId === "string" ? value.buildId : null;
+        setBuildId(id);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
   }, []);
   const copyDiagnostics = async () => {
     const text = diagnostics
@@ -1770,6 +1790,11 @@ export function MorePage({
               </div>
               <p className="catalog-note">
                 {translate(locale, "more.diagnosticsHint")}
+              </p>
+              <p className="catalog-note diagnostics-build">
+                {translate(locale, "more.build")}
+                {": "}
+                <code>{buildId ?? "—"}</code>
               </p>
               {diagnostics.length ? (
                 // The log scrolls once it is long; the wrapper owns the scroll

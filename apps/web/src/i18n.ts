@@ -877,6 +877,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.characterCount": "{count}/2.000 karakter",
     "more.diagnostics": "Diagnostik perangkat",
     "more.diagnosticsLog": "Log diagnostik perangkat",
+    "more.build": "Build aplikasi",
     "more.diagnosticsHint":
       "Catatan terakhir dari perangkat ini, misalnya saat login atau unduhan gagal. Tidak berisi kata sandi atau token.",
     "more.diagnosticsEmpty": "Belum ada catatan.",

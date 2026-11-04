@@ -102,3 +102,20 @@ test("device diagnostics expose recorded events and clear them", async ({
     .poll(() => page.evaluate(() => localStorage.getItem("gys-diagnostics-v1")))
     .toBe("[]");
 });
+
+test("the diagnostics card names the build that is actually running", async ({
+  page,
+}) => {
+  // A stale tab looks identical to a fresh one; this line is what settles it.
+  await page.goto("/GYSApp-Tauri/lainnya?section=about");
+  await ensureSettingOpen(page, "about");
+  const manifest = await page.evaluate(async () => {
+    const response = await fetch("/GYSApp-Tauri/offline-shell-assets.json", {
+      cache: "no-store",
+    });
+    return (await response.json()) as { buildId?: string };
+  });
+  const shown = page.locator(".diagnostics-build code");
+  await expect(shown).toBeVisible();
+  await expect(shown).toHaveText(manifest.buildId ?? "—");
+});

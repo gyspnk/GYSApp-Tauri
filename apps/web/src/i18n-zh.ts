@@ -830,6 +830,7 @@ export const zhFeatureMessages: Record<string, string> = {
   "more.characterCount": "{count}/2,000 个字符",
   "more.diagnostics": "设备诊断",
   "more.diagnosticsLog": "设备诊断日志",
+  "more.build": "应用构建",
   "more.diagnosticsHint":
     "此设备最近的记录，例如登录或下载失败时。不会保存密码或令牌。",
   "more.diagnosticsEmpty": "暂无记录。",

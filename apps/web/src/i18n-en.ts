@@ -851,6 +851,7 @@ export const enFeatureMessages: Record<string, string> = {
   "more.characterCount": "{count}/2,000 characters",
   "more.diagnostics": "Device diagnostics",
   "more.diagnosticsLog": "Device diagnostics log",
+  "more.build": "App build",
   "more.diagnosticsHint":
     "Recent events from this device, for example when a sign-in or download failed. No passwords or tokens are stored.",
   "more.diagnosticsEmpty": "No events recorded yet.",

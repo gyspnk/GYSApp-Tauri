@@ -4025,6 +4025,23 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 114 — Kartu diagnostik menyebut build yang benar-benar berjalan (4 Nov)
+
+Laporan transpose berakhir di “build lama”, dan tab lama tidak bisa dibedakan
+dari build baru hanya dengan melihat layar. Kartu Diagnostik di
+`/lainnya?section=about` kini menampilkan **Build aplikasi** dengan id yang sama
+yang ditulis `apps/web/vite.config.ts` ke
+`offline-shell-assets.json` (`buildId`, 16 heksadesimal dari hash aset + `sw.js`
+
+- pack manifest).
+
+`apps/web/src/more.tsx` mengambil `%BASE_URL%offline-shell-assets.json` dengan
+`cache: "no-store"` saat kartu dipasang, lalu menampilkan `more.build`
+(id/en/zh) diikuti `<code>`. Bukti: build lokal `3b9f717020ceb9a3` tampil sama
+persis di kartu; kontrak baru di
+`apps/web/e2e/more-device-data.spec.ts` membandingkan teks kartu dengan manifest
+yang diambil halaman, **3/3**; `accessibility` **26/26**; typecheck bersih.
+
 ### Putaran 113 — Laporan transpose: build lama, label aksidental diperjelas (4 Nov)
 
 Laporan pemilik: tombol + / − transpose “tidak berpengaruh di chord”. Semua
