@@ -126,8 +126,8 @@
   inset: 0;
   z-index: calc(var(--z-modal) - 1);
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   animation: fade-in 180ms ease-out;
 }
 

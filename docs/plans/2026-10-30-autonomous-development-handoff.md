@@ -4206,6 +4206,33 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Putaran 140 — Efek kaca hilang karena minifier CSS (4 Nov)
+
+`.search-backdrop` dideklarasikan `backdrop-filter: blur(8px)` lalu
+`-webkit-backdrop-filter: blur(8px)`. Lightning CSS (minifier bawaan Vite)
+**membuang properti tanpa prefix** ketika ia datang lebih dulu, sehingga CSS
+terbangun hanya berisi `-webkit-backdrop-filter`. Chromium 151 di mesin ini
+melaporkan `CSS.supports("-webkit-backdrop-filter", "blur(8px)") === false`,
+jadi **tidak ada blur yang dirender** di semua permukaan yang memakai pasangan
+itu: backdrop pencarian, sheet, dock, dan toolbar pembaca. Terlihat jelas saat
+dialog pencarian dibuka: halaman di belakangnya tetap tajam.
+
+Perbaikan: urutan dibalik menjadi `-webkit-` dulu, lalu properti standar, pada
+**14 pasangan** di `apps/web/src/**/*.css`. CSS terbangun sekarang memuat
+**19 aturan dengan kedua properti dan 0 aturan webkit-saja**; nilai blur
+kembali sesuai niat desain (`.reader-toolbar` 14 px, `.bible-notes-backdrop`
+10 px, `.faith-modal-backdrop` 10 px, `.pdf-zoom-hud` 8 px, dan seterusnya),
+sementara `.sauh-card-content`/`.suara-card-content` tetap `none` lewat aturan
+yang lebih akhir.
+
+Verifikasi: `backdrop-filter` terhitung `blur(8px)` pada `.search-backdrop`;
+`media-dock` + `ui-polish` + `page-transitions` **31/31 (2,6 mnt)**;
+`accessibility` **28/28 (2,4 mnt)**; tangkapan 1440 gelap menunjukkan latar
+buram dan panel pencarian tajam. Catatan risiko: 19 permukaan kini memakai
+blur, jadi biaya compositing di perangkat kelas bawah perlu dipantau; bila
+scroll terasa berat, turunkan nilai blur pada toolbar tetap (bukan membuang
+seluruh efek).
+
 ### Putaran 139 — Katalog kidung punya judul yang terlihat (4 Nov)
 
 Halaman `/kidung` satu-satunya rute utama yang tidak menampilkan judul: `<h1>`

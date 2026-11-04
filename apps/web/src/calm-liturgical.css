@@ -217,8 +217,8 @@ button.text-button {
     margin-top: 0;
     padding: 22px 24px 20px;
     background: var(--surface);
-    backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 
@@ -620,8 +620,8 @@ summary:focus-visible {
 }
 .suara-card-content {
   background: var(--surface);
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   margin-top: 0;
   padding: 14px;
 }

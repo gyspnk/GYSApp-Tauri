@@ -252,8 +252,8 @@ a:focus-visible {
   justify-items: center;
   padding: min(12vh, 96px) 18px 24px;
   background: rgba(10, 24, 46, 0.42);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   animation: fade-in 180ms var(--ease-out);
 }
 .global-search {
@@ -1257,8 +1257,8 @@ h1 {
     rgba(var(--surface-rgb), 0.7) 25%,
     var(--surface) 60%
   );
-  backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
   color: var(--ink);
 }
 .verse-panel:not(:has(.sauh-card-media)) .sauh-card-content {
@@ -1539,8 +1539,8 @@ blockquote {
     rgba(var(--surface-rgb), 0.95) 55%,
     var(--surface) 100%
   );
-  backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
   color: var(--ink);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
 }

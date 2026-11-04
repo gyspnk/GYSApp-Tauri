@@ -227,8 +227,8 @@
 :is(.home-suara-shelf, .suara-library-grid) .suara-card-content {
   padding: 12px 0;
   background: transparent;
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 :is(.home-suara-shelf, .suara-library-grid) .suara-card-content strong {
   font-family: inherit;
@@ -4905,8 +4905,8 @@ body:has(.hymn-detail-page.is-text-viewer)
       rgba(var(--surface-rgb), 0.95) 62%,
       var(--surface) 100%
     );
-    backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 /* One merged Sauh card in every orientation: full-bleed artwork, a scrim that
@@ -4961,8 +4961,8 @@ body:has(.hymn-detail-page.is-text-viewer)
     rgba(var(--surface-rgb), 0.97) 68%,
     var(--surface) 100%
   ) !important;
-  backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 @media (min-width: 900px) {
   .home-page .verse-panel:has(.sauh-card-media) {
@@ -5509,8 +5509,8 @@ body:has(.hymn-detail-page.is-text-viewer)
     margin-top: 0;
     flex: 0 0 auto;
     background: var(--surface);
-    backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 

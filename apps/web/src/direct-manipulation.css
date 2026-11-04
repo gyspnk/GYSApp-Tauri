@@ -109,8 +109,8 @@
   transition:
     opacity var(--motion-fast) var(--ease-out),
     transform var(--motion-fast) var(--ease-out);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .pdf-zoom-hud.is-visible {

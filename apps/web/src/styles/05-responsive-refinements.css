@@ -488,8 +488,8 @@
     flex-direction: column;
     gap: 12px;
     background: var(--surface);
-    backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
   .sauh-card-body {
     gap: 8px;
