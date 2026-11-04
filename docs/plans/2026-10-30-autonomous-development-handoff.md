@@ -4236,6 +4236,17 @@ Verifikasi: `vitest run src/sauh.test.ts` **26/26** (empat kasus baru untuk
 **4/4**, `tsc -b` bersih, `pnpm --filter @gys/web build` hijau. Bukti
 fungsional: dengan `**/api/v1/**` diblokir total, beranda tetap menampilkan
 pos hari ini dari snapshot — sebelumnya jalur itu berakhir di kartu galat.
+`native-home-fixture` + `sauh-lifecycle` + `home-resilience` **4/4**.
+
+Karena `pack-manifest.json` dan `asset-manifest.json` sama-sama
+hash-verifikasi, skrip juga menulis ulang entri `sauh-feed` (bytes, `sha256`,
+`version`, `lastUpdated`) sehingga `verify:generated` tetap hijau.
+
+**Hasil hosted (390 px, 1,6 Mbps, CPU 4×, konteks baru):** LCP
+**7,7 / 8,6 / 7,7 dtk → 6,2 / 5,7 / 5,2 dtk**; kartu hosted memuat pos hari
+ini dari snapshot (“Eli, Eli, Lama Sabakhtani?”) dan gambar hero tetap lewat
+proxy BFF. Sisa waktu adalah boot JS + transfer gambar, bukan lagi tunggu
+BFF.
 
 ### Putaran 141 — Bukti blur dari artefak hosted (4 Nov)
 
