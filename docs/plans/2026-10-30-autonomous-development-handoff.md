@@ -4052,6 +4052,14 @@ regenerasi dijalankan dengan versi fonttools/brotli yang dipin di README dan
 Total transfer font Latin turun **~250 KiB per kunjungan dingin** (≈5 detik pada
 400 kbps) dan tidak ada bobot yang hilang.
 
+Preload font juga disuntikkan saat build (`apps/web/scripts/font-preload.mjs`
+dipanggil dari `prerender-route-stubs.mjs`): nama berkas ber-hash tidak mungkin
+ditulis tangan di `index.html` — kesalahan yang dulu menghasilkan 404 — jadi
+daftar aset hasil build yang menentukan. Hanya serif reguler dan sans yang
+di-preload (italic serta Noto tetap sesuai permintaan), dengan `crossorigin`
+karena font diambil dalam mode CORS. Diukur lokal dengan CDP 400 kbps: unduhan
+font sekarang mulai **430 ms** bersama CSS/JS, bukan setelah CSS selesai.
+
 Verifikasi: `pnpm verify:generated` hijau (provenance + lisensi + hash), unit
 **585/585**, `pnpm verify:bundle` **163,1 KiB** (anggaran 180; font tidak masuk
 hitungan JS), build bersih, screenshot `/` 1440 dan `/alkitab` 390 dengan serif
