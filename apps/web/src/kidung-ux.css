@@ -1353,26 +1353,6 @@
   border-left: 1px solid color-mix(in srgb, var(--blue) 18%, transparent);
   padding-left: 4px;
 }
-.kidung-mode-cycle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 0;
-  border-radius: 12px;
-  background: var(--blue);
-  color: white;
-  cursor: pointer;
-}
-.kidung-mode-cycle:hover {
-  background: var(--navy);
-}
-.kidung-mode-cycle:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 3px;
-}
 .kidung-mode-glyph {
   display: flex;
   animation: kidung-mode-change 220ms var(--ease-out);
@@ -1503,6 +1483,10 @@
   background: var(--blue-soft);
   border-color: color-mix(in srgb, var(--blue) 22%, transparent);
   color: var(--blue);
+}
+.kidung-mode-cycle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
 }
 .kidung-mode-cycle[aria-pressed="true"] {
   background: var(--blue);

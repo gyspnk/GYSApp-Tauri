@@ -4025,6 +4025,25 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 118 — Aturan "Aa" yang ganda dibersihkan jadi satu (4 Nov)
+
+`apps/web/src/kidung-ux.css` punya **dua** blok `.kidung-mode-cycle`: yang
+lama (44 px, latar `--blue` penuh, hover `--navy`) dan yang dipakai (38 px,
+transparan, teks `--blue`, radius `--radius-control`). Yang kedua menang
+karena muncul belakangan, jadi blok pertama hanya menyisakan dua aturan yang
+masih hidup secara diam-diam: `:focus-visible` dan `.kidung-mode-glyph`.
+
+Blok pertama dihapus, `:focus-visible` (outline 2 px `--blue`, offset 3 px)
+dipindah ke blok yang dipakai, dan animasi glyph tetap di tempatnya. Tidak ada
+perubahan tampilan yang dijanjikan — dan tidak ada yang berubah pada kontrak
+`kidung-density`, `kidung-control-sync`, `responsive-touch-targets`
+(**14/14, 1,2 mnt**).
+
+Pelajaran yang dicatat: dua blok untuk komponen yang sama membuat satu di
+antaranya mati sebagian, dan bagian yang "mati" itu justru bisa menyimpan
+satu-satunya focus ring. Dedupe komponen harus memeriksa pseudo-class, bukan
+hanya properti visual.
+
 ### Putaran 117 — Boot dan perpindahan halaman diukur di hosted (4 Nov)
 
 Angka target goal: boot shell < 1 dtk, perpindahan halaman < 300 ms. Diukur
