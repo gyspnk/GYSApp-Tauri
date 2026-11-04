@@ -4069,6 +4069,35 @@ Verifikasi: `suara-detail` + `catalog-discovery` **7/7 (28,2 dtk)**; tangkapan
 390 px menunjukkan hanya “Kembali ke kesaksian”, bar kemajuan, lalu
 “SUARA SEJATI · 19/12/2023”.
 
+### Putaran 137 — Audit empat tema di 1440 dan tiga alarm palsu (4 Nov)
+
+Sembilan rute (`/`, `/alkitab`, `/kidung`, `/kidung/hymn-001`, `/iman`,
+`/literatur`, `/suara`, `/lainnya`, `/lainnya?section=appearance`) diperiksa
+dengan `@axe-core/playwright` (`wcag2a` + `wcag2aa`) di 1440 px untuk tema
+**light, dark, sepia, amoled** — 36 pemuatan, **0 pelanggaran**.
+
+Metode: `colorScheme: "dark"` **tidak** mengganti tema aplikasi (preferensi
+disimpan sendiri), jadi sapuan “dark” sebelumnya sebenarnya mengulang light.
+Sekarang tema dipaksa lewat `document.documentElement.setAttribute("data-theme",
+…)` sebelum analisis.
+
+Tiga kecurigaan visual diukur dan **bukan bug**:
+
+- Label tiga kartu koleksi di `/lainnya` 390 px semuanya mulai di `top 233`
+  (`getBoundingClientRect`), jadi label “Sauh Bagi Jiwa” yang membungkus dua
+  baris tidak menggeser ikon atau baris lain.
+- Judul `/suara/147-menapaki-tiga-iman` “Menapaki Tiga Iman Bag” memang judul
+  terbitan aslinya (`curl` `<title>` dari tjc.org), bukan potongan CSS:
+  `scrollWidth == clientWidth == 366`.
+- Lengkung pucat di sudut kartu hero adalah sambungan anti-alias dari radius
+  16 px; `elementFromPoint` mengembalikan `.home-grid` dan tidak ada
+  border/bayangan. Percobaan `background: transparent` untuk `.sauh-card-media`
+  tidak mengubah apa pun dan dibatalkan.
+
+Ulang: klaim perataan atau warna diverifikasi dengan
+`getBoundingClientRect()`/`getComputedStyle()`, bukan dari tangkapan layar
+terkompresi.
+
 ### Putaran 136 — Takaran baca Alkitab di layar lebar (4 Nov)
 
 Di 1440 px baris ayat selebar **1 192 px** (`.verse-row` x 236) sehingga satu
