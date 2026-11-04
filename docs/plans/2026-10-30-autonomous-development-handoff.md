@@ -4069,6 +4069,28 @@ Verifikasi: `suara-detail` + `catalog-discovery` **7/7 (28,2 dtk)**; tangkapan
 390 px menunjukkan hanya “Kembali ke kesaksian”, bar kemajuan, lalu
 “SUARA SEJATI · 19/12/2023”.
 
+### Putaran 133 — Katalog kidung pendek mengisi layar (4 Nov)
+
+Pencarian tanpa hasil di `/kidung` (390 px) menyisakan `main` hanya **360 px**
+tinggi dan separuh layar menjadi abu-abu bingkai. Penyebabnya: `App.tsx`
+mengklasifikasikan `/kidung` (termasuk katalognya) sebagai reader route, jadi
+aturan isi-layar `.app-frame:not(.is-reader-route) .main-content` tidak berlaku
+dan `min-height` terhitung `0px`. Percobaan `min-height` pada `.hymn-page`
+ditolak karena menghasilkan scroll palsu (dokumen 948 > 844).
+
+Perbaikan di `app-design.css`, tepat setelah aturan `:has(.bible-reader)`:
+
+```css
+.app-frame.is-reader-route:not(:has(.bible-reader)) .main-content {
+  min-height: calc(100dvh - var(--topbar-height, 58px));
+}
+```
+
+Hasil: `/kidung` tanpa hasil → `main` **786 px**, dokumen tetap **844** (tanpa
+scroll tambahan); `/kidung/hymn-001` tetap 844; `/alkitab` tetap 5017 karena
+dikecualikan `:has(.bible-reader)`. Verifikasi `kidung-loading` +
+`kidung-catalog-error` + `smoke` **49/49 (2,6 mnt)**.
+
 ### Putaran 131 — Rel samping menandai “Lainnya” untuk halaman koleksi (4 Nov)
 
 `/suara`, `/literatur`, dan `/sauh` bukan tujuan rel, jadi `activePath`

@@ -68,6 +68,11 @@
 .app-frame .main-content:has(.bible-reader) {
   padding: 0;
 }
+/* The kidung catalogue is classified as a reader route, so the fill rule above
+   skips it; a short result (no search hits) left the bottom half grey. */
+.app-frame.is-reader-route:not(:has(.bible-reader)) .main-content {
+  min-height: calc(100dvh - var(--topbar-height, 58px));
+}
 .search-trigger {
   background: var(--surface);
   border-radius: 12px;
