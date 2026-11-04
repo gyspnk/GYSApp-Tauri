@@ -865,3 +865,24 @@ for (const theme of ["light", "dark", "sepia", "amoled"]) {
     }
   });
 }
+
+for (const theme of ["light", "dark", "sepia", "amoled"] as const) {
+  test(`recovery cards stay axe clean in the ${theme} theme`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript((value) => {
+      window.localStorage.setItem("gys-theme", value);
+      window.localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale: "id", theme: value }),
+      );
+    }, theme);
+    await page.goto("/GYSApp-Tauri/kidung/tidak-ada");
+    await expect(page.locator(".route-recovery")).toBeVisible();
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa"])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  });
+}

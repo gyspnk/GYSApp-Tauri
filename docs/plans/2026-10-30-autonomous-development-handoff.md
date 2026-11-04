@@ -4025,6 +4025,16 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 122 — Kartu pemulihan diaudit axe di empat tema (4 Nov)
+
+Tiga halaman pemulihan baru (`/kidung/<tidak ada>`, `/literatur/<tidak ada>`,
+`/suara/<tidak ada>`) belum punya bukti aksesibilitas. Audit lokal dengan
+`@axe-core/playwright` (`wcag2a`+`wcag2aa`) untuk 3 rute × 4 tema × 390 px
+menghasilkan **0 pelanggaran**, lalu dikunci sebagai empat kasus di
+`apps/web/e2e/accessibility.spec.ts` ("recovery cards stay axe clean in the
+<theme> theme") yang memuat `/kidung/tidak-ada` dengan tema tersimpan dan
+memeriksa `.route-recovery` terlihat. Jalankan lokal: **4/4 (8,2 s)**.
+
 ### Putaran 121 — Dock desktop memakai rel samping lagi; fokus halaman tidak merebut overlay (4 Nov)
 
 Nightly 3 Nov (`41734483556`, ketiga shard) merah, jadi `main` tidak punya bukti
