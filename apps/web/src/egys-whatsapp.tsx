@@ -8,6 +8,7 @@ import {
 } from "./egys.js";
 import {
   describeTrackingGap,
+  describeUnmatchedTrackingFrame,
   parseWhatsAppTrackingEvent,
 } from "./egys-whatsapp-tracking.js";
 
@@ -87,6 +88,7 @@ export function EgysWhatsApp({
     let confirming = false;
     let reconnect = 0;
     let retries = 0;
+    let unmatchedLogged = false;
     const stop = (closePending = true) => {
       controller.abort();
       clearInterval(ticker);
@@ -303,6 +305,21 @@ export function EgysWhatsApp({
                   "egys.whatsapp.tracking.event",
                   new Error(gap),
                 );
+              else if (!unmatchedLogged) {
+                // One trace per attempt: an upstream payload change is the
+                // failure nobody can see from the badge alone.
+                unmatchedLogged = true;
+                const frame = describeUnmatchedTrackingFrame(
+                  payload,
+                  reference,
+                );
+                if (frame)
+                  recordDiagnostic(
+                    "warn",
+                    "egys.whatsapp.tracking.unmatched",
+                    new Error(frame),
+                  );
+              }
               return;
             }
             if (parsed.type === "info") {

@@ -4025,6 +4025,35 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 115 — Konfirmasi tracking tanpa referensi diterima, frame asing dicatat (4 Nov)
+
+Pemilik melaporkan login WhatsApp masih gagal. Probe ke Worker ter-deploy:
+
+- `POST /api/v1/auth/egys/whatsapp/start` → **200** dengan `referenceid` +
+  cookie `egys_wa_reference` (kanal start sehat).
+- `wss://…/whatsapp/track?reference=…` dari origin `https://gyspnk.github.io`
+  → **open** lalu frame `{"type":"info","message":"Success open socket in
+server"}` (kanal tracking sehat).
+
+Jadi kegagalan ada di frame konfirmasi. Dua celah ditutup:
+
+1. `apps/web/src/egys-whatsapp-tracking.ts` hanya menerima konfirmasi bila
+   frame memuat `refid`/`refId`/`referenceid` yang sama. Provider yang mengirim
+   `otp` + nomor pengirim **tanpa** field referensi membuat frame itu dibuang
+   diam-diam sehingga hitungan habis tanpa pesan. Socket-nya sendiri dibuka
+   untuk satu referensi, jadi frame tanpa referensi kini diterima; frame yang
+   menyebut referensi **berbeda** tetap ditolak.
+2. Frame yang tidak dikenali tidak meninggalkan jejak. Fungsi baru
+   `describeUnmatchedTrackingFrame(payload, reference)` mencatat sekali per
+   percobaan ke scope `egys.whatsapp.tracking.unmatched` berisi daftar key dan
+   potongan JSON 300 karakter dengan deretan angka ≥5 digit disamarkan.
+
+Bukti: unit `egys-whatsapp-tracking` **24/24** (termasuk konfirmasi tanpa
+referensi, referensi berbeda tetap `null`, topeng angka); `e2e/egys-v1`
+**26/26**; typecheck dan build bersih. Langkah berikutnya bergantung pada
+percobaan pemilik: bila masih gagal, baris `unmatched frame` di Diagnostik
+akan menyebut bentuk frame yang sebenarnya.
+
 ### Putaran 114 — Kartu diagnostik menyebut build yang benar-benar berjalan (4 Nov)
 
 Laporan transpose berakhir di “build lama”, dan tab lama tidak bisa dibedakan

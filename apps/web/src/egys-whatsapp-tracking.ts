@@ -44,6 +44,14 @@ function readField(
   return undefined;
 }
 
+/** True when the frame names this attempt explicitly. */
+function refNamed(eventReference: unknown, reference: string): boolean {
+  return (
+    eventReference !== undefined &&
+    String(eventReference).trim() === String(reference).trim()
+  );
+}
+
 /** Returns `+`-prefixed digits for a phone-like value, or null when invalid. */
 export function normalizeSenderPhone(value: unknown): string | null {
   if (typeof value !== "string" && typeof value !== "number") return null;
@@ -78,16 +86,22 @@ export function parseWhatsAppTrackingEvent(
   const senderPhone = normalizeSenderPhone(readField(record, SENDER_KEYS));
   const eventReference = readField(record, REFERENCE_KEYS);
   // A confirmation must belong to this attempt. Comparing the stringified
-  // values accepts the service returning the reference as a number.
+  // values accepts the service returning the reference as a number. A frame
+  // that names no reference at all is accepted because the socket itself was
+  // opened for one reference only; a frame naming a different one is dropped.
   const referenceMatches =
-    eventReference !== undefined &&
+    eventReference === undefined ||
     String(eventReference).trim() === String(reference).trim();
 
   if (otp && senderPhone && referenceMatches)
     return { type: "confirm", otp, senderPhone };
 
   if (type === "info") return { type: "info" };
-  if (referenceMatches && (!otp || !senderPhone))
+  if (
+    (otp || senderPhone) &&
+    refNamed(eventReference, reference) &&
+    (!otp || !senderPhone)
+  )
     return {
       type: "incomplete",
       otp: Boolean(otp),
@@ -106,4 +120,23 @@ export function describeTrackingGap(
   const record = payload as Record<string, unknown>;
   const keys = Object.keys(record).sort().join(",");
   return `reference matched but fields were incomplete (otp=${parsed.otp ? "ok" : "missing"}, sender=${parsed.senderPhone ? "ok" : "missing"}, keys=${keys})`;
+}
+
+/**
+ * Describes a frame that matched neither a confirmation nor a known status, so
+ * a changed upstream payload leaves a readable trace instead of a silent wait.
+ * Long digit runs are masked: they are codes and phone numbers, not diagnosis.
+ */
+export function describeUnmatchedTrackingFrame(
+  payload: unknown,
+  reference: string,
+): string | null {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload))
+    return null;
+  const record = payload as Record<string, unknown>;
+  const keys = Object.keys(record).sort().join(",");
+  const raw = JSON.stringify(payload)
+    .replace(/[0-9]{5,}/g, "…")
+    .slice(0, 300);
+  return `unmatched frame for ${reference.length} digit reference (keys=${keys}) ${raw}`;
 }

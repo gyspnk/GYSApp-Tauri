@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   describeTrackingGap,
+  describeUnmatchedTrackingFrame,
   normalizeSenderPhone,
   parseWhatsAppTrackingEvent,
 } from "./egys-whatsapp-tracking.js";
@@ -128,5 +129,48 @@ describe("describeTrackingGap", () => {
     ).toBeNull();
     expect(describeTrackingGap({ refid: "other" }, reference)).toBeNull();
     expect(describeTrackingGap({ type: "info" }, reference)).toBeNull();
+  });
+});
+
+describe("reference-less confirmations", () => {
+  it("accepts a confirmation frame that names no reference", () => {
+    // The socket is opened for one reference only, so a frame that carries
+    // the code and the sender is already scoped to this attempt.
+    expect(
+      parseWhatsAppTrackingEvent(
+        { otp: "123456", mobilePhone: "628987654321" },
+        reference,
+      ),
+    ).toEqual({
+      type: "confirm",
+      otp: "123456",
+      senderPhone: "628987654321",
+    });
+  });
+
+  it("still drops a confirmation that names another reference", () => {
+    expect(
+      parseWhatsAppTrackingEvent(
+        { refid: "999", otp: "123456", mobilePhone: "628987654321" },
+        reference,
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("describeUnmatchedTrackingFrame", () => {
+  it("names the keys and masks long digit runs", () => {
+    const text = describeUnmatchedTrackingFrame(
+      { type: "qr", code: "123456789", nested: { phone: 628987654321 } },
+      reference,
+    );
+    expect(text).toContain("keys=code,nested,type");
+    expect(text).toContain("…");
+    expect(text).not.toContain("123456789");
+  });
+
+  it("ignores non-object frames", () => {
+    expect(describeUnmatchedTrackingFrame("hello", reference)).toBeNull();
+    expect(describeUnmatchedTrackingFrame([1, 2], reference)).toBeNull();
   });
 });
