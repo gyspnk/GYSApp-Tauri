@@ -469,35 +469,63 @@ function Shell({
   }, [location.pathname]);
   const firstRouteRef = useRef(true);
   useEffect(() => {
-    // A routed page can paint its heading a frame or two after the shell (the
-    // data-backed screens render a loader first), so keep looking briefly.
-    let retries = 0;
-    let handle = 0;
+    // Data-backed pages paint a loader before their heading exists, and on a
+    // slow link that can take seconds — observe the main surface instead of
+    // guessing with a fixed number of animation frames.
+    const main = document.getElementById("main-content");
+    if (!main) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let observer: MutationObserver | null = null;
+    const stop = () => {
+      observer?.disconnect();
+      observer = null;
+      if (timer !== undefined) clearTimeout(timer);
+      timer = undefined;
+    };
     const apply = () => {
-      const main = document.getElementById("main-content");
-      const heading = main?.querySelector("h1") ?? null;
-      if (!heading) {
-        if (retries++ < 120) handle = requestAnimationFrame(apply);
-        return;
-      }
+      const heading = main.querySelector("h1");
+      if (!heading) return false;
       document.title = routeTitle(heading.textContent);
       if (firstRouteRef.current) {
         firstRouteRef.current = false;
-        return;
+        return true;
       }
       // A direct reader or dialog may already have claimed focus while this
       // page was still painting its heading; moving it again would yank the
       // user out of the overlay they just opened.
-      const active = document.activeElement;
-      const overlayFocused =
-        active instanceof Element &&
-        active.closest(
-          '[role="dialog"], .literature-reader-panel, .media-surface',
-        ) !== null;
-      if (!overlayFocused) focusRouteHeading(main);
+      const overlayHoldsFocus = () => {
+        const active = document.activeElement;
+        return (
+          active instanceof Element &&
+          active.closest(
+            '[role="dialog"], .literature-reader-panel, .media-surface',
+          ) !== null
+        );
+      };
+      // Focus after paint, and re-focus while the routed page re-renders: the
+      // route view is keyed by path, so the heading element is replaced once
+      // more on mount and would otherwise drop the focus we just moved.
+      const focusWhenStable = (attempt = 0) => {
+        requestAnimationFrame(() => {
+          if (overlayHoldsFocus()) return;
+          const focused = focusRouteHeading(main);
+          if (!focused || document.activeElement === focused) return;
+          if (attempt < 6) setTimeout(() => focusWhenStable(attempt + 1), 80);
+        });
+      };
+      focusWhenStable();
+      return true;
     };
-    handle = requestAnimationFrame(apply);
-    return () => cancelAnimationFrame(handle);
+    if (apply()) return;
+    observer = new MutationObserver(() => {
+      if (apply()) stop();
+    });
+    observer.observe(main, { childList: true, subtree: true });
+    timer = setTimeout(() => {
+      apply();
+      stop();
+    }, 10_000);
+    return stop;
   }, [location.pathname]);
   const midiStatus = useSyncExternalStore(
     midiPlayer.subscribe,

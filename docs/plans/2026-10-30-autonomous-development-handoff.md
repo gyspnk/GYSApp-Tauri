@@ -4055,6 +4055,24 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 126 — Judul dokumen menunggu heading, bukan jumlah frame (4 Nov)
+
+Uji dengan tautan lambat (390 px, CDP 400 kbps/300 ms/4× CPU) menunjukkan
+`document.title` tetap `GYSApp` pada `/kidung/hymn-001`: heading pembaca baru
+muncul sekitar 3 dtk, sedangkan efek judul hanya mencoba 120 frame (~2 dtk).
+Efeknya diganti dengan `MutationObserver` pada `#main-content` plus batas 10 dtk,
+jadi judul mengikuti heading kapan pun ia muncul.
+
+Saat menutup pembaca PDF, fokus sempat hilang karena `route-view` diberi `key`
+per path sehingga heading diganti sekali lagi setelah mount. Fokus sekarang
+dijadwalkan setelah frame cat, lalu dicoba ulang (maksimal 6 kali, jeda 80 ms)
+sampai `document.activeElement` benar-benar heading — dan tetap dilewati bila
+dialog/panel pembaca sudah memegang fokus.
+
+Bukti: `/kidung/hymn-001` pada tautan lambat → `Pujilah Allah Yang Maha Esa ·
+GYSApp`; `/` → `Bacaan & nyanyian · GYSApp`; `route-announcement` +
+`reading-direct-flow` 10/10 (1,6 mnt).
+
 ### Putaran 125 — Tautan kitab kidung menjawab 200 (4 Nov)
 
 Halaman statis sudah punya stub sejak Putaran 112, tetapi URL pembaca
