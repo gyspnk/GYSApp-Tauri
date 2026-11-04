@@ -39,6 +39,13 @@ script regressions. `pnpm lint` is the package lint/type boundary. The initial
 JS gzip budget is 180 KiB, including `startup.js`; the individual main application
 chunk ceiling is 250 KiB. PDF.js/search/WASM/synth engines remain lazy/on demand.
 
+Design-scale tests read the CSS source so drift fails fast: `radius-scale.test.ts`
+(border radius on 6/8/10/12/16/24/999), `type-scale.test.ts`, `spacing-scale.test.ts`
+and `backdrop-filter-order.test.ts` — the last one exists because Lightning CSS
+drops the unprefixed `backdrop-filter` when the `-webkit-` twin comes after it,
+and Chromium no longer accepts the alias, so the glass surfaces silently lose
+their blur.
+
 For behavior after a verified build:
 
 ```sh
