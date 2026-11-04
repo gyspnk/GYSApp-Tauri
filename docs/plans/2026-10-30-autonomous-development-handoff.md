@@ -4206,6 +4206,23 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Putaran 138 — Preload Sauh akhirnya benar-benar dipakai (4 Nov)
+
+`index.html` sudah memasang `<link rel="preload" as="fetch">` untuk
+`offline/sauh.json` sejak lama, tetapi Chrome mencatat **dua** permintaan untuk
+berkas 8 KiB itu: preload berjalan sebagai fetch **no-cors**, sedangkan
+`fetch()` aplikasi berjalan sebagai fetch **CORS**, sehingga cache key-nya
+berbeda dan preload tidak pernah dipakai ulang.
+
+Perbaikan: atribut `crossorigin="anonymous"` pada tag preload (dan penjaga di
+`src/index-html.test.ts` supaya tidak hilang lagi). Diukur ulang dengan CDP
+pada 390 px: permintaan `offline/sauh.json` turun **2 → 1**, inisiator `parser`
+saja, dan respons yang sama dipakai `fetch()` aplikasi.
+
+Verifikasi: `vitest run src/index-html.test.ts` **2/2**;
+`sauh-lifecycle` + `home-resilience` **3/3 (11,5 dtk)**; `smoke -g "Sauh|home"`
+**4/4 (19,4 dtk)**.
+
 ### Putaran 130 — Katalog kidung dua kolom di desktop (4 Nov)
 
 Pada 1440 px katalog masih satu kolom **1 160 px**: judul di kiri, tombol
