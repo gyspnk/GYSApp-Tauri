@@ -4055,6 +4055,22 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 125 — Tautan kitab kidung menjawab 200 (4 Nov)
+
+Halaman statis sudah punya stub sejak Putaran 112, tetapi URL pembaca
+(`/kidung/hymn-001`) masih 404 di GitHub Pages: halaman tetap boot lewat
+`404.html`, hanya statusnya salah untuk tautan yang dibagikan.
+
+`apps/web/scripts/prerender-route-stubs.mjs` sekarang membaca
+`public/offline/hymn-catalog.json` dan menulis satu direktori shell per kitab
+(533 buah, termasuk enam id berhuruf seperti `hymn-051A`). Helper
+`hymnStubPaths()` menyaring id aneh agar tidak membuat direktori traversal, dan
+`scripts/hymn-stubs.test.mjs` mengunci jumlah serta polanya (2/2).
+
+Bukti lokal: `dist/kidung/hymn-001/index.html` ada (2 043 B) dan build menulis
+533 direktori; `du -sh dist` 43 MB. Verifikasi hosted dilakukan setelah deploy
+(`curl -sI …/kidung/hymn-001` harus 200, bukan 404).
+
 ### Putaran 124 — Rambu hero tidak lagi memotong judul (4 Nov)
 
 Pada 900–1199 px isi kartu beranda menumpuk di atas 206 px bawah foto

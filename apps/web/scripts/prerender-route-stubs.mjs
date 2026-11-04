@@ -6,6 +6,7 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { fontPreloadTags } from "./font-preload.mjs";
+import { hymnStubPaths } from "./hymn-stubs.mjs";
 
 // Keep in sync with apps/web/src/static-routes.ts (a unit test enforces it).
 const routes = [
@@ -26,10 +27,20 @@ const assets = await readdir(join(dist, "assets"));
 const shell = fontPreloadTags(original, assets, base);
 if (shell !== original) await writeFile(join(dist, "index.html"), shell);
 
-for (const route of routes) {
+const catalog = JSON.parse(
+  await readFile(
+    join(process.cwd(), "public/offline/hymn-catalog.json"),
+    "utf8",
+  ),
+);
+const hymnRoutes = hymnStubPaths(catalog);
+
+for (const route of [...routes, ...hymnRoutes]) {
   const target = join(dist, route, "index.html");
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, shell);
 }
 
-console.log(`route stubs: ${routes.length} (${routes.join(", ")})`);
+console.log(
+  `route stubs: ${routes.length} static + ${hymnRoutes.length} hymns`,
+);

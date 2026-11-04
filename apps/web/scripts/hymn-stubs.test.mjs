@@ -1,0 +1,27 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+
+import { hymnStubPaths } from "./hymn-stubs.mjs";
+
+const catalog = JSON.parse(
+  await readFile(
+    new URL("../public/offline/hymn-catalog.json", import.meta.url),
+    "utf8",
+  ),
+);
+
+test("every catalog hymn gets a stub path", () => {
+  const paths = hymnStubPaths(catalog);
+  assert.equal(paths.length, catalog.items.length);
+  assert.equal(paths.length, 533);
+  assert.equal(paths[0], "kidung/hymn-001");
+  assert.ok(paths.every((path) => /^kidung\/hymn-\d{3}[A-Z]?$/.test(path)));
+});
+
+test("malformed ids are skipped instead of making odd directories", () => {
+  assert.deepEqual(
+    hymnStubPaths({ items: [{ id: "hymn-001" }, { id: "../evil" }, {}, null] }),
+    ["kidung/hymn-001"],
+  );
+});
