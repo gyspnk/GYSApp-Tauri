@@ -1,4 +1,5 @@
 import { LoadingProgress } from "./loading-progress.js";
+import { prefetchOnIdle } from "./idle-prefetch.js";
 import { useReadinessMarker } from "./readiness.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -102,6 +103,28 @@ export function HomePage({ locale }: { locale: Locale }) {
       }),
     [],
   );
+  // Suara is one tap away and its snapshot is a 22 KB gzip; warming it while
+  // the reader looks at the verse keeps the first Suara visit out of the cold
+  // fetch. The helper skips data-saver and 2G links on purpose.
+  useEffect(() => {
+    const connection = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    const cancelSuara = prefetchOnIdle(
+      `${import.meta.env.BASE_URL}offline/suara-sejati.json`,
+      connection ? { connection } : {},
+    );
+    const cancelLiterature = prefetchOnIdle(
+      `${import.meta.env.BASE_URL}offline/literature.json`,
+      connection ? { connection } : {},
+    );
+    return () => {
+      cancelSuara();
+      cancelLiterature();
+    };
+  }, []);
   const hasActivity = Boolean(activity.bible || activity.hymn);
   // An outdated snapshot must not trigger an endless revalidation loop
   // (forced re-fetch -> setSauh -> effect -> fetch again): throttle at most

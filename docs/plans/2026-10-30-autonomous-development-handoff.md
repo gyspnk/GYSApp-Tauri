@@ -4025,6 +4025,28 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 123 — Snapshot Suara & Literatur dihangatkan saat Beranda diam (4 Nov)
+
+Kunjungan pertama `/suara` dan `/literatur` masih menunggu fetch snapshot saat
+rute dibuka. Solusi: `apps/web/src/idle-prefetch.ts` (`prefetchOnIdle`) dipanggil
+dari Beranda untuk `offline/suara-sejati.json` dan `offline/literature.json`
+saat `requestIdleCallback` (timeout 3 dtk), dengan `cache: "force-cache"`.
+Helper melewati tautan `saveData` dan 2G supaya tidak memboroskan kuota.
+
+Diukur pada 390 px, CDP 400 kbps / 300 ms / 4× CPU, setelah Beranda terbuka
+5 dtk:
+
+| Rute              | Sebelum (cold)   | Sesudah (dari Beranda) | Selisih                |
+| ----------------- | ---------------- | ---------------------- | ---------------------- |
+| `/suara`          | 7,3–8,2 dtk      | **2,5–3,0 dtk**        | ≈ −5 dtk               |
+| `/literatur`      | 5,4 dtk (hosted) | **0,2 dtk**            | ≈ −5 dtk               |
+| Beranda (kontrol) | 7,74–7,79 dtk    | 7,26–7,39 dtk          | tidak memburuk (CLS 0) |
+
+Biaya tambahan hanya 22 KiB + 13 KiB gzip, dan hanya untuk pembaca yang tidak
+meminta hemat data. Unit `idle-prefetch.test.ts` **3/3** (idle, saveData, 2G),
+`home-resilience` + `sauh-loading-layout` + `suara-catalog` + `literature-loading`
+**29/29 (1,5 mnt)`.
+
 ### Putaran 122 — Kartu pemulihan diaudit axe di empat tema (4 Nov)
 
 Tiga halaman pemulihan baru (`/kidung/<tidak ada>`, `/literatur/<tidak ada>`,
