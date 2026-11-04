@@ -268,3 +268,5 @@ Use a combined ordered screenshot when reporting several layouts; screenshots
 must come from the tested final build. Keep scratch scripts, full logs and image
 capture intermediates outside Git. Evidence must distinguish local mocked
 provider tests, live public PDFs, hosted workflows and actual signed/device runs.
+
+| Deep-link status | `apps/web/scripts/prerender-route-stubs.mjs` writes a 200 shell per static route after `vite build`; a new static route must be added to its `routes` list. Verify with `curl -sL -o /dev/null -w "%{http_code}"` against Pages. |

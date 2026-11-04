@@ -3996,6 +3996,14 @@ dinamis (reader) tetap memakai `404.html` yang juga mem-boot aplikasi. Tidak ada
 HTML tambahan yang diunduh pengguna: berkas hanya berbeda pada permintaan
 dokumen.
 
+Bukti hosted setelah deploy `43575af`: `/lainnya`, `/alkitab`, `/iman`,
+`/literatur`, `/suara`, `/sauh`, `/kidung` menjawab **301 → 200** (Pages
+mengalihkan ke bentuk berakhiran `/`), sedangkan rute pembaca dinamis
+`/kidung/hymn-001` tetap **404** dengan shell aplikasi — batas yang jujur:
+tautan statis kini tidak lagi berstatus “tidak ditemukan”, tautan reader masih.
+Rute statis baru wajib ditambahkan ke daftar `routes` di
+`apps/web/scripts/prerender-route-stubs.mjs`.
+
 ### Putaran 111 — Jaringan lambat berlabel “4G” juga mendapat gambar kecil (3 Nov)
 
 Sapuan vitals hosted ber-throttle (390, 400 kbps/4× CPU) menunjukkan LCP
