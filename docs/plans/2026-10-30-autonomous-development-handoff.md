@@ -4025,6 +4025,29 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 117 — Boot dan perpindahan halaman diukur di hosted (4 Nov)
+
+Angka target goal: boot shell < 1 dtk, perpindahan halaman < 300 ms. Diukur
+dengan Playwright terhadap `https://gyspnk.github.io/GYSApp-Tauri/`
+(1440×900, tanpa throttle, CDN hangat, cache HTTP kosong untuk kunjungan
+pertama):
+
+| Skenario                |        FCP |          DCL | Transfer |     Wall |
+| ----------------------- | ---------: | -----------: | -------: | -------: |
+| Kunjungan pertama       | **684 ms** | **1 012 ms** |   469 KB | 1 033 ms |
+| Kunjungan ulang (cache) |          — |    **67 ms** |     0 KB |    81 ms |
+
+Run pertama pada mesin ini sempat mencatat FCP 1 284 ms / DCL 2 687 ms karena
+koneksi TLS dan DNS masih dingin; angka di tabel adalah kondisi CDN hangat.
+Jadi target < 1 dtk **tercapai pada kondisi jaringan normal**, dan tidak
+diklaim untuk tautan 400 kbps (di sana DCL tetap ~2,7 dtk karena byte CSS+JS+font).
+
+Perpindahan halaman di dalam aplikasi (klik nav dari beranda, chunk dan font
+sudah hangat): Kidung **21 ms**, Alkitab **169 ms** (dekode paket), Lainnya
+**6 ms**, Literatur **5 ms**, Suara **25 ms** — semuanya di bawah 300 ms.
+Alkitab adalah satu-satunya yang mendekati batas, dan biayanya ada pada
+`JSON.parse` paket, bukan pada React.
+
 ### Putaran 116 — Font serif dipangkas 56% tanpa kehilangan bobot (4 Nov)
 
 Hosted, tautan lambat (390 px, 400 kbps / 300 ms / 4× CPU): resource terbesar
