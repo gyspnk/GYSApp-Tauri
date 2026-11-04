@@ -4055,6 +4055,31 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 130 — Katalog kidung dua kolom di desktop (4 Nov)
+
+Pada 1440 px katalog masih satu kolom **1 160 px**: judul di kiri, tombol
+antrean di ujung kanan layar, ~1 000 px ruang kosong di tengah; total tinggi
+daftar 533 kidung = **31 982 px**. Mulai **1200 px** baris dipasangkan:
+
+```css
+.hymn-page .pujian-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 56px;
+  align-items: start;
+}
+```
+
+Lebar baris **552 px** (1440) / **436 px** (1200), tinggi daftar **31 982 →
+16 022 px**; di 1024 tetap satu kolom 757 px. DOM tidak berubah (tetap satu
+`<ol>` berisi 533 `<li>`, urutan dan `data-id` sama), jadi kontrak hitungan,
+`content-visibility`, dan target sentuh tidak tersentuh.
+
+Verifikasi lokal: `kidung-density` + `kidung-style-behavior` +
+`kidung-section-navigation` **18/18 (1,3 mnt)**, `kidung-loading` +
+`kidung-offline` + `responsive-touch-targets` **9/9 (47 dtk)**; screenshot
+1200/1440 menunjukkan tiap tombol antrean sejajar dengan judulnya.
+
 ### Putaran 129 — Tautan kesaksian Suara ikut 200 (4 Nov)
 
 Pola yang sama diterapkan pada `public/offline/suara-sejati.json`: 164 id

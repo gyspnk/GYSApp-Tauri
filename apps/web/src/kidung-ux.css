@@ -1648,3 +1648,15 @@
     min-width: 96px;
   }
 }
+
+/* At desktop widths a single 1 160 px column left the queue button a full
+   screen away from its title. Pairing the rows halves the page and keeps each
+   action beside its own entry. */
+@media (min-width: 1200px) {
+  .hymn-page .pujian-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 56px;
+    align-items: start;
+  }
+}
