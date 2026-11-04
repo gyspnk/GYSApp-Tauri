@@ -4045,6 +4045,14 @@ Diukur pada 390 px, CDP 400 kbps / 300 ms / 4× CPU, setelah Beranda terbuka
 Biaya tambahan hanya 22 KiB + 13 KiB gzip, dan hanya untuk pembaca yang tidak
 meminta hemat data. Unit `idle-prefetch.test.ts` **3/3** (idle, saveData, 2G),
 `home-resilience` + `sauh-loading-layout` + `suara-catalog` + `literature-loading`
+**Bukti hosted (390 px, CDP 400 kbps / 300 ms / 4× CPU, `gyspnk.github.io`,
+build `0f202ba`):** prefetch benar-benar berjalan — `suara-sejati.json` 23 KiB
+pada 5,0 dtk (448 ms) dan `literature.json` 13 KiB pada 5,0 dtk (397 ms).
+LCP hosted: `/suara` cold **9,34 dtk** → dari Beranda **7,92 dtk** (≈ −1,4 dtk;
+sisa biaya ada di gambar yang diproksi BFF, bukan di snapshot), `/literatur`
+dari Beranda **2,36 dtk** (cold 5,40 dtk, ≈ −3,0 dtk). Angka lokal lebih besar
+manfaatnya karena BFF lokal tidak kena latensi edge.
+
 **29/29 (1,5 mnt)`.
 
 ### Putaran 122 — Kartu pemulihan diaudit axe di empat tema (4 Nov)
