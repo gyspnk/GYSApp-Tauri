@@ -18,3 +18,13 @@ export function literatureStubPaths(catalog) {
     .filter((id) => /^[A-Za-z0-9._-]+$/.test(id))
     .map((id) => `literatur/${id}`);
 }
+
+// Suara testimonies share one URL shape (`/suara/<slug>`) and every id in the
+// snapshot is already a single safe path segment.
+export function suaraStubPaths(catalog) {
+  const items = Array.isArray(catalog?.items) ? catalog.items : [];
+  return items
+    .map((item) => (typeof item?.id === "string" ? item.id : ""))
+    .filter((id) => /^[A-Za-z0-9._-]+$/.test(id))
+    .map((id) => `suara/${id}`);
+}

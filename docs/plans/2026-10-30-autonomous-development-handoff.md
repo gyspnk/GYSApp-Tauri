@@ -4055,6 +4055,13 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 129 — Tautan kesaksian Suara ikut 200 (4 Nov)
+
+Pola yang sama diterapkan pada `public/offline/suara-sejati.json`: 164 id
+kesaksian sekarang punya stub sendiri (`suara/<id>`), dengan penjaga pola
+segmen tunggal. Total stub menjadi **9 statis + 533 kidung + 300 literatur +
+164 Suara = 1 006**; `du -sh dist` 46 MB → 47 MB.
+
 ### Putaran 128 — Tautan literatur juga menjawab 200 (4 Nov)
 
 Melanjutkan Putaran 125: `prerender-route-stubs.mjs` sekarang juga menulis stub

@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { hymnStubPaths, literatureStubPaths } from "./hymn-stubs.mjs";
+import {
+  hymnStubPaths,
+  literatureStubPaths,
+  suaraStubPaths,
+} from "./hymn-stubs.mjs";
 
 const catalog = JSON.parse(
   await readFile(
@@ -40,5 +44,21 @@ test("every literature article gets a stub path and odd ids are skipped", async 
   assert.deepEqual(
     literatureStubPaths({ items: [{ id: "a/b" }, { id: "ok-id" }] }),
     ["literatur/ok-id"],
+  );
+});
+
+test("every Suara testimony gets a stub path", async () => {
+  const suara = JSON.parse(
+    await readFile(
+      new URL("../public/offline/suara-sejati.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const paths = suaraStubPaths(suara);
+  assert.equal(paths.length, 164);
+  assert.ok(paths.every((path) => /^suara\/[A-Za-z0-9._-]+$/.test(path)));
+  assert.deepEqual(
+    suaraStubPaths({ items: [{ id: "../etc" }, { id: "ok" }] }),
+    ["suara/ok"],
   );
 });

@@ -274,4 +274,4 @@ must come from the tested final build. Keep scratch scripts, full logs and image
 capture intermediates outside Git. Evidence must distinguish local mocked
 provider tests, live public PDFs, hosted workflows and actual signed/device runs.
 
-| Deep-link status | `apps/web/scripts/prerender-route-stubs.mjs` writes a 200 shell per static route, per hymn (`hymn-stubs.mjs`) and per literature row after `vite build` — 842 directories in total — so deep links answer 301 → 200 instead of the `404.html` shell. A new static route must be added to `routes`, and the hymn/literature counts are guarded by `hymn-stubs.test.mjs`. Verify with `curl -sL -o /dev/null -w "%{http_code}"` against Pages. |
+| Deep-link status | `apps/web/scripts/prerender-route-stubs.mjs` writes a 200 shell per static route, per hymn (`hymn-stubs.mjs`) and per literature row after `vite build` — 1 006 directories in total — so deep links answer 301 → 200 instead of the `404.html` shell. A new static route must be added to `routes`, and the hymn/literature counts are guarded by `hymn-stubs.test.mjs`. Verify with `curl -sL -o /dev/null -w "%{http_code}"` against Pages. |

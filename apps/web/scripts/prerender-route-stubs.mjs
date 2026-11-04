@@ -6,7 +6,11 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 import { fontPreloadTags } from "./font-preload.mjs";
-import { hymnStubPaths, literatureStubPaths } from "./hymn-stubs.mjs";
+import {
+  hymnStubPaths,
+  literatureStubPaths,
+  suaraStubPaths,
+} from "./hymn-stubs.mjs";
 
 // Keep in sync with apps/web/src/static-routes.ts (a unit test enforces it).
 const routes = [
@@ -38,13 +42,25 @@ const literature = JSON.parse(
   await readFile(join(process.cwd(), "public/offline/literature.json"), "utf8"),
 );
 const literatureRoutes = literatureStubPaths(literature);
+const suara = JSON.parse(
+  await readFile(
+    join(process.cwd(), "public/offline/suara-sejati.json"),
+    "utf8",
+  ),
+);
+const suaraRoutes = suaraStubPaths(suara);
 
-for (const route of [...routes, ...hymnRoutes, ...literatureRoutes]) {
+for (const route of [
+  ...routes,
+  ...hymnRoutes,
+  ...literatureRoutes,
+  ...suaraRoutes,
+]) {
   const target = join(dist, route, "index.html");
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, shell);
 }
 
 console.log(
-  `route stubs: ${routes.length} static + ${hymnRoutes.length} hymns + ${literatureRoutes.length} articles`,
+  `route stubs: ${routes.length} static + ${hymnRoutes.length} hymns + ${literatureRoutes.length} articles + ${suaraRoutes.length} testimonies`,
 );
