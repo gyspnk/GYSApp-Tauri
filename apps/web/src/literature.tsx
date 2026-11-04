@@ -1120,7 +1120,6 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
           <Link className="text-button" to="/literatur">
             ← {translate(locale, "literature.backToLiterature")}
           </Link>
-          <span>{categoryLabel(locale, item.category)}</span>
         </div>
         <ArticleProgress
           key={`${item.id}:${resourceVersion}`}
@@ -1183,7 +1182,6 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
         <Link className="text-button" to="/literatur">
           ← {translate(locale, "literature.backToLiterature")}
         </Link>
-        <span>{itemCategoryLabel}</span>
       </div>
       <section className="literature-detail-hero">
         <Cover

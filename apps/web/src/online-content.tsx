@@ -559,7 +559,6 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
           <Link className="text-button" to="/suara">
             {translate(locale, "suara.backCollection")}
           </Link>
-          <span>{translate(locale, "suara.title")}</span>
         </div>
       )}
       {state.status === "loading" && (

@@ -4055,6 +4055,20 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 132 — Label ganda di kepala halaman detail dihapus (4 Nov)
+
+Kepala `/suara/<slug>` dan `/literatur/<slug>` menampilkan kategori dua kali
+dalam jarak ~40 px: `detail-back > span` (“Suara Sejati” / “Buku PDF”) lalu
+`date-line` berisi teks yang sama (dengan tanggal). Span kanan dihapus dari
+tiga tempat (`online-content.tsx` detail kesaksian, dua cabang
+`literature.tsx`); baris `date-line` tetap jadi satu-satunya label.
+Kontrak `e2e/suara-detail.spec.ts` menyesuaikan: label kini dicek lewat
+`detail.locator(".date-line").first()`.
+
+Verifikasi: `suara-detail` + `catalog-discovery` **7/7 (28,2 dtk)**; tangkapan
+390 px menunjukkan hanya “Kembali ke kesaksian”, bar kemajuan, lalu
+“SUARA SEJATI · 19/12/2023”.
+
 ### Putaran 131 — Rel samping menandai “Lainnya” untuk halaman koleksi (4 Nov)
 
 `/suara`, `/literatur`, dan `/sauh` bukan tujuan rel, jadi `activePath`

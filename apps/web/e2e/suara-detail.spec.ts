@@ -148,9 +148,9 @@ test("Suara detail localizes ready state and stays contained across devices", as
           .locator(".detail-back")
           .getByRole("link", { name: localeCopy[locale].back }),
       ).toBeVisible();
-      await expect(
-        detail.getByText(localeCopy[locale].label, { exact: true }),
-      ).toBeVisible();
+      await expect(detail.locator(".date-line").first()).toContainText(
+        localeCopy[locale].label,
+      );
       await expect(
         detail.getByRole("heading", { name: post.title }),
       ).toBeVisible();
