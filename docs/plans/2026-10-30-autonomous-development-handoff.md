@@ -4055,6 +4055,22 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 124 — Rambu hero tidak lagi memotong judul (4 Nov)
+
+Pada 900–1199 px isi kartu beranda menumpuk di atas 206 px bawah foto
+(`.sauh-card-content` top 438, `.sauh-card-media` bottom 644 di 1024 px), dan
+gradien lama baru mencapai permukaan penuh di 46% tinggi isi — jadi baris judul
+(di 0–12%) masih berdiri di atas gambar. Hasilnya judul gelap di atas foto yang
+terang, dan transisi foto→teks terlihat seperti garis potong.
+
+Ramp diganti (khusus `[data-theme="light"]` dan `[data-theme="sepia"]` pada
+≥900 px): 0,35 alpha di 0%, 0,85 di 8%, 0,97 di 22%, permukaan penuh di 38%.
+Judul kini duduk di bidang yang hampir solid, sementara pita foto di atasnya
+tetap terlihat dan memudar mulus (screenshot 1024 dan 1440, light dan sepia).
+
+Bukti: `home-resilience` + `sauh-loading-layout` 9/9 (21,4 dtk); build bersih;
+screenshot `/tmp/ramp-{1024,1440}-{light,sepia}.png` diperiksa manual.
+
 ### Putaran 123 — Beranda menghangatkan data Suara dan Literatur (4 Nov)
 
 Warga yang membuka Suara atau Literatur dari Beranda masih membayar fetchnya
