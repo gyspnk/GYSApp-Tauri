@@ -4206,6 +4206,32 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Putaran 145 — Chunk rute dimulai bersama entri (5 Nov)
+
+Rute dimuat sebagai `import()` dinamis, jadi di tautan lambat browser baru
+meminta chunk rute **setelah** chunk entri selesai dijalankan — satu round
+trip tambahan sebelum halaman bisa menggambar. Terukur di `/iman` hosted
+(390 px, 1,6 Mbps, CPU 4×): `index-*.js` datang 2 895 ms, chunk `faith-*`
+baru 5 285 ms, `faith.json` 6 004 ms, LCP 7 292 ms.
+
+Shell yang sudah diprerender tahu chunk mana yang dibutuhkan, jadi ia bisa
+memintanya bersamaan dengan entri. `scripts/route-preload-tags.mjs` memetakan
+rute → sumber (`/iman` → `src/faith.tsx`, `/kidung` → `src/kidung-page.tsx`,
+pembaca kidung → `src/kidung.tsx`, `/bible` & `/alkitab` → `src/bible.tsx`,
+`/lainnya` & `/more` → `src/more.tsx`, `/sauh` & `/suara` →
+`src/online-content.tsx`, `/literatur` → `src/literature.tsx`, `/` →
+`src/home.tsx`), membaca `dist/.vite/manifest.json`, dan menyuntikkan satu tag
+`<link rel="modulepreload">` ke tiap stub (termasuk 533 stub kidung, 300
+literatur, 164 suara). Bila manifest tidak ada, build hanya mencetak peringatan
+dan stub tetap sah.
+
+Verifikasi: `node --test scripts/route-preload-tags.test.mjs` **4/4**
+(pemetaan rute, katalog kidung ≠ pembaca kidung, rute tak dikenal tanpa tag,
+injeksi tepat sebelum `</head>`), `route-announcement` + `runtime-health`
+**5/5**, `pnpm --filter @gys/web build` hijau dengan tag terlihat di
+`dist/iman/index.html`, `dist/kidung/index.html`, `dist/kidung/hymn-001/index.html`,
+dan `dist/index.html`.
+
 ### Putaran 144 — Pack Alkitab dikirim terkompresi (4 Nov)
 
 GitHub Pages menyajikan `offline/bible/tb-reader.json` **tanpa

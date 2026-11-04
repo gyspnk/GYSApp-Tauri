@@ -8,6 +8,11 @@ import { dirname, join } from "node:path";
 import { injectBffHints, injectBffPreconnect } from "./bff-hints.mjs";
 import { fontPreloadTags } from "./font-preload.mjs";
 import {
+  ROUTE_ENTRIES,
+  entryPreloadTag,
+  injectRoutePreload,
+} from "./route-preload-tags.mjs";
+import {
   hymnStubPaths,
   literatureStubPaths,
   suaraStubPaths,
@@ -37,8 +42,22 @@ const hintedShell = injectBffHints(shell, bffBase);
 // Every route paints BFF-proxied images; only the home and /sauh also preload
 // the shelf JSON.
 const preconnectShell = injectBffPreconnect(shell, bffBase);
+// The manifest is a build artefact: if a future config stops emitting it, the
+// stubs stay valid, they just lose the parallel route fetch.
+const manifest = await readFile(join(dist, ".vite", "manifest.json"), "utf8")
+  .then((raw) => JSON.parse(raw))
+  .catch((error) => {
+    console.warn(`route preload skipped: ${error.message}`);
+    return {};
+  });
+// Start the route chunk with the entry instead of after it.
+const withRoute = (html, entry) =>
+  injectRoutePreload(html, entryPreloadTag(manifest, entry, base));
 if (hintedShell !== original)
-  await writeFile(join(dist, "index.html"), hintedShell);
+  await writeFile(
+    join(dist, "index.html"),
+    withRoute(hintedShell, ROUTE_ENTRIES["/"]),
+  );
 
 const catalog = JSON.parse(
   await readFile(
@@ -67,7 +86,19 @@ for (const route of [
 ]) {
   const target = join(dist, route, "index.html");
   await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, route === "sauh" ? hintedShell : preconnectShell);
+  const entry =
+    ROUTE_ENTRIES[`/${route}`] ??
+    (hymnRoutes.includes(route)
+      ? "src/kidung.tsx"
+      : literatureRoutes.includes(route)
+        ? "src/literature.tsx"
+        : suaraRoutes.includes(route)
+          ? "src/online-content.tsx"
+          : undefined);
+  await writeFile(
+    target,
+    withRoute(route === "sauh" ? hintedShell : preconnectShell, entry),
+  );
 }
 
 console.log(
