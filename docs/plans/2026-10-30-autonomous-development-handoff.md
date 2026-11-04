@@ -4047,7 +4047,11 @@ Jadi kegagalan ada di frame konfirmasi. Dua celah ditutup:
    valid terlihat asing. Parser kini mencari `otp`, nomor pengirim, dan
    referensi di envelope `data`/`payload`/`result`/`message` sebelum menyerah,
    dan laporan frame asing menyebut key bertingkat (`data.foo`).
-3. Frame yang tidak dikenali tidak meninggalkan jejak. Fungsi baru
+3. Alias field diperluas: `verificationCode`/`pin` untuk kode,
+   `senderNumber`/`fromNumber`/`waNumber`/`phoneNumber` untuk pengirim, dan
+   `ref`/`reference`/`loginReference` untuk referensi, karena relay hanya
+   menjamin "frame milik layanan itu sendiri", bukan nama field-nya.
+4. Frame yang tidak dikenali tidak meninggalkan jejak. Fungsi baru
    `describeUnmatchedTrackingFrame(payload, reference)` mencatat sekali per
    percobaan ke scope `egys.whatsapp.tracking.unmatched` berisi daftar key dan
    potongan JSON 300 karakter dengan deretan angka ≥5 digit disamarkan.

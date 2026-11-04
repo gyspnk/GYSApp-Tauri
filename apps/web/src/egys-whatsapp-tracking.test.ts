@@ -196,3 +196,18 @@ describe("wrapped relay payloads", () => {
     expect(text).toContain("data.foo");
   });
 });
+
+describe("relay field aliases", () => {
+  it("confirms from a senderNumber + verificationCode frame", () => {
+    expect(
+      parseWhatsAppTrackingEvent(
+        {
+          ref_id: reference,
+          verificationCode: "4821",
+          senderNumber: "+62 812-3456-7890",
+        },
+        reference,
+      ),
+    ).toEqual({ type: "confirm", otp: "4821", senderPhone: "+6281234567890" });
+  });
+});

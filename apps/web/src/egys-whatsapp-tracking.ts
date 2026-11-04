@@ -16,21 +16,42 @@ export type WhatsAppTrackingEvent =
   // not authorise a session, so the attempt keeps waiting instead of failing.
   | { type: "incomplete"; otp: boolean; senderPhone: boolean };
 
-const OTP_KEYS = ["otp", "code", "otpCode", "otpcode", "otp_code"] as const;
+const OTP_KEYS = [
+  "otp",
+  "code",
+  "otpCode",
+  "otpcode",
+  "otp_code",
+  "verificationCode",
+  "verification_code",
+  "pin",
+] as const;
 const SENDER_KEYS = [
   "mobilePhone",
   "mobilephone",
   "sender",
   "senderPhone",
   "senderphone",
+  "senderNumber",
+  "sender_number",
   "from",
+  "fromNumber",
+  "from_number",
   "phone",
+  "phoneNumber",
+  "phone_number",
+  "waNumber",
+  "wa_number",
 ] as const;
 const REFERENCE_KEYS = [
   "refid",
   "refId",
+  "ref_id",
+  "reference",
   "referenceid",
   "referenceId",
+  "reference_id",
+  "loginReference",
 ] as const;
 
 function readField(
