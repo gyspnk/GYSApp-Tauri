@@ -8,3 +8,13 @@ export function hymnStubPaths(catalog) {
     .filter((id) => /^hymn-[0-9]{3}[A-Z]?$/.test(id))
     .map((id) => `kidung/${id}`);
 }
+
+// Literature articles carry their source URL inside the id (encoded `2F`
+// separators), so each id is a single safe path segment.
+export function literatureStubPaths(catalog) {
+  const items = Array.isArray(catalog?.items) ? catalog.items : [];
+  return items
+    .map((item) => (typeof item?.id === "string" ? item.id : ""))
+    .filter((id) => /^[A-Za-z0-9._-]+$/.test(id))
+    .map((id) => `literatur/${id}`);
+}

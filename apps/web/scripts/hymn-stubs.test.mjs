@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { hymnStubPaths } from "./hymn-stubs.mjs";
+import { hymnStubPaths, literatureStubPaths } from "./hymn-stubs.mjs";
 
 const catalog = JSON.parse(
   await readFile(
@@ -23,5 +23,22 @@ test("malformed ids are skipped instead of making odd directories", () => {
   assert.deepEqual(
     hymnStubPaths({ items: [{ id: "hymn-001" }, { id: "../evil" }, {}, null] }),
     ["kidung/hymn-001"],
+  );
+});
+
+test("every literature article gets a stub path and odd ids are skipped", async () => {
+  const literature = JSON.parse(
+    await readFile(
+      new URL("../public/offline/literature.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const paths = literatureStubPaths(literature);
+  // Every catalogue row (articles and PDFs) can be opened by its id.
+  assert.equal(paths.length, 300);
+  assert.ok(paths.every((path) => /^literatur\/[A-Za-z0-9._-]+$/.test(path)));
+  assert.deepEqual(
+    literatureStubPaths({ items: [{ id: "a/b" }, { id: "ok-id" }] }),
+    ["literatur/ok-id"],
   );
 });

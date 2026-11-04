@@ -4055,6 +4055,19 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 128 — Tautan literatur juga menjawab 200 (4 Nov)
+
+Melanjutkan Putaran 125: `prerender-route-stubs.mjs` sekarang juga menulis stub
+untuk setiap baris `public/offline/literature.json` (300 id, artikel dan PDF),
+sehingga tautan seperti
+`/literatur/kesaksian-https-3A-2F-2Ftjc.org-2F…` tidak lagi jatuh ke `404.html`.
+Id disaring dengan pola segmen tunggal yang aman (tidak ada `/`), dan
+`scripts/hymn-stubs.test.mjs` mengunci jumlah 300 + penolakan id aneh.
+
+Total stub: **9 statis + 533 kidung + 300 literatur = 842**; `du -sh dist`
+43 MB → 46 MB. Build lokal menulis semuanya; verifikasi status hosted
+(`curl -sIL`) dilakukan setelah deploy.
+
 ### Putaran 127 — Hanya serif yang di-preload (4 Nov)
 
 Di tautan 1,6 Mbps, `/sauh` menunggu 76 KB CSS + 174 KB font + 87 KB JS secara
