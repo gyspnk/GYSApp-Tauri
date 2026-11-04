@@ -41,3 +41,13 @@ export function injectBffHints(html, base) {
   if (index < 0) return html;
   return `${html.slice(0, index)}  ${tags}\n  ${html.slice(index)}`;
 }
+
+/** Preconnect only: every route shows BFF-proxied images, so warm the origin. */
+export function injectBffPreconnect(html, base) {
+  const origin = bffOrigin(base);
+  if (!origin) return html;
+  const index = html.lastIndexOf("</head>");
+  if (index < 0) return html;
+  const tag = `<link rel="preconnect" href="${origin}" crossorigin />`;
+  return `${html.slice(0, index)}  ${tag}\n  ${html.slice(index)}`;
+}

@@ -5,7 +5,7 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
-import { injectBffHints } from "./bff-hints.mjs";
+import { injectBffHints, injectBffPreconnect } from "./bff-hints.mjs";
 import { fontPreloadTags } from "./font-preload.mjs";
 import {
   hymnStubPaths,
@@ -32,7 +32,11 @@ const assets = await readdir(join(dist, "assets"));
 const shell = fontPreloadTags(original, assets, base);
 // Home and /sauh start the live Sauh request from the document head so the
 // hero image is not gated behind the entry chunk and the route chunk.
-const hintedShell = injectBffHints(shell, process.env.VITE_BFF_BASE_URL);
+const bffBase = process.env.VITE_BFF_BASE_URL;
+const hintedShell = injectBffHints(shell, bffBase);
+// Every route paints BFF-proxied images; only the home and /sauh also preload
+// the shelf JSON.
+const preconnectShell = injectBffPreconnect(shell, bffBase);
 if (hintedShell !== original)
   await writeFile(join(dist, "index.html"), hintedShell);
 
@@ -63,7 +67,7 @@ for (const route of [
 ]) {
   const target = join(dist, route, "index.html");
   await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, route === "sauh" ? hintedShell : shell);
+  await writeFile(target, route === "sauh" ? hintedShell : preconnectShell);
 }
 
 console.log(

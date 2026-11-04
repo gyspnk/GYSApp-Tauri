@@ -5,6 +5,7 @@ import {
   bffHintTags,
   bffOrigin,
   injectBffHints,
+  injectBffPreconnect,
   sauhPreloadUrl,
 } from "./bff-hints.mjs";
 
@@ -47,5 +48,22 @@ test("a document without a head is returned unchanged", () => {
   assert.equal(
     injectBffHints("<html><body></body></html>", BASE),
     "<html><body></body></html>",
+  );
+});
+
+test("injectBffPreconnect adds only the origin hint", () => {
+  const html =
+    "<!doctype html><html><head><title>x</title></head><body></body></html>";
+  const out = injectBffPreconnect(html, "https://bff.example.workers.dev/");
+  assert.match(
+    out,
+    /<link rel="preconnect" href="https:\/\/bff\.example\.workers\.dev" crossorigin \/>/,
+  );
+  assert.doesNotMatch(out, /rel="preload"/);
+  assert.equal((out.match(/rel="preconnect"/g) || []).length, 1);
+  assert.equal(injectBffPreconnect(html, ""), html);
+  assert.equal(
+    injectBffPreconnect("<html></html>", "https://bff.example.workers.dev"),
+    "<html></html>",
   );
 });

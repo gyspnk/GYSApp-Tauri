@@ -4206,6 +4206,25 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Putaran 143 — Semua shell rute memanaskan origin BFF (4 Nov)
+
+Pengukuran hosted 390 px / 1,6 Mbps / CPU 4×: FCP 2,5–3,3 dtk, tetapi LCP
+rute bergambar jauh di belakangnya — suara **10,6 dtk**, iman 7,3, literatur
+7,3, beranda 7,2, alkitab 6,4; kidung dan lainnya 2,9/3,2 (LCP = teks). Semua
+gambar itu lewat `https://gysapp-tauri-bff.pas-presensi.workers.dev`, atau
+melalui `/api/v1/content/image`.
+
+Sebelumnya preconnect hanya ada di shell beranda dan `/sauh` (dari hint Sauh).
+Sekarang `injectBffPreconnect()` menambahkan `<link rel="preconnect">` ke
+**setiap** stub rute, sementara preload JSON Sauh tetap hanya di beranda dan
+`/sauh`. 1 006 stub bertambah ~90 byte masing-masing; build tanpa
+`VITE_BFF_BASE_URL` tetap tanpa hint.
+
+Verifikasi: `node --test scripts/bff-hints.test.mjs` **6/6** (kasus baru:
+hanya preconnect, tanpa preload, idempoten sekali, aman untuk dokumen tanpa
+`<head>`), `pnpm --filter @gys/web build` dengan env BFF → preconnect ada di
+`dist/suara/index.html` dan `dist/sauh/index.html`, preload Sauh tetap satu.
+
 ### Putaran 142 — Snapshot Sauh dipercaya sehari, bukan hanya “hari ini” (4 Nov)
 
 `fetchSauh` sudah memakai pola stale-while-revalidate: snapshot paket
