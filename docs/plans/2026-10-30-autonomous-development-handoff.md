@@ -4069,6 +4069,38 @@ Verifikasi: `suara-detail` + `catalog-discovery` **7/7 (28,2 dtk)**; tangkapan
 390 px menunjukkan hanya “Kembali ke kesaksian”, bar kemajuan, lalu
 “SUARA SEJATI · 19/12/2023”.
 
+### Putaran 134 — Permintaan Sauh dimulai dari <head> (4 Nov)
+
+LCP `/sauh` di hosted masih **8,31 dtk** (390 px, 1,6 Mbps). Rantainya: HTML →
+`index-*.js` 87 KiB → tabel bahasa → chunk rute `online-content` → baru
+`fetch` JSON Sauh (~2 dtk), lalu gambar hero 689 KiB. Permintaan JSON karena
+itu selalu kalah start.
+
+`scripts/bff-hints.mjs` (baru) menghitung origin Worker dari
+`VITE_BFF_BASE_URL` dan menyuntikkan dua tag ke akhir `<head>`:
+
+```html
+<link rel="preconnect" href="https://<worker>" crossorigin />
+<link
+  rel="preload"
+  as="fetch"
+  href="https://<worker>/api/v1/content/sauh"
+  crossorigin="anonymous"
+/>
+```
+
+`scripts/prerender-route-stubs.mjs` memakai `injectBffHints` untuk shell
+**home** (`dist/index.html`) dan **/sauh**, sedangkan stub lain tetap tanpa
+preload. Build lokal tanpa `VITE_BFF_BASE_URL` tidak berubah sama sekali.
+`scripts/bff-hints.test.mjs` **5/5** (normalisasi slash, basis kosong/rusak,
+markup, tepat satu suntikan, dokumen tanpa `<head>`), dan ketiga test skrip web
+kini benar-benar dijalankan: `pnpm --filter @gys/web test:scripts` (12/12)
+disambungkan ke `pnpm test`.
+
+Bukti build: dengan `VITE_BFF_BASE_URL=https://bff.example.workers.dev`,
+`dist/index.html` dan `dist/sauh/index.html` berisi preload, `dist/bible/`
+tidak. Efek waktu harus diukur di hosted setelah deploy.
+
 ### Putaran 133 — Katalog kidung pendek mengisi layar (4 Nov)
 
 Pencarian tanpa hasil di `/kidung` (390 px) menyisakan `main` hanya **360 px**

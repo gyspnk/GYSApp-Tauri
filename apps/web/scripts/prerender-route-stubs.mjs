@@ -5,6 +5,7 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+import { injectBffHints } from "./bff-hints.mjs";
 import { fontPreloadTags } from "./font-preload.mjs";
 import {
   hymnStubPaths,
@@ -29,7 +30,11 @@ const original = await readFile(join(dist, "index.html"), "utf8");
 const base = original.match(/src="([^"]*?)assets\//)?.[1] ?? "/";
 const assets = await readdir(join(dist, "assets"));
 const shell = fontPreloadTags(original, assets, base);
-if (shell !== original) await writeFile(join(dist, "index.html"), shell);
+// Home and /sauh start the live Sauh request from the document head so the
+// hero image is not gated behind the entry chunk and the route chunk.
+const hintedShell = injectBffHints(shell, process.env.VITE_BFF_BASE_URL);
+if (hintedShell !== original)
+  await writeFile(join(dist, "index.html"), hintedShell);
 
 const catalog = JSON.parse(
   await readFile(
@@ -58,7 +63,7 @@ for (const route of [
 ]) {
   const target = join(dist, route, "index.html");
   await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, shell);
+  await writeFile(target, route === "sauh" ? hintedShell : shell);
 }
 
 console.log(
