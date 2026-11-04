@@ -4055,6 +4055,37 @@ manfaatnya karena BFF lokal tidak kena latensi edge.
 
 **29/29 (1,5 mnt)`.
 
+### Putaran 123 — Beranda menghangatkan data Suara dan Literatur (4 Nov)
+
+Warga yang membuka Suara atau Literatur dari Beranda masih membayar fetchnya
+sendiri: 22 KiB (Suara) dan 13 KiB (Literatur) baru diminta setelah rute
+dipilih. Sekarang Beranda meminta keduanya saat idle lewat
+`apps/web/src/idle-prefetch.ts` (`requestIdleCallback`, `cache: "force-cache"`,
+berhenti untuk `saveData` dan tautan 2G), jadi rute berikutnya memakai cache
+HTTP.
+
+Ukuran lokal (390 px, CDP 400 kbps / 300 ms / 4× CPU):
+
+| Rute         | Sebelum (dari Beranda) | Sesudah         |
+| ------------ | ---------------------- | --------------- |
+| `/suara`     | 7,3–8,2 dtk            | **2,5–3,0 dtk** |
+| `/literatur` | 5,1–5,4 dtk            | **0,2 dtk**     |
+
+Beranda sendiri tidak dirugikan: LCP 7,74–7,79 dtk → 7,26–7,39 dtk (dua
+sampel, selisih di dalam noise), CLS tetap 0.
+
+Hosted (`0f202ba`) membuktikan prefetch berjalan: `suara-sejati.json` 23 KiB
+mulai 5,0 dtk (448 ms) dan `literature.json` 13 KiB mulai 5,0 dtk (397 ms).
+LCP hosted dari Beranda: `/suara` 9,34 → **7,92 dtk**, `/literatur` 5,40 →
+**2,36 dtk**. Sisa biaya Suara ada di gambar sampul yang lewat BFF, jadi
+perbandingan jalur gambar diukur juga: untuk sampul 74 KB yang sama, proxy
+BFF **297 ms** (best dari 3) versus S3 langsung **1 394 ms**, sehingga hop
+proxy + cache edge tetap dipertahankan.
+
+Bukti: unit `idle-prefetch` 3/3; `home-resilience`, `sauh-loading-layout`,
+`suara-catalog`, `literature-loading` 29/29 (1,5 mnt); CI `0f202ba` dan
+`a45303b` hijau; bundle 163,1 KiB.
+
 ### Putaran 122 — Kartu pemulihan diaudit axe di empat tema (4 Nov)
 
 Tiga halaman pemulihan baru (`/kidung/<tidak ada>`, `/literatur/<tidak ada>`,
