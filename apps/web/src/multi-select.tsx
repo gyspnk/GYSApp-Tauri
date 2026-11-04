@@ -91,6 +91,14 @@ export function MultiSelect({
     if (!open) setQuery("");
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    // Move focus into the dialog so Escape and the screen-reader dialog
+    // announcement work before the pointer reaches the list; focusing the
+    // container (not the search field) keeps the phone keyboard closed.
+    menuRef.current?.focus({ preventScroll: true });
+  }, [open, menuPresent]);
+
   const toggle = (value: string) => {
     const next = new Set(selected);
     if (next.has(value)) next.delete(value);
@@ -141,6 +149,7 @@ export function MultiSelect({
           className="multiselect-menu"
           role="dialog"
           aria-label={label}
+          tabIndex={-1}
           ref={menuRef}
         >
           {options.length > 8 && (

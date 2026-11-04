@@ -4025,6 +4025,20 @@ penuh berakhir `740w`; `{effectiveType:"4g", downlink:0.6}` → `src` =
 `…-300x200.jpg` dan `srcset` **null**. Uji unit `network-hints` + `srcset`
 **9/9**; typecheck bersih; bundle tidak berubah.
 
+### Putaran 119 — Daftar kitab menerima fokus dan menutup dengan Escape (4 Nov)
+
+Popover multi-kitab sudah menangani Escape lewat handler di akar komponen, tapi
+hanya kalau fokus berada di dalamnya. Setelah membuka dengan keyboard, fokus
+tetap di tombol pemicu, jadi pengguna pembaca layar tidak pernah mendengar
+dialognya dan tidak punya jalan keluar selain Tab.
+
+Perbaikan: `apps/web/src/multi-select.tsx` memindahkan fokus ke kontainer
+`role="dialog"` (`tabIndex={-1}`) saat menu dibuka — bukan ke kolom pencarian,
+supaya keyboard ponsel tidak langsung naik — dan Escape mengembalikan fokus ke
+pemicu. Kontrak baru di `apps/web/e2e/bible-search-multi-book.spec.ts`:
+`Enter` membuka, `.multiselect-menu` menjadi `document.activeElement`, `Escape`
+menutup dan fokus kembali ke `.multiselect-trigger`; `4/4` lulus.
+
 ### Putaran 118 — Aturan "Aa" yang ganda dibersihkan jadi satu (4 Nov)
 
 `apps/web/src/kidung-ux.css` punya **dua** blok `.kidung-mode-cycle`: yang

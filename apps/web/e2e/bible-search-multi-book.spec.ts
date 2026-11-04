@@ -25,6 +25,19 @@ test("the phone sheet dims the page and closes on the scrim", async ({
   await expect(page.locator(".multiselect-menu")).toHaveCount(0);
 });
 
+test("the book list takes focus when it opens and closes on Escape", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const trigger = await openSearch(page);
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".multiselect-menu")).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".multiselect-menu")).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});
+
 test.describe("Bible search book scope", () => {
   test("several books can be selected and limit the search", async ({
     page,
