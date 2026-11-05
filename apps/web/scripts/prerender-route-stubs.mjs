@@ -49,8 +49,21 @@ const hintedShell = injectBffHints(shell, bffBase);
 // Every route paints BFF-proxied images; only the home and /sauh also preload
 // the shelf JSON.
 const preconnectShell = injectBffPreconnect(shell, bffBase);
-// The Suara library reads a live BFF feed; start it during parse too.
-const suaraShell = injectSuaraHints(shell, bffBase, base);
+// The Suara library reads a live BFF feed; start it during parse too. The
+// first cover is the LCP element, so preload it behind the same proxy the card
+// uses — the feed itself only arrives after boot.
+const suaraCover = await readFile(
+  join(process.cwd(), "public", "offline", "suara-sejati.json"),
+  "utf8",
+)
+  .then((raw) => {
+    const parsed = JSON.parse(raw);
+    const items = Array.isArray(parsed) ? parsed : parsed?.items;
+    const first = Array.isArray(items) ? items[0] : undefined;
+    return typeof first?.imageUrl === "string" ? first.imageUrl : undefined;
+  })
+  .catch(() => undefined);
+const suaraShell = injectSuaraHints(shell, bffBase, base, suaraCover);
 // The manifest is a build artefact: if a future config stops emitting it, the
 // stubs stay valid, they just lose the parallel route fetch.
 const manifest = await readFile(join(dist, ".vite", "manifest.json"), "utf8")

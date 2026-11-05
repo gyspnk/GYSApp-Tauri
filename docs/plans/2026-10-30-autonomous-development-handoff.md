@@ -4404,6 +4404,15 @@ Tiga keputusan pertama:
   mengukur jalur yang benar-benar dikirim. Soak akan dijalankan ulang untuk
   bukti hosted.
 
+- **Sampul pertama Suara dimulai saat parse.** LCP `/suara` masih 7,5–8,2 dtk
+  karena permintaan sampul pertama baru muncul ~6,2 dtk (setelah boot + feed).
+  Shell `/suara/` sekarang juga memuat `<link rel="preload" as="image">` untuk
+  sampul item pertama dari snapshot build, diarahkan ke proxy gambar Worker yang
+  sama dengan kartunya (`?url=…`). Bila snapshot kosong atau URL tidak valid,
+  tag tidak dipancarkan; urutan/penanda tetap aman bila feed berubah setelah
+  build (preload yang tidak terpakai hanya diabaikan). Uji `bff-hints.test.mjs`
+  **8/8** (URL proxy, tag ikut, tanpa URL valid hanya preload snapshot).
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.

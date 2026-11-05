@@ -8,6 +8,7 @@ import {
   injectBffPreconnect,
   injectSuaraHints,
   sauhPreloadUrl,
+  suaraCoverUrl,
 } from "./bff-hints.mjs";
 
 const BASE = "https://bff.example.workers.dev";
@@ -88,4 +89,34 @@ test("the Suara shell preloads the bundled snapshot", () => {
     injectSuaraHints(html, "https://bff.example.workers.dev/", ""),
     html,
   );
+});
+
+test("the Suara shell preloads the first cover behind the image proxy", () => {
+  const html =
+    "<!doctype html><html><head><title>x</title></head><body></body></html>";
+  const image = "https://cdn.example/cover-300x166.png";
+  const proxied = suaraCoverUrl("https://bff.example.workers.dev", image);
+  assert.equal(
+    proxied,
+    "https://bff.example.workers.dev/api/v1/content/image?url=https%3A%2F%2Fcdn.example%2Fcover-300x166.png",
+  );
+  const out = injectSuaraHints(
+    html,
+    "https://bff.example.workers.dev",
+    "/GYSApp-Tauri/",
+    image,
+  );
+  assert.match(
+    out,
+    /<link rel="preload" as="image" href="https:\/\/bff\.example\.workers\.dev\/api\/v1\/content\/image\?url=https%3A%2F%2Fcdn\.example%2Fcover-300x166\.png" \/>/,
+  );
+  // Without a usable cover the shell keeps only the snapshot preload.
+  const plain = injectSuaraHints(
+    html,
+    "https://bff.example.workers.dev",
+    "/GYSApp-Tauri/",
+    "not-a-url",
+  );
+  assert.equal((plain.match(/as="image"/g) || []).length, 0);
+  assert.equal(suaraCoverUrl("", image), undefined);
 });

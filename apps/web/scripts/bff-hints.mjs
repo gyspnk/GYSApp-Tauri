@@ -59,15 +59,28 @@ export function injectBffPreconnect(html, base) {
  * ~6,2 s. crossorigin="anonymous" mirrors the app's fetch credentials mode —
  * a preload with a different mode is downloaded twice.
  */
-export function injectSuaraHints(html, bffBase, rootBase = "/") {
+export function suaraCoverUrl(bffBase, imageUrl) {
+  const origin = bffOrigin(bffBase);
+  if (!origin || typeof imageUrl !== "string") return undefined;
+  if (!/^https:\/\/[^\s]+$/i.test(imageUrl)) return undefined;
+  const url = new URL("/api/v1/content/image", origin);
+  url.searchParams.set("url", imageUrl);
+  return url.toString();
+}
+
+export function injectSuaraHints(html, bffBase, rootBase = "/", coverUrl) {
   const origin = bffOrigin(bffBase);
   const root = (rootBase ?? "").trim();
   if (!origin || !root.endsWith("/")) return html;
   const index = html.lastIndexOf("</head>");
   if (index < 0) return html;
+  const cover = suaraCoverUrl(bffBase, coverUrl);
   const tags = [
     `<link rel="preconnect" href="${origin}" crossorigin />`,
     `<link rel="preload" as="fetch" href="${root}offline/suara-sejati.json" crossorigin="anonymous" />`,
-  ].join("\n    ");
+    cover ? `<link rel="preload" as="image" href="${cover}" />` : undefined,
+  ]
+    .filter(Boolean)
+    .join("\n    ");
   return `${html.slice(0, index)}  ${tags}\n  ${html.slice(index)}`;
 }
