@@ -4380,6 +4380,19 @@ Tiga keputusan pertama:
   `sauh-loading-layout` **9/9 (11,3 s)**; baseline visual home hanya untuk tema
   terang, jadi tidak ada diff CI.
 
+- **B-37 lanjutan — manifest paket fork juga lewat Worker.** Setelah chord
+  manifest dan PDF kanonik diproksikan, sisa jalur `raw.githubusercontent.com`
+  adalah manifest rilis GYSApp-Fork yang dibaca `fork-pdf.ts`. Route baru
+  `GET /api/v1/content/fork-manifest` menyajikan satu URL tetap
+  (`ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json`) dengan
+  `cache-control: public, max-age=300, stale-while-revalidate=3600`; klien
+  mencoba proxy lebih dulu, lalu host mentah sebagai sumber kesegaran, dan
+  cache `gys-fork-pdf-v1` tetap menjadi fallback offline. Uji BFF baru
+  memastikan satu permintaan ke URL tetap, `content-type` JSON, dan 503 saat
+  upstream gagal (**6/6** untuk grup proxy); `fork-pdf.test.ts` **9/9**,
+  `tsc`/build hijau. Unduhan paket ZIP masih memakai URL rilis GitHub — itu
+  jalur berikutnya bila soak native masih memblokirnya.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.

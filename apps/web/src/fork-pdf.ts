@@ -157,15 +157,31 @@ async function loadDataPackage() {
     assertTrustedPackageUrl(pkg.downloadUrl);
     return { pkg, release };
   };
-  let parsed: Awaited<ReturnType<typeof parseRelease>>;
-  try {
-    const response = await fetch(RELEASE_MANIFEST, { cache: "no-cache" });
-    if (!response.ok) throw new Error("GYSApp-Data PDF release unavailable");
-    parsed = await parseRelease(response.clone());
-    await cache?.put(RELEASE_MANIFEST, response);
-  } catch (error) {
+  let parsed: Awaited<ReturnType<typeof parseRelease>> | undefined;
+  let lastError: unknown;
+  // The fork host is blocked on some networks; the Worker mirror answers from
+  // one pinned URL, and the raw host stays as the freshness fallback.
+  const candidates = [
+    BFF_BASE
+      ? `${BFF_BASE.replace(/\/$/, "")}/api/v1/content/fork-manifest`
+      : undefined,
+    RELEASE_MANIFEST,
+  ].filter((value): value is string => Boolean(value));
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate, { cache: "no-cache" });
+      if (!response.ok) throw new Error("GYSApp-Data PDF release unavailable");
+      parsed = await parseRelease(response.clone());
+      await cache?.put(RELEASE_MANIFEST, response);
+      break;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  if (!parsed) {
     const cached = await cache?.match(RELEASE_MANIFEST);
-    if (!cached) throw error;
+    if (!cached)
+      throw lastError ?? new Error("GYSApp-Data PDF release unavailable");
     parsed = await parseRelease(cached);
   }
   const { pkg } = parsed;

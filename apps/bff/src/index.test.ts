@@ -636,6 +636,51 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("mirrors the GYSApp-Fork release manifest for blocked networks", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenUrl = "";
+    globalThis.fetch = (async (input) => {
+      seenUrl = String(input);
+      return new Response(
+        JSON.stringify({
+          schemaVersion: 1,
+          latest: { tag: "v1" },
+          packages: [],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request("/api/v1/content/fork-manifest", {
+        headers: { Origin: "http://localhost:5173" },
+      });
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain(
+        "application/json",
+      );
+      expect(response.headers.get("cache-control")).toContain("max-age=300");
+      expect(await response.json()).toMatchObject({ schemaVersion: 1 });
+      expect(seenUrl).toBe(
+        "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
+      );
+
+      globalThis.fetch = (async () =>
+        new Response("nope", { status: 500 })) as typeof fetch;
+      const failed = await app.request("/api/v1/content/fork-manifest");
+      expect(failed.status).toBe(503);
+      expect(
+        ((await failed.json()) as { error: { code: string } }).error.code,
+      ).toBe("UPSTREAM_UNAVAILABLE");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("proxies only the immutable GYSApp-Fork master PDF", async () => {
     const originalFetch = globalThis.fetch;
     let seenUrl = "";

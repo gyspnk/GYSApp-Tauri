@@ -940,6 +940,39 @@ export function createApp(
    * document, so the Worker serves it from one fixed upstream instead of the
    * browser reaching GitHub directly.
    */
+  /**
+   * Same-origin copy of the GYSApp-Fork hymnal release manifest. Devices whose
+   * network blocks raw.githubusercontent.com could otherwise never resolve the
+   * package, even though the master PDF itself is proxied.
+   */
+  app.get("/api/v1/content/fork-manifest", async (c) => {
+    c.header(
+      "cache-control",
+      "public, max-age=300, stale-while-revalidate=3600",
+    );
+    try {
+      const upstream = await fetch(
+        "https://raw.githubusercontent.com/ThenGB/GYSApp-Data/main/latest/hymnals-manifest.json",
+        { ...IMMUTABLE_FETCH_CACHE, signal: c.req.raw.signal },
+      );
+      if (!upstream.ok)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Fork hymnal manifest unavailable",
+        );
+      return c.body(await upstream.text(), 200, {
+        "content-type": "application/json",
+      });
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Fork hymnal manifest unavailable",
+      );
+    }
+  });
+
   app.get("/api/v1/content/chord-manifest", async (c) => {
     c.header(
       "cache-control",
