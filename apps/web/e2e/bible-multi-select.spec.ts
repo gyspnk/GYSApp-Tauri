@@ -145,4 +145,17 @@ test.describe("Bible multi-verse selection", () => {
     ).toHaveText("Kejadian 1:1–5");
     await expect(page.locator(".verse-row.is-selected")).toHaveCount(5);
   });
+
+  test("leaves the multi-select with Escape", async ({ page }) => {
+    await openReader(page);
+    const verses = page.locator(".verse-text");
+    const toolbar = page.getByTestId("selected-verse-toolbar");
+    await verses.nth(0).click();
+    await toolbar.getByRole("button", { name: "Pilih banyak ayat" }).click();
+    await verses.nth(1).click();
+    await expect(page.locator(".verse-row.is-selected")).toHaveCount(2);
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".verse-row.is-selected")).toHaveCount(0);
+    await expect(toolbar).toHaveCount(0);
+  });
 });

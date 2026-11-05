@@ -4826,6 +4826,12 @@ dipindah; itu pekerjaan berikutnya dengan allowlist terpisah.
 
 ### D-11 — Shift+klik memperluas pilihan ke rentang ayat (5 Nov)
 
+Pelengkap: **Escape** keluar dari mode pilih-banyak saat tidak ada dialog
+terbuka (dialog tetap pemilik Escape-nya sendiri). `useEffect` di
+`apps/web/src/bible.tsx` mendengarkan `keydown` hanya ketika `multiMode` aktif,
+lalu memanggil `clearMultiSelect`; spec `bible-multi-select.spec.ts` **5/5**
+menambah kasus “leaves the multi-select with Escape”.
+
 Di desktop, memilih banyak ayat satu per satu terasa lambat. Sekarang klik
 biasa tetap menambah/menghapus satu ayat, dan **Shift+klik** memilih seluruh
 rentang dari ayat terakhir yang diklik sampai ayat yang diklik (inklusif).

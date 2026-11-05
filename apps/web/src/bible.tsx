@@ -1124,6 +1124,18 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setNoteTargetIds([]);
   };
 
+  useEffect(() => {
+    if (!multiMode) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      // Dialogs own Escape while they are open.
+      if (document.querySelector('[role="dialog"]')) return;
+      clearMultiSelect();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [multiMode, clearMultiSelect]);
+
   const speakVerses = (verses: readonly BibleVerse[]) => {
     if (!verses.length || !speechAvailable) return;
     setSpeaking(true);
