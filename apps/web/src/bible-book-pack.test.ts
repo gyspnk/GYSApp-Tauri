@@ -15,11 +15,11 @@ const BOOK = {
   pericopes: [],
 };
 
-async function gzip(value: unknown): Promise<Uint8Array> {
+async function gzip(value: unknown): Promise<ArrayBuffer> {
   const stream = new Blob([JSON.stringify(value)])
     .stream()
     .pipeThrough(new CompressionStream("gzip"));
-  return new Uint8Array(await new Response(stream).arrayBuffer());
+  return await new Response(stream).arrayBuffer();
 }
 
 function mockFetch(handler: (url: string) => Promise<Response> | Response) {

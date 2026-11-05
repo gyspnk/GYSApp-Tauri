@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "30 0 * * *"
   workflow_dispatch:
+    inputs:
+      samples:
+        description: "Packaged relaunch samples (5-100); nightly uses 30"
+        required: false
+        default: "10"
   pull_request:
     paths:
       - "apps/native/**"
@@ -72,7 +77,7 @@ jobs:
     runs-on: windows-latest
     # Full LTO, 30 process relaunches, full-track media soak and cache cleanup
     # exceeded 20 minutes on a cold runner even after all acceptance steps passed.
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -133,7 +138,9 @@ jobs:
           Write-Host "Configured temporary loopback-only WebView2 debugging policy."
       - name: Run short offline startup storage media and asset suites
         run: pnpm test:native:quick
-      - name: Benchmark 30 packaged process relaunches and local content
+      - name: Benchmark packaged process relaunches and local content
+        env:
+          GYS_NATIVE_BENCHMARK_SAMPLES: ${{ inputs.samples || '30' }}
         run: pnpm test:performance:native
       - name: Upload raw packaged benchmark
         if: always()
