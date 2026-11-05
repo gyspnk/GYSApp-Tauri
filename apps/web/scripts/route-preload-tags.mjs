@@ -19,7 +19,10 @@ export const ROUTE_ENTRIES = {
 // shelf: two more serial round trips on a slow link. Both are known at build
 // time, so the shell can start them together with the route chunk.
 export const ROUTE_DATA = {
-  "/suara": { chunks: ["src/suara.ts"], files: ["offline/suara-sejati.json"] },
+  // Suara reads the live BFF feed when one is configured, so only the data
+  // module is worth starting early; preloading the fallback shelf would spend
+  // 23 KiB the page never reads.
+  "/suara": { chunks: ["src/suara.ts"], files: [] },
   "/literatur": {
     chunks: ["src/literature-catalog.ts"],
     files: ["offline/literature.json"],

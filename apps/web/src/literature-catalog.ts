@@ -192,7 +192,10 @@ async function loadLiteratureCatalog(): Promise<LiteratureItem[]> {
   try {
     const response = await fetch(snapshotUrl, {
       signal: AbortSignal.timeout(10_000),
-      cache: "force-cache",
+      // `default` (not `force-cache`) so this reuses the `<link rel="preload"
+      // as="fetch">` the shell already started; `force-cache` opens a second
+      // request with a different cache mode.
+      cache: "default",
     });
     if (response.ok) {
       const snapshot = LiteratureCatalogSchema.parse(await response.json());

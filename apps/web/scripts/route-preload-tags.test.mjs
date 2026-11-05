@@ -44,10 +44,7 @@ test("maps each static route to its chunk and data", () => {
   );
   assert.equal(
     routePreloadTags(manifest, "/suara", "/"),
-    [
-      '<link rel="modulepreload" href="/assets/suara-G9h0I1j2.js" />',
-      '<link rel="preload" as="fetch" href="/offline/suara-sejati.json" crossorigin="anonymous" />',
-    ].join("\n    "),
+    '<link rel="modulepreload" href="/assets/suara-G9h0I1j2.js" />',
   );
 });
 
