@@ -4474,6 +4474,18 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Putaran 156 — Paket Alkitab dipecah per kitab (persiapan, 5 Nov)
+
+`apps/web/scripts/split-bible-pack.mjs` memecah `tb-reader.json` menjadi
+**66 file gzip per kitab** + `index.json` di `dist/offline/bible/books/`
+(total **1 703 KiB**, hampir sama dengan paket penuh karena gzip per kitab
+kurang efisien, tetapi satu kitab hanya 12–102 KiB). Dipanggil setelah
+`vite build` (`build` script), dengan `gzipSync` mtime 0 supaya deterministik.
+Tes `scripts/split-bible-pack.test.mjs` **3/3** (pengelompokan ayat+perikop,
+byte identik antar-run, index + magic gzip); seluruh `test:scripts` **28/28**.
+Belum ada perubahan perilaku: loader masih memakai paket penuh sampai
+pemanggilan per-kitab disambungkan (putaran berikutnya).
+
 ### Ukuran per kitab untuk pemecahan paket Alkitab (5 Nov)
 
 `public/offline/bible/tb-reader.json` berisi 66 kitab, **31 172 ayat**, dan
