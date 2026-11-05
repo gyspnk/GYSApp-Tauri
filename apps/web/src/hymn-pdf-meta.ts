@@ -86,24 +86,39 @@ export function extractPdfMetaFromBytes(
 }
 
 /** Read the song's mapped first page from the shared range-backed master. */
+/** A failed master read is not retried for a minute: a retry storm saturated
+ * WebView2 in the packaged soak and starved the visible PDF pane. */
+export const PDF_META_RETRY_COOLDOWN_MS = 60_000;
+const failedAt = new Map<string, number>();
+
+function fallbackMeta(): HymnPdfMeta {
+  return { tempo: MIDI_TEMPO_FALLBACK_BPM, preloadTranspose: 0 };
+}
+
 export function warmHymnPdfMeta(item: HymnCatalogEntry): Promise<HymnPdfMeta> {
   const settled = settledCache.get(item.id);
   if (settled) return Promise.resolve(settled);
+  const failed = failedAt.get(item.id);
+  if (
+    failed !== undefined &&
+    Date.now() - failed < PDF_META_RETRY_COOLDOWN_MS
+  ) {
+    return Promise.resolve(fallbackMeta());
+  }
   const existing = cache.get(item.id);
   if (existing) return existing;
   const request = loadForkHymnalPdf(item.id)
     .then(({ src, initialPage }) => extractPdfMeta(src, initialPage))
     .then((meta) => {
+      failedAt.delete(item.id);
       settledCache.set(item.id, meta);
       listeners.forEach((listener) => listener());
       return meta;
     })
     .catch(() => {
+      failedAt.set(item.id, Date.now());
       if (cache.get(item.id) === request) cache.delete(item.id);
-      return {
-        tempo: MIDI_TEMPO_FALLBACK_BPM,
-        preloadTranspose: 0,
-      } satisfies HymnPdfMeta;
+      return fallbackMeta();
     });
   cache.set(item.id, request);
   void request.catch(() => cache.delete(item.id));
@@ -118,4 +133,5 @@ export function getHymnPdfMeta(songId: string): HymnPdfMeta | undefined {
 export function _resetHymnPdfMetaCacheForTest(): void {
   cache.clear();
   settledCache.clear();
+  failedAt.clear();
 }

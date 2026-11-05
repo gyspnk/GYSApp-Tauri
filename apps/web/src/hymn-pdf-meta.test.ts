@@ -74,7 +74,33 @@ describe("per-song hymn PDF metadata cache", () => {
       preloadTranspose: 0,
     });
     expect(getHymnPdfMeta(item.id)).toBeUndefined();
-    await expect(warmHymnPdfMeta(item)).resolves.toMatchObject({ tempo: 84 });
+    // A failed master read is not retried immediately; see the cooldown test.
+    await expect(warmHymnPdfMeta(item)).resolves.toMatchObject({ tempo: 76 });
+  });
+
+  it("does not retry a failed master read for a minute", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date("2026-11-05T00:00:00Z"));
+      vi.mocked(loadForkHymnalPdf).mockRejectedValueOnce(new Error("offline"));
+      const calls = vi.mocked(loadForkHymnalPdf).mock.calls.length;
+
+      await expect(warmHymnPdfMeta(item)).resolves.toMatchObject({
+        tempo: 76,
+      });
+      await expect(warmHymnPdfMeta(item)).resolves.toMatchObject({
+        tempo: 76,
+      });
+      expect(vi.mocked(loadForkHymnalPdf).mock.calls.length).toBe(calls + 1);
+
+      vi.setSystemTime(new Date("2026-11-05T00:01:01Z"));
+      await expect(warmHymnPdfMeta(item)).resolves.toMatchObject({
+        tempo: 84,
+      });
+      expect(vi.mocked(loadForkHymnalPdf).mock.calls.length).toBe(calls + 2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("resolves per-song tempo and natural-chord transpose defaults", () => {

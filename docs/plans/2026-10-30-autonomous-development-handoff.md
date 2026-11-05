@@ -4206,6 +4206,22 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Cooldown metadata PDF kidung (5 Nov)
+
+Soak native `42078422475` gagal pada `Cached PDF did not render after reload`
+(`.pdf-reader-hymn canvas` tidak muncul dalam 45 dtk). Log menunjukkan
+permintaan `fork-pdf?…kr_master.pdf` berulang **206/200** selama beberapa detik
+plus `net::ERR_FAILED` untuk berkas musik lewat BFF, dan `diagnostics=[]`.
+
+Akar yang bisa diperbaiki tanpa mesin pemilik: `warmHymnPdfMeta` menghapus
+cache saat gagal, sehingga setiap pemanggilan berikutnya (setiap load MIDI)
+mengulang pembacaan master PDF; di WebView2 itu membanjiri antrean jaringan dan
+membuat pane PDF tidak sempat melukis. Sekarang kegagalan dicatat dan tidak
+diulang selama **60 dtk** (`PDF_META_RETRY_COOLDOWN_MS`), lalu dicoba lagi.
+Test `hymn-pdf-meta.test.ts` **5/5** (termasuk kasus cooldown) dan `tsc -b`
+bersih. Bukti native tetap menunggu soak berikutnya; ini perbaikan beban, bukan
+klaim bahwa pane PDF sudah pasti melukis di WebView2.
+
 ### Catatan — preload pack Alkitab ditolak Chromium (5 Nov)
 
 Godaan berikutnya adalah memulai transfer 1,7 MB `tb-reader.json.gz` dari
