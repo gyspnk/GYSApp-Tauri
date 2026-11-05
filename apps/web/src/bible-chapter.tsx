@@ -59,7 +59,7 @@ export function ChapterPane({
   secondary?: boolean;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   onScroll?: () => void;
-  onSelect: (verse: BibleVerse) => void;
+  onSelect: (verse: BibleVerse, modifiers?: { shiftKey?: boolean }) => void;
   onBookmark: (id: string) => void;
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchMove?: (event: TouchEvent<HTMLDivElement>) => void;
@@ -242,11 +242,13 @@ export function ChapterPane({
                     className="verse-text"
                     role="button"
                     tabIndex={0}
-                    onClick={() => onSelect(verse)}
+                    onClick={(event) =>
+                      onSelect(verse, { shiftKey: event.shiftKey })
+                    }
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        onSelect(verse);
+                        onSelect(verse, { shiftKey: event.shiftKey });
                       }
                     }}
                     aria-pressed={selected}

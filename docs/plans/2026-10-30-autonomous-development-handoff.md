@@ -4806,6 +4806,20 @@ Dampak yang diharapkan: di jaringan yang memblokir raw, chord termuat tanpa
 menunggu dua timeout (6–16 dtk per lagu). PDF kidung/fork **belum** ikut
 dipindah; itu pekerjaan berikutnya dengan allowlist terpisah.
 
+### D-11 — Shift+klik memperluas pilihan ke rentang ayat (5 Nov)
+
+Di desktop, memilih banyak ayat satu per satu terasa lambat. Sekarang klik
+biasa tetap menambah/menghapus satu ayat, dan **Shift+klik** memilih seluruh
+rentang dari ayat terakhir yang diklik sampai ayat yang diklik (inklusif).
+Jangkar disimpan saat mode pilih-banyak dimulai (`multiAnchorRef`), direset
+ketika pilihan dibersihkan, dan ayat di luar pasal saat ini tidak pernah ikut
+karena rentang dihitung dari `chapterVerses`. Tidak ada kontrol baru — hanya
+perilaku klik — jadi tidak menambah beban visual atau bundle.
+
+Bukti: test baru di `apps/web/e2e/bible-multi-select.spec.ts` memilih ayat 1,
+masuk mode pilih-banyak, lalu Shift+klik ayat 5 → label “Kejadian 1:1–5”,
+“5 ayat dipilih”, dan 5 baris `.is-selected`; berkas itu kini **4/4 (20,9 s)**.
+
 ### Putaran 150 — Satu pencarian ayat, di dalam dialog pilih kitab (5 Nov)
 
 Pemilik (m25113): “fitur search yang diluar kotak pilih kitab itu dihilangkan

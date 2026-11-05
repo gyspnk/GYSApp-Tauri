@@ -184,6 +184,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   );
   const [selectedVerseId, setSelectedVerseId] = useState<string>();
   const [multiVerseIds, setMultiVerseIds] = useState<string[]>([]);
+  const multiAnchorRef = useRef<string | undefined>(undefined);
   const [noteTargetIds, setNoteTargetIds] = useState<string[]>([]);
   const [selectedNoteId, setSelectedNoteId] = useState<string>();
   const selectedNoteIdRef = useRef<string | undefined>(undefined);
@@ -1073,9 +1074,30 @@ export function BiblePage({ locale }: { locale: Locale }) {
     });
   };
 
-  const selectVerse = (verse: BibleVerse) => {
+  const selectVerse = (
+    verse: BibleVerse,
+    modifiers?: { shiftKey?: boolean },
+  ) => {
     setNoteTargetIds([]);
     if (multiMode) {
+      const anchor = multiAnchorRef.current;
+      const anchorIndex = anchor
+        ? chapterVerses.findIndex((item) => item.id === anchor)
+        : -1;
+      const targetIndex = chapterVerses.findIndex(
+        (item) => item.id === verse.id,
+      );
+      if (modifiers?.shiftKey && anchorIndex >= 0 && targetIndex >= 0) {
+        const from = Math.min(anchorIndex, targetIndex);
+        const to = Math.max(anchorIndex, targetIndex);
+        const range = chapterVerses.slice(from, to + 1).map((item) => item.id);
+        setMultiVerseIds((current) => [
+          ...current,
+          ...range.filter((id) => !current.includes(id)),
+        ]);
+        return;
+      }
+      multiAnchorRef.current = verse.id;
       setMultiVerseIds((current) =>
         current.includes(verse.id)
           ? current.filter((id) => id !== verse.id)
@@ -1090,12 +1112,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   const startMultiSelect = () => {
     if (!selectedVerseId) return;
+    multiAnchorRef.current = selectedVerseId;
     setMultiVerseIds([selectedVerseId]);
     setSelectedVerseId(undefined);
     setExitingVerse(false);
   };
 
   const clearMultiSelect = () => {
+    multiAnchorRef.current = undefined;
     setMultiVerseIds([]);
     setNoteTargetIds([]);
   };

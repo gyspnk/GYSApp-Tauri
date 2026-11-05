@@ -128,4 +128,21 @@ test.describe("Bible multi-verse selection", () => {
     await expect(toolbar).toBeHidden();
     await expect(page.locator(".verse-row.is-selected")).toHaveCount(0);
   });
+  test("extends the selection to a range with shift-click", async ({
+    page,
+  }) => {
+    await openReader(page);
+    const verses = page.locator(".verse-text");
+    const toolbar = page.getByTestId("selected-verse-toolbar");
+    await verses.nth(0).click();
+    await toolbar.getByRole("button", { name: "Pilih banyak ayat" }).click();
+    await verses.nth(4).click({ modifiers: ["Shift"] });
+    await expect(toolbar.locator(".selected-verse-context strong")).toHaveText(
+      "5 ayat dipilih",
+    );
+    await expect(
+      toolbar.locator(".selected-verse-context span").first(),
+    ).toHaveText("Kejadian 1:1–5");
+    await expect(page.locator(".verse-row.is-selected")).toHaveCount(5);
+  });
 });
