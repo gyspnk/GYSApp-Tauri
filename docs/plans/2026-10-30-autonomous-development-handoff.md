@@ -4579,6 +4579,21 @@ Belum dikerjakan: butuh refactor `packState` bertahap + spec yang menahan
 perilaku lama (deep link, pencarian, catatan). Dicatat sebagai langkah
 berikutnya, bukan klaim selesai.
 
+### Soak 42085060137: batas waktu metadata belum cukup (5 Nov)
+
+Soak ulang setelah `c6e711a` **gagal di titik yang sama**:
+`Cached PDF did not render after reload` (`.pdf-reader-hymn canvas`, 45 dtk).
+Diagnostik (kini tanpa filter) menunjukkan `chord.fetch` "Failed to fetch" dan
+`chord.sync` "1/182 chord updates deferred" pada jendela setelah reload, daftar
+`blocked=` memuat chord manifest (raw dan proksi) — jadi pane tidak hanya
+menunggu metadata, ia juga menunggu sinkronisasi chord yang tidak mungkin
+selesai saat jaringan diblokir.
+
+Kesimpulan jujur: batas waktu 5 dtk menutup satu sumber tunggu, **bukan**
+penyebab tunggal. Langkah berikutnya harus memisahkan pelukisan kanvas dari
+sinkronisasi chord (lukis PDF dari cache lebih dulu, overlay chord menyusul),
+atau membuktikan dengan instrumen berapa lama pane menunggu chord.
+
 ### Batas waktu metadata PDF kidung (5 Nov)
 
 Reload soak native menunjukkan pane PDF kidung tidak melukis kanvas dalam 45 dtk
