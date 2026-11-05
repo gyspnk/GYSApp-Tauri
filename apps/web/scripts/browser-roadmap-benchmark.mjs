@@ -27,33 +27,25 @@ async function collect(page, condition, run) {
   row.catalogMs = await mark(page, "gys-hymn-catalog-ready");
   await page.goto(`${base}/bible`);
   row.chapterMs = await mark(page, "gys-bible-chapter-ready");
-  await page.locator(".reader-search-btn").click();
+  await page.getByRole("button", { name: "Cari kitab atau ayat" }).click();
+  const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+  await picker.waitFor({ state: "visible", timeout: 20000 });
   for (const [query, key] of [
     ["Allah", "firstSearchMs"],
     ["kasih", "indexedSearchMs"],
   ]) {
-    await page.evaluate(() => {
-      performance.clearMarks("gys-bible-search-ready");
-      performance.clearMarks("gys-bible-search-start");
-    });
-    await page.locator("#bible-query").fill(query);
-    await page.locator(".bible-search button[type='submit']").click();
-    await mark(page, "gys-bible-search-ready");
-    row[key] = await page.evaluate(
-      () =>
-        performance.getEntriesByName("gys-bible-search-ready").at(-1)
-          .startTime -
-        performance.getEntriesByName("gys-bible-search-start").at(-1).startTime,
-    );
-    assert.ok(await page.locator(".result-item").count());
+    const startedAt = Date.now();
+    await picker.locator(".bible-picker-search").fill(query);
+    await picker
+      .locator(".bible-picker-result.is-verse")
+      .first()
+      .waitFor({ state: "visible", timeout: 20000 });
+    row[key] = Date.now() - startedAt;
+    assert.ok(await picker.locator(".bible-picker-result.is-verse").count());
   }
-  await page.evaluate(() =>
-    localStorage.setItem(
-      "gys-hymn-view-mode-v1",
-      JSON.stringify({ version: 1, modes: { "hymn-001": "pdf" } }),
-    ),
-  );
-  await page.goto(`${base}/kidung/hymn-001`);
+  await picker.getByRole("button", { name: /Tutup/ }).click();
+  // The reader keeps its view mode in memory, so the URL is the contract.
+  await page.goto(`${base}/kidung/hymn-001?mode=pdf`);
   row.pdfFirstPageMs = await mark(page, "gys-pdf-page-ready");
   await page
     .locator("canvas[data-pdf-rendered='true']")

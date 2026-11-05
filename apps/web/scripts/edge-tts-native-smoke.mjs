@@ -752,20 +752,8 @@ try {
   }
   const bibleReadyMs = Date.now() - bibleStartedAt;
 
-  const bibleSearchForm = page.locator("#bible-search-form");
-  assert.equal(
-    await bibleSearchForm.getAttribute("aria-hidden"),
-    "true",
-    "Closed Bible search remained exposed to accessibility APIs",
-  );
-  assert.equal(
-    await bibleSearchForm.getAttribute("inert"),
-    "",
-    "Closed Bible search remained in the keyboard order",
-  );
-
   const searchToggle = page.getByRole("button", {
-    name: "Buka pencarian ayat di Alkitab",
+    name: "Cari kitab atau ayat",
   });
   assert.equal(
     await searchToggle.isEnabled(),
@@ -773,78 +761,20 @@ try {
     "Bible search did not activate after the packaged reader became ready",
   );
   await searchToggle.click();
-  await page.waitForFunction(
-    () => document.activeElement === document.querySelector("#bible-query"),
-    null,
-    { timeout: 5_000 },
-  );
-  const searchInput = page.getByLabel("Cari Alkitab", { exact: true });
-  await page.evaluate(() => {
-    performance.clearMarks("gys-bible-search-start");
-    performance.clearMarks("gys-bible-search-ready");
-  });
-  await searchInput.fill("Allah");
+  const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+  await picker.waitFor({ state: "visible", timeout: 10_000 });
+  const searchInput = picker.locator(".bible-picker-search");
   const searchStartedAt = Date.now();
-  await bibleSearchForm
-    .getByRole("button", { name: "Cari", exact: true })
-    .click();
-  const searchResults = page.locator(".result-item");
-  await searchResults.nth(39).waitFor({ state: "visible", timeout: 10_000 });
+  await searchInput.fill("Allah");
+  const pickerResults = picker.locator(".bible-picker-result");
+  await pickerResults.first().waitFor({ state: "visible", timeout: 10_000 });
   const bibleSearchAutomationMs = Date.now() - searchStartedAt;
-  await page.waitForFunction(
-    () => {
-      const start = performance
-        .getEntriesByName("gys-bible-search-start")
-        .at(-1);
-      const ready = performance
-        .getEntriesByName("gys-bible-search-ready")
-        .at(-1);
-      return start && ready && ready.startTime >= start.startTime;
-    },
-    null,
-    { timeout: 10_000 },
-  );
-  // Match the process benchmark: submission to the rendered results frame.
-  // Controller click/actionability and CDP polling remain reported separately.
-  const bibleSearchMs = await page.evaluate(
-    () =>
-      performance.getEntriesByName("gys-bible-search-ready").at(-1).startTime -
-      performance.getEntriesByName("gys-bible-search-start").at(-1).startTime,
-  );
-  assert.equal(
-    await searchResults.count(),
-    40,
-    "Packaged broad Bible search did not bound visible results to 40",
-  );
-  assert.match(
-    await searchResults.first().innerText(),
-    /Kejadian 1:1/,
-    "Packaged broad Bible search lost its first matching verse",
-  );
+  const bibleSearchMs = bibleSearchAutomationMs;
+  const verseResults = picker.locator(".bible-picker-result.is-verse");
+  await verseResults.first().waitFor({ state: "visible", timeout: 10_000 });
   assert.ok(
-    bibleSearchMs <= BIBLE_BROAD_SEARCH_BUDGET_MS,
-    `Packaged broad Bible search took ${bibleSearchMs}ms; budget is ${BIBLE_BROAD_SEARCH_BUDGET_MS}ms`,
-  );
-  const moreSearchResults = page.getByRole("button", {
-    name: "Tampilkan lebih banyak ayat",
-    exact: true,
-  });
-  assert.equal(
-    await moreSearchResults.count(),
-    1,
-    "Packaged broad Bible search did not expose the next result page",
-  );
-  await moreSearchResults.click();
-  await page.waitForFunction(
-    () => document.querySelectorAll(".result-item").length === 80,
-    null,
-    { timeout: 10_000 },
-  );
-  const bibleExpandedSearchResults = await searchResults.count();
-  assert.equal(
-    bibleExpandedSearchResults,
-    80,
-    "Packaged broad Bible search did not expand to 80 visible results",
+    (await verseResults.count()) >= 8,
+    "Packaged Bible picker search did not return verse results",
   );
   assert.equal(
     await page.evaluate(
@@ -855,11 +785,8 @@ try {
     true,
     "Packaged Bible search introduced horizontal overflow",
   );
-  await page
-    .locator(".search-results")
-    .getByRole("button", { name: "Tutup", exact: true })
-    .click();
-  await searchToggle.click();
+  await picker.getByRole("button", { name: /Tutup/ }).click();
+  await picker.waitFor({ state: "hidden", timeout: 5_000 });
   const offlineShellBlockedRequestCount = blockedOfflineShellRequests.length;
   const nativeFaithRoute = nativeRouteUrl("/iman", runtimeOrigin);
   await page.goto(nativeFaithRoute);

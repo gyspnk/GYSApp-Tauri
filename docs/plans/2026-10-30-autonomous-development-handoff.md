@@ -4417,6 +4417,17 @@ Tiga keputusan pertama:
   tetap ditentukan boot JS (~5,9 dtk), jadi lever berikutnya bukan lagi
   jaringan gambar.
 
+- **Skrip ukur ikut pindah ke pemilih baru.** `apps/web/scripts/edge-tts-native-smoke.mjs`
+  masih menunggu `#bible-search-form`/`#bible-query` (panel lama) sehingga soak
+  native berhenti 36 detik setelah jalan; `apps/web/scripts/browser-roadmap-benchmark.mjs`
+  memakai `#bible-query`, `.result-item`, dan menanam `gys-hymn-view-mode-v1`
+  yang sudah mati. Keduanya sekarang membuka tombol “Cari kitab atau ayat”,
+  mengisi `.bible-picker-search`, dan mengukur hasil `.bible-picker-result`;
+  benchmark memakai `?mode=pdf` (mode pembaca hidup di memori, bukan
+  localStorage). Benchmark lokal 30 sampel: shell 262–454 ms, katalog
+  526–810 ms, pasal 625–1 010 ms, pencarian 78–118 ms, halaman PDF pertama
+  995–1 271 ms.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.
