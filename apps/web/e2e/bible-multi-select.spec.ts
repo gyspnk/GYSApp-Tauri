@@ -64,6 +64,50 @@ test.describe("Bible multi-verse selection", () => {
     expect(notes["1:1:3"]).toBeUndefined();
   });
 
+  test("editing a combined note keeps every linked verse in sync", async ({
+    page,
+  }) => {
+    await openReader(page);
+    const verses = page.locator(".verse-text");
+    const toolbar = page.getByTestId("selected-verse-toolbar");
+
+    await verses.nth(0).click();
+    await toolbar.getByRole("button", { name: "Pilih banyak ayat" }).click();
+    await verses.nth(1).click();
+    await toolbar.getByRole("button", { name: "Catatan" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.locator("textarea").fill("Versi pertama");
+    await dialog.getByRole("button", { name: /Simpan/ }).click();
+    await dialog
+      .getByRole("button", { name: "Tutup" })
+      .click()
+      .catch(() => undefined);
+
+    // Open the note again from a single verse and edit it there.
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(page.locator(".verse-text").first()).toBeVisible({
+      timeout: 45_000,
+    });
+    await page.locator(".verse-text").nth(1).click();
+    await page
+      .getByTestId("selected-verse-toolbar")
+      .getByRole("button", {
+        name: "Catatan",
+      })
+      .click();
+    const edit = page.getByRole("dialog");
+    await edit.getByRole("button", { name: /Versi pertama/ }).click();
+    await edit.locator("textarea").fill("Versi kedua");
+    await edit.getByRole("button", { name: /Simpan/ }).click();
+
+    const notes = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem("gys-bible-notes-v1") ?? "{}"),
+    );
+    expect(notes["1:1:1"]?.[0]?.text).toBe("Versi kedua");
+    expect(notes["1:1:2"]?.[0]?.text).toBe("Versi kedua");
+    expect(notes["1:1:1"]?.[0]?.id).toBe(notes["1:1:2"]?.[0]?.id);
+  });
+
   test("clears the multi-select after a reload", async ({ page }) => {
     await openReader(page);
     const verses = page.locator(".verse-text");

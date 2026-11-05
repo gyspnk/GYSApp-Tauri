@@ -4507,6 +4507,12 @@ jalan masuk karena sulit ditemukan dan bertabrakan dengan pemilihan teks;
 tombol toolbar selalu terlihat. Bila nanti diinginkan, long-press bisa
 ditambahkan sebagai jalan pintas ke mode yang sama.
 
+Tautan catatan dijaga dua arah: menyunting catatan gabungan dari **satu** ayat
+memperbarui semua ayat yang memakai `note id` itu, dan menghapusnya dari satu
+ayat menghapus semua salinan tertaut — sehingga tidak ada catatan yang
+“bercabang” antar ayat. Diverifikasi tes ketiga (`3/3`, 17,0 dtk) plus
+`accessibility` + `bible-picker-mobile` **34/34 (2,1 mnt)**.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.

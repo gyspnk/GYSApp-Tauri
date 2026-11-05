@@ -190,15 +190,24 @@ export function BibleNotesPopup({
                       label: entry.label,
                     })}
                     onClick={() => {
+                      // A combined note lives on several verses; deleting it
+                      // from one verse removes every linked copy.
+                      setNotes((current) => {
+                        const next = { ...current };
+                        for (const [verseId, list] of Object.entries(next)) {
+                          if (!list.some((note) => note.id === entry.noteId))
+                            continue;
+                          const remaining = list.filter(
+                            (note) => note.id !== entry.noteId,
+                          );
+                          if (remaining.length) next[verseId] = remaining;
+                          else delete next[verseId];
+                        }
+                        return next;
+                      });
                       const remaining = (notes[entry.verseId] ?? []).filter(
                         (note) => note.id !== entry.noteId,
                       );
-                      setNotes((current) => {
-                        const next = { ...current };
-                        if (remaining.length) next[entry.verseId] = remaining;
-                        else delete next[entry.verseId];
-                        return next;
-                      });
                       if (
                         selectedVerseId === entry.verseId &&
                         selectedNoteId === entry.noteId

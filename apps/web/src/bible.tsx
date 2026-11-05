@@ -1346,12 +1346,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
       if (!selectedNoteId) return;
       setNotes((current) => {
         const next = { ...current };
-        for (const id of targets) {
-          const remaining = (next[id] ?? []).filter(
-            (note) => note.id !== selectedNoteId,
-          );
-          if (remaining.length) next[id] = remaining;
-          else delete next[id];
+        for (const [verseId, list] of Object.entries(next)) {
+          if (!list.some((note) => note.id === selectedNoteId)) continue;
+          const remaining = list.filter((note) => note.id !== selectedNoteId);
+          if (remaining.length) next[verseId] = remaining;
+          else delete next[verseId];
         }
         return next;
       });
@@ -1362,14 +1361,24 @@ export function BiblePage({ locale }: { locale: Locale }) {
     const noteId = selectedNoteId ?? makeBibleNoteId();
     setNotes((current) => {
       const next = { ...current };
+      const saved = { id: noteId, text };
+      if (
+        Object.values(current).some((list) =>
+          list.some((note) => note.id === noteId),
+        )
+      ) {
+        // Editing an existing note updates every verse it is linked to, so a
+        // combined note never drifts between verses.
+        for (const [verseId, list] of Object.entries(next)) {
+          if (!list.some((note) => note.id === noteId)) continue;
+          next[verseId] = list.map((note) =>
+            note.id === noteId ? saved : note,
+          );
+        }
+        return next;
+      }
       for (const id of targets) {
-        const list = next[id] ?? [];
-        const index = list.findIndex((note) => note.id === noteId);
-        const saved = { id: noteId, text };
-        next[id] =
-          index < 0
-            ? [...list, saved]
-            : list.map((note) => (note.id === noteId ? saved : note));
+        next[id] = [...(next[id] ?? []), saved];
       }
       return next;
     });
