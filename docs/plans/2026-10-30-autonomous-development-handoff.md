@@ -4485,6 +4485,23 @@ Terverifikasi `bible-zoom` + `bible-annotations` + `bible-multi-select` **9/9
 (21,0 dtk)**; baseline visual Alkitab akan bergeser dan diadopsi dari artefak
 CI.
 
+### Soak native keempat: CSP bersih, sisa kegagalan di panel PDF kidung (5 Nov)
+
+Run `42064043702` (untuk `ad6bf86`) menghapus dua kegagalan sebelumnya: tidak
+ada lagi `violates … img-src` di log, dan assert `chordRecoveryFetches === 1`
+lulus (soak kini memakai `VITE_BFF_BASE_URL` + manifes lewat proxy).
+
+Kegagalan tersisa satu: `Cached PDF did not render after reload` — menunggu
+`.pdf-reader-hymn canvas` 45 dtk. Log permintaan menunjukkan PDF kidung
+`assets/pdf/051B_Batu Zaman.pdf` lewat proxy **200** (curl: 11 064 B, 0,79 dtk),
+tetapi aset chord mentah (`raw.githubusercontent.com/...chord.json`) dan
+manifes chord mentah tetap diblokir kebijakan jaringan soak; permintaan yang
+sedang berjalan juga ter-`net::ERR_FAILED` saat halaman dimuat ulang.
+
+Langkah berikutnya (belum dikerjakan): isolasi panel PDF agar tetap merender
+ketika data chord gagal, dan ambil trace dari runner — perbaikan ini butuh
+bukti mesin pemilik (B-37).
+
 ### Label rentang ayat yang ringkas (5 Nov)
 
 Panel multi-pilih menuliskan “Kejadian 1:1, 2, 3”. Untuk pilihan berurutan itu
