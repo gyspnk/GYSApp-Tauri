@@ -44,6 +44,17 @@ async function clickUnobstructed(locator, label) {
     if (Date.now() > deadline) break;
     await delay(100);
   }
+  if (!(await ownsPoint())) {
+    // The advanced panel scrolls internally; a button scrolled out of that
+    // viewport keeps its box but is not hit-testable, so centre it inside its
+    // own scroll container and check again before reporting a blocker.
+    await locator
+      .evaluate((element) => element.scrollIntoView({ block: "center" }))
+      .catch(() => undefined);
+    await delay(300);
+    const owned = await ownsPoint();
+    console.log(`[soak] re-scrolled ${label}: ownsPoint=${owned}`);
+  }
   try {
     await locator.click({ timeout: 15_000 });
   } catch (error) {
