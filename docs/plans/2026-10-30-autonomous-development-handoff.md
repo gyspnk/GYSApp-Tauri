@@ -5380,7 +5380,10 @@ sudah diunduh.
 Ukuran: baris pertama **21 189 / 21 204 ms → 20 383 / 20 329 ms** (dua sampel
 tiap kondisi, stabil ±55 ms). Kumulatif dari baseline 24 392 ms: **−4,0 dtk**.
 Sisa biaya terbesar adalah parse JS di CPU 4× (chunk `dist-*.js` saja 101 KB
-setelah dekompresi), bukan transfer.
+setelah dekompresi), bukan transfer. Dua chunk bersama lain
+(`hymn-view-mode`, `kidung-shared`) juga dicoba sebagai preload: **20 479 /
+20 437 ms**, tidak lebih baik dari 20 383 / 20 329 ms, jadi dikembalikan —
+hanya chunk katalog yang dipertahankan.
 
 ### Putaran 164 — Metadata kidung dimulai dari kepala dokumen (5 Nov)
 
