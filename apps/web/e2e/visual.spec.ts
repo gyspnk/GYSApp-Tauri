@@ -284,68 +284,7 @@ for (const viewport of [
 }
 
 for (const viewport of [viewports[0], viewports[2]]) {
-  test(`Bible search ${viewport.name} visual baseline`, async ({ page }) => {
-    await page.setViewportSize(viewport);
-    await prepare(page);
-    await page.goto("/GYSApp-Tauri/bible");
-    await page.locator(".bible-reader").waitFor({ state: "visible" });
-    await page
-      .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-      .click();
-    await expect(page.getByLabel("Cari Alkitab")).toBeFocused();
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-      await new Promise<void>((resolve) =>
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-        ),
-      );
-    });
-    // Locator clicks can scroll the sticky trigger; capture from page top.
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-    await expect(page).toHaveScreenshot(`bible-search-${viewport.name}.png`, {
-      animations: "disabled",
-      caret: "hide",
-    });
-  });
-}
-
-test("Bible search filters 1440x900 visual baseline", async ({ page }) => {
-  await page.setViewportSize(viewports[2]);
-  await prepare(page);
-  await page.goto("/GYSApp-Tauri/bible");
-  await page.locator(".bible-reader").waitFor({ state: "visible" });
-  const searchTrigger = page.getByRole("button", {
-    name: "Buka pencarian ayat di Alkitab",
-  });
-  await searchTrigger.click();
-  await expect(page.getByLabel("Cari Alkitab")).toBeFocused();
-  await page.waitForTimeout(250);
-  // Locator clicks can scroll the sticky trigger by a few pixels before firing.
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-  const filters = page.locator(".bible-search-options-disclosure");
-  await filters.locator(":scope > summary").click();
-  await expect(filters).toHaveAttribute("open", "");
-  await expect(page.getByLabel("Cari Alkitab")).toBeInViewport();
-  await page.evaluate(async () => {
-    await document.fonts.ready;
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      ),
-    );
-  });
-  await expect(page).toHaveScreenshot("bible-search-filters-1440x900.png", {
-    animations: "disabled",
-    caret: "hide",
-    // Hosted SVG rasterization can differ at one chevron edge pixel.
-    maxDiffPixels: 1,
-  });
-});
-
-test("Bible notes 390x844 visual baseline", async ({ page }) => {
+  test("Bible notes 390x844 visual baseline", async ({ page }) => {
   await page.setViewportSize(viewports[0]);
   await prepare(page);
   await page.goto("/GYSApp-Tauri/bible");

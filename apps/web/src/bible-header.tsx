@@ -209,13 +209,11 @@ export function BibleHeader({
           {isBibleRoute && bibleHeader?.active ? (
             <>
               <button
-                className={`reader-context-button reader-search-btn${bibleHeader.searchOpen ? " is-active" : ""}`}
+                className="reader-context-button reader-search-btn"
                 type="button"
-                aria-expanded={bibleHeader.searchOpen}
-                aria-controls="bible-search-form"
-                aria-label={translate(locale, "bible.searchVerses")}
-                title={translate(locale, "bible.searchVerses")}
-                onClick={bibleHeader.onToggleSearch}
+                aria-label={translate(locale, "bible.pickerSearchTitle")}
+                title={translate(locale, "bible.pickerSearchTitle")}
+                onClick={() => bibleHeader.onOpenPicker()}
               >
                 <Icon name="search" size={16} />
               </button>
@@ -661,12 +659,12 @@ export function BibleHeader({
                   disabled={isBibleRoute && !bibleHeader?.active}
                   onClick={
                     isBibleRoute && bibleHeader?.active
-                      ? bibleHeader.onFocusSearch
+                      ? () => bibleHeader.onOpenPicker()
                       : onFocusPageSearch
                   }
                   aria-label={
                     isBibleRoute
-                      ? translate(locale, "bible.searchVerses")
+                      ? translate(locale, "bible.pickerSearchTitle")
                       : "Buka pencarian lagu"
                   }
                 >

@@ -4284,6 +4284,34 @@ gambar asli (naturalWidth 300) alih-alih placeholder. Karena itu preview lokal
 tetap dibangun tanpa env; verifikasi tag dilakukan pada build ber-env dan pada
 Pages.
 
+### Putaran 150 — Satu pencarian ayat, di dalam dialog pilih kitab (5 Nov)
+
+Pemilik (m25113): “fitur search yang diluar kotak pilih kitab itu dihilangkan
+karena sudah ada dalam fitur pilih kitab dan pasal”. Panel pencarian ayat
+terpisah dihapus; satu-satunya pencarian Alkitab sekarang ada di dalam dialog
+“Pilih Kitab & Pasal”.
+
+- `bible-search-panel.tsx` dihapus beserta seluruh state panel di `bible.tsx`
+  (query, filter frasa/kata utuh, riwayat, hasil, pagination, worker client) dan
+  prop `searchQuery` yang hanya dipakai panel.
+- Dua ikon pencarian di header pembaca sekarang membuka dialog pilih kitab
+  (`bibleHeader.onOpenPicker`), jadi tidak ada dua tempat untuk hal yang sama.
+- Mesin pencari (`bible-search.ts` + worker) **tetap** karena pencarian global
+  (`Cmd/Ctrl+K`) memakainya; hanya UI panel yang hilang.
+- 21 kunci i18n panel dihapus dari id/en/zh (dijaga uji “tidak ada kunci tak
+  terpakai”), dan `readSearchHistory`/`SEARCH_HISTORY_KEY` dihapus.
+- Spesifikasi disesuaikan: tiga uji smoke panel dihapus, uji
+  “Bible search and notes…” ditulis ulang ke dialog (buka lewat ikon, ketik
+  “Mazmur”, tutup), uji worker di `reader-data-loading` dihapus, spesifikasi
+  `bible-search-multi-book` dan dua baseline visual `bible-search-*.png`
+  (9 berkas) dihapus.
+
+Verifikasi: `tsc -b` bersih, unit **600/600**, build hijau, bundle
+**163,0 KiB** (turun 0,2), `bible-picker-mobile` + `smoke -g "Bible"` **16/16
+(6,6 mnt)**, uji navigation yang ditulis ulang **1/1**. Sisa CSS panel
+(`.bible-search*`, `.result-item`) kini tak terpakai dan dicatat sebagai utang
+pembersihan terpisah.
+
 ### Putaran 149 — Pack Alkitab mulai diunduh saat parsing (5 Nov)
 
 `/alkitab/` masih 16–17 detik pada 390 px / 1,6 Mbps / CPU 4× karena paket

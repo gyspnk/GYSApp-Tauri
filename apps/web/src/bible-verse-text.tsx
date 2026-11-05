@@ -26,9 +26,9 @@ export function HighlightedText({
   query,
 }: {
   text: string;
-  query: string;
+  query?: string;
 }) {
-  const highlight = useMemo(() => createTextHighlighter(query), [query]);
+  const highlight = useMemo(() => createTextHighlighter(query ?? ""), [query]);
   return <>{highlight(text)}</>;
 }
 
@@ -190,9 +190,9 @@ function parseBibleVerseSegments(raw: string): VerseSegment[] {
   return compact;
 }
 
-function BibleVerseTextView({ raw, query }: { raw: string; query: string }) {
+function BibleVerseTextView({ raw, query }: { raw: string; query?: string }) {
   const segments = useMemo(() => parseBibleVerseSegments(raw), [raw]);
-  const highlight = useMemo(() => createTextHighlighter(query), [query]);
+  const highlight = useMemo(() => createTextHighlighter(query ?? ""), [query]);
   if (!segments.length) return null;
   return (
     <>

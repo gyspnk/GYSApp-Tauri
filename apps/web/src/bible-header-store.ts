@@ -36,11 +36,7 @@ export type BibleHeaderActionProps = {
   // Copy
   copied: boolean;
   onCopyChapter: () => void;
-  // Search
-  searchOpen: boolean;
-  onToggleSearch: () => void;
   onOpenNotes: () => void;
-  onFocusSearch: () => void;
 };
 
 let currentBibleHeaderState: BibleHeaderActionProps | null = null;

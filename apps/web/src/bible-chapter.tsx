@@ -26,7 +26,6 @@ export function ChapterPane({
   highlights,
   selectedVerseId,
   speakingVerseId,
-  searchQuery,
   secondary = false,
   scrollRef,
   onScroll,
@@ -55,7 +54,6 @@ export function ChapterPane({
   highlights: Record<string, string>;
   selectedVerseId?: string | undefined;
   speakingVerseId?: string | undefined;
-  searchQuery: string;
   secondary?: boolean;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   onScroll?: () => void;
@@ -249,7 +247,7 @@ export function ChapterPane({
                     }}
                     aria-pressed={selected}
                   >
-                    <BibleVerseText raw={verse.text} query={searchQuery} />
+                    <BibleVerseText raw={verse.text} />
                   </span>
                   {hasVerseRefs && onOpenCrossRefs && verseRefs && "\u2060"}
                   {hasVerseRefs && onOpenCrossRefs && verseRefs && (

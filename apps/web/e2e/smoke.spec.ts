@@ -368,21 +368,13 @@ test("offline pack manager keeps one update action and version check", async ({
   await expect(page.locator(".pack-manager-actions button")).toHaveCount(2);
 });
 
-test("Bible reader keeps search, split reading, and verse annotations local", async ({
+test("Bible reader keeps split reading and verse annotations local", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 30_000,
   });
-  await page
-    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-    .click();
-  await page.getByLabel("Cari Alkitab").fill("begitu besar");
-  await page.locator(".bible-search-options-disclosure > summary").click();
-  await page.getByLabel("Frasa tepat").check();
-  await page.getByRole("button", { name: "Cari", exact: true }).click();
-  await expect(page.locator(".result-item").first()).toBeVisible();
   await page.getByRole("button", { name: "Menu Alkitab" }).click();
   await page.getByText("Tampilan Belah").click();
   await page.getByRole("button", { name: "Tutup menu" }).click();
@@ -415,166 +407,6 @@ test("Bible reader keeps search, split reading, and verse annotations local", as
   await page.getByRole("button", { name: "Sorot biru" }).click();
   await expect(page.locator(".verse-row.is-highlight-blue")).toHaveCount(1);
 });
-test("Bible search narrows results to a testament", async ({ page }) => {
-  await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 30_000,
-  });
-  await page
-    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-    .click();
-  await page.getByLabel("Cari Alkitab").fill("Allah");
-  await page.locator(".bible-search-options-disclosure > summary").click();
-  const searchBook = page.locator(".multiselect-trigger");
-  await searchBook.click();
-  await page.getByRole("button", { name: "Perjanjian Lama (39)" }).click();
-  await page.locator(".multiselect-footer button").click();
-  await page.getByRole("button", { name: "Cari", exact: true }).click();
-  await expect(page.locator(".result-item").first()).toBeVisible({
-    timeout: 15_000,
-  });
-  await expect
-    .poll(() =>
-      page
-        .locator(".result-item strong")
-        .allTextContents()
-        .then((texts) => ({
-          hasOldTestament: texts.some((text) => text.startsWith("Kejadian ")),
-          hasNewTestament: texts.some((text) => text.startsWith("Yohanes ")),
-        })),
-    )
-    .toEqual({ hasOldTestament: true, hasNewTestament: false });
-
-  await searchBook.click();
-  await page
-    .getByRole("button", { name: /^Semua kitab$/ })
-    .first()
-    .click();
-  await page.getByRole("button", { name: "Perjanjian Baru (27)" }).click();
-  await page.locator(".multiselect-footer button").click();
-  await page.getByRole("button", { name: "Cari", exact: true }).click();
-  await expect
-    .poll(() =>
-      page
-        .locator(".result-item strong")
-        .allTextContents()
-        .then((texts) => ({
-          hasOldTestament: texts.some((text) => text.startsWith("Kejadian ")),
-          hasNewTestament: texts.some((text) => text.startsWith("Matius ")),
-        })),
-    )
-    .toEqual({ hasOldTestament: false, hasNewTestament: true });
-
-  await searchBook.click();
-  await page
-    .getByRole("button", { name: /^Semua kitab$/ })
-    .first()
-    .click();
-  await page.getByRole("checkbox", { name: "Yohanes PB", exact: true }).check();
-  await page.locator(".multiselect-footer button").click();
-  await page.getByRole("button", { name: "Cari", exact: true }).click();
-  await expect
-    .poll(async () => {
-      const references = await page
-        .locator(".result-item strong")
-        .allTextContents();
-      return {
-        hasResults: references.length > 0,
-        hasOtherBook: references.some(
-          (reference) => !reference.startsWith("Yohanes "),
-        ),
-      };
-    })
-    .toEqual({ hasResults: true, hasOtherBook: false });
-});
-
-test("Bible search phrase and whole-word filters work offline", async ({
-  page,
-}) => {
-  await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 30_000,
-  });
-
-  const appOrigin = new URL(page.url()).origin;
-  await page.route("**/*", async (route) => {
-    if (new URL(route.request().url()).origin === appOrigin) {
-      await route.continue();
-      return;
-    }
-    await route.abort();
-  });
-
-  await page
-    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-    .click();
-  await page.locator(".bible-search-options-disclosure > summary").click();
-  const searchInput = page.getByLabel("Cari Alkitab");
-  const searchButton = page.getByRole("button", {
-    name: "Cari",
-    exact: true,
-  });
-  const results = page.locator(".result-item");
-  const exactPhrase = page.getByLabel("Frasa tepat");
-  const wholeWord = page.getByLabel("Kata utuh");
-
-  await searchInput.fill("besar begitu");
-  await searchButton.click();
-  await expect(results.filter({ hasText: "Kejadian 48:19" })).toHaveCount(1);
-  await expect(results.filter({ hasText: "Yohanes 18:22" })).toHaveCount(1);
-
-  await exactPhrase.check();
-  await searchButton.click();
-  await expect(results).toHaveCount(0);
-
-  await exactPhrase.uncheck();
-  await searchInput.fill("Yohan");
-  await searchButton.click();
-  await expect(results.first()).toContainText("Yohanes");
-  await wholeWord.check();
-  await searchButton.click();
-  await expect(results).toHaveCount(0);
-});
-
-test("Bible search matches book names from the offline pack", async ({
-  page,
-}) => {
-  await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 30_000,
-  });
-  // A bare book name must surface verses from that book even though other
-  // books also mention the name in their verse text (Matius 3:1 begins with
-  // "Yohanes Pembaptis"); the book-name index entry is what makes the book of
-  // Yohanes itself appear.
-  await page
-    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-    .click();
-  await page.getByLabel("Cari Alkitab").fill("Yohanes");
-  await page.getByRole("button", { name: "Cari", exact: true }).click();
-  const results = page.locator(".result-item");
-  await expect(results.first()).toBeVisible({ timeout: 15_000 });
-  await expect
-    .poll(() =>
-      page
-        .locator(".result-item strong")
-        .allTextContents()
-        .then((texts) => texts.some((text) => text.startsWith("Yohanes "))),
-    )
-    .toBe(true);
-  // AND matching combines the book name with verse text.
-  await page.getByLabel("Cari Alkitab").fill("Yohanes kasih");
-  await page.getByRole("button", { name: "Cari", exact: true }).click();
-  await expect
-    .poll(() =>
-      page
-        .locator(".result-item strong")
-        .allTextContents()
-        .then((texts) => texts.some((text) => text.startsWith("Yohanes "))),
-    )
-    .toBe(true);
-});
-
 test("Bible typed references match and open the exact verse", async ({
   page,
 }) => {
@@ -867,7 +699,6 @@ test("Bible header and selected verse toolbar stay adaptive on mobile", async ({
   await page.goto("/GYSApp-Tauri/bible");
   const handle = page.locator(".quick-nav-handle");
   await expect(handle).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator(".bible-search")).toBeVisible();
   await expect(
     page.getByText(
       "Buka bacaan terakhir atau cari ayat di seluruh Alkitab TB.",

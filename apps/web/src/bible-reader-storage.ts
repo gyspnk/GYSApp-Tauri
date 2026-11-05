@@ -12,7 +12,6 @@ export const BOOKMARKS_KEY = "gys-bible-bookmarks";
 export const NOTES_KEY = "gys-bible-notes-v1";
 export const HIGHLIGHTS_KEY = "gys-bible-highlights-v1";
 export const HIGHLIGHT_PALETTE_KEY = "gys-bible-highlight-palette-v1";
-export const SEARCH_HISTORY_KEY = "gys-bible-search-history-v1";
 export const VERSION_KEY = "gys-bible-version-v1";
 export const MAX_CUSTOM_HIGHLIGHT_COLORS = 6;
 
@@ -124,20 +123,4 @@ export function readCustomHighlightColors(): string[] {
 
 export function makeBibleNoteId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-export function readSearchHistory(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const value: unknown = JSON.parse(
-      localStorage.getItem(SEARCH_HISTORY_KEY) ?? "[]",
-    );
-    return Array.isArray(value)
-      ? value
-          .filter((entry): entry is string => typeof entry === "string")
-          .slice(0, 8)
-      : [];
-  } catch {
-    return [];
-  }
 }

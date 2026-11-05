@@ -1169,29 +1169,20 @@ test.describe("responsive reader navigation", () => {
     });
 
     const searchButton = page.getByRole("button", {
-      name: "Buka pencarian ayat di Alkitab",
+      name: "Cari kitab atau ayat",
     });
-    const searchForm = page.locator("#bible-search-form");
-    const searchInput = page.getByLabel("Cari Alkitab");
-    await expect(searchButton).toHaveAttribute("aria-expanded", "false");
-    await expect(searchForm).toHaveAttribute("aria-hidden", "true");
-    await expect(searchForm).toHaveAttribute("inert", "");
     await searchButton.click();
-    await expect(searchForm).toHaveAttribute("aria-hidden", "false");
-    await expect(searchForm).not.toHaveAttribute("inert");
-    await expect(searchInput).toBeFocused();
-
-    const searchFilters = page.locator(".bible-search-options-disclosure");
-    await expect(searchFilters).not.toHaveAttribute("open", "");
-    await searchFilters.locator(":scope > summary").click();
-    await expect(searchFilters).toHaveAttribute("open", "");
-    await expect(searchInput).toBeInViewport();
-    await searchButton.click();
-    await expect(searchButton).toHaveAttribute("aria-expanded", "false");
-    await expect(searchForm).toHaveAttribute("inert", "");
-    await expect(searchButton).toBeFocused();
-    await searchButton.click();
-    await expect(searchInput).toBeFocused();
+    const dialog = page.getByRole("dialog", { name: "Pilih Kitab" });
+    await expect(dialog).toBeVisible();
+    const searchInput = dialog.getByRole("searchbox", {
+      name: "Cari kitab atau isi ayat",
+    });
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill("Mazmur");
+    const bookResult = dialog.locator(".bible-picker-result.is-book").first();
+    await expect(bookResult).toContainText("Mazmur");
+    await dialog.getByRole("button", { name: "Tutup" }).click();
+    await expect(dialog).toBeHidden();
 
     await page.getByRole("button", { name: "Menu Alkitab" }).click();
     const notesButton = page
@@ -1200,86 +1191,6 @@ test.describe("responsive reader navigation", () => {
     await expect(notesButton).toBeVisible();
     await notesButton.click();
     await expect(page.locator(".bible-notes-modal")).toBeVisible();
-  });
-
-  test("Bible broad search stays bounded and localized on a phone", async ({
-    page,
-  }) => {
-    const copies = {
-      id: {
-        open: "Buka pencarian ayat di Alkitab",
-        label: "Cari Alkitab",
-        placeholder: "Kata, kitab, atau referensi…",
-        submit: "Cari",
-        results: "Hasil pencarian",
-        more: "Tampilkan lebih banyak ayat",
-      },
-      en: {
-        open: "Open Bible verse search",
-        label: "Search Bible",
-        placeholder: "Word, book, or reference…",
-        submit: "Search",
-        results: "Search results",
-        more: "Show more verses",
-      },
-      zh: {
-        open: "打开圣经经文搜索",
-        label: "搜索圣经",
-        placeholder: "关键词、书卷或经文…",
-        submit: "搜索",
-        results: "搜索结果",
-        more: "显示更多经文",
-      },
-    } as const;
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.addInitScript(() => {
-      const locale = new URLSearchParams(window.location.search).get(
-        "__gys_locale",
-      );
-      if (locale !== "id" && locale !== "en" && locale !== "zh") return;
-      localStorage.setItem("gys-locale", locale);
-      localStorage.setItem(
-        "gys-shell-settings-v1",
-        JSON.stringify({ version: 1, locale, theme: "light" }),
-      );
-    });
-
-    for (const locale of ["id", "en", "zh"] as const) {
-      await page.goto(`/GYSApp-Tauri/bible?__gys_locale=${locale}`);
-      await expect(page.locator(".reader-context-book-picker")).toBeVisible({
-        timeout: 15_000,
-      });
-
-      await page.getByRole("button", { name: copies[locale].open }).click();
-      const searchForm = page.locator("#bible-search-form");
-      const searchInput = searchForm.getByLabel(copies[locale].label, {
-        exact: true,
-      });
-      await expect(searchInput).toHaveAttribute(
-        "placeholder",
-        copies[locale].placeholder,
-      );
-      await searchInput.fill("Allah");
-      await searchForm
-        .getByRole("button", { name: copies[locale].submit, exact: true })
-        .click();
-
-      const results = page.locator(".result-item");
-      await expect(
-        page.getByRole("heading", { name: copies[locale].results }),
-      ).toBeVisible();
-      await expect(results).toHaveCount(40);
-      await expect(results.first()).toContainText("Kejadian 1:1");
-      const moreResults = page.getByRole("button", {
-        name: copies[locale].more,
-        exact: true,
-      });
-      await expect(moreResults).toBeVisible();
-      await moreResults.click();
-      await expect(results).toHaveCount(80);
-      expect(await hasNoHorizontalOverflow(page)).toBe(true);
-    }
   });
 
   test("reader drawer keeps language and sends the theme to settings", async ({

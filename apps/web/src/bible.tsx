@@ -10,7 +10,6 @@ import {
   NOTES_KEY,
   HIGHLIGHTS_KEY,
   HIGHLIGHT_PALETTE_KEY,
-  SEARCH_HISTORY_KEY,
   VERSION_KEY,
   MAX_CUSTOM_HIGHLIGHT_COLORS,
   readSavedNumber,
@@ -20,7 +19,6 @@ import {
   readBibleHighlights,
   readCustomHighlightColors,
   makeBibleNoteId,
-  readSearchHistory,
 } from "./bible-reader-storage.js";
 import { useReadinessMarker } from "./readiness.js";
 import {
@@ -55,7 +53,6 @@ import { Select } from "./select.js";
 import { setBibleActivity } from "./history.js";
 import { speechPlayer } from "./speech-player.js";
 import { bibleSpeechLanguage } from "./bible-language.js";
-import { BibleSearchClient } from "./bible-search.js";
 import {
   calculateProportionalScroll,
   calculateVerseAnchorScroll,
@@ -96,10 +93,6 @@ import {
   DEFAULT_HIGHLIGHT_COLORS,
   isCustomHighlightColor,
 } from "./bible-highlights.js";
-import {
-  BibleSearchPanel,
-  SEARCH_RESULTS_PAGE_SIZE,
-} from "./bible-search-panel.js";
 import { setBibleHeaderState } from "./bible-header-store.js";
 
 type PackState =
@@ -179,25 +172,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [selectedChapter, setSelectedChapter] = useState(() =>
     readSavedNumber(CHAPTER_KEY, 1),
   );
-  const [query, setQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchBooks, setSearchBooks] = useState<string[]>([]);
-  const [exactPhrase, setExactPhrase] = useState(false);
-  const [wholeWord, setWholeWord] = useState(false);
-  const [searchFiltersOpen, setSearchFiltersOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
-  const [visibleSearchResultCount, setVisibleSearchResultCount] = useState(
-    SEARCH_RESULTS_PAGE_SIZE,
-  );
-  const [searchedQuery, setSearchedQuery] = useState("");
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string>();
-  useReadinessMarker(
-    "gys-bible-search-ready",
-    Boolean(searchedQuery) && !searching,
-    searchResults,
-  );
-  const [searchHistory, setSearchHistory] = useState(readSearchHistory);
   const [bookmarks, setBookmarks] = useState<Set<string>>(() =>
     readStringSet(BOOKMARKS_KEY),
   );
@@ -290,8 +264,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
     QuickNavDragState | undefined
   >(undefined);
   const chapterSwipe = useRef(createChapterSwipe());
-  const searchAbortRef = useRef<AbortController | undefined>(undefined);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const quickNavRef = useRef<
     | {
         pointerId: number;
@@ -341,20 +313,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
     window.requestAnimationFrame(() => {
       const target = pickerTriggerRef.current;
       if (target?.isConnected) target.focus({ preventScroll: true });
-    });
-  }, []);
-  const focusBibleSearch = useCallback(() => {
-    setSearchOpen(true);
-    window.requestAnimationFrame(() => {
-      const input = searchInputRef.current;
-      if (!input) return;
-      const bounds = input.getBoundingClientRect();
-      const topbarBottom =
-        document.querySelector(".topbar")?.getBoundingClientRect().bottom ?? 0;
-      if (bounds.top < topbarBottom || bounds.bottom > window.innerHeight) {
-        input.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
-      input.focus({ preventScroll: true });
     });
   }, []);
   useEffect(
@@ -626,25 +584,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
     secondaryPackAttempt,
   ]);
 
-  const searchClient = useMemo(
-    () =>
-      packState.status === "ready"
-        ? new BibleSearchClient(
-            packState.pack.verses,
-            undefined,
-            bibleBookNames(packState.pack),
-            true,
-          )
-        : undefined,
-    [packState],
-  );
-  useEffect(
-    () => () => {
-      searchAbortRef.current?.abort();
-      searchClient?.dispose();
-    },
-    [searchClient],
-  );
   const books = packState.status === "ready" ? packState.pack.books : [];
   const bibleVersionOptions = [
     { value: "b_tb", label: "Terjemahan Baru", shortLabel: "TB" },
@@ -1101,61 +1040,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setSelectedVerseId(undefined);
   };
 
-  const runSearch = async (
-    event?: FormEvent<HTMLFormElement>,
-    requestedQuery = query,
-  ) => {
-    event?.preventDefault();
-    searchAbortRef.current?.abort();
-    const controller = new AbortController();
-    searchAbortRef.current = controller;
-    setSearchError(undefined);
-    if (!searchClient || !requestedQuery.trim()) {
-      setSearchResults([]);
-      setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
-      setSearchedQuery("");
-      searchAbortRef.current = undefined;
-      return;
-    }
-    setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
-    setSearching(true);
-    performance.clearMarks("gys-bible-search-start");
-    performance.mark("gys-bible-search-start");
-    try {
-      const results = await searchClient.search(
-        requestedQuery,
-        {
-          ...(searchBooks.length ? { books: searchBooks } : {}),
-          exactPhrase,
-          wholeWord,
-        },
-        controller.signal,
-      );
-      if (controller.signal.aborted) return;
-      setSearchResults(results);
-      setSearchedQuery(requestedQuery.trim());
-      setSearchHistory((current) => {
-        const next = [
-          requestedQuery.trim(),
-          ...current.filter((value) => value !== requestedQuery.trim()),
-        ];
-        const limited = next.slice(0, 8);
-        localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(limited));
-        return limited;
-      });
-    } catch (error: unknown) {
-      if (!controller.signal.aborted) {
-        recordDiagnostic("error", "bible.search", error);
-        setSearchError(translate(locale, "bible.searchUnavailable"));
-      }
-    } finally {
-      if (searchAbortRef.current === controller) {
-        searchAbortRef.current = undefined;
-        setSearching(false);
-      }
-    }
-  };
-
   const toggleBookmark = (id: string) => {
     hapticTick("medium");
     setBookmarks((current) => {
@@ -1241,9 +1125,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
       onSelectVersion: (value) => {
         setSelectedVersionCode(value);
         localStorage.setItem(VERSION_KEY, value);
-        setSearchResults([]);
-        setVisibleSearchResultCount(SEARCH_RESULTS_PAGE_SIZE);
-        setSearchedQuery("");
         setSelectedVerseId(undefined);
       },
       onOpenPicker: (trigger) => {
@@ -1303,13 +1184,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
       speechControlsOpen,
       onToggleSpeechControls: () =>
         setSpeechControlsOpen((current) => !current),
-      searchOpen,
-      onToggleSearch: () => {
-        if (searchOpen) setSearchOpen(false);
-        else focusBibleSearch();
-      },
       onOpenNotes: () => setNotesPopupOpen(true),
-      onFocusSearch: focusBibleSearch,
     });
   }, [
     packState.status,
@@ -1330,8 +1205,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
     speaking,
     speechSnapshot.status,
     speechControlsOpen,
-    searchOpen,
-    focusBibleSearch,
     copied,
   ]);
 
@@ -1528,37 +1401,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page bible-page" ref={pageZoomRef}>
-      <BibleSearchPanel
-        locale={locale}
-        searchOpen={searchOpen}
-        query={query}
-        searchInputRef={searchInputRef}
-        searching={searching}
-        runSearch={runSearch}
-        setQuery={setQuery}
-        searchFiltersOpen={searchFiltersOpen}
-        setSearchFiltersOpen={setSearchFiltersOpen}
-        searchBooks={searchBooks}
-        setSearchBooks={setSearchBooks}
-        books={books}
-        exactPhrase={exactPhrase}
-        setExactPhrase={setExactPhrase}
-        wholeWord={wholeWord}
-        setWholeWord={setWholeWord}
-        searchError={searchError}
-        searchHistory={searchHistory}
-        searchResults={searchResults}
-        setSearchResults={setSearchResults}
-        visibleSearchResultCount={visibleSearchResultCount}
-        setVisibleSearchResultCount={setVisibleSearchResultCount}
-        searchedQuery={searchedQuery}
-        setSearchedQuery={setSearchedQuery}
-        setSelectedBook={setSelectedBook}
-        setSelectedChapter={setSelectedChapter}
-        setSelectedVerseId={setSelectedVerseId}
-        setSearchOpen={setSearchOpen}
-      />
-
       {packState.status === "loading" && (
         <section
           className={`bible-reader bible-loading-reader${
@@ -1662,7 +1504,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
               highlights={highlights}
               selectedVerseId={selectedVerseId}
               speakingVerseId={speakingVerseId}
-              searchQuery={query}
               scrollRef={primaryScrollRef}
               onScroll={onPrimaryScroll}
               onSelect={selectVerse}
@@ -1756,7 +1597,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
                     highlights={EMPTY_HIGHLIGHTS}
                     selectedVerseId={selectedVerseId}
                     speakingVerseId={speakingVerseId}
-                    searchQuery={query}
                     secondary
                     scrollRef={secondaryScrollRef}
                     onScroll={onSecondaryScroll}

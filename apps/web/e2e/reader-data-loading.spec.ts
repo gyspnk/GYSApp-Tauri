@@ -33,37 +33,6 @@ test("catalog opens from metadata while lyric search waits for its deferred corp
   await expect(page.locator(".pujian-item").first()).toBeVisible();
 });
 
-test("Bible displays its chapter before starting or cloning a search worker", async ({
-  page,
-}) => {
-  const workers: string[] = [];
-  page.on("request", (request) => {
-    if (/bible-search-worker/.test(request.url())) workers.push(request.url());
-  });
-  await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.locator(".verse-row").first()).toBeVisible();
-  expect(workers).toEqual([]);
-  await page.locator(".reader-search-btn").click();
-  await page.locator("#bible-query").fill("Allah");
-  await page.locator("#bible-search-form button[type=submit]").click();
-  await expect(page.locator(".result-item")).toHaveCount(40);
-  expect(workers.length).toBeGreaterThan(0);
-  expect(
-    await page.evaluate(
-      () =>
-        performance.getEntriesByName("gys-bible-chapter-ready").at(-1)
-          ?.startTime,
-    ),
-  ).toBeGreaterThan(0);
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () => performance.getEntriesByName("gys-bible-search-ready").length,
-      ),
-    )
-    .toBeGreaterThan(0);
-});
-
 test("automatic PDF fallback waits for a delayed music lock", async ({
   page,
 }) => {
