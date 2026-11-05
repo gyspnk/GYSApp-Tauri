@@ -3091,7 +3091,8 @@ try {
   );
   await persistenceInstrument.getByRole("combobox").click();
   await persistenceInstrument.getByRole("option", { name: /Violin/ }).click();
-  await persistenceAdvanced.locator("summary").click();
+  // The volume field lives inside the advanced panel, which is hidden while the
+  // disclosure is closed, so keep it open until the keyboard edits are done.
   const persistenceVolume = upstreamMidiSurface.getByLabel("Volume MIDI");
   await focusMediaControl(persistenceVolume);
   await persistenceVolume.press("ArrowLeft");
