@@ -4451,6 +4451,16 @@ sesuai lebar terukur tiap breakpoint. Hasil terukur di preview:
 karena tidak ada kandidat 1536w. Verifikasi `home-resilience` + `smoke -g
 "Sauh|home|hero"` **5/5 (13,0 s)**.
 
+### Putaran 155 — `sizes` hero halaman Sauh juga mengikuti kartu (5 Nov)
+
+Hero halaman detail memakai `sizes="(min-width: 960px) 900px, 100vw"`, jadi
+pada 390 @2× browser meminta 780 px dan jatuh ke **1024w (345 364 B)**,
+sedangkan pada 768 @2× ia meminta berkas asli **735 863 B**. Sekarang
+`sizes="(min-width: 960px) 900px, (min-width: 600px) 512px, calc(100vw - 26px)"`.
+Hasil terukur: 390 @2× → **768w (−117 KB)**, 768 @2× → **1024w (−390 KB)**,
+1440 @1× tetap 1024w. Verifikasi `sauh-loading-layout` + `smoke -g "Sauh"`
+**10/10 (17,9 s)**.
+
 ### Putaran 154 — CSS panel pencarian lama dibuang (5 Nov)
 
 Setelah `2d9ec12` menghapus panel pencarian Alkitab, 159 baris CSS-nya
