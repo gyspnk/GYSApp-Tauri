@@ -4474,6 +4474,27 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Rencana sambungan pack per kitab (5 Nov)
+
+Pembaca masih memuat `tb-reader.json.gz` penuh (1,7 MB) karena `bible.tsx`
+memakai `packState.pack` untuk daftar kitab, ayat, label terjemahan,
+deep-link, pencarian dan catatan. Sambungan per kitab karenanya butuh pack
+"cangkang" dulu:
+
+1. `dist/offline/bible/books/index.json` menyediakan daftar kitab (id, nama,
+   jumlah pasal) dan `translation`, cukup untuk picker dan label.
+2. Kitab yang dibuka dimuat lewat `loadBibleBookPack(id)` yang sudah ada
+   (gzip per kitab, cache promise, fallback ke pack penuh bila `<id>.json.gz`
+   404 — penting untuk build lama yang belum punya `books/`).
+3. Pencarian global dan catatan tetap memakai pack penuh (dimuat saat fitur
+   itu dibuka), jadi tidak ada perubahan kontrak di `bible-search.ts`.
+4. Ukur: ayat siap di `/alkitab/` hosted 390 px harus turun dari 13,4–14,1 s
+   ke kisaran 5–6 s (Genesis 79 705 B vs 1 704 234 B), lalu simpan angkanya.
+
+Belum dikerjakan: butuh refactor `packState` bertahap + spec yang menahan
+perilaku lama (deep link, pencarian, catatan). Dicatat sebagai langkah
+berikutnya, bukan klaim selesai.
+
 ### Putaran 156 — Paket Alkitab dipecah per kitab (persiapan, 5 Nov)
 
 `apps/web/scripts/split-bible-pack.mjs` memecah `tb-reader.json` menjadi
