@@ -102,3 +102,61 @@ let cachedPack: BibleReaderPack | undefined;
 export const getCachedBundledBiblePack = () => cachedPack;
 export const loadBundledBiblePack = () =>
   loadPack().then((pack) => (cachedPack = pack));
+
+/**
+ * Per-book packs written by `scripts/split-bible-pack.mjs`. The reader will
+ * load the book it shows instead of the 1,7 MB shelf; the full pack stays as
+ * the fallback until the reader is switched over.
+ */
+export type BibleBookPack = {
+  version: number;
+  translation: string;
+  book: { id: string | number; name?: string };
+  verses: BibleReaderPack["verses"];
+  pericopes?: NonNullable<BibleReaderPack["pericopes"]>;
+};
+
+export function bibleBookPackUrl(
+  bookId: string,
+  base = import.meta.env.BASE_URL,
+): string {
+  return `${base}offline/bible/books/${encodeURIComponent(bookId)}.json.gz`;
+}
+
+function isBookPack(value: unknown): value is BibleBookPack {
+  if (!value || typeof value !== "object") return false;
+  const pack = value as Partial<BibleBookPack>;
+  return (
+    typeof pack.version === "number" &&
+    Boolean(pack.book && typeof pack.book === "object") &&
+    Array.isArray(pack.verses) &&
+    pack.verses.length > 0 &&
+    typeof pack.verses[0]?.id === "string" &&
+    typeof pack.verses[0]?.text === "string"
+  );
+}
+
+const bookPacks = new Map<string, Promise<BibleBookPack>>();
+
+export function loadBibleBookPack(bookId: string): Promise<BibleBookPack> {
+  const cached = bookPacks.get(bookId);
+  if (cached) return cached;
+  const pending = fetch(bibleBookPackUrl(bookId), { cache: "force-cache" })
+    .then(async (response) => {
+      if (!response.ok)
+        throw new Error(`Bible book pack failed: ${response.status}`);
+      const parsed = await readGzipOrJson(response);
+      if (!isBookPack(parsed)) throw new Error("Bible book pack is invalid");
+      return parsed;
+    })
+    .catch((error: unknown) => {
+      bookPacks.delete(bookId);
+      throw error;
+    });
+  bookPacks.set(bookId, pending);
+  return pending;
+}
+
+export function clearBibleBookPacks() {
+  bookPacks.clear();
+}

@@ -4484,7 +4484,11 @@ kurang efisien, tetapi satu kitab hanya 12–102 KiB). Dipanggil setelah
 Tes `scripts/split-bible-pack.test.mjs` **3/3** (pengelompokan ayat+perikop,
 byte identik antar-run, index + magic gzip); seluruh `test:scripts` **28/28**.
 Belum ada perubahan perilaku: loader masih memakai paket penuh sampai
-pemanggilan per-kitab disambungkan (putaran berikutnya).
+pemanggilan per-kitab disambungkan (putaran berikutnya). Langkah kedua sudah
+ada: `apps/web/src/bible-pack-loader.ts` mengekspor `bibleBookPackUrl()`,
+`loadBibleBookPack(bookId)` (cache per kitab, berbagi satu request, menerima
+body yang sudah di-inflate host, retry setelah gagal) dan
+`clearBibleBookPacks()`; tes `apps/web/src/bible-book-pack.test.ts` **4/4**.
 
 ### Ukuran per kitab untuk pemecahan paket Alkitab (5 Nov)
 
