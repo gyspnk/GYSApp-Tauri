@@ -206,6 +206,37 @@ for (const { width, touch } of [
   });
 }
 
+test("closed music panel stays out of layout until the disclosure opens", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1024, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await preparePinnedReaderAssets(page);
+  await preparePinnedMidiAsset(page);
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+  await page.locator(".hymn-midi-toggle").click();
+  const player = page.locator(".media-surface.is-kidung-media");
+  await expect(player).toBeVisible({ timeout: 30_000 });
+  const advanced = player.locator(".media-advanced-controls");
+  const panel = player.locator(".media-advanced-panel");
+  // A closed disclosure must remove the panel from layout, not just hide it
+  // through `::details-content`: WebView2 does not support that pseudo-element
+  // and the painted-but-inert panel left every control inside it unclickable.
+  await expect(advanced).toHaveJSProperty("open", false);
+  await expect(panel).toBeHidden();
+  await player.locator(".media-advanced-summary").click();
+  await expect(advanced).toHaveJSProperty("open", true);
+  await expect(panel).toBeVisible();
+  const reset = player.locator(".media-transpose-reset");
+  const box = await reset.boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThan(24);
+  await reset.click();
+  await player.locator(".media-advanced-summary").click();
+  await expect(advanced).toHaveJSProperty("open", false);
+  await expect(panel).toBeHidden();
+});
+
 test.describe("fullscreen lyrics", () => {
   test.use({ hasTouch: true });
   test("fullscreen lyrics reuse the dock control geometry", async ({
