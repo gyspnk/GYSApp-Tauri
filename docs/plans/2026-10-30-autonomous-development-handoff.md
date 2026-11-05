@@ -4246,6 +4246,17 @@ default (`same-origin`), jadi preload dengan mode berbeda akan diunduh dua kali
 `apps/web/scripts/bff-hints.test.mjs` **7/7** mencakup bentuk tag, satu
 preconnect, dan no-op tanpa BFF.
 
+**Hasil terukur setelah deploy:** snapshot sekarang diminta pada **462–767 ms**
+(sebelumnya 6 212 ms) dan selesai ~1,4 dtk, tetapi **LCP tetap 8 116 / 8 360 /
+8 320 ms** — jadi permintaan data bukan lagi penentu. Yang tersisa adalah boot
+JS: entry 87 KiB + graf chunk baru selesai ~5,9 dtk pada CPU 4× dan 1,6 Mbps,
+dan permintaan gambar pertama baru muncul di 5 944 ms. Tuas berikutnya:
+CSS kritis inline (76 KiB masih render-blocking, selesai 2,5 dtk) dan
+mengurangi chunk yang dieksekusi sebelum paint pertama. Rantai revalidasi BFF
+juga lambat: upstream `/wp-json/wp/v2/posts?...per_page=100&_embed` menjawab
+**TTFB 7,6 dtk / total 10,8 dtk** (per_page=20: 3,3 dtk), sehingga umpan balik
+feed jarang selesai sebelum pengguna selesai membaca.
+
 Catatan build: `dist` yang dibangun **dengan** `VITE_BFF_BASE_URL` membuat
 preview lokal benar-benar memanggil BFF, sehingga `suara-catalog` melihat
 gambar asli (naturalWidth 300) alih-alih placeholder. Karena itu preview lokal
