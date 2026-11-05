@@ -22,12 +22,6 @@ export function sauhPreloadUrl(base) {
   return origin ? `${origin}/api/v1/content/sauh` : null;
 }
 
-/** The Suara feed the /suara and testimony shells should preload. */
-export function suaraFeedUrl(base) {
-  const origin = bffOrigin(base);
-  return origin ? `${origin}/api/v1/content/suara-sejati` : null;
-}
-
 /** Tags injected at the end of <head>; empty when no BFF is configured. */
 export function bffHintTags(base) {
   const origin = bffOrigin(base);
@@ -59,21 +53,21 @@ export function injectBffPreconnect(html, base) {
 }
 
 /**
- * The Suara library reads its feed from the BFF, but that fetch only started
+ * The Suara library paints from the bundled snapshot and only revalidates the
+ * live BFF feed afterwards. Without a head hint that snapshot fetch started
  * after boot (~3,4 s on a slow link), so the first covers were requested at
- * ~6,2 s. Fetch credentials default to "same-origin", which for a cross-origin
- * URL omits credentials — hence crossorigin="anonymous", the same mode the
- * app's fetch uses, so the response is reused instead of downloaded twice.
+ * ~6,2 s. crossorigin="anonymous" mirrors the app's fetch credentials mode —
+ * a preload with a different mode is downloaded twice.
  */
-export function injectBffSuaraHints(html, base) {
-  const origin = bffOrigin(base);
-  const feed = suaraFeedUrl(base);
-  if (!origin || !feed) return html;
+export function injectSuaraHints(html, bffBase, rootBase = "/") {
+  const origin = bffOrigin(bffBase);
+  const root = (rootBase ?? "").trim();
+  if (!origin || !root.endsWith("/")) return html;
   const index = html.lastIndexOf("</head>");
   if (index < 0) return html;
   const tags = [
     `<link rel="preconnect" href="${origin}" crossorigin />`,
-    `<link rel="preload" as="fetch" href="${feed}" crossorigin="anonymous" />`,
+    `<link rel="preload" as="fetch" href="${root}offline/suara-sejati.json" crossorigin="anonymous" />`,
   ].join("\n    ");
   return `${html.slice(0, index)}  ${tags}\n  ${html.slice(index)}`;
 }

@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import {
   injectBffHints,
   injectBffPreconnect,
-  injectBffSuaraHints,
+  injectSuaraHints,
 } from "./bff-hints.mjs";
 import { fontPreloadTags } from "./font-preload.mjs";
 import {
@@ -49,7 +49,7 @@ const hintedShell = injectBffHints(shell, bffBase);
 // the shelf JSON.
 const preconnectShell = injectBffPreconnect(shell, bffBase);
 // The Suara library reads a live BFF feed; start it during parse too.
-const suaraShell = injectBffSuaraHints(shell, bffBase);
+const suaraShell = injectSuaraHints(shell, bffBase, base);
 // The manifest is a build artefact: if a future config stops emitting it, the
 // stubs stay valid, they just lose the parallel route fetch.
 const manifest = await readFile(join(dist, ".vite", "manifest.json"), "utf8")

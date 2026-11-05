@@ -4224,6 +4224,13 @@ dipakai ulang, dan untuk `offline/sauh.json` (satu permintaan di hosted).
 
 ### Putaran 148 — Feed Suara dimulai dari kepala dokumen (5 Nov)
 
+Koreksi setelah pengukuran hosted: yang membuat halaman terlihat lambat
+bukan mulai-nya feed BFF, melainkan **snapshot 23 KiB** yang baru diminta
+setelah boot; preload feed BFF (percobaan pertama) justru tidak dipakai untuk
+paint. Shell sekarang memuat
+`<link rel="preload" as="fetch" href="{base}offline/suara-sejati.json" crossorigin="anonymous">`,
+dan revalidasi BFF tetap berjalan di latar belakang.
+
 Hosted `/suara/` (390 px, 1,6 Mbps, CPU 4×, SW diblokir): FCP **2 640 ms**,
 LCP **8 236 ms** pada `IMG.suara-thumb-img`, tetapi **permintaan gambar baru
 mulai 6 212 ms** — rantainya bukan gambar, melainkan feed BFF
