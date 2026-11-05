@@ -48,12 +48,38 @@ async function clickUnobstructed(locator, label) {
     // The advanced panel scrolls internally; a button scrolled out of that
     // viewport keeps its box but is not hit-testable, so centre it inside its
     // own scroll container and check again before reporting a blocker.
-    await locator
-      .evaluate((element) => element.scrollIntoView({ block: "center" }))
-      .catch(() => undefined);
+    const scrolled = await locator
+      .evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        let container = element.parentElement;
+        while (container) {
+          const style = getComputedStyle(container);
+          if (/auto|scroll/.test(style.overflowY) && container.clientHeight)
+            break;
+          container = container.parentElement;
+        }
+        if (!container) return null;
+        const cbox = container.getBoundingClientRect();
+        const target =
+          container.scrollTop +
+          (box.top - cbox.top) -
+          container.clientHeight / 2 +
+          box.height / 2;
+        container.scrollTop = Math.max(0, target);
+        return {
+          client: container.clientHeight,
+          scroll: container.scrollHeight,
+          top: Math.round(container.scrollTop),
+          boxTop: Math.round(box.top),
+          containerTop: Math.round(cbox.top),
+        };
+      })
+      .catch(() => null);
     await delay(300);
     const owned = await ownsPoint();
-    console.log(`[soak] re-scrolled ${label}: ownsPoint=${owned}`);
+    console.log(
+      `[soak] re-scrolled ${label}: ownsPoint=${owned} container=${JSON.stringify(scrolled)}`,
+    );
   }
   try {
     await locator.click({ timeout: 15_000 });
@@ -98,6 +124,23 @@ async function clickUnobstructed(locator, label) {
                 overflow: getComputedStyle(surface).overflow,
               }
             : null,
+          panel: (() => {
+            const node = element.closest(".media-advanced-panel");
+            if (!node) return null;
+            const box = node.getBoundingClientRect();
+            const style = getComputedStyle(node);
+            return {
+              y: Math.round(box.y),
+              h: Math.round(box.height),
+              client: node.clientHeight,
+              scroll: node.scrollHeight,
+              top: Math.round(node.scrollTop),
+              overflowY: style.overflowY,
+              visibility: style.visibility,
+              opacity: style.opacity,
+              pointerEvents: style.pointerEvents,
+            };
+          })(),
           intruder: top ? describe(top) : null,
           target: describe(element),
           viewTransitions: document.documentElement.classList.contains(
