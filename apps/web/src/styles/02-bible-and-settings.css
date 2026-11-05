@@ -1403,6 +1403,22 @@
   font-size: 0.9375rem;
   font-weight: 650;
 }
+.more-setting-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.more-setting-copy > strong {
+  min-width: 0;
+}
+.more-setting-hint {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
 .more-setting-summary {
   flex: none;
   color: var(--muted);

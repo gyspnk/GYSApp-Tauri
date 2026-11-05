@@ -4350,6 +4350,17 @@ Tiga keputusan pertama:
   Verifikasi: `more-device-data` + `settings-data-integrity` **12/12 (19,1 s)**,
   `more-section-deeplink` + `responsive-touch-targets` **8/8 (35,5 s)**.
 
+- **D-6 — Setiap baris pengaturan menjelaskan isinya.** Baris kategori hanya
+  berisi nama (“Tampilan”, “Audio & Suara”, …) sehingga pengguna harus membuka
+  untuk tahu apa isinya, dan tinggi 56 px menyisakan ruang kosong di kanan.
+  Setiap baris sekarang punya satu baris keterangan 13 px
+  (“Tema, bahasa, dan ukuran teks”, “Suara, kecepatan, dan nada”, “Nada dasar,
+  transpose, MIDI”, “Paket tersimpan di perangkat”, “Ekspor dan pulihkan data”,
+  “Versi aplikasi dan bantuan”, “Profil e-GYS dan sesi login”) dengan token
+  `--muted`, sementara nilai aktif tetap di kanan (Terang, 9,2 MB). Tinggi baris
+  naik ke ~64 px — masih di atas target 44 px dan tanpa menambah aset.
+  Verifikasi: `more-device-data` + `settings-data-integrity` **12/12 (15,6 s)**.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.

@@ -1105,12 +1105,17 @@ export function MorePage({
             <span className="more-setting-icon">
               <AccountAvatar />
             </span>
-            <h2 className="more-account-title">
-              {accountProfile
-                ? (accountProfile.displayName ??
-                  translate(locale, "more.accountMember"))
-                : translate(locale, "more.accountEgys")}
-            </h2>
+            <span className="more-setting-copy">
+              <h2 className="more-account-title">
+                {accountProfile
+                  ? (accountProfile.displayName ??
+                    translate(locale, "more.accountMember"))
+                  : translate(locale, "more.accountEgys")}
+              </h2>
+              <small className="more-setting-hint">
+                {translate(locale, "more.accountHint")}
+              </small>
+            </span>
             {accountProfile || nativeShell ? (
               <span
                 className={`pack-badge${accountProfile ? " is-verified" : ""}`}
@@ -1295,7 +1300,12 @@ export function MorePage({
             <span className="more-setting-icon">
               <Icon name="sun" size={20} />
             </span>
-            <strong>{translate(locale, "more.categoryAppearance")}</strong>
+            <span className="more-setting-copy">
+              <strong>{translate(locale, "more.categoryAppearance")}</strong>
+              <small className="more-setting-hint">
+                {translate(locale, "more.appearanceHint")}
+              </small>
+            </span>
             <span className="more-setting-summary">{themeSummary}</span>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1424,7 +1434,12 @@ export function MorePage({
             <span className="more-setting-icon">
               <Icon name="volume" size={20} />
             </span>
-            <strong>{translate(locale, "more.categoryAudio")}</strong>
+            <span className="more-setting-copy">
+              <strong>{translate(locale, "more.categoryAudio")}</strong>
+              <small className="more-setting-hint">
+                {translate(locale, "more.audioHint")}
+              </small>
+            </span>
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
@@ -1445,7 +1460,12 @@ export function MorePage({
             <span className="more-setting-icon">
               <Icon name="music" size={20} />
             </span>
-            <strong>{translate(locale, "more.categoryHymns")}</strong>
+            <span className="more-setting-copy">
+              <strong>{translate(locale, "more.categoryHymns")}</strong>
+              <small className="more-setting-hint">
+                {translate(locale, "more.hymnsHint")}
+              </small>
+            </span>
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
@@ -1527,7 +1547,12 @@ export function MorePage({
             <span className="more-setting-icon">
               <Icon name="download" size={20} />
             </span>
-            <strong>{translate(locale, "more.categoryOffline")}</strong>
+            <span className="more-setting-copy">
+              <strong>{translate(locale, "more.categoryOffline")}</strong>
+              <small className="more-setting-hint">
+                {translate(locale, "more.offlineHint")}
+              </small>
+            </span>
             <span className="more-setting-summary">
               {manifest
                 ? formatBytes(
@@ -1685,7 +1710,12 @@ export function MorePage({
             <span className="more-setting-icon">
               <Icon name="copy" size={20} />
             </span>
-            <strong>{translate(locale, "more.categoryBackup")}</strong>
+            <span className="more-setting-copy">
+              <strong>{translate(locale, "more.categoryBackup")}</strong>
+              <small className="more-setting-hint">
+                {translate(locale, "more.backupHint")}
+              </small>
+            </span>
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
@@ -1747,7 +1777,12 @@ export function MorePage({
             <span className="more-setting-icon">
               <Icon name="checkCircle" size={20} />
             </span>
-            <strong>{translate(locale, "more.categoryAbout")}</strong>
+            <span className="more-setting-copy">
+              <strong>{translate(locale, "more.categoryAbout")}</strong>
+              <small className="more-setting-hint">
+                {translate(locale, "more.aboutHint")}
+              </small>
+            </span>
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
