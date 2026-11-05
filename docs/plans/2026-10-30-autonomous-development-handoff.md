@@ -5388,6 +5388,26 @@ berikutnya (390 px, 200 kB/s, RTT 150 ms, CPU 4×, SW mati, build `e60ea8e`):
 baris pertama **25 821 ms** — angka ini hanya titik ukur, belum tentu
 terbanding dengan profil lokal yang RTT-nya 300 ms.
 
+### Putaran 167 — Soak melewati pane PDF, lalu klik dock terhalang (5 Nov)
+
+Soak `42093278326` (`samples=5`) **lolos bagian yang selama ini gagal**: setelah
+partitur dibuka ulang, `canvas[data-pdf-rendered="true"]` muncul, jadi perbaikan
+pemuatan ulang mode (`992b1ca`) dan penyelamatan aset dari cache (`59b2eee`)
+bekerja di WebView terpaket.
+
+Kegagalan berpindah ke klik `.media-transpose-reset` di dock: Playwright
+melaporkan `<article class="lyrics-sheet verse-enter is-next" …>` menelan
+pointer. Reproduksi lokal di 390×844 dan 900×700 **tidak** menemukan masalah —
+`elementFromPoint` di tengah tombol mengembalikan SVG tombol itu sendiri dan
+`.media-surface` ber-`z-index: 51`/`position: fixed`. Artinya lapisan ini hanya
+salah di jendela WebView, jadi tidak ada perubahan CSS buta.
+
+Sebagai gantinya `edge-tts-native-smoke.mjs` memakai `clickUnobstructed()`:
+klik dibatasi 15 dtk dan, bila gagal, mencetak ukuran/titik tombol, rantai lima
+ancestor elemen penghalang **dan** target (tag/kelas/z-index/position), plus
+status view-transition, sebelum melempar ulang (`11172f1`). Soak `42096334179`
+(`samples=3`) dijalankan untuk mengambil laporan lapisan itu.
+
 ### Putaran 164 — Metadata kidung dimulai dari kepala dokumen (5 Nov)
 
 Baris pertama katalog menunggu `offline/hymn-metadata.json` yang baru diminta
