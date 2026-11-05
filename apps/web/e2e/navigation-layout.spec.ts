@@ -662,7 +662,12 @@ test.describe("responsive reader navigation", () => {
 
       const rows = page.locator(".more-setting-section");
       await expect(rows).toHaveCount(7);
-      await expect(rows.locator(":scope > summary")).toHaveText([
+      // Each row now carries a two-line copy block (title + hint) and some
+      // rows show a live value summary, so assert the title and the hint
+      // separately instead of the summary's full text.
+      await expect(
+        rows.locator(":scope > summary .more-setting-copy > :is(strong, h2)"),
+      ).toHaveText([
         "Akun e-GYS",
         "Tampilan",
         "Audio & Suara",
@@ -671,6 +676,9 @@ test.describe("responsive reader navigation", () => {
         "Backup",
         "Tentang & Bantuan",
       ]);
+      await expect(
+        rows.locator(":scope > summary .more-setting-hint"),
+      ).toHaveCount(7);
       await rows.locator(":scope > summary").last().scrollIntoViewIfNeeded();
       await expect(rows.locator(":scope > summary").last()).toBeInViewport();
       const rowBoxes = await rows
