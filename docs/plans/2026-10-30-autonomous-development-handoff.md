@@ -4964,6 +4964,16 @@ worker and keeps a precache” (`e2e/runtime-health.spec.ts`, `serviceWorkers:
 `gysapp-shell-*`). Biaya: CacheStorage menyimpan 7,9 MB terdekompresi (transfer
 tetap 1,7 MB).
 
+### Kontrak rantai gambar: proksi dulu, satu percobaan langsung (5 Nov)
+
+`media-load.spec.ts` menuntut **dua** permintaan untuk satu sampul rusak, padahal
+rantai di `lazy-image.tsx` memang menyiapkan `[proksi, asli, asli-tanpa-ukuran,
+utama]`: proksi dicoba lebih dulu, lalu **satu** percobaan langsung ke URL asli
+sebagai jaring terakhir bila Worker sedang tidak bisa dihubungi. Kontrak diubah
+menjadi tiga permintaan yang semuanya unik (2 proksi + 1 langsung) dan nama
+tesnya disesuaikan (“with one direct fallback attempt”). Kunjungan berikutnya
+hanya dua, karena URL yang gagal diingat di `gys-broken-images-v1`.
+
 ### Putaran 146 — Modul data rute ikut berangkat dari `<head>` (5 Nov)
 
 Setelah chunk rute dimulai paralel, jejak hosted masih memperlihatkan dua

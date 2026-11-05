@@ -183,7 +183,7 @@ test("literature PDF failure exposes retry inside the application reader shell",
   await expect(page.getByRole("link", { name: "PDF resmi ↗" })).toBeVisible();
 });
 
-test("literature cover states stay honest without per-card fallback requests", async ({
+test("literature cover states stay honest with one direct fallback attempt", async ({
   page,
 }) => {
   const transparentPixel = Buffer.from(
@@ -293,9 +293,16 @@ test("literature cover states stay honest without per-card fallback requests", a
       rows.map((row) => Math.round(row.getBoundingClientRect().height)),
     );
   expect(new Set(rowHeights).size).toBe(1);
+  // Two proxy reads plus one direct original attempt for the unreadable cover:
+  // the proxy is tried first, the direct URL stays as the last resort.
+  const coverRequests = imageRequests.filter((url) =>
+    /official-cover|broken-cover/.test(url),
+  );
+  expect(coverRequests).toHaveLength(3);
+  expect(new Set(coverRequests).size).toBe(3);
   expect(
-    imageRequests.filter((url) => /official-cover|broken-cover/.test(url)),
-  ).toHaveLength(2);
+    coverRequests.filter((url) => url.startsWith("https://tjcorguploads")),
+  ).toHaveLength(1);
   expect(imageRequests.some((url) => /coverless/.test(url))).toBe(false);
 });
 
