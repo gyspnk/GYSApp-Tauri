@@ -4284,6 +4284,40 @@ gambar asli (naturalWidth 300) alih-alih placeholder. Karena itu preview lokal
 tetap dibangun tanpa env; verifikasi tag dilakukan pada build ber-env dan pada
 Pages.
 
+### Putaran 149 — Pack Alkitab mulai diunduh saat parsing (5 Nov)
+
+`/alkitab/` masih 16–17 detik pada 390 px / 1,6 Mbps / CPU 4× karena paket
+1,7 MB baru diminta setelah React selesai mount (~6 detik), lalu — di host yang
+mengirim `.gz` dengan `content-encoding: gzip` — loader sempat **mengunduh dua
+kali** (gz 1,7 MB + JSON polos 7,6 MB) sebelum jatuh ke fallback.
+
+Dua perbaikan:
+
+1. `readGzipOrJson()` memeriksa magic bytes `1f 8b`. Bila host sudah
+   mendekode isi `.gz`, loader mem-parse JSON langsung; tidak ada unduhan
+   cadangan 7,6 MB.
+2. `scripts/pack-hints.mjs` menyuntikkan
+   `window.__gysBiblePack=fetch("<base>offline/bible/tb-reader.json.gz",{cache:"force-cache"})`
+   ke shell `/bible/` dan `/alkitab/`, dan `fetchGzip()` memakai promise itu
+   (satu respons dipakai bersama). Preload `<link as="fetch">` **tidak** dipakai
+   karena Chromium menolak memakai ulang preload no-cors untuk fetch CORS —
+   sudah dicoba dan dibuang.
+
+Hasil lokal (390 px, 1,6 Mbps, CPU 4×, Service Worker diblokir):
+
+| Metrik                  | Sebelum         | Sesudah      |
+| ----------------------- | --------------- | ------------ |
+| Permintaan pack         | 2 (gz + 7,6 MB) | **1**        |
+| Permintaan pack pertama | 5,6–6,4 dtk     | **2,05 dtk** |
+| Ayat pertama terlihat   | 16,4–17,1 dtk   | **13,7 dtk** |
+
+Sisa waktu adalah transfer 1,7 MB (≈8,5 dtk) + parse; pemecahan per-kitab
+menjadi tuas berikutnya bila diizinkan. Regresi dijaga
+`bible-pack-loader.test.ts` (**7/7**, termasuk “host sudah mendekode” dan
+“memakai respons dari shell”) dan `scripts/pack-hints.test.mjs` (**3/3**).
+E2E: `bible-picker-mobile` + `runtime-health` **9 lulus, 1 flaky** (instalasi
+service worker di bawah beban, lulus saat retry).
+
 ### Putaran 148 — Cari kitab menyatu di pemilih kitab & pasal (5 Nov)
 
 Sebelumnya pencarian kitab tersembunyi: buka dialog → ketuk kolom “Kitab” →

@@ -53,6 +53,37 @@ describe("shared bundled Bible loading", () => {
     });
   });
 
+  it("accepts a gzip sibling the host already inflated", async () => {
+    // Some hosts answer `.gz` with `content-encoding: gzip`, so the browser
+    // hands us plain JSON. The loader must not download the 7.6 MB plain pack.
+    const request = vi.fn(() => Promise.resolve(plain(PACK)));
+    vi.stubGlobal("fetch", request);
+    const load = createBundledBibleLoader("/offline/bible/tb-reader.json");
+    await expect(load()).resolves.toMatchObject({ translation: "TB" });
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledWith("/offline/bible/tb-reader.json.gz", {
+      cache: "force-cache",
+    });
+  });
+
+  it("reuses the response the shell already started", async () => {
+    const early = Promise.resolve(await gz(PACK));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new Error("offline"))),
+    );
+    (globalThis as { __gysBiblePack?: Promise<Response> }).__gysBiblePack =
+      early;
+    try {
+      const load = createBundledBibleLoader("/offline/bible/tb-reader.json");
+      await expect(load()).resolves.toMatchObject({ translation: "TB" });
+      expect(fetch).not.toHaveBeenCalled();
+    } finally {
+      delete (globalThis as { __gysBiblePack?: Promise<Response> })
+        .__gysBiblePack;
+    }
+  });
+
   it("falls back to the plain pack when the gzip file is missing", async () => {
     const request = vi
       .fn()

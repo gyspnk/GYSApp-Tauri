@@ -39,16 +39,36 @@ async function parseBundledPack(json: unknown): Promise<BibleReaderPack> {
  * browser and fall back to the plain file when the API or the request is
  * unavailable, so an old cached shell keeps working.
  */
+async function readGzipOrJson(response: Response): Promise<unknown> {
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  // Some hosts answer a `.gz` request with `content-encoding: gzip`, so the
+  // browser has already inflated the body and only the bytes tell the truth.
+  const gzipped = bytes[0] === 0x1f && bytes[1] === 0x8b;
+  if (!gzipped) return JSON.parse(new TextDecoder().decode(bytes));
+  const inflated = new Response(bytes).body!.pipeThrough(
+    new DecompressionStream("gzip"),
+  );
+  return await new Response(inflated).json();
+}
+
+type PackHook = { __gysBiblePack?: Promise<Response | undefined> };
+
+async function fetchGzip(url: string): Promise<Response> {
+  // The prerendered Bible shells start this request during parse and hand the
+  // promise over, so the 1,7 MB transfer overlaps the entry chunk.
+  const hook = (globalThis as PackHook).__gysBiblePack;
+  if (hook) {
+    const early = await hook;
+    if (early?.ok) return early;
+  }
+  return fetch(`${url}.gz`, { cache: "force-cache" });
+}
+
 async function readPackJson(url: string): Promise<unknown> {
   if (typeof DecompressionStream !== "undefined") {
     try {
-      const response = await fetch(`${url}.gz`, { cache: "force-cache" });
-      if (response.ok && response.body) {
-        const inflated = response.body.pipeThrough(
-          new DecompressionStream("gzip"),
-        );
-        return await new Response(inflated).json();
-      }
+      const response = await fetchGzip(url);
+      if (response.ok) return await readGzipOrJson(response);
     } catch {
       /* fall through to the plain pack */
     }
