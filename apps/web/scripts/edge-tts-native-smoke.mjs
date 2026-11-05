@@ -143,6 +143,23 @@ async function clickUnobstructed(locator, label) {
           })(),
           intruder: top ? describe(top) : null,
           target: describe(element),
+          ancestry: (() => {
+            const rows = [];
+            for (let n = element; n && rows.length < 10; n = n.parentElement) {
+              const style = getComputedStyle(n);
+              rows.push({
+                node: `${n.tagName.toLowerCase()}.${String(n.className).slice(0, 22)}`,
+                pe: style.pointerEvents,
+                display: style.display,
+                open: n instanceof HTMLDetailsElement ? n.open : undefined,
+                cv:
+                  n instanceof HTMLDetailsElement
+                    ? getComputedStyle(n, "::details-content").contentVisibility
+                    : undefined,
+              });
+            }
+            return rows;
+          })(),
           viewTransitions: document.documentElement.classList.contains(
             "has-view-transitions",
           ),
