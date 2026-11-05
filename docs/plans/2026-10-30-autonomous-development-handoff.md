@@ -4485,6 +4485,17 @@ Terverifikasi `bible-zoom` + `bible-annotations` + `bible-multi-select` **9/9
 (21,0 dtk)**; baseline visual Alkitab akan bergeser dan diadopsi dari artefak
 CI.
 
+### PDF kidung tidak lagi menunggu manifes fork (5 Nov)
+
+Panel PDF memuat lebih dulu `loadForkHymnalPdf(item.id)` (manifes rilis
+GYSApp-Data). Di soak native, permintaan `fork-pdf` sempat `206` lalu
+`net::ERR_ABORTED`, sehingga rantai fallback ke aset musik kanonik (proxy,
+**200**, 11 064 B) baru berjalan setelah waktu habis dan pembaca PDF melaporkan
+“Cached PDF did not render after reload”. Sekarang percobaan fork dibatasi
+**6 dtk** lewat `withDeadline(...)`; jika lewat, rantai langsung jatuh ke aset
+musik kanonik yang sudah terbukti 200. Verifikasi `kidung-pdf-density` +
+`media-load` **13/13 (32,6 dtk)**, `tsc -b` bersih.
+
 ### Soak native keempat: CSP bersih, sisa kegagalan di panel PDF kidung (5 Nov)
 
 Run `42064043702` (untuk `ad6bf86`) menghapus dua kegagalan sebelumnya: tidak

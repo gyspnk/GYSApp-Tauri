@@ -1,3 +1,4 @@
+import { withDeadline } from "./with-deadline.js";
 import { useHymnNotation } from "./hymn-notation.js";
 import { useLyricReflow } from "./lyric-reflow.js";
 import { useGestureFont } from "./gesture-font.js";
@@ -1264,7 +1265,14 @@ export function HymnDetail({
       }
       let forkError: unknown;
       try {
-        const forkPdf = await loadForkHymnalPdf(item.id);
+        // A stalled fork manifest must not hold the score back: the canonical
+        // music asset is right behind it and the worker proxy is usually warm.
+        const forkPdf = await withDeadline(
+          loadForkHymnalPdf(item.id),
+          6_000,
+          undefined,
+        );
+        if (!forkPdf) throw new Error("Fork PDF timed out");
         return {
           src: forkPdf.src,
           initialPage: forkPdf.initialPage,
