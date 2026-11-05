@@ -237,6 +237,11 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.previous": "← Sebelumnya",
     "bible.next": "Berikutnya →",
     "bible.selectedVerseActions": "Aksi ayat terpilih",
+    "bible.selectMore": "Pilih banyak ayat",
+    "bible.doneSelecting": "Selesai memilih",
+    "bible.selectedCount": "{count} ayat dipilih",
+    "bible.combinedNoteHint":
+      "Catatan ini tersimpan untuk {count} ayat yang dipilih.",
     "bible.copy": "Salin",
     "bible.share": "Bagikan",
     "bible.readVerse": "Baca ayat",

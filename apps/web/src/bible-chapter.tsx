@@ -25,6 +25,7 @@ export function ChapterPane({
   bookmarks,
   highlights,
   selectedVerseId,
+  selectedVerseIds,
   speakingVerseId,
   secondary = false,
   scrollRef,
@@ -53,6 +54,7 @@ export function ChapterPane({
   bookmarks: Set<string>;
   highlights: Record<string, string>;
   selectedVerseId?: string | undefined;
+  selectedVerseIds?: readonly string[] | undefined;
   speakingVerseId?: string | undefined;
   secondary?: boolean;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
@@ -146,7 +148,9 @@ export function ChapterPane({
         onTouchCancel={onTouchCancel}
       >
         {verses.map((verse) => {
-          const selected = selectedVerseId === verse.id;
+          const selected = selectedVerseIds
+            ? selectedVerseIds.includes(verse.id)
+            : selectedVerseId === verse.id;
           const speaking = speakingVerseId === verse.id;
           const highlight = highlights[verse.id];
           const highlightClass = highlight

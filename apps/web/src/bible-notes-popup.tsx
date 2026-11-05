@@ -22,6 +22,9 @@ type BibleNotesPopupProps = {
   savedNotesList: SavedNoteRow[];
   bookmarks: Set<string>;
   selectedVerse: BibleVerse | undefined;
+  selectionLabel?: string | undefined;
+  selectionPreview?: string | undefined;
+  selectionCount?: number | undefined;
   book: BibleBook | undefined;
   chapter: number;
   noteDraft: string;
@@ -46,6 +49,9 @@ export function BibleNotesPopup({
   savedNotesList,
   bookmarks,
   selectedVerse,
+  selectionLabel,
+  selectionPreview,
+  selectionCount,
   book,
   chapter,
   noteDraft,
@@ -113,9 +119,17 @@ export function BibleNotesPopup({
           {selectedVerse && (
             <div className="bible-selection-panel">
               <strong>
-                {book?.name} {chapter}:{selectedVerse.verse}
+                {selectionLabel ??
+                  `${book?.name} ${chapter}:${selectedVerse.verse}`}
               </strong>
-              <p>{cleanVerse(selectedVerse)}</p>
+              <p>{selectionPreview ?? cleanVerse(selectedVerse)}</p>
+              {selectionCount && selectionCount > 1 ? (
+                <p className="bible-note-range-note">
+                  {translate(locale, "bible.combinedNoteHint", {
+                    count: String(selectionCount),
+                  })}
+                </p>
+              ) : null}
               <label className="bible-note-field">
                 <span>{translate(locale, "bible.personalNote")}</span>
                 <textarea

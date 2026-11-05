@@ -220,6 +220,11 @@ export const enMessages: Record<string, string> = {
   "bible.previous": "← Previous",
   "bible.next": "Next →",
   "bible.selectedVerseActions": "Selected verse actions",
+  "bible.selectMore": "Select multiple verses",
+  "bible.doneSelecting": "Done selecting",
+  "bible.selectedCount": "{count} verses selected",
+  "bible.combinedNoteHint":
+    "This note is saved for the {count} selected verses.",
   "bible.copy": "Copy",
   "bible.share": "Share",
   "bible.readVerse": "Read verse",

@@ -182,6 +182,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
     readCustomHighlightColors,
   );
   const [selectedVerseId, setSelectedVerseId] = useState<string>();
+  const [multiVerseIds, setMultiVerseIds] = useState<string[]>([]);
+  const [noteTargetIds, setNoteTargetIds] = useState<string[]>([]);
   const [selectedNoteId, setSelectedNoteId] = useState<string>();
   const selectedNoteIdRef = useRef<string | undefined>(undefined);
   selectedNoteIdRef.current = selectedNoteId;
@@ -885,6 +887,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
   }
 
   const handleCloseSelectedVerse = useCallback(() => {
+    setMultiVerseIds([]);
     setExitingVerse(true);
     if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
     exitTimerRef.current = setTimeout(() => {
@@ -895,14 +898,33 @@ export function BiblePage({ locale }: { locale: Locale }) {
   }, []);
 
   useEffect(() => {
+    setMultiVerseIds([]);
+  }, [selectedBook, selectedChapter]);
+
+  useEffect(() => {
+    if (!notesPopupOpen) setNoteTargetIds([]);
+  }, [notesPopupOpen]);
+
+  useEffect(() => {
     if (selectedVerseId) {
       setExitingVerse(false);
       if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
     }
   }, [selectedVerseId]);
 
-  const activeToolbarVerse =
-    selectedVerse ?? (exitingVerse ? activeVerseRef.current : undefined);
+  const multiSelectedVerses = (() => {
+    if (!multiVerseIds.length || packState.status !== "ready") return [];
+    const byId = new Map(
+      packState.pack.verses.map((verse) => [verse.id, verse]),
+    );
+    return multiVerseIds
+      .map((id) => byId.get(id))
+      .filter((verse): verse is BibleVerse => Boolean(verse));
+  })();
+  const multiMode = multiVerseIds.length > 0;
+  const toolbarVerse =
+    (multiMode ? multiSelectedVerses[0] : selectedVerse) ??
+    (exitingVerse ? activeVerseRef.current : undefined);
 
   useEffect(() => {
     const onSelectionChange = () => {
@@ -1051,9 +1073,30 @@ export function BiblePage({ locale }: { locale: Locale }) {
   };
 
   const selectVerse = (verse: BibleVerse) => {
+    setNoteTargetIds([]);
+    if (multiMode) {
+      setMultiVerseIds((current) =>
+        current.includes(verse.id)
+          ? current.filter((id) => id !== verse.id)
+          : [...current, verse.id],
+      );
+      return;
+    }
     setSelectedVerseId((current) =>
       current === verse.id ? undefined : verse.id,
     );
+  };
+
+  const startMultiSelect = () => {
+    if (!selectedVerseId) return;
+    setMultiVerseIds([selectedVerseId]);
+    setSelectedVerseId(undefined);
+    setExitingVerse(false);
+  };
+
+  const clearMultiSelect = () => {
+    setMultiVerseIds([]);
+    setNoteTargetIds([]);
   };
 
   const speakVerses = (verses: readonly BibleVerse[]) => {
@@ -1212,16 +1255,29 @@ export function BiblePage({ locale }: { locale: Locale }) {
     return () => setBibleHeaderState(null);
   }, []);
 
+  const actionVerses = multiMode
+    ? multiSelectedVerses
+    : selectedVerse
+      ? [selectedVerse]
+      : [];
+
+  const verseLabel = (verse: BibleVerse) =>
+    `${book?.name ?? ""} ${chapter}:${verse.verse}`.trim();
+
   const copySelected = async () => {
-    if (!selectedVerse || !book) return;
+    if (!book || !actionVerses.length) return;
     await copyText(
-      `${book.name} ${chapter}:${selectedVerse.verse} ${cleanVerse(selectedVerse)}`,
+      actionVerses
+        .map((verse) => `${verseLabel(verse)} ${cleanVerse(verse)}`)
+        .join("\n"),
     );
   };
 
   const shareSelected = async () => {
-    if (!selectedVerse || !book) return;
-    const text = `${book.name} ${chapter}:${selectedVerse.verse}\n${cleanVerse(selectedVerse)}`;
+    if (!book || !actionVerses.length) return;
+    const text = actionVerses
+      .map((verse) => `${verseLabel(verse)}\n${cleanVerse(verse)}`)
+      .join("\n\n");
     if (navigator.share) {
       await navigator
         .share({ title: `${book.name} ${chapter}`, text })
@@ -1229,6 +1285,20 @@ export function BiblePage({ locale }: { locale: Locale }) {
     } else {
       await copyText(text);
     }
+  };
+
+  const applyHighlightToSelection = (color: string) => {
+    const ids = actionVerses.map((verse) => verse.id);
+    if (!ids.length) return;
+    const allSame = ids.every((id) => highlights[id] === color);
+    setHighlights((current) => {
+      const next = { ...current };
+      for (const id of ids) {
+        if (allSame) delete next[id];
+        else next[id] = color;
+      }
+      return next;
+    });
   };
 
   const copySelection = async () => {
@@ -1265,33 +1335,42 @@ export function BiblePage({ locale }: { locale: Locale }) {
   };
 
   const saveNote = () => {
-    if (!selectedVerseId) return;
+    const targets = noteTargetIds.length
+      ? noteTargetIds
+      : selectedVerseId
+        ? [selectedVerseId]
+        : [];
+    if (!targets.length) return;
     const text = noteDraft.trim();
     if (!text) {
       if (!selectedNoteId) return;
-      const remaining = (notes[selectedVerseId] ?? []).filter(
-        (note) => note.id !== selectedNoteId,
-      );
       setNotes((current) => {
         const next = { ...current };
-        if (remaining.length) next[selectedVerseId] = remaining;
-        else delete next[selectedVerseId];
+        for (const id of targets) {
+          const remaining = (next[id] ?? []).filter(
+            (note) => note.id !== selectedNoteId,
+          );
+          if (remaining.length) next[id] = remaining;
+          else delete next[id];
+        }
         return next;
       });
-      setSelectedNoteId(remaining[0]?.id);
-      setNoteDraft(remaining[0]?.text ?? "");
+      setSelectedNoteId(undefined);
+      setNoteDraft("");
       return;
     }
     const noteId = selectedNoteId ?? makeBibleNoteId();
     setNotes((current) => {
-      const verseNotes = current[selectedVerseId] ?? [];
-      const index = verseNotes.findIndex((note) => note.id === noteId);
-      const savedNote = { id: noteId, text };
       const next = { ...current };
-      next[selectedVerseId] =
-        index < 0
-          ? [...verseNotes, savedNote]
-          : verseNotes.map((note) => (note.id === noteId ? savedNote : note));
+      for (const id of targets) {
+        const list = next[id] ?? [];
+        const index = list.findIndex((note) => note.id === noteId);
+        const saved = { id: noteId, text };
+        next[id] =
+          index < 0
+            ? [...list, saved]
+            : list.map((note) => (note.id === noteId ? saved : note));
+      }
       return next;
     });
     setSelectedNoteId(noteId);
@@ -1313,6 +1392,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
   };
 
   const focusSelectedVerseNote = () => {
+    const targets = actionVerses.map((verse) => verse.id);
+    setNoteTargetIds(targets);
+    if (targets[0]) setSelectedVerseId(targets[0]);
+    setSelectedNoteId(undefined);
+    setNoteDraft("");
     setNotesPopupOpen(true);
     // focus after popup mounts
     window.setTimeout(() => {
@@ -1360,6 +1444,20 @@ export function BiblePage({ locale }: { locale: Locale }) {
       ),
     [packState, hasSavedNotes],
   );
+  const noteRange = multiSelectedVerses.filter((verse) =>
+    noteTargetIds.includes(verse.id),
+  );
+  const noteRangeLabel =
+    noteRange.length > 1
+      ? `${book?.name ?? ""} ${chapter}:${noteRange[0]?.verse}–${noteRange.at(-1)?.verse}`
+      : undefined;
+  const noteRangePreview =
+    noteRange.length > 1
+      ? noteRange
+          .map((verse) => `${verse.verse}. ${cleanVerse(verse)}`)
+          .join(" ")
+      : undefined;
+
   const savedNotesList = useMemo(
     () =>
       Object.entries(notes)
@@ -1504,6 +1602,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
               bookmarks={bookmarks}
               highlights={highlights}
               selectedVerseId={selectedVerseId}
+              selectedVerseIds={multiMode ? multiVerseIds : undefined}
               speakingVerseId={speakingVerseId}
               scrollRef={primaryScrollRef}
               onScroll={onPrimaryScroll}
@@ -1662,6 +1761,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
       )}
       <BibleNotesPopup
         locale={locale}
+        selectionLabel={noteRange.length > 1 ? noteRangeLabel : undefined}
+        selectionPreview={noteRange.length > 1 ? noteRangePreview : undefined}
+        selectionCount={noteRange.length > 1 ? noteRange.length : undefined}
         notesPopupOpen={notesPopupOpen}
         setNotesPopupOpen={setNotesPopupOpen}
         savedNotesList={savedNotesList}
@@ -1710,7 +1812,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
           />,
           document.body,
         )}
-      {activeToolbarVerse &&
+      {toolbarVerse &&
         book &&
         createPortal(
           <div
@@ -1719,11 +1821,24 @@ export function BiblePage({ locale }: { locale: Locale }) {
             role="toolbar"
             aria-label={translate(locale, "bible.selectedVerseActions")}
           >
-            <div className="selected-verse-context">
+            <div
+              className="selected-verse-context"
+              aria-live={multiMode ? "polite" : undefined}
+            >
               <strong>
-                {book.name} {chapter}:{activeToolbarVerse.verse}
+                {multiMode
+                  ? translate(locale, "bible.selectedCount", {
+                      count: String(multiSelectedVerses.length),
+                    })
+                  : `${book.name} ${chapter}:${toolbarVerse.verse}`}
               </strong>
-              <span>{cleanVerse(activeToolbarVerse)}</span>
+              <span>
+                {multiMode
+                  ? `${book.name} ${chapter}:${multiSelectedVerses
+                      .map((verse) => verse.verse)
+                      .join(", ")}`
+                  : cleanVerse(toolbarVerse)}
+              </span>
             </div>
             <div className="selected-verse-actions">
               <button
@@ -1744,7 +1859,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 className="quiet-button"
                 type="button"
                 disabled={!speechAvailable}
-                onClick={() => speakVerses([activeToolbarVerse])}
+                onClick={() => speakVerses(actionVerses)}
               >
                 {translate(locale, "bible.readVerse")}
               </button>
@@ -1753,7 +1868,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 aria-label={translate(locale, "bible.highlightColor")}
               >
                 {DEFAULT_HIGHLIGHT_COLORS.map((color) => {
-                  const active = highlights[activeToolbarVerse.id] === color;
+                  const active = multiMode
+                    ? multiSelectedVerses.every(
+                        (verse) => highlights[verse.id] === color,
+                      )
+                    : highlights[toolbarVerse.id] === color;
                   const colorName = translate(
                     locale,
                     color === "yellow"
@@ -1773,14 +1892,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
                         { color: colorName },
                       )}
                       aria-pressed={active}
-                      onClick={() =>
-                        setVerseHighlight(activeToolbarVerse.id, color)
-                      }
+                      onClick={() => applyHighlightToSelection(color)}
                     />
                   );
                 })}
                 {customHighlightColors.map((color) => {
-                  const active = highlights[activeToolbarVerse.id] === color;
+                  const active = multiMode
+                    ? multiSelectedVerses.every(
+                        (verse) => highlights[verse.id] === color,
+                      )
+                    : highlights[toolbarVerse.id] === color;
                   return (
                     <button
                       className={`highlight-dot is-custom${active ? " is-active" : ""}`}
@@ -1793,9 +1914,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                         { color },
                       )}
                       aria-pressed={active}
-                      onClick={() =>
-                        setVerseHighlight(activeToolbarVerse.id, color)
-                      }
+                      onClick={() => applyHighlightToSelection(color)}
                     />
                   );
                 })}
@@ -1813,7 +1932,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                           ...current.filter((entry) => entry !== color),
                         ].slice(0, MAX_CUSTOM_HIGHLIGHT_COLORS),
                       );
-                      setVerseHighlight(activeToolbarVerse.id, color);
+                      applyHighlightToSelection(color);
                     }}
                   />
                 </label>
@@ -1824,6 +1943,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
                 onClick={focusSelectedVerseNote}
               >
                 {translate(locale, "bible.notes")}
+              </button>
+              <button
+                className="quiet-button"
+                type="button"
+                aria-pressed={multiMode}
+                onClick={multiMode ? clearMultiSelect : startMultiSelect}
+              >
+                {multiMode
+                  ? translate(locale, "bible.doneSelecting")
+                  : translate(locale, "bible.selectMore")}
               </button>
               <button
                 className="selected-verse-close"

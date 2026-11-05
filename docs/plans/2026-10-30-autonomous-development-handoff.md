@@ -4474,6 +4474,39 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### D-9 — Multi-select ayat di Alkitab (5 Nov, permintaan pemilik)
+
+Pemilik: “saat tekan bisa select lebih dari satu ayat dan bisa dihighlight atau
+dibuat catatan gabungan dari beberapa ayat yang saling terlink.”
+
+Alur yang dipilih (jelas dan bisa ditemukan, bukan gesture tersembunyi):
+
+1. Ketuk satu ayat → toolbar ayat muncul seperti biasa.
+2. Tombol baru **“Pilih banyak ayat”** memindahkan pilihan ke mode banyak;
+   ketukan berikutnya menambah/menghapus ayat, dan judul toolbar menjadi
+   “N ayat dipilih” (`aria-live="polite"`), bukan nomor satu ayat.
+3. Semua aksi toolbar berlaku untuk seluruh pilihan: **salin**, **bagikan**,
+   **bacakan**, dan **sorot warna**. Sorot bersifat toggle: bila semua ayat
+   sudah berwarna itu, semuanya dihapus; bila belum, semuanya diberi warna itu.
+4. **Catatan** menjadi catatan gabungan: satu `note id` yang sama ditulis ke
+   setiap ayat terpilih, sehingga catatan itu muncul dan bisa dibuka dari ayat
+   mana pun dalam rentang. Dialog menampilkan label rentang (“Kejadian 1:1–3”),
+   pratinjau semua ayat bernomor, dan keterangan “Catatan ini tersimpan untuk N
+   ayat yang dipilih.”
+5. Pilihan banyak dibersihkan saat pindah pasal/kitab, saat toolbar ditutup,
+   dan saat halaman dimuat ulang.
+
+Diverifikasi `apps/web/e2e/bible-multi-select.spec.ts` (masuk tier core):
+memilih 3 ayat, menambah/menghapus, sorot 2 ayat sekaligus (storage
+`gys-bible-highlights-v1` berisi dua id), catatan gabungan tersimpan dengan id
+yang sama di `1:1:1` dan `1:1:2` tetapi tidak di `1:1:3`, serta pilihan hilang
+setelah reload — **2/2 (9,6 dtk)**, ditambah `accessibility` **30/30 (1,8 mnt)**.
+
+Catatan desain: gesture long-press sengaja tidak dipakai sebagai satu-satunya
+jalan masuk karena sulit ditemukan dan bertabrakan dengan pemilihan teks;
+tombol toolbar selalu terlihat. Bila nanti diinginkan, long-press bisa
+ditambahkan sebagai jalan pintas ke mode yang sama.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.
