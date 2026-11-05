@@ -5379,8 +5379,11 @@ Preload ini aman karena permintaannya same-origin (berbeda dari pack Alkitab
 yang butuh `fetch()` di shell).
 
 Ukuran (Chrome, 390×844, latency 300 ms, 200 kB/s, CPU 4×, service worker
-diblokir, satu sampel tiap kondisi): baris pertama **24 392 ms → 21 188 ms**
-(−3,2 dtk). Variasi host tetap ada, jadi angka ini indikatif.
+diblokir): baris pertama **24 392 ms → 21 188 ms** pada sampel pertama, lalu
+**21 189 ms dan 21 204 ms** pada dua sampel ulang (stabil ±15 ms). Baseline
+lokal hanya satu sampel, tetapi angka hosted sebelumnya (24,4–24,6 dtk) sejalan,
+jadi penghematan ±3,2 dtk masuk akal untuk jaringan lambat. Variasi host tetap
+ada; angka ini indikatif, bukan jaminan.
 
 Test: `apps/web/scripts/pack-hints.test.mjs` **5/5**; `kidung-loading` +
 `kidung-offline` **4/4 (8,5 dtk)**.
