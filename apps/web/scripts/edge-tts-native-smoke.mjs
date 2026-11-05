@@ -2718,18 +2718,58 @@ try {
     await fullQueueFirstPosition.getAttribute("max"),
   );
   const fullQueueFirstStartedAt = Date.now();
-  await page.waitForFunction(
-    () =>
-      JSON.parse(localStorage.getItem("gys-midi-playlist-v1") ?? "null")
-        ?.currentIndex === 1 &&
-      document
+  // The first track plays to its natural end before the queue advances, so the
+  // budget follows the reported duration instead of a fixed 150 s guess.
+  const fullQueueBudget = Math.max(
+    150_000,
+    Math.round(fullQueueFirstDuration * 1_000) + 45_000,
+  );
+  try {
+    await page.waitForFunction(
+      () =>
+        JSON.parse(localStorage.getItem("gys-midi-playlist-v1") ?? "null")
+          ?.currentIndex === 1 &&
+        document
+          .querySelector(
+            ".media-surface.is-kidung-media .media-context-link strong",
+          )
+          ?.textContent?.trim() === "Pujilah Allah Yang Mahakudus",
+      null,
+      { timeout: fullQueueBudget },
+    );
+  } catch (error) {
+    const queueState = await page.evaluate(() => ({
+      playlist: JSON.parse(
+        localStorage.getItem("gys-midi-playlist-v1") ?? "null",
+      ),
+      title: document
         .querySelector(
           ".media-surface.is-kidung-media .media-context-link strong",
         )
-        ?.textContent?.trim() === "Pujilah Allah Yang Mahakudus",
-    null,
-    { timeout: 150_000 },
-  );
+        ?.textContent?.trim(),
+      backend: document
+        .querySelector(".media-surface.is-kidung-media")
+        ?.getAttribute("data-backend"),
+      primary: document
+        .querySelector(".media-surface.is-kidung-media .media-primary-control")
+        ?.getAttribute("aria-label"),
+      position: document.querySelector(
+        '.media-surface input[aria-label="Posisi MIDI"]',
+      )?.value,
+      duration: document.querySelector(
+        '.media-surface input[aria-label="Posisi MIDI"]',
+      )?.max,
+      diagnostics: JSON.parse(
+        localStorage.getItem("gys-diagnostics-v1") ?? "[]",
+      )
+        .filter((event) => /midi|kidung/i.test(event.scope))
+        .slice(-12),
+    }));
+    console.error(
+      `Native MIDI queue advance failed after ${fullQueueBudget}ms: ${JSON.stringify(queueState)}`,
+    );
+    throw error;
+  }
   const fullQueueFirstMs = Date.now() - fullQueueFirstStartedAt;
   assert.ok(
     fullQueueFirstMs >= fullQueueFirstDuration * 1000 * 0.9,
