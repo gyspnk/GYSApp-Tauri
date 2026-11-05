@@ -283,8 +283,7 @@ for (const viewport of [
   });
 }
 
-for (const viewport of [viewports[0], viewports[2]]) {
-  test("Bible notes 390x844 visual baseline", async ({ page }) => {
+test("Bible notes 390x844 visual baseline", async ({ page }) => {
   await page.setViewportSize(viewports[0]);
   await prepare(page);
   await page.goto("/GYSApp-Tauri/bible");
