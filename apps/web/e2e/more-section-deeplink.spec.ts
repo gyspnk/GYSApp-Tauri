@@ -8,7 +8,9 @@ test("More keeps all settings collapsed until requested", async ({ page }) => {
 
   const rows = page.locator(".more-setting-section");
   await expect(rows).toHaveCount(7);
-  await expect(rows.locator(":scope > summary")).toHaveText([
+  await expect(
+    rows.locator(":scope > summary .more-setting-copy > :is(strong, h2)"),
+  ).toHaveText([
     "Akun e-GYS",
     "Tampilan",
     "Audio & Suara",
@@ -157,9 +159,11 @@ test("More setting categories are localized in Indonesian, English, and Chinese"
 
   for (const locale of ["id", "en", "zh"] as const) {
     await page.goto(`/GYSApp-Tauri/lainnya?__gys_locale=${locale}`);
-    await expect(page.locator(".more-setting-section > summary")).toHaveText(
-      categories[locale],
-    );
+    await expect(
+      page.locator(
+        ".more-setting-section > summary .more-setting-copy > :is(strong, h2)",
+      ),
+    ).toHaveText(categories[locale]);
     await page.locator('[data-setting="appearance"] > summary').click();
     await expect(
       page.locator(".appearance-settings .appearance-setting-name"),
