@@ -92,6 +92,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - name: Build the packaged Tauri executable
+        # The packaged app must talk to the same BFF as the hosted build,
+        # otherwise hymn chords/PDFs fall back to raw.githubusercontent.com
+        # (blocked on some networks — B-37).
+        env:
+          VITE_BFF_BASE_URL: ${{ vars.VITE_BFF_BASE_URL }}
         run: pnpm --filter @gys/native exec tauri build --no-bundle
       - name: Ensure the WebView2 Evergreen Runtime
         shell: pwsh
