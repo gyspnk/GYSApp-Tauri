@@ -4428,6 +4428,15 @@ Tiga keputusan pertama:
   526–810 ms, pasal 625–1 010 ms, pencarian 78–118 ms, halaman PDF pertama
   995–1 271 ms.
 
+- **Batas soak native diperjelas.** Soak memblokir semua permintaan lintas
+  origin, termasuk BFF milik aplikasi sendiri, sehingga jalur proksi chord
+  (`/api/v1/content/chord-manifest`) gagal lalu jatuh ke raw GitHub yang memang
+  diblokir — kegagalan “Cached PDF did not render after reload” karena itu
+  mengukur kebijakan jaringan tes, bukan bug proksi. Sekarang aturan blok
+  mengizinkan origin aplikasi **dan** host BFF
+  (`gysapp-tauri-bff.pas-presensi.workers.dev`), sedangkan host pihak ketiga
+  (raw.githubusercontent.com, dll.) tetap diblokir — sesuai tujuan B-37.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.

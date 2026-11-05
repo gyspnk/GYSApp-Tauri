@@ -574,9 +574,17 @@ try {
   });
   const runtimeOrigin = await page.evaluate(() => location.origin);
   const blockedOfflineShellRequests = [];
+  // The BFF is the app's own backend (chords, PDFs, covers), so it stays
+  // reachable; this scenario blocks third-party hosts such as raw GitHub.
+  const allowedOfflineHosts = new Set([
+    "gysapp-tauri-bff.pas-presensi.workers.dev",
+  ]);
   await context.route("**/*", async (route) => {
     const requestUrl = route.request().url();
-    if (new URL(requestUrl).origin === runtimeOrigin) return route.continue();
+    const url = new URL(requestUrl);
+    if (url.origin === runtimeOrigin || allowedOfflineHosts.has(url.hostname)) {
+      return route.continue();
+    }
     blockedOfflineShellRequests.push(requestUrl);
     return route.abort();
   });
