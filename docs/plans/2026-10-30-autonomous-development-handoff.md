@@ -5411,7 +5411,7 @@ badan dock — dugaan yang harus diuji: kotak tata letak panel ada di sana, teta
 tidak ada bagian dock yang benar-benar dilukis/dapat di-hit di titik itu
 (masalah posisi/animasi atau kliping), bukan sekadar `z-index` yang kurang.
 
-Karena itu tidak ada perubahan CSS buta. `f7e058c` menambah outpout diagnostik:
+Karena itu tidak ada perubahan CSS buta. `f7e058c` menambah keluaran diagnostik:
 `elementsFromPoint()` empat teratas di titik klik, ditambah rect `.media-surface`
 (`x/y/w/h`), `pointer-events`, dan `overflow`. Soak `42101036563` dijalankan
 untuk memutuskan antara dua kemungkinan itu.
