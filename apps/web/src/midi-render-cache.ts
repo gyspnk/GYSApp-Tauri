@@ -24,7 +24,12 @@ export class MidiRenderCache {
   private readonly entries = new Map<string, Entry>();
   private bytes = 0;
 
-  public constructor(private readonly limitBytes = 128 * 1024 * 1024) {}
+  /**
+   * 48 MiB holds the current song plus its neighbour, which is what the MIDI
+   * dock actually prefetches. The previous 128 MiB default could retain several
+   * minutes of stereo float PCM on a tablet, where that memory is scarce.
+   */
+  public constructor(private readonly limitBytes = 48 * 1024 * 1024) {}
 
   private entry(key: string): Entry | undefined {
     const entry = this.entries.get(key);

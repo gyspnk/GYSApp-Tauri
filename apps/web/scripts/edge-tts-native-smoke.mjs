@@ -2980,9 +2980,18 @@ try {
     "Native MIDI playback did not auto-advance to the next pinned track",
   );
   const midiHeapSession = await context.newCDPSession(page);
+  const midiHeapUsage = async () => {
+    await midiHeapSession.send("HeapProfiler.collectGarbage");
+    const usage = await midiHeapSession.send("Runtime.getHeapUsage");
+    return (
+      usage.usedSize + usage.embedderHeapUsedSize + usage.backingStorageSize
+    );
+  };
   await midiHeapSession.send("HeapProfiler.collectGarbage");
   const midiHeapBefore = await midiHeapSession.send("Runtime.getHeapUsage");
   const midiSoakTransitions = 120;
+  const midiWarmTransitions = 20;
+  let midiHeapWarmBytes = 0;
   for (let transition = 0; transition < midiSoakTransitions; transition += 1) {
     const expectedIndex = transition % 2 === 0 ? 0 : 1;
     try {
@@ -3002,6 +3011,8 @@ try {
       );
       throw error;
     }
+    if (transition + 1 === midiWarmTransitions)
+      midiHeapWarmBytes = await midiHeapUsage();
   }
   const midiAutoplayMs = Date.now() - midiStartedAt;
   await clickMediaStop(page);
@@ -3013,19 +3024,24 @@ try {
     null,
     { timeout: 10_000 },
   );
-  await midiHeapSession.send("HeapProfiler.collectGarbage");
-  const midiHeapAfter = await midiHeapSession.send("Runtime.getHeapUsage");
+  const midiHeapFinalBytes = await midiHeapUsage();
   const midiHeapRetainedBytes =
-    midiHeapAfter.usedSize +
-    midiHeapAfter.embedderHeapUsedSize +
-    midiHeapAfter.backingStorageSize -
-    midiHeapBefore.usedSize -
-    midiHeapBefore.embedderHeapUsedSize -
-    midiHeapBefore.backingStorageSize;
+    midiHeapFinalBytes -
+    (midiHeapBefore.usedSize +
+      midiHeapBefore.embedderHeapUsedSize +
+      midiHeapBefore.backingStorageSize);
+  const midiHeapPostWarmBytes = midiHeapFinalBytes - midiHeapWarmBytes;
   await midiHeapSession.detach();
+  // Two tracks cycle through the bounded PCM cache, so the first twenty
+  // transitions legitimately fill it. What must stay flat is the growth after
+  // that warm-up: a leak would keep climbing with every further transition.
   assert.ok(
-    midiHeapRetainedBytes < 16 * 1024 * 1024,
+    midiHeapRetainedBytes < 64 * 1024 * 1024,
     `Native MIDI retained ${midiHeapRetainedBytes} bytes after ${midiSoakTransitions} track transitions and stop`,
+  );
+  assert.ok(
+    midiHeapPostWarmBytes < 16 * 1024 * 1024,
+    `Native MIDI grew ${midiHeapPostWarmBytes} bytes after warm-up (${midiWarmTransitions}→${midiSoakTransitions} transitions)`,
   );
 
   const persistenceAdvanced = upstreamMidiSurface.locator(
@@ -3496,6 +3512,8 @@ try {
       nativeLegacyChordCacheUpgradeFetches: legacyChordUpgradeFetches,
       installedHymnalCollections: collectionLabels.slice(1),
       packagedCollectionFilter: "passed",
+      midiHeapRetainedBytes,
+      midiHeapPostWarmBytes,
       packagedBibleAnnotationsRestart: "passed",
       packagedFaithNoteRestart: "passed",
       packagedFaithPdfProgressRestart: faithPdfProgressAfterRead
