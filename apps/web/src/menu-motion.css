@@ -113,6 +113,10 @@
       content-visibility 180ms allow-discrete;
   }
   details[open]::details-content {
+    /* `content-visibility` is discrete; spelling it out keeps the content
+       rendered and hit-testable once the disclosure is open, which a
+       transitioning default did not guarantee on touch viewports. */
+    content-visibility: visible;
     opacity: 1;
   }
   details > :not(summary) {
