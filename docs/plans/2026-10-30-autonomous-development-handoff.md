@@ -5388,6 +5388,34 @@ berikutnya (390 px, 200 kB/s, RTT 150 ms, CPU 4×, SW mati, build `e60ea8e`):
 baris pertama **25 821 ms** — angka ini hanya titik ukur, belum tentu
 terbanding dengan profil lokal yang RTT-nya 300 ms.
 
+### Putaran 170 — Bukti pertama klik dock yang terhalang (5 Nov)
+
+Soak `42098737857` (benchmark `samples=5` **sukses**, jadi gerbang sampel
+berjalan) gagal dengan diagnostik pertama yang bisa dipakai:
+
+```
+[soak] blocked click: dock reset transpose
+{"size":"32x32","point":{"x":857,"y":511},
+ "intruder":["article.lyrics-sheet verse-enter is-","section.hymn-detail-surface",
+             "div.page hymn-detail-page","div.route-view","main.main-content"],
+ "target":["button.media-transpose-reset","div.media-transpose",
+           "div.media-music-controls","div.media-advanced-panel",
+           "details.media-advanced-controls"],
+ "viewTransitions":true,"readerTransition":null}
+```
+
+Semua ancestor penghalang `z=auto`/`position: static`; tombol berada di panel
+`position: absolute` yang diposisikan **di atas** badan dock
+(`bottom: calc(100% + 10px)`). Titik klik (857, 511) ada di area panel, bukan di
+badan dock — dugaan yang harus diuji: kotak tata letak panel ada di sana, tetapi
+tidak ada bagian dock yang benar-benar dilukis/dapat di-hit di titik itu
+(masalah posisi/animasi atau kliping), bukan sekadar `z-index` yang kurang.
+
+Karena itu tidak ada perubahan CSS buta. `f7e058c` menambah outpout diagnostik:
+`elementsFromPoint()` empat teratas di titik klik, ditambah rect `.media-surface`
+(`x/y/w/h`), `pointer-events`, dan `overflow`. Soak `42101036563` dijalankan
+untuk memutuskan antara dua kemungkinan itu.
+
 ### Putaran 169 — Klik dock menunggu titiknya sendiri (5 Nov)
 
 Gerbang sampel dari putaran 168 sempat mematikan job: langkah benchmark berjalan
