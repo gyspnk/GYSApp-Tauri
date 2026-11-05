@@ -2391,7 +2391,13 @@ body:has(.home-page)::-webkit-scrollbar {
   white-space: nowrap;
 }
 
-.media-surface.is-kidung-media .media-advanced-panel {
+/* Only lay the panel out while its disclosure is open. The engine's
+   `::details-content` hiding is not enough: where that pseudo-element is
+   unsupported (WebView2) the closed panel stayed painted but inert, so its
+   buttons were unclickable. */
+.media-surface.is-kidung-media
+  .media-advanced-controls[open]
+  .media-advanced-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;

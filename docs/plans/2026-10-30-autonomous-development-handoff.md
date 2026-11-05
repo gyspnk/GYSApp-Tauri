@@ -6367,3 +6367,26 @@ panel memang tertutup (klik ringkasan bersifat toggle) dan meng-assert `open
 Bukti lokal: `media-dock` + `midi-control-unification` + `reader-settings` +
 `kidung-usability` **69/69 (2,7 mnt)**; `ui:consistency` dan `ui:boxes` (24
 pemuatan) tanpa temuan.
+
+**Koreksi diagnosis (putaran 176).** Asersi heap 16 MiB juga salah konsep: loop
+memutar **dua** lagu bergantian 120 kali, jadi angka 37,3 MB adalah cache PCM
+yang terisi, bukan kebocoran per transisi. Soak kini mengukur heap setelah 20
+transisi (warm-up) dan setelah 120 + stop: total < 64 MiB **dan** pertumbuhan
+pasca-warm-up < 16 MiB, sehingga kebocoran tetap terdeteksi tanpa menghukum
+cache. Cache PCM juga diturunkan **128 → 48 MiB** (`e728d16`), karena PCM stereo
+float 44,1 kHz memakan ~10 MB per menit dan tablet tidak punya memori itu.
+
+**Panel tertutup, akar sebenarnya (putaran 176).** Dump `ancestry` membuktikan
+`details.open === false` tetapi panel tetap `display: grid` dan anak-anaknya
+mewarisi `pointer-events: none`. Penyebabnya bukan `::details-content` saja:
+`styles/05-responsive-refinements.css` dan `midi-player.css` memberi
+`.media-advanced-panel` grid tanpa syarat `[open]`, dan di Chromium 151 panel
+“terlihat tertutup” hanya karena `content-visibility: hidden` pada
+`::details-content`; di WebView2 (tanpa dukungan pseudo-elemen itu) panel tetap
+terlukis tetapi inert. Perbaikan: aturan otoritatif
+`.media-surface.is-kidung-media .media-advanced-controls:not([open]) .media-advanced-panel { display: none }`
+(lebih spesifik daripada aturan grid) plus gerbang `[open]` pada aturan grid.
+Diverifikasi lokal: tertutup `display:none`, terbuka `display:grid` dengan
+tombol reset 32/44 px yang memiliki titik tengahnya sendiri; `media-dock` +
+`midi-control-unification` + `reader-settings` + `kidung-usability` **69/69
+(3,1 mnt)**.

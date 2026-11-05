@@ -3208,7 +3208,13 @@ body:has(.hymn-detail-page.is-text-viewer)
   transform-origin: left;
   transition: transform 180ms var(--ease-out);
 }
-.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+/* The panel lives inside a collapsed <details> until the reader opens it, so
+   its layout must not apply while closed: a closed panel is not displayed at
+   all. Without the `[open]` gate the panel stayed laid out and visible while
+   inert (pointer-events inherited `none`), so its controls could not be used. */
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-controls[open]
+  .media-advanced-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   gap: 8px;
@@ -5633,4 +5639,15 @@ body:has(.hymn-detail-page.is-text-viewer)
   :root[data-theme="amoled"] .home-page .sauh-card-content {
     background: var(--surface) !important;
   }
+}
+
+/* A closed disclosure never shows its floating panel. Several layout files
+   give `.media-advanced-panel` its own grid, so hiding it needs at least the
+   same specificity as those rules — the engine's `::details-content` hiding is
+   not available in WebView2, where the closed panel stayed painted but inert
+   (its controls inherited `pointer-events: none`). */
+.media-surface.is-kidung-media
+  .media-advanced-controls:not([open])
+  .media-advanced-panel {
+  display: none;
 }

@@ -3047,8 +3047,18 @@ try {
   const persistenceAdvanced = upstreamMidiSurface.locator(
     ".media-advanced-controls",
   );
-  if (await persistenceAdvanced.evaluate((element) => element.open))
+  // A closed panel is hidden (display: none), so the controls inside it must be
+  // opened first; the summary is a toggle, so only click when it is closed.
+  if (!(await persistenceAdvanced.evaluate((element) => element.open)))
     await persistenceAdvanced.locator("summary").click();
+  await page.waitForFunction(
+    () =>
+      document.querySelector(
+        ".media-surface.is-kidung-media .media-advanced-controls",
+      )?.open === true,
+    null,
+    { timeout: 5_000 },
+  );
   const persistenceTranspose = upstreamMidiSurface.locator(".media-transpose");
   const persistenceReset = persistenceTranspose.locator(
     ".media-transpose-reset",
