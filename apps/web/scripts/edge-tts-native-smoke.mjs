@@ -1997,7 +1997,7 @@ try {
     .waitFor({ state: "visible", timeout: 20_000 });
   const hymnTypographySettings = await openHymnTypographySettings(page);
   await hymnTypographySettings
-    .getByRole("button", { name: "Perbesar ukuran teks" })
+    .getByRole("button", { name: "Perbesar teks" })
     .click();
   await hymnTypographySettings
     .getByRole("button", { name: "Lebarkan jarak baris" })
