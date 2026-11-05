@@ -1935,6 +1935,12 @@ try {
   });
   await context.unroute(recoveryPdfAssetUrl, pdfRecoveryRoute);
   await page.reload();
+  // The reader keeps the view mode in memory, so a reload lands on the lyrics
+  // view (pane=false).  Open the score again and prove the cached bytes paint.
+  await page
+    .getByRole("heading", { name: "Batu Zaman", exact: true })
+    .waitFor({ state: "visible", timeout: 20_000 });
+  await page.locator(".hymn-partitur-toggle").click();
   await page
     .locator('.pdf-reader-hymn canvas[data-pdf-rendered="true"]')
     .first()

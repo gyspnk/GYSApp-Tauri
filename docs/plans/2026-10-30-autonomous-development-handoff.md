@@ -5058,6 +5058,25 @@ Verifikasi: `node --test scripts/*.test.mjs` **21/21**,
 `route-announcement` + `runtime-health` **5/5**, `literature-loading`
 **19/19**.
 
+### Soak: mode PDF tidak dipulihkan setelah reload (5 Nov)
+
+Soak `42088298867` (head `255aaca`) gagal lagi, dan diagnostik pane menjawab
+pertanyaan yang selama ini terbuka: `pane={"pane":false,"canvases":0,
+"rendered":0,"text":""}`. Artinya setelah reload **tidak ada pane PDF sama
+sekali** — bukan dokumen gagal dimuat, bukan kanvas gagal dilukis.
+
+Sebabnya perilaku yang memang disengaja: pembaca kidung menyimpan mode
+tampilan di memori, jadi reload kembali ke lirik (benchmark internal pun
+memakai `?mode=pdf` untuk alasan yang sama). Asersi soak keliru
+mengharapkan pane terbuka sendiri.
+
+`apps/web/scripts/edge-tts-native-smoke.mjs` sekarang menunggu judul “Batu
+Zaman”, mengklik `.hymn-partitur-toggle` lagi setelah reload, lalu menuntut
+`canvas[data-pdf-rendered="true"]` — jadi yang diuji tetap “byte dari cache
+bisa dilukis tanpa jaringan”, bukan “mode dipulihkan”.
+Keputusan produk: mode tetap di memori (tidak dipersistensi) sampai ada alasan
+UX yang lebih kuat.
+
 ### Fallback cache berdasarkan path untuk aset musik (5 Nov)
 
 Soak native berulang kali berhenti pada `Cached PDF did not render after
