@@ -4293,6 +4293,44 @@ artefak CI `41993283540` karena perubahannya memang disengaja (header katalog
 
 - dua kolom, rel “Lainnya” aktif, blur yang kembali hidup).
 
+### Mandat desain penuh (5 Nov)
+
+Pemilik (m25529): “Tambahkan juga dalam autonomous development ini anda harus
+mengambil keputusan juga sebagai desainer aplikasi keseluruhan, dimana elemen
+UI yang dinilai masih kurang baik boleh saja anda ubah.”
+
+Keputusan saya tetapkan sebagai kebijakan kerja:
+
+- Saya memegang keputusan desain akhir; elemen yang dinilai lemah **boleh
+  diubah tanpa menunggu persetujuan**, dengan pagar: ikut design system
+  (radius 6/8/10/12/16/24/999, 13 langkah tipe, spasi 2 px, token tema), tidak
+  menurunkan a11y (44 px coarse, kontras ≥4,5:1, tepat satu h1 per halaman),
+  tidak menambah bundle/performa tanpa ukur, diverifikasi screenshot/spec, dan
+  dicatat di plan sebagai keputusan + alasan.
+- Bila ragu antara “biarkan” dan “ubah”, pilih **ubah** selama alasan desainnya
+  jelas.
+
+Tiga keputusan pertama:
+
+- **D-1 — aksi baris Iman sejajar baris pertama.** Tombol PDF/Catatan tadinya
+  menggantung di bawah teks sehingga kolom kanan terlihat compang-camping dan
+  tinggi baris berubah-ubah. Di ≥768 px `.faith-row-copy` menjadi grid
+  `minmax(0, 1fr) auto`, aksi pindah ke kolom kanan baris pertama (sejajar
+  angka), teks tetap mengisi lebar kartu seperti permintaan pemilik. Di ponsel
+  aksi tetap di bawah teks (ruang sempit). Kontrak `faith-zoom` diperbarui:
+  tepi kanan aksi = tepi kanan baris, selisih vertikal < 4 px di desktop dan
+  tetap 8 px di bawah teks untuk ponsel.
+- **D-2 — bar progres di dalam sampul Suara dihapus.** `.img-loading-bar` 3 px
+  selebar kartu terbaca seperti garis biru nyasar di bawah kotak kosong; kilau
+  skeleton sudah cukup memberi sinyal memuat. Bar tetap dipakai di hero besar.
+- **D-3 — penanda `<summary>` ganda dimatikan.** Baris pengaturan sudah punya
+  chevron sendiri; `list-style: none` + `::-webkit-details-marker` ditambahkan
+  agar tidak ada penanda bawaan yang muncul di tengah baris.
+
+Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
+memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
+diperbaiki adalah state memuatnya, bukan isi gambar.
+
 ### Putaran 150 — Satu pencarian ayat, di dalam dialog pilih kitab (5 Nov)
 
 Pemilik (m25113): “fitur search yang diluar kotak pilih kitab itu dihilangkan

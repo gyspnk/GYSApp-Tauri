@@ -5530,3 +5530,38 @@ body:has(.hymn-detail-page.is-text-viewer)
     ) !important;
   }
 }
+
+/* Design pass (5 Nov): overlays read as content, not chrome, and the faith
+   row actions line up with the first line instead of floating mid-row. */
+@media (min-width: 768px) {
+  .faith-page .faith-row-copy {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 16px;
+    align-items: start;
+  }
+  .faith-page .faith-statement {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .faith-page .faith-row-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: flex-end;
+    padding-top: 2px;
+  }
+}
+
+.suara-card-media .img-loading-bar {
+  display: none;
+}
+
+/* The settings rows already draw their own chevron; the native summary marker
+   sat in the middle of the row and read as a second control. */
+.more-setting-row {
+  list-style: none;
+}
+.more-setting-row::-webkit-details-marker {
+  display: none;
+}

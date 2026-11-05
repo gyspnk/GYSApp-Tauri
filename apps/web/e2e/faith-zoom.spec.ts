@@ -157,11 +157,19 @@ for (const width of [320, 1440]) {
         expect((await tool.boundingBox())!.height).toBeCloseTo(32, 1);
       const paragraph = (await paragraphs.first().boundingBox())!;
       const lastTool = (await tools.at(-1)!.boundingBox())!;
-      expect(lastTool.x + lastTool.width).toBeCloseTo(
-        paragraph.x + paragraph.width,
-        1,
-      );
-      expect(lastTool.y - paragraph.y - paragraph.height).toBeCloseTo(8, 1);
+      const copy = (await page
+        .locator(".faith-row-copy")
+        .first()
+        .boundingBox())!;
+      // Desktop puts the actions in their own column at the row's right edge,
+      // aligned with the statement's first line, so the tools never dangle
+      // under a short paragraph.
+      expect(lastTool.x + lastTool.width).toBeCloseTo(copy.x + copy.width, 1);
+      if (width >= 768) {
+        expect(Math.abs(lastTool.y - paragraph.y)).toBeLessThan(4);
+      } else {
+        expect(lastTool.y - paragraph.y - paragraph.height).toBeCloseTo(8, 1);
+      }
       const input = page.getByLabel(
         {
           id: "Cari pokok iman",
