@@ -4464,6 +4464,10 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
+memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
+diperbaiki adalah state memuatnya, bukan isi gambar.
+
 ### Putaran 152 — Pin commit dari lock lama tidak lagi ditolak Worker (5 Nov)
 
 Setelah chord dipindah ke proxy, sisa kegagalan B-37 punya satu sebab yang
