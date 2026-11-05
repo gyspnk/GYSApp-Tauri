@@ -122,28 +122,29 @@ try {
       await page.goto(nativeRoute(route, origin));
       row[key] = (await marked(page, marker)).elapsed;
     }
-    await page.locator(".reader-search-btn").click();
-    const form = page.locator(".bible-search");
+    // Search lives inside the one book/chapter picker now; measure the time
+    // from typing a query to the first rendered result row.
+    await page.getByRole("button", { name: "Cari kitab atau ayat" }).click();
+    const pickerSearch = page.locator(".bible-picker-search");
     for (const [query, key] of [
       ["Allah", "firstSearchMs"],
       ["kasih", "indexedSearchMs"],
     ]) {
-      await page.evaluate(() => {
-        performance.clearMarks("gys-bible-search-ready");
-        performance.clearMarks("gys-bible-search-start");
-      });
-      await form.locator("#bible-query").fill(query);
-      await form.locator("button[type='submit']").click();
-      await marked(page, "gys-bible-search-ready");
-      row[key] = await page.evaluate(
-        () =>
-          performance.getEntriesByName("gys-bible-search-ready").at(-1)
-            .startTime -
-          performance.getEntriesByName("gys-bible-search-start").at(-1)
-            .startTime,
-      );
-      assert.ok(await page.locator(".result-item").count());
+      const started = Date.now();
+      await pickerSearch.fill(query);
+      await page
+        .locator(".bible-picker-result")
+        .first()
+        .waitFor({ state: "visible", timeout: 15_000 });
+      row[key] = Date.now() - started;
+      assert.ok((await page.locator(".bible-picker-result").count()) > 0);
+      await pickerSearch.fill("");
     }
+    await page.keyboard.press("Escape").catch(() => undefined);
+    await page
+      .getByRole("button", { name: "Tutup" })
+      .click()
+      .catch(() => undefined);
     // The reader keeps its presentation in memory only, so a seeded
     // localStorage key is ignored; the documented `?mode=pdf` link is what
     // opens the PDF surface on a cold launch.

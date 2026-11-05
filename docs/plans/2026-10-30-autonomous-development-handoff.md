@@ -4393,6 +4393,17 @@ Tiga keputusan pertama:
   `tsc`/build hijau. Unduhan paket ZIP masih memakai URL rilis GitHub — itu
   jalur berikutnya bila soak native masih memblokirnya.
 
+- **Benchmark native mengikuti pemilih kitab baru.** Soak Windows
+  `42034833052` gagal bukan karena PDF, melainkan karena
+  `apps/web/scripts/native-benchmark.mjs` masih menunggu
+  `.bible-search #bible-query` dan mark `gys-bible-search-*` yang ikut terhapus
+  saat panel pencarian dilebur ke dialog (`2d9ec12`). Langkah itu sekarang
+  membuka tombol “Cari kitab atau ayat”, mengisi `.bible-picker-search`, dan
+  mengukur waktu sampai baris `.bible-picker-result` pertama tampil (terukur
+  **128 ms**, 80 hasil) sebelum menutup dialog — sehingga benchmark kembali
+  mengukur jalur yang benar-benar dikirim. Soak akan dijalankan ulang untuk
+  bukti hosted.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.
