@@ -1942,10 +1942,12 @@ try {
     .catch(async (error) => {
       // B-37: when the cached PDF does not paint, say which requests were
       // blocked and what the PDF runtime logged, instead of a bare timeout.
+      // Dump every recent diagnostic, not only pdf.* ones: an empty pdf
+      // filter looked like "no error" when the fetch had simply never settled.
       const diagnostics = await page.evaluate(() =>
-        JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]")
-          .filter((event) => /pdf/i.test(event.scope))
-          .slice(-8),
+        JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").slice(
+          -12,
+        ),
       );
       throw new Error(
         `Cached PDF did not render after reload (${String(error).slice(0, 120)}); blocked=${JSON.stringify(

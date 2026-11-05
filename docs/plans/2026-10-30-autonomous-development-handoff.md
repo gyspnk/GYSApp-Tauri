@@ -4474,6 +4474,15 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Diagnostik soak menampilkan semua peristiwa (5 Nov)
+
+Pesan kegagalan `Cached PDF did not render after reload` hanya menyaring
+`scope` yang cocok `/pdf/i`, sehingga `diagnostics=[]` terlihat seperti “tidak
+ada error” padahal permintaan PDF memang tidak pernah selesai. Sekarang 12
+peristiwa terakhir dari `gys-diagnostics-v1` dicetak apa adanya, jadi
+kegagalan berikutnya memperlihatkan jalur mana yang terakhir berjalan
+(`music.asset`, `pdf.document`, `chord.*`, dan seterusnya).
+
 ### Fixture chord mengikuti urutan proxy → raw (5 Nov)
 
 Sejak manifes chord diambil lewat proxy BFF lebih dulu (`b780522`), fixture
