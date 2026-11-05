@@ -5622,3 +5622,14 @@ body:has(.hymn-detail-page.is-text-viewer)
     background: var(--surface);
   }
 }
+
+/* Dark themes painted the same wide, near-opaque surface ramp over the hero
+   artwork, which crushed the photo to a dark smear. Keep the illustration
+   readable there: the caption sits on the plain card surface and the photo
+   becomes a clean banner above it. Light and sepia keep the soft fade. */
+@media (min-width: 900px) {
+  :root[data-theme="dark"] .home-page .sauh-card-content,
+  :root[data-theme="amoled"] .home-page .sauh-card-content {
+    background: var(--surface) !important;
+  }
+}

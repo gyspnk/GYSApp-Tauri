@@ -4371,6 +4371,15 @@ Tiga keputusan pertama:
   `kidung-control-sync` + `media-dock` **24/24 (1,3 mnt)**; geometri terukur
   dock `x340 w760` dan footer `x340 w760`.
 
+- **D-8 — Tema gelap tidak lagi memadamkan foto hero.** `--surface` di tema
+  gelap/amoled membuat gradasi scrim yang sama (0,55 → 0,97) menutup hampir
+  seluruh ilustrasi sehingga foto terbaca sebagai gumpalan gelap. Di ≥900 px
+  tema `dark`/`amoled` sekarang memakai permukaan kartu solid untuk blok teks,
+  sedangkan foto tetap utuh sebagai banner di atasnya; tema terang dan sepia
+  mempertahankan fade lembut. Verifikasi `home-resilience` +
+  `sauh-loading-layout` **9/9 (11,3 s)**; baseline visual home hanya untuk tema
+  terang, jadi tidak ada diff CI.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.
