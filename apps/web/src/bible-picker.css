@@ -144,6 +144,8 @@
   color: var(--blue);
 }
 .bible-picker-search {
+  -webkit-appearance: none;
+  appearance: none;
   min-width: 0;
   width: 100%;
   min-height: 44px;
@@ -339,4 +341,125 @@
   .bible-address-picker :is(button, svg) {
     transition: none;
   }
+}
+
+/* Search now lives on the picker surface itself: one field at the top finds a
+   book or a verse, and the address controls step aside while it is in use. */
+.bible-address-body > .bible-picker-search-field {
+  padding-inline: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+.bible-address-body > .bible-picker-search-field:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 20%, transparent);
+  color: var(--blue);
+}
+.bible-picker-search-clear {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+}
+.bible-picker-search-clear:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+.bible-address-body.is-searching .bible-address-fields,
+.bible-address-body.is-searching .bible-picker-numpad,
+.bible-address-body.is-searching .bible-picker-footer {
+  display: none;
+}
+.bible-picker-results {
+  display: grid;
+  gap: 2px;
+  max-height: min(52dvh, 380px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.bible-picker-group {
+  margin: 10px 6px 4px;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bible-picker-group:first-child {
+  margin-top: 2px;
+}
+.bible-picker-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  text-align: start;
+}
+.bible-picker-result.is-book {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+}
+.bible-picker-result:hover,
+.bible-picker-result:focus-visible {
+  background: var(--surface-soft);
+}
+.bible-picker-result.is-verse {
+  min-height: 68px;
+}
+.bible-picker-result small {
+  display: block;
+  flex: 0 0 auto;
+  height: 2.7em;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+.bible-address-body > .bible-picker-search-field input:focus,
+.bible-address-body > .bible-picker-search-field input:focus-visible {
+  outline: none;
+}
+.bible-picker-search::-webkit-search-cancel-button,
+.bible-picker-search::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+.bible-picker-empty {
+  margin: 12px 6px;
+  color: var(--muted);
+}
+
+.bible-picker-result:not(:last-child) {
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.bible-picker-result.is-book small {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: end;
+}
+.bible-picker-result.is-verse small {
+  mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
 }

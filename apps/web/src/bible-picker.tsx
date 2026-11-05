@@ -213,6 +213,63 @@ export function BiblePickerModal({
   useEffect(() => {
     setActiveIndex(0);
   }, [search, scope]);
+
+  const searchActive = search.length > 0;
+  const searchMatches = useMemo<{ books: Option[]; verses: Option[] }>(() => {
+    if (!search) return { books: [], verses: [] };
+    const inScope = (bookId: number) =>
+      scope === "all" ||
+      (scope === "old" && bookId <= 39) ||
+      (scope === "new" && bookId >= 40) ||
+      (scope === "current" && bookId === currentBookId);
+    const names = new Map(books.map((item) => [String(item.id), item.name]));
+    const bookHits: Option[] = books
+      .filter(
+        (item) => inScope(item.id) && item.name.toLowerCase().includes(search),
+      )
+      .map((item) => ({ label: item.name, bookId: item.id }));
+    const terms = search.split(/\s+/);
+    const verseHits: Option[] = [];
+    for (const verse of allVerses ?? []) {
+      if (!inScope(Number(verse.book))) continue;
+      const name =
+        names.get(verse.book) ??
+        translate(locale, "bible.pickerBookFallback", { book: verse.book });
+      const text = sanitizeBibleText(verse.text);
+      const searchable =
+        `${name} ${verse.chapter}:${verse.verse} ${text}`.toLowerCase();
+      if (!terms.every((term) => searchable.includes(term))) continue;
+      verseHits.push({
+        label: `${name} ${verse.chapter}:${verse.verse}`,
+        text,
+        bookId: Number(verse.book),
+        chapter: verse.chapter,
+        verse: verse.verse,
+      });
+      if (verseHits.length >= 80) break;
+    }
+    return { books: bookHits, verses: verseHits };
+  }, [allVerses, books, currentBookId, locale, scope, search]);
+
+  const pickSearchBook = (option: Option) => {
+    setDraft({ bookId: option.bookId, chapter: "1", verse: "1" });
+    setEditing("chapter");
+    setReplace(true);
+    setQuery("");
+    setScope("all");
+    requestAnimationFrame(() =>
+      fields.current.chapter?.focus({ preventScroll: true }),
+    );
+  };
+  const pickSearchVerse = (option: Option) => {
+    hapticTick("medium");
+    onSelect({
+      bookId: option.bookId,
+      chapter: option.chapter ?? 1,
+      verse: option.verse ?? 1,
+    });
+    onClose();
+  };
   useLayoutEffect(() => {
     if (!menu) return;
     const option = menuRef.current?.querySelector<HTMLElement>(
@@ -409,7 +466,126 @@ export function BiblePickerModal({
             <Icon name="cancel" size={19} />
           </button>
         </div>
-        <div className="bible-address-body">
+        <div
+          className={`bible-address-body${searchActive ? " is-searching" : ""}`}
+        >
+          <div className="bible-picker-search-field">
+            <Icon name="search" size={18} />
+            <input
+              type="text"
+              role="searchbox"
+              className="bible-picker-search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  const first =
+                    searchMatches.books[0] ?? searchMatches.verses[0];
+                  if (!first) return;
+                  event.preventDefault();
+                  if (searchMatches.books[0]) pickSearchBook(first);
+                  else pickSearchVerse(first);
+                } else if (event.key === "Escape" && query) {
+                  event.preventDefault();
+                  setQuery("");
+                }
+              }}
+              placeholder={translate(locale, "bible.pickerSearchPlaceholder")}
+              aria-label={translate(locale, "bible.pickerSearchAria")}
+            />
+            {query && (
+              <button
+                type="button"
+                className="bible-picker-search-clear"
+                aria-label={translate(locale, "bible.pickerSearchClear")}
+                onClick={() => setQuery("")}
+              >
+                <Icon name="cancel" size={16} />
+              </button>
+            )}
+          </div>
+          {searchActive && (
+            <>
+              <div className="bible-picker-testament-pills">
+                {(["all", "old", "new", "current"] as const).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={scope === value}
+                    onClick={() => setScope(value)}
+                  >
+                    {value === "all"
+                      ? translate(locale, "bible.scopeAll", {
+                          count: books.length,
+                        })
+                      : value === "old"
+                        ? translate(locale, "bible.scopeOld", { count: 39 })
+                        : value === "new"
+                          ? translate(locale, "bible.scopeNew", { count: 27 })
+                          : translate(locale, "bible.scopeCurrent", {
+                              book:
+                                books.find((item) => item.id === currentBookId)
+                                  ?.name ?? "",
+                            })}
+                  </button>
+                ))}
+              </div>
+              <div
+                className="bible-picker-results"
+                role="listbox"
+                aria-label={translate(locale, "bible.pickerSearchAria")}
+              >
+                {searchMatches.books.length > 0 && (
+                  <p className="bible-picker-group">
+                    {translate(locale, "bible.pickerGroupBooks")}
+                  </p>
+                )}
+                {searchMatches.books.map((option) => (
+                  <button
+                    key={`book-${option.bookId}`}
+                    type="button"
+                    role="option"
+                    aria-selected={option.bookId === draft.bookId}
+                    className="bible-picker-result is-book"
+                    onClick={() => pickSearchBook(option)}
+                  >
+                    <span>{option.label}</span>
+                    <small>
+                      {translate(locale, "bible.pickerChapterCount", {
+                        count:
+                          books.find((item) => item.id === option.bookId)
+                            ?.chapters ?? 0,
+                      })}
+                    </small>
+                  </button>
+                ))}
+                {searchMatches.verses.length > 0 && (
+                  <p className="bible-picker-group">
+                    {translate(locale, "bible.pickerGroupVerses")}
+                  </p>
+                )}
+                {searchMatches.verses.map((option) => (
+                  <button
+                    key={`verse-${option.bookId}-${option.chapter}-${option.verse}`}
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    className="bible-picker-result is-verse"
+                    onClick={() => pickSearchVerse(option)}
+                  >
+                    <span>{option.label}</span>
+                    {option.text && <small>{option.text}</small>}
+                  </button>
+                ))}
+                {!searchMatches.books.length &&
+                  !searchMatches.verses.length && (
+                    <p className="bible-picker-empty">
+                      {translate(locale, "bible.pickerNoResults", { query })}
+                    </p>
+                  )}
+              </div>
+            </>
+          )}
           <div
             className="bible-address-fields"
             role="group"
@@ -483,33 +659,6 @@ export function BiblePickerModal({
               >
                 {listField === "book" && (
                   <>
-                    <div className="bible-picker-search-field">
-                      <Icon name="search" size={18} />
-                      <input
-                        type="search"
-                        className="bible-picker-search"
-                        value={query}
-                        onChange={(event) => setQuery(event.target.value)}
-                        placeholder={translate(
-                          locale,
-                          "bible.pickerSearchPlaceholder",
-                        )}
-                        aria-label={translate(locale, "bible.pickerSearchAria")}
-                        onKeyDown={(event) => {
-                          if (event.key === "ArrowDown") {
-                            event.preventDefault();
-                            setActiveIndex(0);
-                            fields.current.book?.focus({ preventScroll: true });
-                          } else if (
-                            event.key === "Enter" &&
-                            options[activeIndex]
-                          ) {
-                            event.preventDefault();
-                            choose(options[activeIndex]);
-                          }
-                        }}
-                      />
-                    </div>
                     <div className="bible-picker-testament-pills">
                       {(["all", "old", "new", "current"] as const).map(
                         (value) => (

@@ -37,7 +37,11 @@ for (const width of [320, 390, 768, 1440]) {
     const open = dialog.getByRole("button", { name: "Buka ayat", exact: true });
     await expect(chapter).toBeFocused();
     await expect(chapter).toHaveText("12");
-    await expect(dialog.locator("input")).toHaveCount(0);
+    const search = dialog.getByRole("searchbox", {
+      name: "Cari kitab atau isi ayat",
+    });
+    await expect(search).toHaveCount(1);
+    await expect(search).not.toBeFocused();
     await chapter.tap();
     await expect(chapter).toHaveAttribute("aria-expanded", "false");
     await expect(chapter).toHaveText("12");
@@ -108,13 +112,15 @@ test("Bible book/verse search, long numeric references and cancelling preserve t
   const chapter = dialog.getByRole("combobox", { name: "Pasal", exact: true });
   const verse = dialog.getByRole("combobox", { name: "Ayat", exact: true });
   const open = dialog.getByRole("button", { name: "Buka ayat", exact: true });
-  await book.tap();
-  await expect(book).toHaveAttribute("aria-expanded", "true");
   const search = dialog.getByRole("searchbox", {
     name: "Cari kitab atau isi ayat",
   });
+  await expect(search).toBeVisible();
   await search.fill("Mazmur");
-  await dialog.getByRole("option", { name: "Mazmur", exact: true }).tap();
+  await dialog
+    .getByRole("option", { name: /^Mazmur/ })
+    .first()
+    .tap();
   await expect(book).toHaveText("Mazmur");
   await chapter.tap();
   await chapter.pressSequentially("119");
@@ -135,26 +141,21 @@ test("Bible book/verse search, long numeric references and cancelling preserve t
   await page.locator(".reader-context-book-picker").tap();
   await expect(book).toHaveText("Yohanes");
   await expect(chapter).toHaveText("12");
-  await book.tap();
   await search.fill("menciptakan langit");
   const match = dialog
-    .locator(".bible-picker-verse-item")
+    .locator(".bible-picker-result.is-verse")
     .filter({ hasText: "Kejadian 1:1" })
     .first();
   await expect(match).toBeVisible();
-  await search.press("ArrowDown");
-  await expect(book).toBeFocused();
-  await book.press("Enter");
-  await expect(book).toHaveText("Kejadian");
-  await expect(dialog).toBeVisible();
-  expect(
-    await page.evaluate(() => localStorage.getItem("gys-bible-book")),
-  ).toBe("43");
-  await open.tap();
+  await match.tap();
+  await expect(dialog).toBeHidden();
   await expect(page.locator(".verse-row.is-selected")).toHaveAttribute(
     "id",
     "bible-verse-1:1:1",
   );
+  expect(
+    await page.evaluate(() => localStorage.getItem("gys-bible-book")),
+  ).toBe("1");
 });
 
 test("Bible keypad and dropdowns fit a short landscape viewport and trap focus", async ({

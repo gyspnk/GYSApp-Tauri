@@ -4284,6 +4284,26 @@ gambar asli (naturalWidth 300) alih-alih placeholder. Karena itu preview lokal
 tetap dibangun tanpa env; verifikasi tag dilakukan pada build ber-env dan pada
 Pages.
 
+### Putaran 148 — Cari kitab menyatu di pemilih kitab & pasal (5 Nov)
+
+Sebelumnya pencarian kitab tersembunyi: buka dialog → ketuk kolom “Kitab” →
+baru muncul kolom cari di dalam dropdown. Sekarang satu permukaan:
+
+- Kolom cari selalu tampil di atas isi dialog, dengan placeholder
+  “Cari kitab atau isi ayat…” dan tombol hapus.
+- Saat ada kata kunci, kontrol alamat (kitab/pasal/ayat) dan numpad
+  disembunyikan; hasil muncul berurutan **Kitab** lalu **Ayat** (maks 80 ayat),
+  lengkap dengan jumlah pasal tiap kitab dan cuplikan ayat dua baris.
+- Mengetuk kitab = menyiapkan draf (pasal 1) dan fokus ke kolom pasal;
+  mengetuk ayat = langsung membuka ayat itu dan menutup dialog.
+- Pil cakupan (Semua/PL/PB/Kitab ini) ikut pindah ke tampilan hasil.
+
+Verifikasi: `bible-picker-mobile` **6/6** (320/390/768/1440, termasuk cari kitab
+“Mazmur” lalu cari ayat “menciptakan langit” → Kejadian 1:1), `smoke -g "Bible"`
+**15 lulus, 1 flaky** (tes drag judul, sudah dikenal lambat di host ini),
+`tsc -b` bersih, build hijau. Kontrak baru: dialog memang punya satu kolom cari;
+yang dijaga adalah tidak ada papan ketik yang muncul untuk pasal/ayat.
+
 ### Lingkungan Droidspace — hasil optimasi harness (5 Nov)
 
 Xiaomi Pad 7 Pro, Arch di Droidspace, 8 core (3×2,0 / 4×2,8 / 1×3,0 GHz).
