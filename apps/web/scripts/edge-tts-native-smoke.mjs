@@ -17,6 +17,52 @@ import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { chromium } from "@playwright/test";
 
+/**
+ * The packaged WebView once reported a dock control as "visible" while a reader
+ * sheet swallowed the pointer. Playwright only prints the intruder's class, so
+ * record the layer stack as well before failing; the next run then shows which
+ * stacking context owns the surface.
+ */
+async function clickUnobstructed(locator, label) {
+  try {
+    await locator.click({ timeout: 15_000 });
+  } catch (error) {
+    const report = await locator
+      .evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const point = {
+          x: Math.round(box.left + box.width / 2),
+          y: Math.round(box.top + box.height / 2),
+        };
+        const describe = (node) => {
+          const chain = [];
+          for (let n = node; n && chain.length < 5; n = n.parentElement) {
+            const style = getComputedStyle(n);
+            chain.push(
+              `${n.tagName.toLowerCase()}.${String(n.className).slice(0, 28)} z=${style.zIndex} pos=${style.position}`,
+            );
+          }
+          return chain;
+        };
+        const top = document.elementFromPoint(point.x, point.y);
+        return {
+          size: `${Math.round(box.width)}x${Math.round(box.height)}`,
+          point,
+          intruder: top ? describe(top) : null,
+          target: describe(element),
+          viewTransitions: document.documentElement.classList.contains(
+            "has-view-transitions",
+          ),
+          readerTransition:
+            document.documentElement.dataset.readerTransition ?? null,
+        };
+      })
+      .catch(() => null);
+    console.log(`[soak] blocked click: ${label} ${JSON.stringify(report)}`);
+    throw error;
+  }
+}
+
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const executable = resolve(
   process.argv[2] ??
@@ -2349,7 +2395,8 @@ try {
   await upstreamMidiSurface.locator(".media-advanced-summary").click();
   const midiTranspose = upstreamMidiSurface.locator(".media-transpose");
   const resetTranspose = midiTranspose.locator(".media-transpose-reset");
-  if (await resetTranspose.isEnabled()) await resetTranspose.click();
+  if (await resetTranspose.isEnabled())
+    await clickUnobstructed(resetTranspose, "dock reset transpose");
   await midiTranspose
     .getByRole("button", { name: "Naikkan nada", exact: true })
     .click();
@@ -2826,7 +2873,11 @@ try {
   const persistenceReset = persistenceTranspose.locator(
     ".media-transpose-reset",
   );
-  if (await persistenceReset.isEnabled()) await persistenceReset.click();
+  if (await persistenceReset.isEnabled())
+    await clickUnobstructed(
+      persistenceReset,
+      "dock reset transpose (persistence)",
+    );
   await persistenceTranspose.locator("button").first().click();
   await page.waitForFunction(
     () =>
