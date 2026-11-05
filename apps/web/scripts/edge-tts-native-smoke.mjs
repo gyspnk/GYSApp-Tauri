@@ -65,9 +65,28 @@ async function clickUnobstructed(locator, label) {
           return chain;
         };
         const top = document.elementFromPoint(point.x, point.y);
+        const surface = element.closest(".media-surface");
+        const rect = surface?.getBoundingClientRect();
         return {
           size: `${Math.round(box.width)}x${Math.round(box.height)}`,
           point,
+          stack: document
+            .elementsFromPoint(point.x, point.y)
+            .slice(0, 4)
+            .map(
+              (node) =>
+                `${node.tagName.toLowerCase()}.${String(node.className).slice(0, 24)}`,
+            ),
+          surface: rect
+            ? {
+                x: Math.round(rect.x),
+                y: Math.round(rect.y),
+                w: Math.round(rect.width),
+                h: Math.round(rect.height),
+                pointerEvents: getComputedStyle(surface).pointerEvents,
+                overflow: getComputedStyle(surface).overflow,
+              }
+            : null,
           intruder: top ? describe(top) : null,
           target: describe(element),
           viewTransitions: document.documentElement.classList.contains(
