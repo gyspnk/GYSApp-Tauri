@@ -175,7 +175,7 @@ test.describe("responsive reader navigation", () => {
       localStorage.setItem("gys-bible-split-v1", "1");
       localStorage.setItem("gys-bible-secondary-version", "b_tb");
     });
-    await page.route("**/offline/bible/tb-reader.json", async (route) => {
+    await page.route("**/offline/bible/tb-reader.json*", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 1_200));
       await route.continue();
     });
@@ -1349,37 +1349,28 @@ test.describe("responsive reader navigation", () => {
     const dialog = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('[data-picker-field="chapter"]')).toBeFocused();
-    await dialog.locator('[data-picker-field="book"]').click();
 
-    // Verify scope pills: Semua, PL, PB, and active book (Kejadian Saja)
+    // The search box is always present; scope pills belong to this view.
+    const search = dialog.getByRole("searchbox", {
+      name: "Cari kitab atau isi ayat",
+    });
+    await search.fill("menciptakan langit");
     await expect(
-      page.getByRole("button", { name: "Semua (66)" }),
+      dialog.getByRole("button", { name: "Semua (66)" }),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "PL (39)" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "PB (27)" })).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "PL (39)" })).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "PB (27)" })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Kejadian Saja" }),
+      dialog.getByRole("button", { name: "Kejadian Saja" }),
     ).toBeVisible();
 
-    // Search by verse text inside active book
-    await page.getByRole("button", { name: "Kejadian Saja" }).click();
-    await page
-      .getByPlaceholder("Cari kitab atau isi ayat…")
-      .fill("menciptakan langit");
-
-    // Results show matched verse item
-    const verseResult = page.locator(".bible-picker-verse-item").first();
+    // Verse matches are search results; choosing one navigates immediately.
+    const verseResult = dialog.locator(".bible-picker-result.is-verse").first();
     await expect(verseResult).toBeVisible();
     await expect(verseResult).toContainText("Kejadian 1:1");
     await expect(verseResult).not.toContainText("<pb/>");
     await expect(verseResult).not.toContainText("<");
     await verseResult.click();
-
-    // Search chooses a draft; the reader changes only after confirmation.
-    await expect(dialog).toBeVisible();
-    await dialog
-      .getByRole("button", { name: "Buka ayat", exact: true })
-      .click();
     await expect(dialog).toBeHidden();
     await expect(
       page.getByRole("button", { name: "Geser judul untuk berpindah pasal" }),

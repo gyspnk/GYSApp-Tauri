@@ -38,11 +38,13 @@ async function setBibleAddress(
   verse = 1,
 ) {
   const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
-  await picker.getByRole("combobox", { name: "Kitab", exact: true }).click();
   await picker
     .getByRole("searchbox", { name: "Cari kitab atau isi ayat" })
     .fill(book);
-  await picker.getByRole("option", { name: book, exact: true }).click();
+  await picker
+    .locator(".bible-picker-result.is-book", { hasText: book })
+    .first()
+    .click();
   const chapterField = picker.getByRole("combobox", {
     name: "Pasal",
     exact: true,
@@ -243,9 +245,9 @@ test.describe("offline Bible recovery", () => {
     page,
   }) => {
     let attempts = 0;
-    await page.route("**/offline/bible/tb-reader.json", async (route) => {
+    await page.route("**/offline/bible/tb-reader.json*", async (route) => {
       attempts += 1;
-      if (attempts === 1) {
+      if (attempts <= 2) {
         await route.fulfill({ status: 503, body: "temporarily unavailable" });
         return;
       }
@@ -391,11 +393,15 @@ test("Bible reader keeps split reading and verse annotations local", async ({
     )
     .toBe("52");
   await page
-    .getByRole("button", { name: /Karena begitu besar kasih Allah/ })
-    .first()
+    .getByRole("button", { name: "Geser judul untuk berpindah pasal" })
     .click();
+  await setBibleAddress(page, "Yohanes", 3, 16);
+  await expect(page.locator('[id="bible-verse-43:3:16"]').first()).toHaveClass(
+    /is-selected/,
+  );
   await page
     .getByRole("toolbar", { name: "Aksi ayat terpilih" })
+    .first()
     .getByRole("button", { name: "Catatan ayat", exact: true })
     .click();
   await expect(page.getByLabel("Catatan pribadi")).toBeVisible();
@@ -415,16 +421,15 @@ test("Bible typed references match and open the exact verse", async ({
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 30_000,
   });
-  await page
-    .getByRole("button", { name: "Buka pencarian ayat di Alkitab" })
-    .click();
-  await page.getByLabel("Cari Alkitab").fill("Yohanes 3:16");
-  await page.getByRole("button", { name: "Cari", exact: true }).click();
-
-  const results = page.locator(".result-item");
-  await expect(results).toHaveCount(1, { timeout: 15_000 });
-  await expect(results.locator("strong")).toHaveText("Yohanes 3:16");
-  await results.click();
+  await page.getByRole("button", { name: "Cari kitab atau ayat" }).click();
+  const picker = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+  await picker
+    .getByRole("searchbox", { name: "Cari kitab atau isi ayat" })
+    .fill("Yohanes 3:16");
+  const results = picker.locator(".bible-picker-result.is-verse");
+  const exact = results.filter({ hasText: "Yohanes 3:16" }).first();
+  await expect(exact).toBeVisible({ timeout: 15_000 });
+  await exact.click();
   await expect(page.getByRole("heading", { name: "Yohanes 3" })).toBeVisible();
   await expect(page.locator('[id="bible-verse-43:3:16"]')).toHaveClass(
     /is-selected/,
