@@ -64,12 +64,35 @@ function newBrowserChordRepository(): ChordRepository {
         ? AbortSignal.any([signal, timeout])
         : timeout;
       try {
-        const response = await fetch(
+        // The proxy is same-origin and already cached by the Worker; the raw
+        // host is unreachable on networks that block raw.githubusercontent.com.
+        const manifestSources = [
+          bffUrl("/api/v1/content/chord-manifest"),
           `${RAW_ROOT}/main/docs/assets-chord-manifest.json`,
-          // Browser HTTP cache handles conditional validation without a CORS
-          // preflight: raw GitHub rejects explicit If-None-Match preflights.
-          { cache: "no-cache", signal: requestSignal },
-        );
+        ].filter((value): value is string => Boolean(value));
+        let response: Response | undefined;
+        let sourceError: unknown;
+        for (const source of manifestSources) {
+          try {
+            // Browser HTTP cache handles conditional validation without a CORS
+            // preflight: raw GitHub rejects explicit If-None-Match preflights.
+            const attempt = await fetch(source, {
+              cache: "no-cache",
+              signal: requestSignal,
+            });
+            if (attempt.status === 304 || attempt.ok) {
+              response = attempt;
+              break;
+            }
+            sourceError = new Error(
+              `Chord manifest request failed: ${attempt.status}`,
+            );
+          } catch (error) {
+            sourceError = error;
+          }
+        }
+        if (!response)
+          throw sourceError ?? new Error("Latest chord manifest unavailable");
         if (response.status === 304 && saved) return { manifest: saved };
         if (!response.ok) throw new Error("Latest chord manifest unavailable");
         const raw = (await response.json()) as {
@@ -205,11 +228,13 @@ function newBrowserChordRepository(): ChordRepository {
         : undefined;
       // Immutable GitHub bytes already have CORS; keep background sync off
       // account/API quotas. The pinned proxy remains a network fallback.
+      // Same-origin proxy first: it is cached at the edge and stays reachable
+      // where raw.githubusercontent.com is blocked. Raw is the fallback.
       const candidates = [
-        `${RAW_ROOT}/${encodeURIComponent(ref.sourceCommit)}/docs/${encodedPath}`,
         base && lock?.sourceCommit === ref.sourceCommit
           ? `${base.replace(/\/$/, "")}/api/v1/content/music?commit=${encodeURIComponent(ref.sourceCommit)}&path=${encodeURIComponent(ref.path.replace(/^docs\//, ""))}`
           : undefined,
+        `${RAW_ROOT}/${encodeURIComponent(ref.sourceCommit)}/docs/${encodedPath}`,
       ].filter((value): value is string => Boolean(value));
       let lastError: unknown;
       for (const url of candidates) {

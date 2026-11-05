@@ -935,6 +935,39 @@ export function createApp(
   });
 
   /**
+   * Same-origin copy of the chord manifest. The device network we target
+   * blocks raw.githubusercontent.com, and the manifest is a stable, pinned
+   * document, so the Worker serves it from one fixed upstream instead of the
+   * browser reaching GitHub directly.
+   */
+  app.get("/api/v1/content/chord-manifest", async (c) => {
+    c.header(
+      "cache-control",
+      "public, max-age=300, stale-while-revalidate=3600",
+    );
+    try {
+      const upstream = await fetch(
+        "https://raw.githubusercontent.com/gyspnk/gyschordweb/main/docs/assets-chord-manifest.json",
+        { ...IMMUTABLE_FETCH_CACHE, signal: c.req.raw.signal },
+      );
+      if (!upstream.ok)
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Chord manifest unavailable",
+        );
+      const body = await upstream.text();
+      return c.body(body, 200, { "content-type": "application/json" });
+    } catch {
+      return errorResponse(
+        c,
+        "UPSTREAM_UNAVAILABLE",
+        "Chord manifest unavailable",
+      );
+    }
+  });
+
+  /**
    * Same-origin binary proxy for canonical GYSChordWeb assets. Keeping the
    * source commit and path constrained by the generated lock prevents the
    * Worker from becoming an open proxy while making MIDI/chord/PDF fetches

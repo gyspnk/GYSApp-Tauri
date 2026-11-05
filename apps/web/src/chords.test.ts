@@ -40,7 +40,7 @@ afterEach(() => {
 
 describe("chord manifest source compatibility", () => {
   it.each([sourceCommit, "deadbee"])(
-    "downloads immutable chords from the CDN before the BFF (%s)",
+    "downloads immutable chords from the same-origin proxy before the CDN (%s)",
     async (currentCommit) => {
       vi.stubEnv("VITE_BFF_BASE_URL", "https://bff.example");
       const doc = {
@@ -59,7 +59,7 @@ describe("chord manifest source compatibility", () => {
         vi.fn<typeof globalThis.fetch>(async (input) => {
           const url = String(input);
           requests.push(url);
-          if (url.endsWith("assets-chord-manifest.json"))
+          if (url.includes("/api/v1/content/chord-manifest"))
             return jsonResponse({
               schemaVersion: 1,
               sourceCommit: currentCommit,
@@ -73,6 +73,7 @@ describe("chord manifest source compatibility", () => {
               ],
             });
           if (url.endsWith("music-lock.json")) return jsonResponse(musicLock);
+          if (url.includes("/api/v1/content/music")) return new Response(bytes);
           if (url.endsWith(".chord.json")) return new Response(bytes);
           throw new Error(`Unexpected request: ${url}`);
         }),
@@ -82,10 +83,11 @@ describe("chord manifest source compatibility", () => {
         doc,
       );
       expect(
-        requests.some((url) => url.startsWith("https://bff.example")),
-      ).toBe(false);
-      expect(
-        requests.filter((url) => url.endsWith(".chord.json")),
+        requests.filter(
+          (url) =>
+            url.includes("/api/v1/content/music") ||
+            url.endsWith(".chord.json"),
+        ),
       ).toHaveLength(1);
     },
   );

@@ -4341,6 +4341,33 @@ Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.
 
+### Putaran 151 — Chord lewat proxy lebih dulu, raw jadi cadangan (5 Nov)
+
+Bukti B-37 (native run `41985826144`) menunjukkan `raw.githubusercontent.com`
+diblokir di perangkat pemilik: `assets-chord-manifest.json` dan satu
+`.chord.json` gagal, PDF kidung gagal dirender setelah reload. Chord dan
+manifest-nya masih meminta raw **lebih dulu** (timeout 6 dtk untuk manifest,
+10 dtk untuk byte) sehingga di jaringan itu setiap lagu menunggu gagal dulu.
+
+Perbaikan:
+
+- Route BFF baru `GET /api/v1/content/chord-manifest` menyajikan manifest
+  chord dari satu upstream tetap (`gyspnk/gyschordweb/main/docs/…`), dengan
+  `cache-control: public, max-age=300, stale-while-revalidate=3600` dan
+  envelope error yang sama; tidak ada parameter URL sehingga tidak bisa
+  dijadikan proxy terbuka.
+- `apps/web/src/chords.ts`: manifest mencoba proxy dulu, raw sebagai cadangan;
+  byte chord juga proxy dulu (`/api/v1/content/music`, tetap tervalidasi
+  commit+path terhadap lock), raw hanya bila lock tidak cocok atau proxy gagal.
+- Kontrak tes diperbarui: `chords.test.ts` sekarang bernama “downloads
+  immutable chords from the same-origin proxy before the CDN” dan memastikan
+  tidak ada permintaan raw saat proxy tersedia; BFF menambah tes route baru
+  (200 + header cache, upstream persis, dan 503 saat upstream gagal).
+
+Dampak yang diharapkan: di jaringan yang memblokir raw, chord termuat tanpa
+menunggu dua timeout (6–16 dtk per lagu). PDF kidung/fork **belum** ikut
+dipindah; itu pekerjaan berikutnya dengan allowlist terpisah.
+
 ### Putaran 150 — Satu pencarian ayat, di dalam dialog pilih kitab (5 Nov)
 
 Pemilik (m25113): “fitur search yang diluar kotak pilih kitab itu dihilangkan
