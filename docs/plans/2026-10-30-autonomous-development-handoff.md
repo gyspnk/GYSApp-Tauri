@@ -4290,6 +4290,35 @@ Verifikasi: `node --test scripts/*.test.mjs` **21/21**,
 `route-announcement` + `runtime-health` **5/5**, `literature-loading`
 **19/19**.
 
+### Lingkungan Droidspace — dua pembakar idle (5 Nov)
+
+Pemilik melaporkan perangkat terasa panas dan berat. Pengukuran awal:
+load average **3,9–4,6** saat idle, swap terpakai **7 995 / 12 287 MB**,
+zona termal **66–77 °C**. Dua proses menghabiskan CPU tanpa permintaan:
+
+- `dsh web` (PID 126) **29–35 %**: `strace` menunjukkan ~25 000 syscall/6 dtk,
+  hampir semuanya `read`/`openat` pada `/proc/<pid>/stat` untuk setiap PID.
+  Sumbernya `@deepseek-ai/dsh-subprocess-local/lib/runner.js` dengan
+  `setInterval(() => this.poll(), 10)`. Patch: interval **10 ms → 250 ms**
+  (baris 253, cadangan `/root/runner.js.bak`); berlaku setelah harness
+  dijalankan ulang.
+- `billion-context` (PID 154) **18,5 %** + tulis **13 MB/s**: WAL `index.db`
+  (228 MB) tumbuh 37 MB melampaui `wal-cap` 8 MiB dan terus ditulis ulang
+  karena mode `unified FULL` menulis ganda ke SQLite dan JSON. Setelah
+  `{"storage":{"unified":"legacy"},"persist":{"debounceMs":30000,"tailTokens":8192}}`
+  dan restart proxy: CPU **0 %**, tulis **0 KiB/s**.
+
+Hasil: load average **4,6 → 1,3**, memori tersedia **1 861 → 2 694 MB**,
+zona termal 60–68 °C, proxy idle tenang. Chromium headless sisa sesi lama
+(21 jam, GPU 22 % CPU) dan proses `canva-mcp` (1,5 hari) juga dimatikan;
+blok `canva` di `/root/.dsh/profiles/web/cordis.patch.yml` dikomentari
+(cadangan `.bak-env`) supaya tidak muncul lagi.
+
+Semua perubahan hanya di dalam container Arch Linux (tidak menyentuh
+Android): `/root/.config/billion-context/billion-context.json`,
+`/root/.dsh/profiles/web/cordis.patch.yml`, dan file npm global DSH.
+Kembalikan dengan `.bak` masing-masing bila ada masalah.
+
 ### Putaran 145 — Chunk rute dimulai bersama entri (5 Nov)
 
 Rute dimuat sebagai `import()` dinamis, jadi di tautan lambat browser baru
