@@ -4412,6 +4412,10 @@ Tiga keputusan pertama:
   tag tidak dipancarkan; urutan/penanda tetap aman bila feed berubah setelah
   build (preload yang tidak terpakai hanya diabaikan). Uji `bff-hints.test.mjs`
   **8/8** (URL proxy, tag ikut, tanpa URL valid hanya preload snapshot).
+  Terukur hosted (390 px, 1,6 Mbps, CPU 4×, SW diblokir): permintaan sampul
+  pertama **6 212 → 261–619 ms**, LCP **7 452–8 360 → 6 200–7 708 ms**. Sisanya
+  tetap ditentukan boot JS (~5,9 dtk), jadi lever berikutnya bukan lagi
+  jaringan gambar.
 
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
