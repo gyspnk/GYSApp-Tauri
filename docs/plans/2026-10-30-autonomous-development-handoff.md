@@ -4332,6 +4332,11 @@ Kembalikan dengan `.bak` masing-masing bila ada masalah.
 - **Pemeriksaan cepat:** `/root/env-health.sh` mengukur load, RAM, suhu, CPU
   dan `/proc`-read per proses, serta jumlah proses canva MCP. Dipakai untuk
   memverifikasi setelah restart.
+- **Pembagian CPU host:** `/proc/stat` menunjukkan ~38 % dari 8 core sibuk
+  (user 25 %, sys 13 %) sementara seluruh proses container hanya ~0,4 core;
+  sisanya proses Android yang tidak terlihat dari dalam container. Jadi sisa
+  beban yang bisa kita pengaruhi tinggal poll `dsh` (35 %) yang menunggu
+  restart.
 - **Angka terakhir sebelum restart:** load **0,65–0,96**, suhu **57–61 °C**,
   RAM tersedia ~1,9 GB, `dsh` **35 %** (poll 4 259 read/s, patch menunggu
   restart), proxy **0 KiB/s** tulis.
