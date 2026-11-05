@@ -23,10 +23,10 @@ export const ROUTE_DATA = {
   // module is worth starting early; preloading the fallback shelf would spend
   // 23 KiB the page never reads.
   "/suara": { chunks: ["src/suara.ts"], files: [] },
-  "/literatur": {
-    chunks: ["src/literature-catalog.ts"],
-    files: ["offline/literature.json"],
-  },
+  // Measured hosted: the article catalogue fetch does not reuse an
+  // `as="fetch"` preload (two requests every time), so only the data module is
+  // started early.
+  "/literatur": { chunks: ["src/literature-catalog.ts"], files: [] },
   "/sauh": { chunks: [], files: ["offline/sauh.json"] },
   "/iman": { chunks: ["src/faith-payloads.ts"], files: ["offline/faith.json"] },
   "/kidung": { chunks: ["src/hymn-payloads.ts"], files: [] },
@@ -43,9 +43,12 @@ export function routeChunkFile(manifest, entry) {
     .pop()
     ?.replace(/\.[a-z]+$/, "");
   if (!name) return undefined;
+  // The hash is alphanumeric/underscore only, so `literature-catalog-…` cannot
+  // be mistaken for the `literature` chunk.
+  const pattern = new RegExp(`/_?${name}-[A-Za-z0-9_]{6,}\\.js$`);
   for (const value of Object.values(manifest ?? {})) {
     const file = typeof value?.file === "string" ? value.file : "";
-    if (file.includes(`/${name}-`) || file.includes(`/_${name}-`)) return file;
+    if (pattern.test(file)) return file;
   }
   return undefined;
 }

@@ -19,6 +19,10 @@ const manifest = {
     isDynamicEntry: true,
   },
   "src/suara.ts": { file: "assets/suara-G9h0I1j2.js", isDynamicEntry: true },
+  "src/literature-catalog.ts": {
+    file: "assets/literature-catalog-DniLBUfw.js",
+    isDynamicEntry: true,
+  },
   "src/kidung.tsx": { file: "assets/kidung-CH_VeX4n.js", isDynamicEntry: true },
   "src/kidung-page.tsx": {
     file: "assets/kidung-page-DyzRtWg8.js",
@@ -34,6 +38,10 @@ test("maps each static route to its chunk and data", () => {
       '<link rel="modulepreload" href="/GYSApp-Tauri/assets/faith-payloads-B1x2Y3z4.js" />',
       '<link rel="preload" as="fetch" href="/GYSApp-Tauri/offline/faith.json" crossorigin="anonymous" />',
     ].join("\n    "),
+  );
+  assert.equal(
+    routePreloadTags(manifest, "/literatur", "/"),
+    '<link rel="modulepreload" href="/assets/literature-catalog-DniLBUfw.js" />',
   );
   assert.equal(
     routePreloadTags(manifest, "/kidung", "/"),
