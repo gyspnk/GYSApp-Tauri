@@ -5383,7 +5383,10 @@ Sisa biaya terbesar adalah parse JS di CPU 4× (chunk `dist-*.js` saja 101 KB
 setelah dekompresi), bukan transfer. Dua chunk bersama lain
 (`hymn-view-mode`, `kidung-shared`) juga dicoba sebagai preload: **20 479 /
 20 437 ms**, tidak lebih baik dari 20 383 / 20 329 ms, jadi dikembalikan —
-hanya chunk katalog yang dipertahankan.
+hanya chunk katalog yang dipertahankan. Baseline hosted untuk perbandingan
+berikutnya (390 px, 200 kB/s, RTT 150 ms, CPU 4×, SW mati, build `e60ea8e`):
+baris pertama **25 821 ms** — angka ini hanya titik ukur, belum tentu
+terbanding dengan profil lokal yang RTT-nya 300 ms.
 
 ### Putaran 164 — Metadata kidung dimulai dari kepala dokumen (5 Nov)
 
