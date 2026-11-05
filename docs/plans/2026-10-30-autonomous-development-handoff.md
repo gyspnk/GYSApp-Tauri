@@ -4206,6 +4206,37 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Putaran 146 — Modul data rute ikut berangkat dari `<head>` (5 Nov)
+
+Setelah chunk rute dimulai paralel, jejak hosted masih memperlihatkan dua
+lompatan serial: `online-content-*.js` pada 867 ms lalu **`suara-*.js`
+4 377 ms** dan `suara-sejati.json` 5 109 ms; di `/iman` modul
+`faith-payloads` baru menyusul. Keduanya sudah diketahui saat build, jadi
+shell sekarang juga memasang `modulepreload` untuk modul data rute
+(`src/suara.ts`, `src/literature-catalog.ts`, `src/faith-payloads.ts`,
+`src/hymn-payloads.ts`) dan `preload as="fetch"` dengan
+`crossorigin="anonymous"` untuk shelf JSON yang benar-benar dipakai ulang.
+Chunk bersama diberi kunci `_suara-*.js` sehingga pencocokan memakai pola
+nama-berkas + hash, bukan kunci manifest.
+
+Hasil hosted (390 px, 1,6 Mbps, CPU 4×, SW diblokir): data `/iman` mulai
+**913 ms**, LCP **5,1–5,5 dtk**; `/suara` data **966 ms**, LCP
+**7,5–8,2 dtk** (sampul masih menunggu antrean gambar BFF); `/literatur`
+LCP **5,9–6,5 dtk**.
+
+Dua koreksi dari pengukuran, bukan asumsi: `/suara` membaca **feed BFF**
+(`/api/v1/content/suara-sejati`), bukan snapshot statis, jadi preload
+`offline/suara-sejati.json` hanya membuang 23 KiB — dihapus. `/literatur`
+tetap mengunduh `offline/literature.json` dua kali (preload parser + fetch
+skrip) meski snapshot dibaca `cache: "default"`, jadi preload JSON-nya juga
+dihapus; modul `literature-catalog` tetap di-preload. Satu-satunya JSON shelf
+yang terbukti dipakai ulang adalah `offline/faith.json` (**1 permintaan** di
+hosted).
+
+Verifikasi: `node --test scripts/*.test.mjs` **21/21**,
+`route-announcement` + `runtime-health` **5/5**, `literature-loading`
+**19/19**.
+
 ### Putaran 145 — Chunk rute dimulai bersama entri (5 Nov)
 
 Rute dimuat sebagai `import()` dinamis, jadi di tautan lambat browser baru
