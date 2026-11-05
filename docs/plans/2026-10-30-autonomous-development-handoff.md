@@ -4222,6 +4222,27 @@ Karena itu hint tersebut **tidak dipakai**: ia akan menggandakan unduhan
 `as="fetch"` hanya dipertahankan untuk `offline/faith.json` yang terbukti
 dipakai ulang, dan untuk `offline/sauh.json` (satu permintaan di hosted).
 
+### Audit akselerasi & beban harness (5 Nov)
+
+Pertanyaan pemilik: apakah semua sudah hardware-accelerated dan optimal.
+Jawaban terukur:
+
+| Aspek        | Temuan                                                                         |
+| ------------ | ------------------------------------------------------------------------------ |
+| Arsitektur   | `uname -m` **aarch64**, tidak ada qemu/box64/FEX di `/proc/sys/fs/binfmt_misc` |
+| JIT          | Node 26 dijalankan tanpa `--jitless`/`--no-opt`, tanpa `NODE_OPTIONS`          |
+| Governor     | `walt` di kedua cluster; `cpu0` 2,016 GHz, `cpu7` sampai 2,918–3,014 GHz       |
+| Batas cgroup | cgroup v2 `/ds-enter` **tanpa `cpu.max`/`memory.max`** — tidak ada throttling  |
+| GPU          | tidak tersedia untuk Linux (lihat catatan di atas); Chromium = SwiftShader     |
+| Tuning sysfs | read-only (`scaling_max_freq` tidak bisa ditulis)                              |
+
+Beban kerja nyata: siklus edit → `pnpm test:loop` menempuh **4,7 dtk** dinding
+(format 1,2 dtk, typecheck 1,4 dtk, unit 4,0 dtk) dengan **puncak load 1,87**
+dari 8 core; harness idle **3,2 % + 3,2 %** (dsh + proxy). Suhu 54–58 °C,
+tidak ada proses Chromium yang tertinggal. Memori container ~1,7 GB
+(dsh 798 MB, proxy 873 MB) dari 11,5 GB; sisa tekanan berasal dari sisi
+Android (zram 5,9 GB terpakai) yang tidak boleh disentuh dari sini.
+
 ### Putaran 148 — Feed Suara dimulai dari kepala dokumen (5 Nov)
 
 Koreksi setelah pengukuran hosted: yang membuat halaman terlihat lambat
