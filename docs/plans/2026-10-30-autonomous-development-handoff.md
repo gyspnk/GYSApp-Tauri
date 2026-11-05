@@ -4222,6 +4222,43 @@ Karena itu hint tersebut **tidak dipakai**: ia akan menggandakan unduhan
 `as="fetch"` hanya dipertahankan untuk `offline/faith.json` yang terbukti
 dipakai ulang, dan untuk `offline/sauh.json` (satu permintaan di hosted).
 
+### Putaran 147 — Service worker mati: hash manifest dan content-encoding (5 Nov)
+
+Gejala: `navigator.serviceWorker.getRegistrations()` kosong di hosted **dan**
+preview lokal; registrasi manual sempat `installing` lalu hilang dalam ~6 detik,
+dan diagnostik tersimpan hanya `service-worker.update … Not found`.
+
+Dua sebab berlapis, keduanya akibat peralihan pack Alkitab ke `.gz`
+(`8d3090d`) — offline/PWA sebenarnya **mati sejak commit itu**:
+
+1. `dist/offline-shell-assets.json` `coreIntegrity` diturunkan dari
+   `offline/pack-manifest.json` yang masih mencantumkan
+   `offline/bible/tb-reader.json`, sedangkan `CORE` di `sw.js` mem-precache
+   `offline/bible/tb-reader.json.gz`. Handler install menolak path yang tidak ada
+   di `CORE` (`Core integrity path invalid`), jadi install selalu gagal.
+2. Setelah manifest diturunkan dari `CORE` (`scripts/sw-core.mjs`), hash `.gz`
+   tetap meleset: GitHub Pages **dan** `vite preview` mengirim `.gz` dengan
+   `content-encoding: gzip` + `content-type: application/json`, sehingga browser
+   menyimpan **isi terdekompresi** (7 939 120 B), bukan 1 704 234 B. Digest harus
+   dihitung dari payload hasil `gunzipSync`, bukan byte file.
+
+Perbaikan: `coreIntegrityFrom()` di `scripts/sw-core.mjs` menyaring item pack
+sesuai `CORE` dan menambah file `offline/**` yang diprecache; `vite.config.ts`
+memakai helper itu dan menghitung digest `.gz` dari hasil gunzip; `sw.js`
+mencatat kegagalan install ke cache `gysapp-sw-diagnostics-v1`
+(`__install-error__`) supaya kegagalan berikutnya tidak lagi tak terlihat.
+
+Bukti: registrasi lokal `activating → activated` dalam 1,5 detik; hosted (Pages
+`d64d7bd`) **activated dalam 8 detik** dengan **109 entri** di
+`gysapp-shell-v25-c291c0d93d6766a0`, dan reload dengan jaringan dimatikan tetap
+menampilkan shell (“Bacaan & nyanyian”) dari cache. `node --test
+scripts/sw-core.test.mjs` **3/3**; `scripts/verify-service-worker.test.mjs`
+**24/24**; `runtime-health` **4/4** setelah tes regresi baru “installs the shell
+worker and keeps a precache” (`e2e/runtime-health.spec.ts`, `serviceWorkers:
+"allow"`, menunggu `activated` ≤40 dtk lalu memastikan ada cache
+`gysapp-shell-*`). Biaya: CacheStorage menyimpan 7,9 MB terdekompresi (transfer
+tetap 1,7 MB).
+
 ### Putaran 146 — Modul data rute ikut berangkat dari `<head>` (5 Nov)
 
 Setelah chunk rute dimulai paralel, jejak hosted masih memperlihatkan dua
