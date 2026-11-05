@@ -5388,6 +5388,19 @@ berikutnya (390 px, 200 kB/s, RTT 150 ms, CPU 4×, SW mati, build `e60ea8e`):
 baris pertama **25 821 ms** — angka ini hanya titik ukur, belum tentu
 terbanding dengan profil lokal yang RTT-nya 300 ms.
 
+### Putaran 168 — Jumlah sampel soak dijaga di gerbang workflow (5 Nov)
+
+Percobaan memperpendek soak dengan `samples=3` gagal **sebelum** soak berjalan:
+`native-benchmark.mjs:12` menegakkan `Native samples must be 5..100; release
+evidence requires >=30`, jadi langkah benchmark keluar dengan exit 1 dan job
+berhenti di 6 menit. Dispatch `workflow_dispatch` tidak memvalidasi angka
+minimum, jadi kesalahan ini hanya terlihat setelah job jalan.
+
+Perbaikan: langkah benchmark di `.github/workflows/edge-tts-native.yml`
+memeriksa `GYS_NATIVE_BENCHMARK_SAMPLES` lebih dulu dan berhenti dengan
+`::error::samples must be 5-100 (got N)` bila di luar rentang. Soak dijalankan
+ulang dengan `samples=5` (`42097554945`).
+
 ### Putaran 167 — Soak melewati pane PDF, lalu klik dock terhalang (5 Nov)
 
 Soak `42093278326` (`samples=5`) **lolos bagian yang selama ini gagal**: setelah
