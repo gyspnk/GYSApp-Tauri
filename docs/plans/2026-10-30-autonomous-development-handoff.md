@@ -4480,6 +4480,8 @@ Playwright pada `https://gyspnk.github.io/GYSApp-Tauri/alkitab/` (390×844):
 tap ayat 1 → “Pilih banyak ayat” → tap ayat 2 dan 3 menghasilkan
 **3 baris `.verse-row.is-selected`** di build hosted (=Pages untuk `32dcd6c`),
 jadi multi-select berjalan di produksi, bukan hanya di preview lokal.
+Axe `wcag2a`+`wcag2aa` pada panel itu di build hosted (light dan dark,
+390 px) → **0 pelanggaran**.
 
 ### D-10 — Ayat Alkitab rata kiri, bukan rata kanan-kiri (5 Nov)
 
