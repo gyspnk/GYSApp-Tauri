@@ -4482,6 +4482,9 @@ tap ayat 1 → “Pilih banyak ayat” → tap ayat 2 dan 3 menghasilkan
 jadi multi-select berjalan di produksi, bukan hanya di preview lokal.
 Axe `wcag2a`+`wcag2aa` pada panel itu di build hosted (light dan dark,
 390 px) → **0 pelanggaran**.
+Geometri panel di build hosted: 320 px → lebar **296** (kiri 12, kanan 308),
+390 px → **366**, `scrollWidth == clientWidth` di keduanya (tidak ada
+overflow), dan **sembilan tombol** semuanya **44 px** tinggi.
 
 ### D-10 — Ayat Alkitab rata kiri, bukan rata kanan-kiri (5 Nov)
 
