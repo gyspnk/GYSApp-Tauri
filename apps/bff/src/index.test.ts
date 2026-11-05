@@ -558,6 +558,38 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("accepts a browser-pinned commit that predates the Worker build", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenUrl = "";
+    globalThis.fetch = (async (input) => {
+      seenUrl = String(input);
+      return new Response(new Uint8Array([77, 84, 104, 100]), {
+        status: 200,
+        headers: { "content-type": "application/octet-stream" },
+      });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const pinned = await app.request(
+        `/api/v1/content/music?commit=deadbee&path=${encodeURIComponent("assets/pdf/001_demo.pdf")}`,
+        { headers: { Origin: "http://localhost:5173" } },
+      );
+      expect(pinned.status).toBe(200);
+      expect(seenUrl).toContain("/deadbee/docs/assets/pdf/001_demo.pdf");
+      const malformed = await app.request(
+        `/api/v1/content/music?commit=not-a-sha&path=${encodeURIComponent("assets/pdf/001_demo.pdf")}`,
+        { headers: { Origin: "http://localhost:5173" } },
+      );
+      expect(malformed.status).toBe(403);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("serves the chord manifest from one pinned upstream", async () => {
     const originalFetch = globalThis.fetch;
     let seenUrl = "";

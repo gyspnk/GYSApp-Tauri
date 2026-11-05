@@ -982,7 +982,10 @@ export function createApp(
         "VALIDATION_ERROR",
         "Music asset path is required",
       );
-    if (commit !== manifest.sourceCommit)
+    // The browser pins its own immutable commit in the generated lock. The
+    // deployed Worker can lag that lock by one deploy, so accept any
+    // well-formed commit id instead of rejecting a still-valid pin.
+    if (!/^[0-9a-f]{7,40}$/i.test(commit))
       return errorResponse(
         c,
         "FORBIDDEN",

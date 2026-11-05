@@ -4354,6 +4354,23 @@ Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.
 
+### Putaran 152 — Pin commit dari lock lama tidak lagi ditolak Worker (5 Nov)
+
+Setelah chord dipindah ke proxy, sisa kegagalan B-37 punya satu sebab yang
+lebih dalam: aplikasi mengunci `sourceCommit` di `music-lock.json` saat build
+web, sedangkan Worker memvalidasi `commit === manifest.sourceCommit` dari build
+Worker-nya sendiri. Bila dua build itu berbeda satu deploy, Worker menjawab
+`403 FORBIDDEN`, klien jatuh ke `raw.githubusercontent.com`, dan di jaringan
+yang memblokir raw aset (PDF kidung, audio) gagal total — persis gejala native
+run `41985826144`.
+
+Perbaikan di `apps/bff/src/index.ts`: commit tidak lagi harus sama dengan
+manifest Worker, cukup **commit id yang well-formed** (`^[0-9a-f]{7,40}$`),
+sementara path tetap wajib cocok dengan allowlist `assets/(midi|soundfont|pdf|chord)/…`
+dan repo tetap `gyspnk/gyschordweb`, jadi proxy tidak menjadi terbuka. Tes:
+commit `deadbee` (pin lama) → **200** dan URL upstream memakai commit itu;
+commit `not-a-sha` → **403**. BFF **157/157**.
+
 ### Putaran 151 — Chord lewat proxy lebih dulu, raw jadi cadangan (5 Nov)
 
 Bukti B-37 (native run `41985826144`) menunjukkan `raw.githubusercontent.com`
