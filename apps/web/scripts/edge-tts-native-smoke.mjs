@@ -24,6 +24,26 @@ import { chromium } from "@playwright/test";
  * stacking context owns the surface.
  */
 async function clickUnobstructed(locator, label) {
+  // A fixed dock can be hit-tested under the page while its enter animation is
+  // still settling (the box Playwright measured is already stale). Wait until
+  // the button actually owns its centre point, then click; if it never does,
+  // dump the layer stack so the next run explains which box covers it.
+  const ownsPoint = async () =>
+    locator
+      .evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const top = document.elementFromPoint(
+          Math.round(box.left + box.width / 2),
+          Math.round(box.top + box.height / 2),
+        );
+        return Boolean(top && (top === element || element.contains(top)));
+      })
+      .catch(() => false);
+  const deadline = Date.now() + 10_000;
+  while (!(await ownsPoint())) {
+    if (Date.now() > deadline) break;
+    await delay(100);
+  }
   try {
     await locator.click({ timeout: 15_000 });
   } catch (error) {
