@@ -200,6 +200,36 @@ async function pruneCachedPdfs(
   }
 }
 
+/**
+ * Last-resort cache probe.  The cache key is a full URL, so a commit pin or a
+ * proxy/base change between visits can leave a perfectly good payload under a
+ * different key.  Match by asset path instead of by exact URL.
+ */
+export async function cachedByPath(
+  ref: UpstreamMusicItem,
+): Promise<Uint8Array | undefined> {
+  if (typeof window === "undefined" || !("caches" in window)) return undefined;
+  const cache = await caches.open(CACHE_NAME);
+  const requests = await cache.keys();
+  for (const request of requests) {
+    let pathname: string;
+    try {
+      pathname = decodeURIComponent(new URL(request.url).pathname);
+    } catch {
+      continue;
+    }
+    if (!pathname.includes(ref.path)) continue;
+    const response = await cache.match(request);
+    if (!response) continue;
+    try {
+      return await readAndVerify(response, ref);
+    } catch {
+      // Wrong bytes for this ref: keep looking.
+    }
+  }
+  return undefined;
+}
+
 async function cachedResponse(
   url: string,
   ref: UpstreamMusicItem,
@@ -282,6 +312,8 @@ export async function loadMusicAsset(
         lastError = error;
       }
     }
+    const rescued = await cachedByPath(ref);
+    if (rescued) return rescued;
     const failure =
       lastError instanceof Error
         ? lastError

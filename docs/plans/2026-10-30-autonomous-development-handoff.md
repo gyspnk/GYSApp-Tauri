@@ -5058,6 +5058,23 @@ Verifikasi: `node --test scripts/*.test.mjs` **21/21**,
 `route-announcement` + `runtime-health` **5/5**, `literature-loading`
 **19/19**.
 
+### Fallback cache berdasarkan path untuk aset musik (5 Nov)
+
+Soak native berulang kali berhenti pada `Cached PDF did not render after
+reload` walaupun byte PDF sudah ada di `gys-music-assets-v1`. Kunci cache
+adalah URL penuh, jadi perubahan pin commit atau basis proksi antar-kunjungan
+membuat payload yang sah tidak ditemukan lagi, lalu permintaan jaringan
+diblokir dan `music.asset` berakhir “Failed to fetch”.
+
+`apps/web/src/music-assets.ts` sekarang punya `cachedByPath(ref)`: saat semua
+kandidat URL gagal, ia memindai kunci cache yang **path-nya mengandung**
+`ref.path`, memverifikasi ukuran + sha256, dan memakai byte itu. Unit test
+`apps/web/src/music-asset-rescue.test.ts` **3/3** (kunci berbeda, entri rusak
+dilewati, tidak ada yang cocok) dan `music-assets`/`fork-pdf` tetap hijau
+(**18/18**), `tsc -b apps/web` bersih.
+Batas jujur: ini pemulihan, bukan bukti pane native melukis — vonis tetap dari
+soak berikutnya.
+
 ### Lingkungan Droidspace — dua pembakar idle (5 Nov)
 
 Pemilik melaporkan perangkat terasa panas dan berat. Pengukuran awal:
