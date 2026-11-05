@@ -1583,8 +1583,9 @@
   margin-inline: 0;
 }
 .bible-reader .verse-content {
-  text-align: justify;
-  text-justify: inter-word;
+  /* Justified scripture at a 46rem measure opened rivers between words
+     ("Allah  menciptakan  langit"), so the verses read ragged-right. */
+  text-align: start;
 }
 .bible-reader .verse-content .verse-text {
   text-align: inherit;

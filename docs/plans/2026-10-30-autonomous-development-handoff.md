@@ -4474,6 +4474,17 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### D-10 — Ayat Alkitab rata kiri, bukan rata kanan-kiri (5 Nov)
+
+Dengan takaran 46rem, `text-align: justify` pada ayat menghasilkan sungai spasi
+yang jelas terlihat (“Allah menciptakan langit dan bumi”) karena
+penghyphenan tidak tersedia untuk `id`. Aturan `.bible-reader .verse-content`
+sekarang `text-align: start` (komentar di CSS menjelaskan alasannya), sehingga
+tepi kanan bergerigi wajar dan ritme baca membaik di 390–1440 px.
+Terverifikasi `bible-zoom` + `bible-annotations` + `bible-multi-select` **9/9
+(21,0 dtk)**; baseline visual Alkitab akan bergeser dan diadopsi dari artefak
+CI.
+
 ### Label rentang ayat yang ringkas (5 Nov)
 
 Panel multi-pilih menuliskan “Kejadian 1:1, 2, 3”. Untuk pilihan berurutan itu
