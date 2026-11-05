@@ -469,6 +469,16 @@ export function MorePage({
   const selectedAccentLabel = selectedAccent
     ? translate(locale, `more.accent.${selectedAccent.id}`)
     : translate(locale, "more.custom");
+  const themeSummary =
+    theme === "system"
+      ? translate(locale, "shell.themeSystem")
+      : theme === "light"
+        ? translate(locale, "shell.themeLight")
+        : theme === "dark"
+          ? translate(locale, "shell.themeDark")
+          : theme === "amoled"
+            ? translate(locale, "shell.themeAmoled")
+            : translate(locale, "shell.themeSepia");
   const changeTheme = (next: ShellTheme) => {
     setTheme(next);
   };
@@ -1057,17 +1067,25 @@ export function MorePage({
         <div className="more-library-grid">
           {(
             [
-              ["/literatur", "literature.title", "book"],
-              ["/suara", "suara.title", "person"],
-              ["/sauh", "sauh.title", "sun"],
+              [
+                "/literatur",
+                "literature.title",
+                "book",
+                "more.collectionLiterature",
+              ],
+              ["/suara", "suara.title", "person", "more.collectionSuara"],
+              ["/sauh", "sauh.title", "sun", "more.collectionSauh"],
             ] as const
-          ).map(([path, title, icon]) => (
+          ).map(([path, title, icon, hint]) => (
             <Link className="more-library-link" to={path} key={path}>
               <span className="more-library-icon">
                 <Icon name={icon} size={24} />
               </span>
               <span>
                 <strong>{translate(locale, title)}</strong>
+                <span className="more-library-sub">
+                  {translate(locale, hint)}
+                </span>
               </span>
               <Icon name="chevronRight" size={18} />
             </Link>
@@ -1278,6 +1296,7 @@ export function MorePage({
               <Icon name="sun" size={20} />
             </span>
             <strong>{translate(locale, "more.categoryAppearance")}</strong>
+            <span className="more-setting-summary">{themeSummary}</span>
             <Icon name="chevronDown" size={18} />
           </summary>
           <article className="more-card more-card-wide appearance-card">
@@ -1509,6 +1528,14 @@ export function MorePage({
               <Icon name="download" size={20} />
             </span>
             <strong>{translate(locale, "more.categoryOffline")}</strong>
+            <span className="more-setting-summary">
+              {manifest
+                ? formatBytes(
+                    manifest.items.reduce((sum, item) => sum + item.bytes, 0),
+                    locale,
+                  )
+                : ""}
+            </span>
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">

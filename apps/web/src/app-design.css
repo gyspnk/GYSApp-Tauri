@@ -942,6 +942,13 @@
   min-width: 0;
   flex: 1;
 }
+.more-library-sub {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
 .more-library-link strong {
   display: block;
   font-size: 1.0625rem;
@@ -1050,6 +1057,30 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
+  }
+}
+/* Three equal tiles crowd the labels on a phone; one horizontal row each
+   keeps the icon, the name and the hint on a single line. */
+@media (max-width: 599px) {
+  .more-library-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .more-library-link {
+    flex-direction: row;
+    text-align: start;
+    min-height: 64px;
+    padding: 10px 14px;
+    gap: 12px;
+  }
+  .more-library-link > span:nth-child(2) {
+    flex: 1;
+  }
+  .more-library-link > svg {
+    display: block;
+  }
+  .more-library-link strong {
+    font-size: 1rem;
   }
 }
 @media (max-width: 599px) {

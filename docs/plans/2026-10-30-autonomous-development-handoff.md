@@ -4337,6 +4337,19 @@ Tiga keputusan pertama:
   `bible-zoom` + `bible-annotations` + `reading-direct-flow` **14/14 (1,1 mnt)**;
   baseline visual Alkitab akan berbeda dan diadopsi dari artefak CI.
 
+- **D-5 — Kartu koleksi diberi keterangan, dan di ponsel menjadi baris penuh.**
+  Tiga kartu “Jelajahi koleksi” hanya berisi ikon + judul, sehingga di 1440
+  terlihat kosong dan di 390 judul “Sauh Bagi Jiwa” pecah tiga baris sementara
+  kartu lain dua. Sekarang setiap kartu punya keterangan pendek
+  (“Bacaan & PDF”, “Kesaksian iman”, “Renungan harian”), dan di ≤599 px grid
+  berubah menjadi satu baris per koleksi (ikon kiri, judul + keterangan,
+  chevron kanan) — tidak ada lagi judul yang terpotong dan target sentuh tetap
+  ≥64 px. Baris pengaturan juga mendapat ringkasan nilai: “Tampilan → Terang/
+  Gelap/Sepia/AMOLED” dan “Data Offline → 9,2 MB”, memakai data yang sudah
+  dimuat, sehingga kolom kanan tidak lagi kosong.
+  Verifikasi: `more-device-data` + `settings-data-integrity` **12/12 (19,1 s)**,
+  `more-section-deeplink` + `responsive-touch-targets` **8/8 (35,5 s)**.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.

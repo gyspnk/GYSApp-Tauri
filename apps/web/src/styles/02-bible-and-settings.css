@@ -1399,8 +1399,16 @@
 }
 .more-setting-row > strong {
   min-width: 0;
+  flex: 1;
   font-size: 0.9375rem;
   font-weight: 650;
+}
+.more-setting-summary {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 .more-setting-row > svg {
   flex: 0 0 auto;

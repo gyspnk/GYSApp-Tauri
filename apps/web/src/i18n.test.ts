@@ -29,6 +29,9 @@ function allKeys(locale: Locale): Set<string> {
 const DYNAMIC_KEYS = [
   "kidung.openMidi",
   "kidung.closeMidi",
+  "more.collectionLiterature",
+  "more.collectionSuara",
+  "more.collectionSauh",
   "more.whatsappLogin",
   "more.appleLogin",
   "shell.online",
