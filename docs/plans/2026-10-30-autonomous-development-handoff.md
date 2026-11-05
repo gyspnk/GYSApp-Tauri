@@ -4544,6 +4544,12 @@ Verifikasi: BFF **81/81** (tes baru memastikan varian 404 → berkas asli 200),
 
 ### D-9 — Multi-select ayat di Alkitab (5 Nov, permintaan pemilik)
 
+Bukti tambahan: axe `wcag2a`+`wcag2aa` dengan panel multi-pilih terbuka di
+light/dark/sepia/amoled 390 px → **0 pelanggaran (4 muat)**; tombol panel
+terukur **44 px** tinggi di coarse pointer (Salin 48, Bagikan 63, Baca ayat 71,
+warna 44, Catatan ayat 86, Selesai memilih 102, tutup 44); kontras baris
+terpilih 13:1 (light), 12:1 (sepia), sisanya di atas 7:1.
+
 Pemilik: “saat tekan bisa select lebih dari satu ayat dan bisa dihighlight atau
 dibuat catatan gabungan dari beberapa ayat yang saling terlink.”
 
