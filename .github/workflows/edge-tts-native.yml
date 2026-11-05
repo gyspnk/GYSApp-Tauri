@@ -143,6 +143,8 @@ jobs:
           path: apps/web/native-benchmark.json
           if-no-files-found: ignore
       - name: Exercise full media soak and live keyless Edge
+        env:
+          VITE_BFF_BASE_URL: ${{ vars.VITE_BFF_BASE_URL }}
         run: pnpm test:native:soak
       - name: Upload native smoke diagnostics on failure
         if: ${{ failure() || cancelled() }}

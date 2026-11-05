@@ -1404,8 +1404,10 @@ try {
   const recoveryChordCacheKey = `chord/${encodeURIComponent(recoveryChordSongId)}/${recoveryChordItem.sha256}`;
   const recoveryChordIndexKey = "gys-chord-cache-index-v1";
   const chordManifestKey = "gys-latest-chord-manifest-v1";
-  const chordManifestUrl =
-    "https://raw.githubusercontent.com/gyspnk/gyschordweb/main/docs/assets-chord-manifest.json";
+  const bffBase = process.env.VITE_BFF_BASE_URL?.trim();
+  const chordManifestUrl = bffBase
+    ? `${bffBase.replace(/\/$/u, "")}/api/v1/content/chord-manifest`
+    : "https://raw.githubusercontent.com/gyspnk/gyschordweb/main/docs/assets-chord-manifest.json";
   // This integrity test uses immutable bytes. Keep the mutable startup manifest
   // on the same commit so upstream releases cannot bypass its corrupt fixture.
   const chordManifestRoute = (route) =>

@@ -4474,6 +4474,27 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Native soak: CSP memblokir gambar Worker dan soak tidak memakai BFF (5 Nov)
+
+Log soak `42053986088` menunjukkan dua cacat nyata, bukan flake:
+
+1. **CSP aplikasi terpaket** hanya mengizinkan `img-src` untuk `tjc.org` dan
+   `tjcorguploads.s3.amazonaws.com`, sehingga semua sampul yang lewat proxy
+   `/api/v1/content/image?...` diblokir (`violates … img-src`) — di aplikasi
+   native gambar Suara/Sauh tidak akan tampil meski webnya benar. `img-src`
+   sekarang juga mengizinkan `https://*.workers.dev`.
+2. **Langkah soak tidak mendapat `VITE_BFF_BASE_URL`** (hanya langkah build
+   Tauri yang punya), jadi skrip menguji jalur raw sementara aplikasi memakai
+   proxy: assert `chordRecoveryFetches === 1` gagal dengan `0`, dan langkah
+   “Faith PDF progress” di-skip. Variabel itu sekarang diteruskan ke langkah
+   soak, dan skrip memakai `/api/v1/content/chord-manifest` sebagai URL
+   manifes saat BFF tersedia.
+
+Bukti sebelumnya dari log: `Native WebView PDF response … fork-pdf … status 200`,
+`net::ERR_ABORTED` untuk `raw.githubusercontent.com/.../kr_master.pdf` (jalur
+cadangan yang memang diblokir), dan `SKIP live Edge … "tts.edge.receive" never
+arrived within 60000 ms` (B-35, server Edge tetap tidak dikonfigurasi).
+
 ### Bug thumbnail “Cahaya Kehidupan” yang terus memuat (5 Nov)
 
 Laporan pemilik: di Suara Sejati, sampul artikel **Cahaya Kehidupan** terlihat
