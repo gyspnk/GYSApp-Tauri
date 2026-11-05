@@ -6,7 +6,9 @@ import {
   bffOrigin,
   injectBffHints,
   injectBffPreconnect,
+  injectBffSuaraHints,
   sauhPreloadUrl,
+  suaraFeedUrl,
 } from "./bff-hints.mjs";
 
 const BASE = "https://bff.example.workers.dev";
@@ -64,6 +66,27 @@ test("injectBffPreconnect adds only the origin hint", () => {
   assert.equal(injectBffPreconnect(html, ""), html);
   assert.equal(
     injectBffPreconnect("<html></html>", "https://bff.example.workers.dev"),
+    "<html></html>",
+  );
+});
+
+test("the Suara shell preloads the BFF feed with anonymous credentials", () => {
+  const html =
+    "<!doctype html><html><head><title>x</title></head><body></body></html>";
+  const out = injectBffSuaraHints(html, "https://bff.example.workers.dev/");
+  assert.equal(
+    suaraFeedUrl("https://bff.example.workers.dev/"),
+    "https://bff.example.workers.dev/api/v1/content/suara-sejati",
+  );
+  assert.match(
+    out,
+    /<link rel="preload" as="fetch" href="https:\/\/bff\.example\.workers\.dev\/api\/v1\/content\/suara-sejati" crossorigin="anonymous" \/>/,
+  );
+  assert.equal((out.match(/rel="preconnect"/g) || []).length, 1);
+  assert.equal((out.match(/rel="preload"/g) || []).length, 1);
+  assert.equal(injectBffSuaraHints(html, ""), html);
+  assert.equal(
+    injectBffSuaraHints("<html></html>", "https://bff.example.workers.dev"),
     "<html></html>",
   );
 });

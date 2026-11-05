@@ -5,7 +5,11 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
-import { injectBffHints, injectBffPreconnect } from "./bff-hints.mjs";
+import {
+  injectBffHints,
+  injectBffPreconnect,
+  injectBffSuaraHints,
+} from "./bff-hints.mjs";
 import { fontPreloadTags } from "./font-preload.mjs";
 import {
   ROUTE_DATA,
@@ -44,6 +48,8 @@ const hintedShell = injectBffHints(shell, bffBase);
 // Every route paints BFF-proxied images; only the home and /sauh also preload
 // the shelf JSON.
 const preconnectShell = injectBffPreconnect(shell, bffBase);
+// The Suara library reads a live BFF feed; start it during parse too.
+const suaraShell = injectBffSuaraHints(shell, bffBase);
 // The manifest is a build artefact: if a future config stops emitting it, the
 // stubs stay valid, they just lose the parallel route fetch.
 const manifest = await readFile(join(dist, ".vite", "manifest.json"), "utf8")
@@ -115,7 +121,11 @@ for (const route of [
   await writeFile(
     target,
     withRoute(
-      route === "sauh" ? hintedShell : preconnectShell,
+      route === "sauh"
+        ? hintedShell
+        : route === "suara" || suaraRoutes.includes(route)
+          ? suaraShell
+          : preconnectShell,
       entry,
       dataRoute,
     ),

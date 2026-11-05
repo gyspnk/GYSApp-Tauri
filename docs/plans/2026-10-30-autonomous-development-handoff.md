@@ -4222,6 +4222,29 @@ Karena itu hint tersebut **tidak dipakai**: ia akan menggandakan unduhan
 `as="fetch"` hanya dipertahankan untuk `offline/faith.json` yang terbukti
 dipakai ulang, dan untuk `offline/sauh.json` (satu permintaan di hosted).
 
+### Putaran 148 — Feed Suara dimulai dari kepala dokumen (5 Nov)
+
+Hosted `/suara/` (390 px, 1,6 Mbps, CPU 4×, SW diblokir): FCP **2 640 ms**,
+LCP **8 236 ms** pada `IMG.suara-thumb-img`, tetapi **permintaan gambar baru
+mulai 6 212 ms** — rantainya bukan gambar, melainkan feed BFF
+`/api/v1/content/suara-sejati` yang baru diminta setelah boot (~3,4 dtk) selesai.
+`/sauh` sudah memakai preload serupa, jadi pola itu diterapkan ke Suara:
+`injectBffSuaraHints()` menulis `preconnect` + `<link rel="preload" as="fetch"
+href="…/api/v1/content/suara-sejati" crossorigin="anonymous">` ke shell
+`/suara` dan setiap stub kesaksian.
+
+`crossorigin="anonymous"` wajib: `fetch()` aplikasi memakai mode kredensial
+default (`same-origin`), jadi preload dengan mode berbeda akan diunduh dua kali
+— bug yang sama seperti `offline/sauh.json` dulu. Tes
+`apps/web/scripts/bff-hints.test.mjs` **7/7** mencakup bentuk tag, satu
+preconnect, dan no-op tanpa BFF.
+
+Catatan build: `dist` yang dibangun **dengan** `VITE_BFF_BASE_URL` membuat
+preview lokal benar-benar memanggil BFF, sehingga `suara-catalog` melihat
+gambar asli (naturalWidth 300) alih-alih placeholder. Karena itu preview lokal
+tetap dibangun tanpa env; verifikasi tag dilakukan pada build ber-env dan pada
+Pages.
+
 ### Lingkungan Droidspace — hasil optimasi harness (5 Nov)
 
 Pengukuran pada Xiaomi Pad 7 Pro (Arch di Droidspace, 8 core: 3×2,0 GHz,
