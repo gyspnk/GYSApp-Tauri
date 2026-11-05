@@ -1944,15 +1944,29 @@ try {
       // blocked and what the PDF runtime logged, instead of a bare timeout.
       // Dump every recent diagnostic, not only pdf.* ones: an empty pdf
       // filter looked like "no error" when the fetch had simply never settled.
-      const diagnostics = await page.evaluate(() =>
-        JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").slice(
-          -12,
+      const [diagnostics, paneState] = await Promise.all([
+        page.evaluate(() =>
+          JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").slice(
+            -12,
+          ),
         ),
-      );
+        page.evaluate(() => {
+          const pane = document.querySelector(".pdf-reader-hymn");
+          const text = (pane?.textContent ?? "").replace(/\s+/g, " ").trim();
+          return {
+            pane: Boolean(pane),
+            canvases: pane?.querySelectorAll("canvas").length ?? 0,
+            rendered:
+              pane?.querySelectorAll('canvas[data-pdf-rendered="true"]')
+                .length ?? 0,
+            text: text.slice(0, 120),
+          };
+        }),
+      ]);
       throw new Error(
         `Cached PDF did not render after reload (${String(error).slice(0, 120)}); blocked=${JSON.stringify(
           blockedPdfRequests.slice(-4),
-        )}; diagnostics=${JSON.stringify(diagnostics)}`,
+        )}; pane=${JSON.stringify(paneState)}; diagnostics=${JSON.stringify(diagnostics)}`,
       );
     });
   assert.equal(
