@@ -5388,6 +5388,24 @@ berikutnya (390 px, 200 kB/s, RTT 150 ms, CPU 4×, SW mati, build `e60ea8e`):
 baris pertama **25 821 ms** — angka ini hanya titik ukur, belum tentu
 terbanding dengan profil lokal yang RTT-nya 300 ms.
 
+### Putaran 169 — Klik dock menunggu titiknya sendiri (5 Nov)
+
+Gerbang sampel dari putaran 168 sempat mematikan job: langkah benchmark berjalan
+di `windows-latest` dengan PowerShell, sedangkan skripnya ditulis untuk bash
+(`ParserError … .ps1:2`). Langkah itu sekarang memakai `shell: bash` sehingga
+pemeriksaan yang sama berlaku, dan soak dijalankan ulang (`42098737857`,
+`samples=5`).
+
+Untuk kegagalan klik dock, `clickUnobstructed()` di
+`apps/web/scripts/edge-tts-native-smoke.mjs` kini menunggu lebih dulu sampai
+`document.elementFromPoint()` di tengah tombol benar-benar mengembalikan tombol
+itu (maksimal 10 dtk, cek tiap 100 ms), baru mengeklik. Playwright bisa
+mengukur kotak tombol yang sudah basi saat animasi masuk dock belum selesai;
+menunggu kepemilikan titik memisahkan kasus transien dari overlay yang benar-
+benar menutupi. Bila tetap gagal, diagnostik rantai lapisan tetap dicetak
+sebelum error dilempar — jadi run berikutnya tetap memberi bukti, bukan
+menyembunyikan bug.
+
 ### Putaran 168 — Jumlah sampel soak dijaga di gerbang workflow (5 Nov)
 
 Percobaan memperpendek soak dengan `samples=3` gagal **sebelum** soak berjalan:
