@@ -4474,6 +4474,18 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Fixture chord mengikuti urutan proxy → raw (5 Nov)
+
+Sejak manifes chord diambil lewat proxy BFF lebih dulu (`b780522`), fixture
+`e2e/pinned-reader-fixtures.ts` hanya merutekan URL raw, sehingga build
+pratinjau yang dibangun dengan `VITE_BFF_BASE_URL` tidak pernah memicu
+permintaan raw dan tes `chord-startup.spec.ts:54` gagal di mesin ini (CI tetap
+hijau karena build-nya tanpa env itu). Fixture sekarang memenuhi **kedua**
+sumber (proxy `**/api/v1/content/chord-manifest` dan raw) dengan payload yang
+sama, dan kedua tes `chord-startup.spec.ts` menghitung permintaan ke salah
+satu URL. Hasil lokal **2/2 (13,5 s)**; ini membuat tes tidak lagi bergantung
+pada env build.
+
 ### Manifes chord memakai salinan tersimpan saat jaringan gagal (5 Nov)
 
 Skenario soak memblokir semua host di luar origin aplikasi, lalu memuat ulang

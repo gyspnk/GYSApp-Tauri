@@ -4,7 +4,12 @@ import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 test("a first visit leaves the chord catalogue alone", async ({ page }) => {
   let checks = 0;
   page.on("request", (request) => {
-    if (request.url().endsWith("assets-chord-manifest.json")) checks++;
+    if (
+      /(assets-chord-manifest\.json|\/api\/v1\/content\/chord-manifest)/.test(
+        request.url(),
+      )
+    )
+      checks++;
   });
   await page.goto("/GYSApp-Tauri/");
   await page.waitForTimeout(4_000);
@@ -23,7 +28,12 @@ test("a returning reader checks the manifest every launch while reusing verified
   let checks = 0;
   let files = 0;
   page.on("request", (request) => {
-    if (request.url().endsWith("assets-chord-manifest.json")) checks++;
+    if (
+      /(assets-chord-manifest\.json|\/api\/v1\/content\/chord-manifest)/.test(
+        request.url(),
+      )
+    )
+      checks++;
     if (request.url().endsWith(".chord.json")) files++;
   });
   const cached = () =>

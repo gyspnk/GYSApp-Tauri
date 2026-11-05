@@ -100,23 +100,26 @@ export async function preparePinnedReaderAssets(page: Page) {
     pinnedBytes(chordUrl, chord.sha256, chord.size),
     pinnedBytes(masterUrl, manifest.sha256, manifest.sizeBytes),
   ]);
+  const manifestPayload = {
+    schemaVersion: 1,
+    sourceCommit: lock.sourceCommit,
+    files: [
+      {
+        bookCode: "KR",
+        path: `docs/${chord.path}`,
+        size: chord.size,
+        sha256: chord.sha256,
+      },
+    ],
+  };
+  // The app asks the same-origin proxy first and the raw host second; answer
+  // both so a preview built with VITE_BFF_BASE_URL behaves like CI.
   await page.route(
     "https://raw.githubusercontent.com/gyspnk/gyschordweb/main/docs/assets-chord-manifest.json",
-    (route) =>
-      route.fulfill({
-        json: {
-          schemaVersion: 1,
-          sourceCommit: lock.sourceCommit,
-          files: [
-            {
-              bookCode: "KR",
-              path: `docs/${chord.path}`,
-              size: chord.size,
-              sha256: chord.sha256,
-            },
-          ],
-        },
-      }),
+    (route) => route.fulfill({ json: manifestPayload }),
+  );
+  await page.route("**/api/v1/content/chord-manifest", (route) =>
+    route.fulfill({ json: manifestPayload }),
   );
   await page.route(chordUrl, (route) =>
     route.fulfill({ body: chordBytes, contentType: "application/json" }),
