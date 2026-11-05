@@ -15,10 +15,36 @@ export const ROUTE_ENTRIES = {
   "/more": "src/more.tsx",
 };
 
+// The route chunk then dynamically imports its data module and fetches a JSON
+// shelf: two more serial round trips on a slow link. Both are known at build
+// time, so the shell can start them together with the route chunk.
+export const ROUTE_DATA = {
+  "/suara": { chunks: ["src/suara.ts"], files: ["offline/suara-sejati.json"] },
+  "/literatur": {
+    chunks: ["src/literature-catalog.ts"],
+    files: ["offline/literature.json"],
+  },
+  "/sauh": { chunks: [], files: ["offline/sauh.json"] },
+  "/iman": { chunks: ["src/faith-payloads.ts"], files: ["offline/faith.json"] },
+  "/kidung": { chunks: ["src/hymn-payloads.ts"], files: [] },
+};
+
 /** Chunk keys are source paths; every other manifest key is a shared chunk. */
 export function routeChunkFile(manifest, entry) {
   const record = manifest?.[entry];
-  return typeof record?.file === "string" ? record.file : undefined;
+  if (typeof record?.file === "string") return record.file;
+  // Shared chunks are keyed by their emitted basename (`_suara-*.js`), not by a
+  // source path, so fall back to the file prefix.
+  const name = entry
+    .split("/")
+    .pop()
+    ?.replace(/\.[a-z]+$/, "");
+  if (!name) return undefined;
+  for (const value of Object.values(manifest ?? {})) {
+    const file = typeof value?.file === "string" ? value.file : "";
+    if (file.includes(`/${name}-`) || file.includes(`/_${name}-`)) return file;
+  }
+  return undefined;
 }
 
 export function entryPreloadTag(manifest, entry, base) {
@@ -26,8 +52,27 @@ export function entryPreloadTag(manifest, entry, base) {
   return file ? `<link rel="modulepreload" href="${base}${file}" />` : "";
 }
 
+export function routeDataTags(manifest, route, base) {
+  const spec = ROUTE_DATA[route];
+  if (!spec) return "";
+  const tags = spec.chunks
+    .map((key) => routeChunkFile(manifest, key))
+    .filter(Boolean)
+    .map((file) => `<link rel="modulepreload" href="${base}${file}" />`);
+  for (const file of spec.files)
+    tags.push(
+      `<link rel="preload" as="fetch" href="${base}${file}" crossorigin="anonymous" />`,
+    );
+  return tags.join("\n    ");
+}
+
 export function routePreloadTags(manifest, route, base) {
-  return entryPreloadTag(manifest, ROUTE_ENTRIES[route], base);
+  return [
+    entryPreloadTag(manifest, ROUTE_ENTRIES[route], base),
+    routeDataTags(manifest, route, base),
+  ]
+    .filter(Boolean)
+    .join("\n    ");
 }
 
 export function injectRoutePreload(html, tags) {

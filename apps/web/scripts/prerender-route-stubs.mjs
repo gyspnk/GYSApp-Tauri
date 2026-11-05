@@ -8,9 +8,11 @@ import { dirname, join } from "node:path";
 import { injectBffHints, injectBffPreconnect } from "./bff-hints.mjs";
 import { fontPreloadTags } from "./font-preload.mjs";
 import {
+  ROUTE_DATA,
   ROUTE_ENTRIES,
   entryPreloadTag,
   injectRoutePreload,
+  routeDataTags,
 } from "./route-preload-tags.mjs";
 import {
   hymnStubPaths,
@@ -51,8 +53,16 @@ const manifest = await readFile(join(dist, ".vite", "manifest.json"), "utf8")
     return {};
   });
 // Start the route chunk with the entry instead of after it.
-const withRoute = (html, entry) =>
-  injectRoutePreload(html, entryPreloadTag(manifest, entry, base));
+const withRoute = (html, entry, dataRoute) =>
+  injectRoutePreload(
+    html,
+    [
+      entryPreloadTag(manifest, entry, base),
+      dataRoute ? routeDataTags(manifest, dataRoute, base) : "",
+    ]
+      .filter(Boolean)
+      .join("\n    "),
+  );
 if (hintedShell !== original)
   await writeFile(
     join(dist, "index.html"),
@@ -95,9 +105,20 @@ for (const route of [
         : suaraRoutes.includes(route)
           ? "src/online-content.tsx"
           : undefined);
+  const dataRoute = ROUTE_DATA[`/${route}`]
+    ? `/${route}`
+    : literatureRoutes.includes(route)
+      ? "/literatur"
+      : suaraRoutes.includes(route)
+        ? "/suara"
+        : undefined;
   await writeFile(
     target,
-    withRoute(route === "sauh" ? hintedShell : preconnectShell, entry),
+    withRoute(
+      route === "sauh" ? hintedShell : preconnectShell,
+      entry,
+      dataRoute,
+    ),
   );
 }
 

@@ -10,6 +10,15 @@ import {
 
 const manifest = {
   "src/faith.tsx": { file: "assets/faith-hd0aYUCk.js", isDynamicEntry: true },
+  "src/faith-payloads.ts": {
+    file: "assets/faith-payloads-B1x2Y3z4.js",
+    isDynamicEntry: true,
+  },
+  "src/hymn-payloads.ts": {
+    file: "assets/hymn-payloads-C5d6E7f8.js",
+    isDynamicEntry: true,
+  },
+  "src/suara.ts": { file: "assets/suara-G9h0I1j2.js", isDynamicEntry: true },
   "src/kidung.tsx": { file: "assets/kidung-CH_VeX4n.js", isDynamicEntry: true },
   "src/kidung-page.tsx": {
     file: "assets/kidung-page-DyzRtWg8.js",
@@ -17,14 +26,28 @@ const manifest = {
   },
 };
 
-test("maps each static route to its chunk", () => {
+test("maps each static route to its chunk and data", () => {
   assert.equal(
     routePreloadTags(manifest, "/iman", "/GYSApp-Tauri/"),
-    '<link rel="modulepreload" href="/GYSApp-Tauri/assets/faith-hd0aYUCk.js" />',
+    [
+      '<link rel="modulepreload" href="/GYSApp-Tauri/assets/faith-hd0aYUCk.js" />',
+      '<link rel="modulepreload" href="/GYSApp-Tauri/assets/faith-payloads-B1x2Y3z4.js" />',
+      '<link rel="preload" as="fetch" href="/GYSApp-Tauri/offline/faith.json" crossorigin="anonymous" />',
+    ].join("\n    "),
   );
   assert.equal(
     routePreloadTags(manifest, "/kidung", "/"),
-    '<link rel="modulepreload" href="/assets/kidung-page-DyzRtWg8.js" />',
+    [
+      '<link rel="modulepreload" href="/assets/kidung-page-DyzRtWg8.js" />',
+      '<link rel="modulepreload" href="/assets/hymn-payloads-C5d6E7f8.js" />',
+    ].join("\n    "),
+  );
+  assert.equal(
+    routePreloadTags(manifest, "/suara", "/"),
+    [
+      '<link rel="modulepreload" href="/assets/suara-G9h0I1j2.js" />',
+      '<link rel="preload" as="fetch" href="/offline/suara-sejati.json" crossorigin="anonymous" />',
+    ].join("\n    "),
   );
 });
 
