@@ -5605,3 +5605,20 @@ body:has(.hymn-detail-page.is-text-viewer)
   letter-spacing: -0.02em;
   line-height: 1.25;
 }
+
+/* Desktop keeps two floating bars under the lyrics: the MIDI dock and the
+   verse navigator. They used to have different widths, radii and borders, so
+   the pair read as two unrelated widgets. Share one measure and one surface. */
+@media (min-width: 900px) {
+  .hymn-detail-page.is-text-viewer .hymn-text-footer:not(.is-all-verses),
+  .hymn-detail-page.is-text-viewer .hymn-text-footer.is-all-verses {
+    width: min(760px, 100%);
+    margin: 10px auto max(12px, env(safe-area-inset-bottom));
+    padding: 4px 14px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-xs);
+  }
+  .hymn-detail-page.is-text-viewer .hymn-text-footer button {
+    background: var(--surface);
+  }
+}

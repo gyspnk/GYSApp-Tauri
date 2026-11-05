@@ -4361,6 +4361,16 @@ Tiga keputusan pertama:
   naik ke ~64 px — masih di atas target 44 px dan tanpa menambah aset.
   Verifikasi: `more-device-data` + `settings-data-integrity` **12/12 (15,6 s)**.
 
+- **D-7 — Dock MIDI dan navigasi bait menjadi satu tumpukan.** Di desktop
+  keduanya dulu berbeda ukuran (dock 760 px, navigasi bait hanya 384 px) dengan
+  dua sudut dan bayangan berbeda, sehingga terbaca sebagai dua widget lepas.
+  Sekarang di ≥900 px navigasi bait memakai lebar, pusat, radius dan bayangan
+  yang sama dengan dock (`width: min(760px, 100%)`, `--radius-card`,
+  `--shadow-xs`), dan diberi jarak bawah `max(12px, safe-area)` supaya tidak
+  menempel ke tepi viewport. Verifikasi `midi-control-unification` +
+  `kidung-control-sync` + `media-dock` **24/24 (1,3 mnt)**; geometri terukur
+  dock `x340 w760` dan footer `x340 w760`.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.
