@@ -85,6 +85,28 @@ export function extractPdfMetaFromBytes(
   return extractPdfMeta(bytes);
 }
 
+/** The pane must never wait on the fork master when the host is blocked. */
+export const PDF_META_TIMEOUT_MS = 5_000;
+
+function withMetadataTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error("PDF metadata timed out")),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 /** Read the song's mapped first page from the shared range-backed master. */
 /** A failed master read is not retried for a minute: a retry storm saturated
  * WebView2 in the packaged soak and starved the visible PDF pane. */
@@ -107,7 +129,10 @@ export function warmHymnPdfMeta(item: HymnCatalogEntry): Promise<HymnPdfMeta> {
   }
   const existing = cache.get(item.id);
   if (existing) return existing;
-  const request = loadForkHymnalPdf(item.id)
+  const request = withMetadataTimeout(
+    loadForkHymnalPdf(item.id),
+    PDF_META_TIMEOUT_MS,
+  )
     .then(({ src, initialPage }) => extractPdfMeta(src, initialPage))
     .then((meta) => {
       failedAt.delete(item.id);

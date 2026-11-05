@@ -4579,6 +4579,24 @@ Belum dikerjakan: butuh refactor `packState` bertahap + spec yang menahan
 perilaku lama (deep link, pencarian, catatan). Dicatat sebagai langkah
 berikutnya, bukan klaim selesai.
 
+### Batas waktu metadata PDF kidung (5 Nov)
+
+Reload soak native menunjukkan pane PDF kidung tidak melukis kanvas dalam 45 dtk
+ketika jaringan diblokir (`Cached PDF did not render after reload`), dengan
+diagnostik `chord.fetch`/`music.asset` "Failed to fetch" pada jendela yang sama.
+Akar yang bisa dipastikan: jalur metadata (`warmHymnPdfMeta` →
+`loadForkHymnalPdf`) tidak punya batas waktu, sehingga pembacaan master fork
+dapat menggantung dan menahan pane.
+
+Perbaikan: `PDF_META_TIMEOUT_MS = 5_000` di `apps/web/src/hymn-pdf-meta.ts`
+dengan pembungkus `withMetadataTimeout`; lewat 5 dtk metadata jatuh ke nilai
+fallback (tempo default, transpose 0) sehingga PDF yang sudah tersimpan bisa
+dilukis. Unit test `hymn-pdf-meta.test.ts` **6/6** memakai `vi.useFakeTimers()`
+untuk membuktikan fallback tanpa memanggil `getPage`.
+
+Catatan jujur: ini resiliensi, bukan bukti pane native melukis — buktinya harus
+dari soak Windows berikutnya.
+
 ### Putaran 156 — Paket Alkitab dipecah per kitab (persiapan, 5 Nov)
 
 `apps/web/scripts/split-bible-pack.mjs` memecah `tb-reader.json` menjadi
