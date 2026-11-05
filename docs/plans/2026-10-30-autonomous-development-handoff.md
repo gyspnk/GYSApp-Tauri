@@ -4474,6 +4474,13 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Verifikasi hosted multi-select (5 Nov)
+
+Playwright pada `https://gyspnk.github.io/GYSApp-Tauri/alkitab/` (390×844):
+tap ayat 1 → “Pilih banyak ayat” → tap ayat 2 dan 3 menghasilkan
+**3 baris `.verse-row.is-selected`** di build hosted (=Pages untuk `32dcd6c`),
+jadi multi-select berjalan di produksi, bukan hanya di preview lokal.
+
 ### D-10 — Ayat Alkitab rata kiri, bukan rata kanan-kiri (5 Nov)
 
 Dengan takaran 46rem, `text-align: justify` pada ayat menghasilkan sungai spasi
