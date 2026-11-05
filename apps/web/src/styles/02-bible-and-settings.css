@@ -2498,9 +2498,6 @@
   .bible-page-header .page-intro-actions {
     justify-content: space-between;
   }
-  .bible-page-header .bible-search {
-    padding-top: 12px;
-  }
   .hymn-page-header {
     grid-template-columns: 1fr;
     gap: 12px;

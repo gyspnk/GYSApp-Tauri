@@ -689,18 +689,7 @@
     padding: 12px;
     gap: 10px;
   }
-  .bible-search-options {
-    gap: 8px;
-    align-items: stretch;
-  }
-  .bible-search-options .control-select {
-    min-width: 0;
-    flex: 1 1 100%;
-  }
-  .bible-search-options .check-option {
-    flex: 1 1 auto;
-    min-width: 110px;
-  }
+
   /* Topbar mobile: cegah tabrakan */
   .topbar {
     gap: 6px;

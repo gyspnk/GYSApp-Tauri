@@ -4451,6 +4451,19 @@ sesuai lebar terukur tiap breakpoint. Hasil terukur di preview:
 karena tidak ada kandidat 1536w. Verifikasi `home-resilience` + `smoke -g
 "Sauh|home|hero"` **5/5 (13,0 s)**.
 
+### Putaran 154 — CSS panel pencarian lama dibuang (5 Nov)
+
+Setelah `2d9ec12` menghapus panel pencarian Alkitab, 159 baris CSS-nya
+masih tinggal di lima berkas (`01-foundations-and-layout.css`,
+`02-bible-and-settings.css`, `03-shell-controls.css`, `04-reader-media.css`,
+`05-responsive-refinements.css`): `.bible-search`, `.bible-search-options*`,
+`.bible-search-history*`, `.result-item`, `.search-results*`. Semua selector
+itu tidak lagi dipakai komponen mana pun (`.global-search*` dan
+`.bible-picker-search*` tetap). Dibuang dengan pemeriksa kurung agar tidak
+memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
+73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
+(3,3 mnt)**.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.

@@ -1091,26 +1091,6 @@
     background: transparent;
     box-shadow: none;
   }
-  .bible-page-header .bible-search {
-    gap: 8px;
-    max-height: 700px;
-    overflow: hidden;
-    padding-top: 8px;
-  }
-  .bible-page-header .bible-search:not(:focus-within):not(.is-open) {
-    height: auto;
-    max-height: 1px;
-    min-height: 0;
-    padding: 0;
-    border: 0;
-    transition:
-      max-height 0s linear 180ms,
-      padding 0s linear 180ms,
-      border-width 0s linear 180ms;
-  }
-  .bible-search-options {
-    gap: 4px 8px;
-  }
   .hymn-page-header .hymn-catalog-controls {
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;

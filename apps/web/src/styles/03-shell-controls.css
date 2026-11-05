@@ -802,11 +802,6 @@
   .app-frame.is-reader-route .bible-page-header .pack-badge {
     display: none;
   }
-  .app-frame.is-reader-route .bible-page-header .bible-search {
-    grid-column: 1 / -1;
-    gap: 6px;
-    padding-top: 8px;
-  }
   .app-frame.is-reader-route .reader-toolbar {
     align-items: stretch;
     gap: 8px;
