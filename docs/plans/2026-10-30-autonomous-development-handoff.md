@@ -4437,6 +4437,20 @@ Tiga keputusan pertama:
   (`gysapp-tauri-bff.pas-presensi.workers.dev`), sedangkan host pihak ketiga
   (raw.githubusercontent.com, dll.) tetap diblokir — sesuai tujuan B-37.
 
+### Putaran 153 — `sizes` hero mengikuti lebar kartu (5 Nov)
+
+Hero Sauh memakai `sizes="(min-width: 1024px) 1000px, 100vw"`, padahal
+kartunya hanya **366 px** di 390 dan **651 px** di 768. Karena `sizes` memakai
+lebar viewport (bukan lebar gambar), browser meminta 780 px pada 390 @2× dan
+jatuh ke kandidat **1024w (345 364 B)**, sementara 768w (228 007 B) sudah cukup;
+di tablet @2× ia bahkan memilih berkas asli **735 863 B**. Sekarang
+`sizes="(min-width: 1200px) 1024px, (min-width: 1024px) 768px, (min-width: 600px) 512px, calc(100vw - 24px)"`
+sesuai lebar terukur tiap breakpoint. Hasil terukur di preview:
+390 @2× → **768w (−117 KB, −34 %)**, 600–768 @2× → **1024w (−390 KB, −53 %)**,
+1024 @1× → 768w, 1200+ @1× → 1024w; desktop retina tetap memakai berkas asli
+karena tidak ada kandidat 1536w. Verifikasi `home-resilience` + `smoke -g
+"Sauh|home|hero"` **5/5 (13,0 s)**.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.
