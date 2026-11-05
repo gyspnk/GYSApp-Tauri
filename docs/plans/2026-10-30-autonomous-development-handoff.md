@@ -4319,6 +4319,23 @@ Android): `/root/.config/billion-context/billion-context.json`,
 `/root/.dsh/profiles/web/cordis.patch.yml`, dan file npm global DSH.
 Kembalikan dengan `.bak` masing-masing bila ada masalah.
 
+### Lingkungan Droidspace — hasil lanjutan (5 Nov, putaran lanjut)
+
+- **Canva MCP diaktifkan kembali** (`/root/.dsh/profiles/web/cordis.patch.yml`);
+  biaya idle-nya nol dan tool tetap tersedia. Biaya poll anak proses baru turun
+  setelah harness restart (10 ms → 250 ms).
+- **Batas memori per sesi dicoba lalu dibatalkan:** `sessions.hardMaxBytes`
+  384 MB menurunkan RSS proxy 1 060 → ~600 MB tetapi memicu churn
+  fold/reload (CPU 10–21 %, RSS 420–850 MB berayun) — lebih buruk daripada
+  manfaatnya. Konfigurasi kembali ke mode legacy tanpa batas; RSS wajar
+  (~600–900 MB selama sesi aktif), tulis 0 KiB/s saat idle.
+- **Pemeriksaan cepat:** `/root/env-health.sh` mengukur load, RAM, suhu, CPU
+  dan `/proc`-read per proses, serta jumlah proses canva MCP. Dipakai untuk
+  memverifikasi setelah restart.
+- **Angka terakhir sebelum restart:** load **0,65–0,96**, suhu **57–61 °C**,
+  RAM tersedia ~1,9 GB, `dsh` **35 %** (poll 4 259 read/s, patch menunggu
+  restart), proxy **0 KiB/s** tulis.
+
 ### Putaran 145 — Chunk rute dimulai bersama entri (5 Nov)
 
 Rute dimuat sebagai `import()` dinamis, jadi di tautan lambat browser baru
