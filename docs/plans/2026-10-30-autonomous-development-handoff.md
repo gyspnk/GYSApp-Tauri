@@ -4337,6 +4337,12 @@ Kembalikan dengan `.bak` masing-masing bila ada masalah.
   sisanya proses Android yang tidak terlihat dari dalam container. Jadi sisa
   beban yang bisa kita pengaruhi tinggal poll `dsh` (35 %) yang menunggu
   restart.
+- **Pinning CPU dicoba lalu dibatalkan:** `taskset -pc 0 <pid dsh>` menurunkan
+  suhu sesaat (57–61 °C → 47–48 °C) tetapi **anak proses mewarisi affinity**
+  (shell baru hanya mendapat 1 core, `nproc` = 1) karena thread pool dibuat
+  setelah pinning; build/test bisa 8× lebih lambat. Semua thread di-reset ke
+  `0-7`, unit `dsh-pin.service` dihapus. Pelajaran: jangan pin proses induk
+  harness — spawn mewarisi mask dari thread yang memanggil `fork`.
 - **Angka terakhir sebelum restart:** load **0,65–0,96**, suhu **57–61 °C**,
   RAM tersedia ~1,9 GB, `dsh` **35 %** (poll 4 259 read/s, patch menunggu
   restart), proxy **0 KiB/s** tulis.
