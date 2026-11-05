@@ -141,6 +141,7 @@ jobs:
       - name: Benchmark packaged process relaunches and local content
         env:
           GYS_NATIVE_BENCHMARK_SAMPLES: ${{ inputs.samples || '30' }}
+        shell: bash
         run: |
           if [ "$GYS_NATIVE_BENCHMARK_SAMPLES" -lt 5 ]; then
             echo "::error::samples must be 5-100 (got $GYS_NATIVE_BENCHMARK_SAMPLES)"
