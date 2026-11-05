@@ -4312,7 +4312,11 @@ Hasil lokal (390 px, 1,6 Mbps, CPU 4×, Service Worker diblokir):
 | Ayat pertama terlihat   | 16,4–17,1 dtk   | **13,7 dtk** |
 
 Sisa waktu adalah transfer 1,7 MB (≈8,5 dtk) + parse; pemecahan per-kitab
-menjadi tuas berikutnya bila diizinkan. Regresi dijaga
+menjadi tuas berikutnya bila diizinkan.
+
+Hosted setelah deploy (`41978058366`, 390 px / 1,6 Mbps / CPU 4×, SW diblokir):
+**satu** permintaan pack, mulai **2,3–2,5 dtk**, ayat pertama
+**13,4–14,1 dtk** (sebelumnya 14,6–14,8 dtk). Regresi dijaga
 `bible-pack-loader.test.ts` (**7/7**, termasuk “host sudah mendekode” dan
 “memakai respons dari shell”) dan `scripts/pack-hints.test.mjs` (**3/3**).
 E2E: `bible-picker-mobile` + `runtime-health` **9 lulus, 1 flaky** (instalasi
