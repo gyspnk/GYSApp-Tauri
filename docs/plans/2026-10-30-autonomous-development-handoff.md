@@ -4286,46 +4286,6 @@ Pages.
 
 ### Lingkungan Droidspace — hasil optimasi harness (5 Nov)
 
-Pengukuran pada Xiaomi Pad 7 Pro (Arch di Droidspace, 8 core: 3×2,0 GHz,
-4×2,8 GHz, 1×3,0 GHz), semua angka dari `/proc`, `thermal_zone*`, `ss`:
-
-| Metrik             | Sebelum                   | Sesudah                                 |
-| ------------------ | ------------------------- | --------------------------------------- |
-| Load average idle  | 3,9–4,6                   | 0,65–1,0                                |
-| Suhu zona 2–4      | 66–77 °C                  | 57–61 °C                                |
-| Tulis disk proxy   | 13 MB/s (556 GB lifetime) | 0 KiB/s                                 |
-| CPU proxy idle     | 18,5 %                    | ~2 %                                    |
-| CPU `dsh web` idle | 35 %                      | **masih 35 %** (patch menunggu restart) |
-
-Dua pembakar ditemukan dan dimatikan: (1) Chromium debug sisa sesi lama
-(21 jam, GPU process 22 % + dua renderer 13–16 %), (2) penulisan ulang store
-billion-context tiap ~0,5 dtk dalam mode `unified:FULL` (WAL 37 MB melawan cap
-8 MiB) — dipindah ke `legacy` + `persist.debounceMs = 30000`.
-
-Pembakar ketiga, poll `/proc` 10 ms di
-`@deepseek-ai/dsh-subprocess-local/lib/runner.js:253`
-(`setInterval(() => this.poll(), 10)`, ~4 200 read/dtk), sudah dipatch ke
-**250 ms** di disk (`/root/runner.js.bak` cadangan) tetapi **belum aktif**
-karena modul sudah termuat di proses berjalan; perlu menutup/membuka app DSH.
-Profil CPU lewat Node inspector (`kill -USR1 126`): 13,5 % `readFileUtf8`,
-5,4 % `readdir`, 4,1 % `parseProcStat`.
-
-**Akselerasi hardware — tidak tersedia untuk Linux di container ini.**
-`/dev/dri/renderD128` adalah display controller (`DRIVER=msm_drm`,
-`qcom,sde-kms`), GPU Adreno hanya lewat `/dev/kgsl-3d0` dengan driver tertutup
-Android. `vulkaninfo` gagal, turnip menolak node DRM itu
-(`VK_ERROR_INCOMPATIBLE_DRIVER`), EGL jatuh ke `llvmpipe`. Chromium selalu
-SwiftShader; A/B render (screenshot 106 vs 95 ms, frame 35 ms) menunjukkan
-software rendering bukan sumber panas. Ini butuh GPU passthrough Droidspace
-atau perubahan sisi Android; module KernelSU tidak bisa menambah node DRM.
-Karena itu tidak ada modul KernelSU yang dibuat.
-
-Eksperimen yang dibatalkan: pinning CPU ke little cluster (anak proses mewarisi
-affinity → `nproc` 1, build bisa 8× lambat) dan cap memori sesi 384 MB
-(RSS turun tetapi CPU berosilasi 10–21 %). Keduanya sudah dikembalikan.
-
-### Lingkungan Droidspace — hasil optimasi harness (5 Nov)
-
 Xiaomi Pad 7 Pro, Arch di Droidspace, 8 core (3×2,0 / 4×2,8 / 1×3,0 GHz).
 Semua angka dari `/proc`, `thermal_zone*`, `strace`:
 
