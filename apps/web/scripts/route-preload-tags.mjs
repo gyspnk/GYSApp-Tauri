@@ -29,7 +29,10 @@ export const ROUTE_DATA = {
   "/literatur": { chunks: ["src/literature-catalog.ts"], files: [] },
   "/sauh": { chunks: [], files: ["offline/sauh.json"] },
   "/iman": { chunks: ["src/faith-payloads.ts"], files: ["offline/faith.json"] },
-  "/kidung": { chunks: ["src/hymn-payloads.ts"], files: [] },
+  "/kidung": {
+    chunks: ["src/hymn-payloads.ts", "src/kidung-catalog.ts"],
+    files: [],
+  },
 };
 
 /** Chunk keys are source paths; every other manifest key is a shared chunk. */

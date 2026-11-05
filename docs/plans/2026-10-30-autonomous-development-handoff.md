@@ -5368,6 +5368,20 @@ cache 7 hari, dan `<link rel="preload">` untuk API-nya sudah dipasang
 hangat per colo) ditambah transfer foto. Tidak ada tuas aplikasi yang tersisa
 untuk itu — dicatat sebagai batas, bukan bug.
 
+### Putaran 166 — Chunk katalog ikut dimuat dari shell (5 Nov)
+
+Profil 390 px/200 kB/s/4× CPU menunjukkan rantai impor dinamis berjalan serial
+setelah chunk entri: `kidung-catalog`, `kidung-shared`, `kidung-local-nav`,
+`hymn-view-mode` baru diminta pada detik ke-18–20. Shell `/kidung/` sekarang
+juga memuat `modulepreload` untuk chunk katalog (`src/kidung-catalog.ts` di
+`ROUTE_DATA`), sehingga impor dinamis di `kidung-page.tsx` memakai modul yang
+sudah diunduh.
+
+Ukuran: baris pertama **21 189 / 21 204 ms → 20 383 / 20 329 ms** (dua sampel
+tiap kondisi, stabil ±55 ms). Kumulatif dari baseline 24 392 ms: **−4,0 dtk**.
+Sisa biaya terbesar adalah parse JS di CPU 4× (chunk `dist-*.js` saja 101 KB
+setelah dekompresi), bukan transfer.
+
 ### Putaran 164 — Metadata kidung dimulai dari kepala dokumen (5 Nov)
 
 Baris pertama katalog menunggu `offline/hymn-metadata.json` yang baru diminta
