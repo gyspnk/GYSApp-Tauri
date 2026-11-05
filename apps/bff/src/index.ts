@@ -845,7 +845,15 @@ export function createApp(
     }
 
     try {
-      const upstream = await fetchOfficialImage(url, c.req.raw.signal);
+      let upstream = await fetchOfficialImage(url, c.req.raw.signal);
+      // WordPress metadata can advertise a resized variant whose file was
+      // never copied to the mirror (e.g. `…-300x220.jpg` → 404). Serve the
+      // original instead of letting every visit flash a broken thumbnail.
+      const unsized = new URL(url.toString());
+      unsized.pathname = unsized.pathname.replace(/-\d+x\d+(?=\.[^./]+$)/i, "");
+      if (!upstream && unsized.pathname !== url.pathname) {
+        upstream = await fetchOfficialImage(unsized, c.req.raw.signal);
+      }
       if (upstream) {
         c.header(
           "content-type",

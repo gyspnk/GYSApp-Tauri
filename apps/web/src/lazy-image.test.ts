@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getLazyImageState, resolveProxiedImageUrl } from "./lazy-image.js";
+import {
+  getLazyImageState,
+  readBrokenImages,
+  rememberBrokenImage,
+  resolveProxiedImageUrl,
+} from "./lazy-image.js";
 
 describe("getLazyImageState", () => {
   it.each([
@@ -46,5 +51,40 @@ describe("resolveProxiedImageUrl", () => {
       "https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/cover-150x150.jpg",
     );
     expect(resolveProxiedImageUrl(external)).toBe(external);
+  });
+});
+
+describe("broken image memory", () => {
+  const store = new Map<string, string>();
+  const fakeStorage = {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => void store.set(key, value),
+    removeItem: (key: string) => void store.delete(key),
+  };
+
+  afterEach(() => {
+    store.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it("remembers a failed URL and skips it for a week", () => {
+    vi.stubGlobal("localStorage", fakeStorage);
+    const url = "https://cdn.example/cover-300x220.jpg";
+    rememberBrokenImage(url);
+    expect(readBrokenImages().has(url)).toBe(true);
+    const weekLater = Date.now() + 8 * 24 * 60 * 60_000;
+    expect(readBrokenImages(weekLater).has(url)).toBe(false);
+  });
+
+  it("survives unreadable storage", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => "{not json",
+      setItem: () => undefined,
+      removeItem: () => undefined,
+    });
+    expect(readBrokenImages().size).toBe(0);
+    expect(() =>
+      rememberBrokenImage("https://cdn.example/a.jpg"),
+    ).not.toThrow();
   });
 });

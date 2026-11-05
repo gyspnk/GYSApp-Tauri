@@ -4474,6 +4474,33 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Bug thumbnail “Cahaya Kehidupan” yang terus memuat (5 Nov)
+
+Laporan pemilik: di Suara Sejati, sampul artikel **Cahaya Kehidupan** terlihat
+seperti memuat ulang terus setiap kali beranda dibuka; sampul lain tidak.
+
+Akar masalah: feed WordPress menyebut varian `…/DEGW8hlVoAEjaae-300x220.jpg`
+sebagai `sizes.medium.source_url`, tetapi berkas varian itu **tidak ada** di
+mirror S3 — setiap kunjungan meminta URL itu, mendapat **404**, lalu klien
+jatuh ke berkas asli 91 268 B; skeleton menyala lagi dan pembaca melihat
+“memuat ulang”.
+
+Perbaikan dua sisi:
+
+1. **BFF** (`apps/bff/src/index.ts`, route `/api/v1/content/image`): bila
+   sumber resmi menolak URL bervarian, Worker mencoba sekali lagi dengan akhiran
+   `-WxH` dibuang, sehingga URL varian yang rusak tetap menjawab **200** dengan
+   berkas asli dan ikut tersimpan di cache tepi 7 hari. Bila keduanya gagal,
+   jawabannya tetap `503 UPSTREAM_UNAVAILABLE`.
+2. **Klien** (`apps/web/src/lazy-image.tsx`): URL yang gagal diingat di
+   `localStorage["gys-broken-images-v1"]` (maks 60, kedaluwarsa 7 hari), dan
+   kunjungan berikutnya langsung mulai dari kandidat cadangan — tanpa
+   permintaan 404 berulang atau kedip skeleton.
+
+Verifikasi: BFF **81/81** (tes baru memastikan varian 404 → berkas asli 200),
+`lazy-image.test.ts` **9/9**, `suara-catalog` + `home-resilience` **2/2
+(19,0 dtk)**, `pnpm -r typecheck` bersih.
+
 ### D-9 — Multi-select ayat di Alkitab (5 Nov, permintaan pemilik)
 
 Pemilik: “saat tekan bisa select lebih dari satu ayat dan bisa dihighlight atau

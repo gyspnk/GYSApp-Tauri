@@ -1272,6 +1272,39 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("serves the original file when an advertised size variant is missing", async () => {
+    const originalFetch = globalThis.fetch;
+    const calls: string[] = [];
+    globalThis.fetch = (async (input) => {
+      const url = String(input);
+      calls.push(url);
+      if (url.includes("-300x220")) return new Response("nf", { status: 404 });
+      return new Response(new Uint8Array([0xff, 0xd8, 0xff]), {
+        status: 200,
+        headers: { "content-type": "image/jpeg" },
+      });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const sized =
+        "https://tjc.org/id/wp-content/uploads/sites/43/2023/10/DEGW8hlVoAEjaae-300x220.jpg";
+      const response = await app.request(
+        `/api/v1/content/image?url=${encodeURIComponent(sized)}`,
+      );
+      expect(response.status).toBe(200);
+      expect(calls.some((url) => url.includes("-300x220"))).toBe(true);
+      expect(calls.some((url) => url.endsWith("DEGW8hlVoAEjaae.jpg"))).toBe(
+        true,
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("serves a repeated proxied image from the worker cache", async () => {
     const originalFetch = globalThis.fetch;
     const store = new Map<string, Response>();

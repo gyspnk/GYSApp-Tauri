@@ -3,6 +3,43 @@ import { translate, type Locale } from "./i18n.js";
 import { getCoverDataUri } from "./cover-generator.js";
 import { pickSmallCandidate } from "./srcset.js";
 
+const BROKEN_KEY = "gys-broken-images-v1";
+const BROKEN_TTL_MS = 7 * 24 * 60 * 60_000;
+
+export function readBrokenImages(now = Date.now()): Set<string> {
+  try {
+    const raw = localStorage.getItem(BROKEN_KEY);
+    const entries: unknown = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(entries)) return new Set();
+    return new Set(
+      entries
+        .filter(
+          (entry): entry is { u: string; t: number } =>
+            Boolean(entry) &&
+            typeof entry === "object" &&
+            typeof (entry as { u?: unknown }).u === "string" &&
+            typeof (entry as { t?: unknown }).t === "number",
+        )
+        .filter((entry) => now - entry.t < BROKEN_TTL_MS)
+        .map((entry) => entry.u),
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+export function rememberBrokenImage(url: string): void {
+  try {
+    const now = Date.now();
+    const entries = [...readBrokenImages(now)].map((u) => ({ u, t: now }));
+    if (entries.some((entry) => entry.u === url)) return;
+    entries.push({ u: url, t: now });
+    localStorage.setItem(BROKEN_KEY, JSON.stringify(entries.slice(-60)));
+  } catch {
+    // Storage can be full or blocked; the fallback chain still works.
+  }
+}
+
 export type LazyImageState = "loading" | "loaded" | "missing" | "error";
 
 export function getLazyImageState(
@@ -110,10 +147,6 @@ function ImageContent({
   /** Use the narrowest responsive candidate (metered or slow connections). */
   preferSmall?: boolean | undefined;
 }) {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  const imageRef = useRef<HTMLImageElement>(null);
   const smallest = preferSmall ? pickSmallCandidate(imageSrcSet) : undefined;
   const primary = smallest
     ? (resolveProxiedImageUrl(smallest) ?? smallest)
@@ -128,6 +161,18 @@ function ImageContent({
       ].filter((value): value is string => Boolean(value)),
     ),
   ];
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  // A size variant that 404s once is remembered for a week, so revisits start
+  // on the working fallback instead of flashing the skeleton again.
+  const [attempt, setAttempt] = useState(() =>
+    candidates.length > 1 &&
+    candidates[0] &&
+    readBrokenImages().has(candidates[0])
+      ? 1
+      : 0,
+  );
+  const imageRef = useRef<HTMLImageElement>(null);
   const effectiveSrc = candidates[attempt];
   // The responsive list only describes the first candidate; the fallbacks are
   // different files with no descriptors.
@@ -143,6 +188,8 @@ function ImageContent({
     .filter((entry): entry is string => Boolean(entry))
     .join(", ");
   const imageFailed = () => {
+    const failed = candidates[attempt];
+    if (failed) rememberBrokenImage(failed);
     if (attempt + 1 < candidates.length) {
       setLoaded(false);
       setAttempt(attempt + 1);
