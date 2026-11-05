@@ -10,7 +10,10 @@ import {
   injectBffPreconnect,
   injectSuaraHints,
 } from "./bff-hints.mjs";
-import { injectBiblePackFetch } from "./pack-hints.mjs";
+import {
+  injectBiblePackFetch,
+  injectHymnMetadataPreload,
+} from "./pack-hints.mjs";
 import { fontPreloadTags } from "./font-preload.mjs";
 import {
   ROUTE_DATA,
@@ -139,11 +142,15 @@ for (const route of [
         ? suaraShell
         : preconnectShell;
   const html = withRoute(shellFor, entry, dataRoute);
-  await writeFile(
-    target,
+  const withPack =
     route === "bible" || route === "alkitab"
       ? injectBiblePackFetch(html, base)
-      : html,
+      : html;
+  await writeFile(
+    target,
+    route === "kidung" || hymnRoutes.includes(route)
+      ? injectHymnMetadataPreload(withPack, base)
+      : withPack,
   );
 }
 

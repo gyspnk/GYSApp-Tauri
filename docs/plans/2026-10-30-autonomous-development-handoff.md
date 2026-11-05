@@ -5368,6 +5368,23 @@ cache 7 hari, dan `<link rel="preload">` untuk API-nya sudah dipasang
 hangat per colo) ditambah transfer foto. Tidak ada tuas aplikasi yang tersisa
 untuk itu — dicatat sebagai batas, bukan bug.
 
+### Putaran 164 — Metadata kidung dimulai dari kepala dokumen (5 Nov)
+
+Baris pertama katalog menunggu `offline/hymn-metadata.json` yang baru diminta
+setelah chunk entri dijalankan. Shell `/kidung/` (dan 533 stub kidung) sekarang
+memuat `<link rel="preload" as="fetch" … crossorigin="anonymous" />` untuk file
+itu lewat `injectHymnMetadataPreload()` di `apps/web/scripts/pack-hints.mjs`;
+`prerender-route-stubs.mjs` menyuntikkannya hanya untuk rute katalog + kidung.
+Preload ini aman karena permintaannya same-origin (berbeda dari pack Alkitab
+yang butuh `fetch()` di shell).
+
+Ukuran (Chrome, 390×844, latency 300 ms, 200 kB/s, CPU 4×, service worker
+diblokir, satu sampel tiap kondisi): baris pertama **24 392 ms → 21 188 ms**
+(−3,2 dtk). Variasi host tetap ada, jadi angka ini indikatif.
+
+Test: `apps/web/scripts/pack-hints.test.mjs` **5/5**; `kidung-loading` +
+`kidung-offline` **4/4 (8,5 dtk)**.
+
 ### Putaran 130 — Katalog kidung dua kolom di desktop (4 Nov)
 
 Pada 1440 px katalog masih satu kolom **1 160 px**: judul di kiri, tombol

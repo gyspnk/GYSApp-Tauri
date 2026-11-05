@@ -25,3 +25,21 @@ export function injectBiblePackFetch(html, rootBase) {
   if (html.includes("tb-reader.json.gz", html.indexOf("<head"))) return html;
   return html.replace("</head>", `  ${biblePackFetchTag(rootBase)}\n  </head>`);
 }
+
+/**
+ * The kidung catalogue paints its first row only after `hymn-metadata.json`
+ * arrives. The request used to start after the entry chunk; preloading it from
+ * the shell overlaps the download with boot. Same-origin, so no credentials
+ * mismatch (the reason `<link rel=preload as=fetch>` failed for the Bible pack).
+ */
+export function hymnMetadataUrl(rootBase) {
+  const base = rootBase.endsWith("/") ? rootBase : `${rootBase}/`;
+  return `${base}offline/hymn-metadata.json`;
+}
+
+export function injectHymnMetadataPreload(html, rootBase) {
+  if (!html.includes("</head>")) return html;
+  if (html.includes("hymn-metadata.json", html.indexOf("<head"))) return html;
+  const tag = `<link rel="preload" as="fetch" href="${hymnMetadataUrl(rootBase)}" crossorigin="anonymous" />`;
+  return html.replace("</head>", `  ${tag}\n  </head>`);
+}
