@@ -5565,3 +5565,12 @@ body:has(.hymn-detail-page.is-text-viewer)
 .more-setting-row::-webkit-details-marker {
   display: none;
 }
+
+/* D-4: the chapter title should outrank the verse text; the shared pericope
+   size left it looking like a bold run-in line. */
+.bible-pericope-heading.is-chapter .bible-pericope-title,
+.verse-list > div:first-child .bible-pericope-heading .bible-pericope-title {
+  font-size: clamp(1.3rem, 1vw + 1rem, 1.6rem);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}

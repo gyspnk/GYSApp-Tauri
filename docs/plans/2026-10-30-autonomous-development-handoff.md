@@ -4327,6 +4327,16 @@ Tiga keputusan pertama:
   chevron sendiri; `list-style: none` + `::-webkit-details-marker` ditambahkan
   agar tidak ada penanda bawaan yang muncul di tengah baris.
 
+- **D-4 — judul pasal Alkitab dinaikkan di atas teks ayat.** Judul perikop
+  pertama memakai ukuran yang sama dengan badan (18–20 px, tebal) sehingga
+  terbaca seperti baris run-in, bukan judul pasal. Sekarang
+  `.verse-list > div:first-child .bible-pericope-title` (dan varian
+  `is-chapter`) memakai `clamp(1.3rem, 1vw + 1rem, 1.6rem)` dengan
+  `letter-spacing` −0,02em: **25,6 px di 1440**, **23,4 px di 390** — jelas di
+  atas teks 20/18 px tanpa mengubah perikop di tengah pasal. Diverifikasi
+  `bible-zoom` + `bible-annotations` + `reading-direct-flow` **14/14 (1,1 mnt)**;
+  baseline visual Alkitab akan berbeda dan diadopsi dari artefak CI.
+
 Catatan jujur: sebagian sampul Suara tampak kosong karena **gambar sumbernya**
 memang polos (naturalWidth 300, tanpa detail) — bukan bug tata letak; yang
 diperbaiki adalah state memuatnya, bukan isi gambar.

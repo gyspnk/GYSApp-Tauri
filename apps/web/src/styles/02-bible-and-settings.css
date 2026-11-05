@@ -233,7 +233,11 @@
 }
 .bible-pericope-heading.is-chapter {
   margin-top: 2px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  /* A chapter title should outrank body text at every width; the shared
+     pericope size made it read like a bold run-in line. */
+  font-size: clamp(1.3rem, 1vw + 1rem, 1.65rem);
+  letter-spacing: -0.015em;
 }
 @media (max-width: 680px) {
   .bible-pericope-heading {
