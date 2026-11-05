@@ -4474,6 +4474,19 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Manifes chord memakai salinan tersimpan saat jaringan gagal (5 Nov)
+
+Skenario soak memblokir semua host di luar origin aplikasi, lalu memuat ulang
+pembaca PDF dari cache. Log memperlihatkan `chord-manifest` BFF dan raw ikut
+terblokir, dan `chords.ts` melempar error begitu kedua sumber gagal — padahal
+manifes valid terakhir sudah tersimpan di `gys-latest-chord-manifest-v1`.
+Sekarang, bila tidak ada respons jaringan sama sekali tetapi ada salinan
+tersimpan yang lolos skema, repositori mengembalikan salinan itu; hanya bila
+keduanya tidak ada ia melempar. `chords.test.ts` **9/9** (termasuk kasus 304
+dan kegagalan jaringan) dan `tsc -b apps/web` bersih.
+
+Ini belum membuktikan PDF cache tampil di soak; soak berikutnya yang menentukan.
+
 ### Soak 10 sampel: dua regresi hilang, PDF WebView masih gagal (5 Nov)
 
 Soak `42074292231` (`samples=10`, head `51dd93b`) selesai **failure**, tetapi

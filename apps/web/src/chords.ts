@@ -91,8 +91,12 @@ function newBrowserChordRepository(): ChordRepository {
             sourceError = error;
           }
         }
-        if (!response)
+        if (!response) {
+          // Offline or a blocked host: the last manifest we validated is still
+          // good enough to open a cached PDF instead of a spinner (B-37).
+          if (saved) return { manifest: saved };
           throw sourceError ?? new Error("Latest chord manifest unavailable");
+        }
         if (response.status === 304 && saved) return { manifest: saved };
         if (!response.ok) throw new Error("Latest chord manifest unavailable");
         const raw = (await response.json()) as {
