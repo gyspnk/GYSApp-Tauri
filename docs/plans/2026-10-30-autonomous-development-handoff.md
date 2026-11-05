@@ -4474,6 +4474,17 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Baseline Alkitab diambil dari artefak CI (5 Nov)
+
+CI `42074210088` (untuk `51dd93b`) gagal di `e2e-selective`: tiga baseline
+`visual.spec.ts` Alkitab (390/768/1440) sudah usang setelah D-10 mengubah
+`text-align` jadi `start` dan judul pasal naik ke 26 px, plus dua tes
+`menu-motion.spec.ts` (`:432`, `:506`) yang gagal pada `expect(...).toBe(true)`.
+Ketiga `bible-*-actual.png` dari artefak `e2e-selective-failures-42074210088`
+diadopsi apa adanya (bukan dari mesin lokal). `menu-motion` dijalankan ulang
+lokal **16/16 (1,3 mnt)** sehingga kegagalannya dicatat sebagai flake beban
+runner, bukan regresi animasi — tetap dipantau di run berikutnya.
+
 ### Rencana sambungan pack per kitab (5 Nov)
 
 Pembaca masih memuat `tb-reader.json.gz` penuh (1,7 MB) karena `bible.tsx`
