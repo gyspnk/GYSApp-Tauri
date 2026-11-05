@@ -145,3 +145,27 @@ test("deep routes keep PWA metadata rooted at the Pages base path", async ({
   ).toBe(true);
   expect(metadataErrors).toEqual([]);
 });
+
+test.describe("service worker", () => {
+  test.use({ serviceWorkers: "allow" });
+
+  test("installs the shell worker and keeps a precache", async ({ page }) => {
+    test.slow();
+    await page.goto("/GYSApp-Tauri/", { waitUntil: "load" });
+    await page.waitForFunction(
+      async () => {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        return registrations.some(
+          (registration) => registration.active?.state === "activated",
+        );
+      },
+      undefined,
+      { timeout: 40_000 },
+    );
+
+    const shellCaches = await page.evaluate(async () =>
+      (await caches.keys()).filter((key) => key.startsWith("gysapp-shell-")),
+    );
+    expect(shellCaches.length).toBeGreaterThan(0);
+  });
+});
