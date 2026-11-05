@@ -122,6 +122,22 @@
   details > :not(summary) {
     animation: none !important;
   }
+  /* Floating disclosure panels are absolutely positioned, so a closed panel
+     must be removed from layout and hit-testing by `display`. Relying on the
+     discrete `content-visibility` transition alone left the dock's music panel
+     painted-but-inert in WebView2 (details.open === false, pointer-events
+     inherited `none`), which made its controls unclickable. */
+  :is(
+      .media-advanced-controls,
+      .hymn-more-actions,
+      .hymn-reader-settings,
+      .pdf-music-menu,
+      .faith-pdf-sources,
+      .kidung-row-menu
+    ):not([open])
+    > :not(summary) {
+    display: none;
+  }
   details:not([open]) > :not(summary) {
     pointer-events: none;
   }

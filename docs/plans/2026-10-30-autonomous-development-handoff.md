@@ -6339,3 +6339,31 @@ diambil langsung dari raw.githubusercontent (`music-assets.ts`, `chords.ts`,
 ada fallback cache. Langkah berikutnya: perluas allowlist `/api/v1/content/pdf`
 untuk aset kidung lalu arahkan klien lewat proxy, atau sediakan jalur unduhan
 alternatif. Ini bukan sekadar jaringan runner.
+
+### Putaran 173–174 — Panel MIDI dock: keadaan tertutup harus deterministik (5 Nov)
+
+Soak Windows gagal berulang saat mengklik reset transpose di dock. Diagnostik
+berlapis mempersempit penyebabnya:
+
+| bukti                  | angka                                                                                                                                     |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| titik klik             | `(857, 511)`; dock `{x:134, y:605, w:760, h:84}`, jadi tombol 94 px **di atas** dock                                                      |
+| rantai penutup         | `article.lyrics-sheet` → `section.hymn-detail-surface` → `div.page` → `div.route-view`                                                    |
+| panel                  | `h:231`, `visibility:visible`, `opacity:1`, `client==scroll==229` (tidak ter-scroll)                                                      |
+| `pointer-events` panel | `none`, meski `details.open === false` dan `::details-content` `content-visibility: hidden`                                               |
+| lokal                  | Chromium 151 dengan `hasTouch` menyembunyikan isi sesuai harapan setelah `details[open]::details-content { content-visibility: visible }` |
+
+Kesimpulan: di WebView2 panel **tertutup** tetap terlukis (transisi diskret
+`content-visibility` tidak menutup) dan anak-anaknya mewarisi
+`pointer-events: none` dari aturan `details:not([open]) > :not(summary)`, jadi
+tombol terlihat tetapi tidak bisa di-hit. Perbaikan: panel melayang
+(`.media-advanced-controls`, `.hymn-more-actions`, `.hymn-reader-settings`,
+`.pdf-music-menu`, `.faith-pdf-sources`, `.kidung-row-menu`) memakai `display:
+none` untuk isi saat tertutup, sehingga keadaan tertutup tidak lagi bergantung
+pada transisi `content-visibility`. Soak juga hanya membuka ringkasan bila
+panel memang tertutup (klik ringkasan bersifat toggle) dan meng-assert `open
+=== true` sebelum mengklik kontrol di dalamnya.
+
+Bukti lokal: `media-dock` + `midi-control-unification` + `reader-settings` +
+`kidung-usability` **69/69 (2,7 mnt)**; `ui:consistency` dan `ui:boxes` (24
+pemuatan) tanpa temuan.

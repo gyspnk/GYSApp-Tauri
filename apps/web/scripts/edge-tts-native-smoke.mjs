@@ -2502,7 +2502,21 @@ try {
   await midiMute.click();
   assert.equal(await midiMute.getAttribute("aria-pressed"), "false");
 
-  await upstreamMidiSurface.locator(".media-advanced-summary").click();
+  // The summary toggles: clicking it while the panel is already open closes
+  // it, and a closed panel is inert on purpose. Only open when it is closed.
+  const advancedControls = upstreamMidiSurface.locator(
+    ".media-advanced-controls",
+  );
+  if (!(await advancedControls.evaluate((node) => node.open)))
+    await upstreamMidiSurface.locator(".media-advanced-summary").click();
+  await page
+    .waitForFunction(
+      () => document.querySelector(".media-advanced-controls")?.open === true,
+      null,
+      { timeout: 5_000 },
+    )
+    .catch(() => undefined);
+  assert.equal(await advancedControls.evaluate((node) => node.open), true);
   const midiTranspose = upstreamMidiSurface.locator(".media-transpose");
   const resetTranspose = midiTranspose.locator(".media-transpose-reset");
   if (await resetTranspose.isEnabled())
