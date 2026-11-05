@@ -5588,7 +5588,14 @@ pemilih suara lokal membaca `.audio-settings-inline select`; dan langkah PDF
 cache kini melempar pesan berisi request yang diblokir + delapan diagnostik
 `pdf*` terakhir, bukan timeout kosong.
 
-**B-37 (baru):** di runner Windows, WebView gagal mengambil PDF upstream
-(`net::ERR_FAILED`) dan replay dari cache tidak melukis canvas. Perlu bukti
-tambahan dari run berikutnya (diagnostik sudah dipasang) sebelum menyimpulkan
-apakah ini masalah jaringan runner atau cache PDF.
+**B-37 (bukti baru, 5 Nov):** run native `41985826144` (Windows, `bddefee`)
+gagal di soak dengan `Cached PDF did not render after reload` dan mendaftar
+URL yang diblokir: `…/gyschordweb/<commit>/docs/assets/pdf/051B_Batu Zaman.pdf`,
+`…/assets-chord-manifest.json` (dua kali) dan satu chord JSON. Semua itu
+**raw.githubusercontent.com**, bukan jalur BFF. PDF Literatur sudah memakai
+proxy (`bffPdfUrl` → `/api/v1/content/pdf`), tetapi PDF **kidung/chord** masih
+diambil langsung dari raw.githubusercontent (`music-assets.ts`, `chords.ts`,
+`midi-queue.ts`, `fork-pdf.ts`), jadi di WebView yang memblokir host itu tidak
+ada fallback cache. Langkah berikutnya: perluas allowlist `/api/v1/content/pdf`
+untuk aset kidung lalu arahkan klien lewat proxy, atau sediakan jalur unduhan
+alternatif. Ini bukan sekadar jaringan runner.
