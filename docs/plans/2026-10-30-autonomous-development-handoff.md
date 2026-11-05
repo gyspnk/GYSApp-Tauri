@@ -4284,6 +4284,15 @@ gambar asli (naturalWidth 300) alih-alih placeholder. Karena itu preview lokal
 tetap dibangun tanpa env; verifikasi tag dilakukan pada build ber-env dan pada
 Pages.
 
+**Susulan (5 Nov):** menghapus panel ikut menghapus satu-satunya `<h1>` di
+rute Alkitab (`.sr-only` “Alkitab” ada di dalam panel), sehingga kontrak visual
+“setiap permukaan punya tepat satu h1” gagal di CI. `<h1 className="sr-only">`
+dipindah ke akar `bible-page` di `apps/web/src/bible.tsx`. Baseline
+`kidung-*`, `literature-catalog-*` dan `bible-notes-390x844` diperbarui dari
+artefak CI `41993283540` karena perubahannya memang disengaja (header katalog
+
+- dua kolom, rel “Lainnya” aktif, blur yang kembali hidup).
+
 ### Putaran 150 — Satu pencarian ayat, di dalam dialog pilih kitab (5 Nov)
 
 Pemilik (m25113): “fitur search yang diluar kotak pilih kitab itu dihilangkan

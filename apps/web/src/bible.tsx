@@ -1401,6 +1401,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page bible-page" ref={pageZoomRef}>
+      <h1 className="sr-only">{translate(locale, "page.bibleTitle")}</h1>
       {packState.status === "loading" && (
         <section
           className={`bible-reader bible-loading-reader${
