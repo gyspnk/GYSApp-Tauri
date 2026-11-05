@@ -32,6 +32,9 @@ test.describe("Bible multi-verse selection", () => {
     await expect(label).toHaveText("2 ayat dipilih");
     await verses.nth(2).click();
     await expect(label).toHaveText("3 ayat dipilih");
+    await expect(
+      toolbar.locator(".selected-verse-context span").first(),
+    ).toHaveText("Kejadian 1:1–3");
     await expect(page.locator(".verse-row.is-selected")).toHaveCount(3);
 
     await verses.nth(2).click();

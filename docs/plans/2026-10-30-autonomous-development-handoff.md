@@ -4474,6 +4474,15 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Label rentang ayat yang ringkas (5 Nov)
+
+Panel multi-pilih menuliskan “Kejadian 1:1, 2, 3”. Untuk pilihan berurutan itu
+mubazir dan susah dibaca cepat. Helper baru
+`apps/web/src/verse-selection.ts` → `formatVerseNumbers([1,2,3,5])` menghasilkan
+**“1–3, 5”** (unik, terurut, rentang digabung), dan panel memakainya sehingga
+label menjadi **“Kejadian 1:1–3”**. Unit `verse-selection.test.ts` **7/7**,
+spec `bible-multi-select` menambah kontrak label itu dan tetap **3/3 (16,5 dtk)**.
+
 ### Native soak: CSP memblokir gambar Worker dan soak tidak memakai BFF (5 Nov)
 
 Log soak `42053986088` menunjukkan dua cacat nyata, bukan flake:

@@ -1,4 +1,5 @@
 import { createChapterSwipe } from "./chapter-swipe.js";
+import { formatVerseNumbers } from "./verse-selection.js";
 import { installReadingZoom } from "./reading-zoom.js";
 import { BibleNotesPopup } from "./bible-notes-popup.js";
 import { useDialogFocus } from "./dialog-focus.js";
@@ -1843,9 +1844,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
               </strong>
               <span>
                 {multiMode
-                  ? `${book.name} ${chapter}:${multiSelectedVerses
-                      .map((verse) => verse.verse)
-                      .join(", ")}`
+                  ? `${book.name} ${chapter}:${formatVerseNumbers(
+                      multiSelectedVerses.map((verse) => verse.verse),
+                    )}`
                   : cleanVerse(toolbarVerse)}
               </span>
             </div>
