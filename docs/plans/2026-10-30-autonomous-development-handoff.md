@@ -4474,6 +4474,16 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Ukuran per kitab untuk pemecahan paket Alkitab (5 Nov)
+
+`public/offline/bible/tb-reader.json` berisi 66 kitab, **31 172 ayat**, dan
+1 file gzip **1 704 234 B**. Setelah dikelompokkan per kitab dan digzip
+terpisah (level 9): **Mazmur 102 KiB**, Yesaya 83 KiB, Yeremia 83 KiB,
+**Kejadian 76 KiB**, median kitab **12 KiB**. Artinya memuat satu kitab saja
+(±76–102 KiB) jauh lebih ringan daripada 1,7 MB penuh, dan kitab kecil hanya
+belasan KiB — dasar pemecahan paket per kitab pada putaran berikutnya
+(build script per kitab + loader memuat kitab aktif + pericopes per kitab).
+
 ### Verifikasi hosted multi-select (5 Nov)
 
 Playwright pada `https://gyspnk.github.io/GYSApp-Tauri/alkitab/` (390×844):
