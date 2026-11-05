@@ -4206,6 +4206,22 @@ Verifikasi: unit `navigation.test.ts` **3/3**; `/suara`, `/literatur`, `/sauh`
 desktop tetap bidang biru solid dengan teks putih; `page-transitions` +
 `ui-session-refinement` **18/18 (1,2 mnt)**.
 
+### Catatan — preload pack Alkitab ditolak Chromium (5 Nov)
+
+Godaan berikutnya adalah memulai transfer 1,7 MB `tb-reader.json.gz` dari
+`<head>` pada shell `/alkitab`. Diukur di Chromium 151: preload
+`as="fetch"` **tidak pernah dipakai ulang** oleh `fetch()` di
+`src/bible-pack-loader.ts`. Kombinasi yang dicoba — `crossorigin="anonymous"`
+dengan fetch default, `anonymous` dengan `credentials: "omit"`, serta tanpa
+`crossorigin` dengan fetch default — semuanya memunculkan
+“A preload … is found, but is not used because the request credentials mode
+does not match”, lalu unduhan kedua berjalan.
+
+Karena itu hint tersebut **tidak dipakai**: ia akan menggandakan unduhan
+1,7 MB, lebih buruk daripada memulai transfer setelah React mount. Preload
+`as="fetch"` hanya dipertahankan untuk `offline/faith.json` yang terbukti
+dipakai ulang, dan untuk `offline/sauh.json` (satu permintaan di hosted).
+
 ### Putaran 146 — Modul data rute ikut berangkat dari `<head>` (5 Nov)
 
 Setelah chunk rute dimulai paralel, jejak hosted masih memperlihatkan dua
