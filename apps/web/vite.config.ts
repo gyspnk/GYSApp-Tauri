@@ -3,6 +3,8 @@ import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+// @ts-expect-error plain ESM helper shared with the unit tests
+import { coreIntegrityFrom, corePathsFromSw } from "./scripts/sw-core.mjs";
 
 function offlineBuildAssetsPlugin(): Plugin {
   let buildId = "";
@@ -65,14 +67,25 @@ function offlineBuildAssetsPlugin(): Plugin {
         resolve("public/offline/pack-manifest.json"),
       );
       const pack = JSON.parse(packBytes.toString("utf8"));
-      manifest.coreIntegrity = Object.fromEntries(
-        pack.items
-          .filter((item: { path: string }) => !item.path.endsWith(".db"))
-          .map((item: { path: string; sha256: string }) => [
-            item.path,
-            `sha256-${Buffer.from(item.sha256, "hex").toString("base64")}`,
-          ]),
+      const corePaths = corePathsFromSw(
+        await readFile(resolve("public/sw.js"), "utf8"),
       );
+      manifest.coreIntegrity = await coreIntegrityFrom({
+        packItems: pack.items
+          .filter((item: { path: string }) => !item.path.endsWith(".db"))
+          .map((item: { path: string; sha256: string }) => ({
+            path: item.path,
+            sha256: Buffer.from(item.sha256, "hex").toString("base64"),
+          })),
+        corePaths,
+        digestFile: async (path: string) => {
+          const bytes = await readFile(resolve(directory, path));
+          // Served with `content-encoding: gzip`, so the browser caches the
+          // decompressed bytes; hash what the worker will actually verify.
+          const payload = path.endsWith(".gz") ? gunzipSync(bytes) : bytes;
+          return createHash("sha256").update(payload).digest("base64");
+        },
+      });
       manifest.coreIntegrity["offline/pack-manifest.json"] =
         `sha256-${createHash("sha256").update(packBytes).digest("base64")}`;
       manifest.coreIntegrity["startup.js"] = `sha256-${createHash("sha256")

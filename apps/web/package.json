@@ -7,7 +7,7 @@
     "build": "node scripts/gzip-bible-pack.mjs && vite build && node scripts/prerender-route-stubs.mjs",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --config vitest.config.ts",
-    "test:scripts": "node --test scripts/bff-hints.test.mjs scripts/fetch-sauh-snapshot.test.mjs scripts/font-preload.test.mjs scripts/hymn-stubs.test.mjs",
+    "test:scripts": "node --test scripts/bff-hints.test.mjs scripts/sw-core.test.mjs scripts/fetch-sauh-snapshot.test.mjs scripts/font-preload.test.mjs scripts/hymn-stubs.test.mjs",
     "test:e2e": "playwright test",
     "test:e2e:shards": "node ../../scripts/test-e2e-shards.mjs",
     "test:e2e:core": "playwright test --config=playwright.core.config.ts",

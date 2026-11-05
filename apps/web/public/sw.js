@@ -2,6 +2,7 @@ const CACHE = "gysapp-shell-v25";
 const SHELL_STATE_CACHE = "gysapp-update-state-v1";
 const CONTENT_CACHE = "gysapp-content-v1";
 const REMOTE_MEDIA_CACHE = "gysapp-remote-media-v1";
+const SW_DIAGNOSTICS_CACHE = "gysapp-sw-diagnostics-v1";
 const APP_CACHE_PREFIXES = ["gys-", "gysapp-", "gys-midi-"];
 const pendingCacheWrites = new Set();
 const editorialRequests = new Map();
@@ -199,45 +200,67 @@ async function pruneRemoteMediaCache(cache) {
   await Promise.allSettled(stale.map((request) => cache.delete(request)));
 }
 
+async function installCore() {
+  const cache = await caches.open(CACHE);
+  // Do not publish an incomplete offline core over a working release.
+  await Promise.all(
+    CORE.map(async (url) => {
+      const response = await fetch(url, { cache: "no-cache" });
+      if (!response.ok) throw new Error(`Core asset unavailable: ${url}`);
+      if (CONTENT_JSON.includes(new URL(url, self.location.origin).pathname)) {
+        await putNamedCached(CONTENT_CACHE, url, response.clone());
+      } else {
+        await putCached(cache, url, response.clone());
+      }
+    }),
+  );
+  const indexResponse = await fetch(withBase("index.html"), {
+    cache: "no-cache",
+  });
+  if (indexResponse.ok) {
+    const html = await indexResponse.text();
+    const assets = [
+      ...html.matchAll(/(?:src|href)="([^"]*\/assets\/[^"]+)"/g),
+    ].map((match) => new URL(match[1], self.location.origin).href);
+    await Promise.allSettled(
+      assets.map(async (url) => {
+        const response = await fetch(url, { cache: "no-cache" });
+        if (response.ok) await putCached(cache, url, response.clone());
+      }),
+    );
+  }
+  // Installation completes after the hashed lazy code is prepared, so an
+  // unvisited core view can open offline. This never executes its modules
+  // or blocks the page's first render. Every asset must pass integrity
+  // verification before this build can activate.
+  await cacheBuildAssets(cache);
+}
+
+async function recordInstallFailure(error) {
+  // A discarded registration leaves no trace in the page, so keep the reason
+  // where the diagnostics card can read it.
+  try {
+    const store = await caches.open(SW_DIAGNOSTICS_CACHE);
+    await store.put(
+      withBase("__install-error__"),
+      new Response(
+        JSON.stringify({
+          message: String((error && error.message) || error),
+          at: new Date().toISOString(),
+        }),
+        { headers: { "content-type": "application/json" } },
+      ),
+    );
+  } catch {
+    // Diagnostics must never mask the real failure.
+  }
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then(async (cache) => {
-      // Do not publish an incomplete offline core over a working release.
-      await Promise.all(
-        CORE.map(async (url) => {
-          const response = await fetch(url, { cache: "no-cache" });
-          if (!response.ok) throw new Error(`Core asset unavailable: ${url}`);
-          if (response.ok) {
-            if (
-              CONTENT_JSON.includes(new URL(url, self.location.origin).pathname)
-            ) {
-              await putNamedCached(CONTENT_CACHE, url, response.clone());
-            } else {
-              await putCached(cache, url, response.clone());
-            }
-          }
-        }),
-      );
-      const indexResponse = await fetch(withBase("index.html"), {
-        cache: "no-cache",
-      });
-      if (indexResponse.ok) {
-        const html = await indexResponse.text();
-        const assets = [
-          ...html.matchAll(/(?:src|href)="([^"]*\/assets\/[^"]+)"/g),
-        ].map((match) => new URL(match[1], self.location.origin).href);
-        await Promise.allSettled(
-          assets.map(async (url) => {
-            const response = await fetch(url, { cache: "no-cache" });
-            if (response.ok) await putCached(cache, url, response.clone());
-          }),
-        );
-      }
-      // Installation completes after the hashed lazy code is prepared, so an
-      // unvisited core view can open offline. This never executes its modules
-      // or blocks the page's first render. Every asset must pass integrity
-      // verification before this build can activate.
-      await cacheBuildAssets(cache);
+    installCore().catch(async (error) => {
+      await recordInstallFailure(error);
+      throw error;
     }),
   );
   // Existing clients activate updates explicitly after finishing their work.
