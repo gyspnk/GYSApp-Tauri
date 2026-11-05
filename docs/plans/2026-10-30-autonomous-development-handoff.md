@@ -4474,6 +4474,29 @@ memotong blok lain; CSS terkirim **461 528 → 460 167 B (gzip 73 605 →
 73 359 B)**. Verifikasi `accessibility` + `bible-picker-mobile` **34/34
 (3,3 mnt)**.
 
+### Soak 10 sampel: dua regresi hilang, PDF WebView masih gagal (5 Nov)
+
+Soak `42074292231` (`samples=10`, head `51dd93b`) selesai **failure**, tetapi
+jauh lebih cepat dari sebelumnya (30 sampel, ~25 mnt). Dua kegagalan lama
+sudah tidak muncul: tidak ada baris `violates … img-src`, dan asersi
+`chordRecoveryFetches` lulus. Yang tersisa hanya
+`Cached PDF did not render after reload`.
+
+Log-nya menunjukkan pola yang penting: permintaan ke Worker
+`…/api/v1/content/music?commit=e8e7efe…&path=assets/pdf/051A_Batu Zaman.pdf`
+gagal dengan **`net::ERR_FAILED`**, sementara `curl` dari sini untuk URL yang
+sama (dengan `Origin: http://tauri.localhost`) menjawab **200,
+`content-type: application/pdf`, 36 508 B, `access-control-allow-origin:
+http://tauri.localhost`**. Jadi endpoint, CORS dan CSP `connect-src`
+(`https://*.workers.dev` sudah diizinkan) benar; kegagalannya khas WebView2
+di runner Windows, bukan 404/403.
+
+`blocked=[…]` di log memuat `chord-manifest` BFF dan URL raw — artinya
+kebijakan jaringan soak masih memblokir sebagian permintaan aplikasi.
+Pekerjaan berikutnya: perbaiki daftar izin soak agar seluruh host aplikasi
+(BFF + raw sebagai fallback) konsisten, dan tambahkan diagnostik error fetch
+di aplikasi. **B-37 tetap butuh bukti mesin pemilik.**
+
 ### Baseline Alkitab diambil dari artefak CI (5 Nov)
 
 CI `42074210088` (untuk `51dd93b`) gagal di `e2e-selective`: tiga baseline
