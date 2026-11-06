@@ -3178,7 +3178,15 @@ try {
   await page.goto(new URL("/", origin).href);
   await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
   await page.getByRole("option", { name: "EN", exact: true }).click();
-  await page.getByRole("combobox", { name: "Theme", exact: true }).click();
+  // The theme picker lives on the appearance settings page; the home topbar only
+  // links to it, so the soak has to open that route before choosing a theme.
+  await page.goto(new URL("/lainnya?section=appearance", origin).href);
+  const themeSelect = page.getByRole("combobox", {
+    name: "Choose theme",
+    exact: true,
+  });
+  await themeSelect.waitFor({ state: "visible", timeout: 20_000 });
+  await themeSelect.click();
   await page.getByRole("option", { name: "Dark", exact: true }).click();
   await page.waitForFunction(() => {
     const settings = JSON.parse(
