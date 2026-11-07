@@ -6483,3 +6483,37 @@ Keputusan pelaksanaan:
 
 Bukti yang diklaim tetap hosted: run id + artifact; tidak ada klaim verifikasi
 lokal untuk proses yang tidak lagi dijalankan di sini.
+
+### Tempo per lagu bertahan meski lagu lain diputar terakhir (8 Nov, putaran 217)
+
+Soak `42417552938` (head `e2928d7`) menghasilkan bukti yang menentukan lewat
+diagnostik baru di `apps/web/scripts/edge-tts-native-smoke.mjs`:
+
+```
+midiPreferenceCapture {"songId":"hymn-002","tempo":220,...,
+  "overrides":{"hymn-001":{"tempo":220,"transpose":0},...}}
+midiPreferenceRestore {"tempoInput":76,"storedSongId":"hymn-002","storedTempo":76,...}
+```
+
+Artinya nilai 220 untuk `hymn-001` memang tersimpan, tetapi reset saat cold
+start menghapusnya karena `songId` teratas milik `hymn-002` (lagu terakhir yang
+diputar soak). Penyebabnya `sameRestoredSong` di `apps/web/src/midi-player.ts`
+membandingkan `savedMidiPreferences.songId` (lagu terakhir) dengan lagu yang
+dibuka, bukan override milik lagu itu.
+
+Perbaikan `0b95c27`: `load()` memakai `this.songOverrides[songId]` dan hanya
+menghapus override ketika override untuk lagu tersebut **tidak** dipulihkan.
+Uji unit baru "restores the opened song even when another song was played last"
+menyiapkan `hymn-002` sebagai lagu terakhir lalu memastikan `hymn-001` tetap 220.
+
+CI `42419766188` menangkap satu regresi: muatan **lama** (tanpa peta
+`overrides`, hanya `songId`/`tempo`/`tempoOverride` di tingkat atas) menjadi
+tidak terbaca, sehingga `keeps a saved tempo and pitch for the same song after a
+cold start` gagal (`expected 76 to be 220`). `dcc16c0` menambahkan migrasi di
+`readSavedSongOverrides()` memakai `clampSavedTempo`/`clampSavedTranspose`
+(batas 30–220 dan −24…24, wajib `override === true`), jadi pilihan pengguna
+lama tidak hilang saat aplikasi diperbarui.
+
+Bukti: soak `42420398158` (`samples=5`, head `dcc16c0`) dan CI untuk `dcc16c0`.
+Catatan penting: sesuai kebijakan baru, unit test tidak dijalankan di device —
+verdict diambil dari run hosted.
