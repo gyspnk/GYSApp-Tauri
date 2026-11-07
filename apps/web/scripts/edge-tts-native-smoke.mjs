@@ -3543,6 +3543,7 @@ try {
     (element) => {
       const style = getComputedStyle(element);
       const chain = [];
+      let node = element;
       while (node && chain.length < 6) {
         const box = node.getBoundingClientRect();
         chain.push(
