@@ -3502,7 +3502,7 @@ try {
   assert.equal(
     Number(
       await restoredMidiSurface
-        .locator(".media-tempo-popover input")
+        .locator('.media-tempo-popover input[type="number"]')
         .inputValue(),
     ),
     routeMidiPreferences.tempo,
