@@ -1705,10 +1705,26 @@ try {
       .waitFor({ state: "visible", timeout: 20_000 });
     await ensureChordVisible(page);
     // Verified cache assertions below prove integrity; the old load toast is gone.
-    await page.locator(".chord-visual-marker").first().waitFor({
-      state: "visible",
-      timeout: 30_000,
-    });
+    try {
+      await page.locator(".chord-visual-marker").first().waitFor({
+        state: "visible",
+        timeout: 30_000,
+      });
+    } catch (error) {
+      const viewer = await page.evaluate(() => {
+        const root = document.querySelector(".chord-viewer");
+        return {
+          viewer: root?.className,
+          text: root?.textContent?.trim().slice(0, 160),
+          toggled: document
+            .querySelector(".chord-capability button")
+            ?.getAttribute("aria-pressed"),
+        };
+      });
+      throw new Error(
+        `${String(error)}\nchord viewer: ${JSON.stringify(viewer)}`,
+      );
+    }
     assert.equal(chordRecoveryFetches, 1);
     const repairedChordCache = await page.evaluate(
       async ({ indexKey, songId }) => {
@@ -3137,7 +3153,11 @@ try {
   const routeMidiPreferences = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("gys-midi-preferences-v1") ?? "null"),
   );
-  assert.deepEqual(routeMidiPreferences, {
+  assert.equal(typeof routeMidiPreferences.songId, "string");
+  // `songId` records the song the values belong to, not a preference.
+  const midiPreferenceValues = { ...routeMidiPreferences };
+  delete midiPreferenceValues.songId;
+  assert.deepEqual(midiPreferenceValues, {
     volume: persistenceVolumeValue,
     muted: false,
     tempo: 220,
