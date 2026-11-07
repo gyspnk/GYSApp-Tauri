@@ -3527,7 +3527,7 @@ try {
   );
   // The label width settles one frame after the disclosure opens; poll instead
   // of sampling once so a slow first layout is not reported as a collapse.
-  await page
+  await restoredPage
     .waitForFunction(
       () => {
         const element = document.querySelector(
@@ -3542,11 +3542,20 @@ try {
   const restoredInstrument = await restoredInstrumentControl.evaluate(
     (element) => {
       const style = getComputedStyle(element);
+      const chain = [];
+      while (node && chain.length < 6) {
+        const box = node.getBoundingClientRect();
+        chain.push(
+          `${node.tagName.toLowerCase()}.${(node.getAttribute("class") ?? "").split(" ").slice(0, 2).join(".")}:${Math.round(box.width)}x${Math.round(box.height)}/${getComputedStyle(node).display}`,
+        );
+        node = node.parentElement;
+      }
       return {
         text: (element.textContent ?? "").trim(),
         width: Math.round(element.getBoundingClientRect().width),
         display: style.display,
         overflow: style.overflow,
+        chain,
       };
     },
   );
@@ -3557,7 +3566,7 @@ try {
   );
   assert.ok(
     restoredInstrument.width > 40,
-    `MIDI instrument label collapsed to ${restoredInstrument.width}px (display ${restoredInstrument.display}, overflow ${restoredInstrument.overflow})`,
+    `MIDI instrument label collapsed to ${restoredInstrument.width}px (display ${restoredInstrument.display}, overflow ${restoredInstrument.overflow}, chain ${restoredInstrument.chain.join(" <- ")})`,
   );
   const restoredTranspose = (
     await restoredMidiSurface.locator(".media-transpose strong").innerText()
