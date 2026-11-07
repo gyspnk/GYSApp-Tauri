@@ -3569,17 +3569,27 @@ try {
     restoredInstrument.width > 40,
     `MIDI instrument label collapsed to ${restoredInstrument.width}px (display ${restoredInstrument.display}, overflow ${restoredInstrument.overflow}, chain ${restoredInstrument.chain.join(" <- ")})`,
   );
+  const restoredPreferences = await restoredPage.evaluate(() =>
+    JSON.parse(localStorage.getItem("gys-midi-preferences-v1") ?? "null"),
+  );
+  // Manual tempo and key belong to the song they were chosen for, so the
+  // expected value is hymn-001's own override, not whatever the soak left on
+  // the last played track.
+  const expectedTempo =
+    restoredPreferences?.overrides?.["hymn-001"]?.tempo ??
+    routeMidiPreferences.tempo;
+  const expectedTranspose =
+    restoredPreferences?.overrides?.["hymn-001"]?.transpose ??
+    routeMidiPreferences.transpose;
   const restoredTranspose = (
     await restoredMidiSurface.locator(".media-transpose strong").innerText()
   ).trim();
   assert.equal(
     restoredTranspose,
-    routeMidiPreferences.transpose > 0
-      ? `+${routeMidiPreferences.transpose}`
-      : String(routeMidiPreferences.transpose),
+    expectedTranspose > 0 ? `+${expectedTranspose}` : String(expectedTranspose),
     `MIDI transpose preference did not survive restarting packaged Tauri (saw ${JSON.stringify(
       restoredTranspose,
-    )})`,
+    )}, stored ${JSON.stringify(restoredPreferences?.overrides?.["hymn-001"])})`,
   );
   const restoredTempoToggle = restoredMidiSurface.locator(
     ".media-tempo-toggle",
@@ -3590,9 +3600,6 @@ try {
     await restoredMidiSurface
       .locator('.media-tempo-popover input[type="number"]')
       .inputValue(),
-  );
-  const restoredPreferences = await restoredPage.evaluate(() =>
-    JSON.parse(localStorage.getItem("gys-midi-preferences-v1") ?? "null"),
   );
   console.log(
     JSON.stringify({
@@ -3607,7 +3614,7 @@ try {
   );
   assert.equal(
     restoredTempoInput,
-    routeMidiPreferences.tempo,
+    expectedTempo,
     `MIDI tempo preference did not survive restarting packaged Tauri (stored ${JSON.stringify(
       restoredPreferences?.overrides?.["hymn-001"],
     )})`,
