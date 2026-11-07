@@ -3465,13 +3465,22 @@ try {
     Number(await restoredMidiSurface.getByLabel("Volume MIDI").inputValue()),
     routeMidiPreferences.volume,
   );
+  // `innerText` depends on layout: a collapsed width makes it empty and hides
+  // whether the label or the box is wrong, so read the text and the box apart.
+  const restoredInstrument = await restoredMidiSurface
+    .locator(".media-instrument-control .control-select-value")
+    .evaluate((element) => ({
+      text: (element.textContent ?? "").trim(),
+      width: Math.round(element.getBoundingClientRect().width),
+    }));
   assert.equal(
-    (
-      await restoredMidiSurface
-        .locator(".media-instrument-control .control-select-value")
-        .innerText()
-    ).trim(),
+    restoredInstrument.text,
     "Violin",
+    "MIDI instrument label did not survive restarting packaged Tauri",
+  );
+  assert.ok(
+    restoredInstrument.width > 40,
+    `MIDI instrument label collapsed to ${restoredInstrument.width}px`,
   );
   assert.equal(
     (
