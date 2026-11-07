@@ -100,6 +100,7 @@ function throwIfStale(gate: MidiOperationGate, generation: number): void {
 }
 
 function readMidiPreferences(): {
+  songId?: string;
   volume?: number;
   muted?: boolean;
   tempo?: number;
@@ -116,6 +117,9 @@ function readMidiPreferences(): {
     if (!value || typeof value !== "object" || Array.isArray(value)) return {};
     const candidate = value as Record<string, unknown>;
     return {
+      ...(typeof candidate.songId === "string"
+        ? { songId: candidate.songId }
+        : {}),
       ...(typeof candidate.volume === "number"
         ? { volume: candidate.volume }
         : {}),
@@ -415,11 +419,26 @@ export class BrowserMidiPlayer {
     const keepPlaying = options.keepPlaying && this.crossfadeMs > 0;
     if (!keepPlaying) this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return false;
-    // Manual tempo belongs to the current song; each new PDF-backed song
-    // starts at its own detected tempo, including after a cold launch.
-    if (options.tempo !== undefined && this.state.songId !== songId)
+    // Manual tempo and transpose belong to the current song; a different song
+    // starts at its own detected values. A cold launch has no current song yet,
+    // so the values restored from storage must survive the first load instead
+    // of being cleared before they are ever applied.
+    // A cold launch has no current song yet, so the overrides restored from
+    // storage may only survive when they were saved for this same song;
+    // otherwise the song's own detected tempo and key win.
+    const sameRestoredSong =
+      !this.state.songId && savedMidiPreferences.songId === songId;
+    if (
+      options.tempo !== undefined &&
+      !sameRestoredSong &&
+      this.state.songId !== songId
+    )
       this.tempoOverride = false;
-    if (options.transpose !== undefined && this.state.songId !== songId)
+    if (
+      options.transpose !== undefined &&
+      !sameRestoredSong &&
+      this.state.songId !== songId
+    )
       this.transposeOverride = false;
     const tempo = this.tempoOverride
       ? this.state.tempo
@@ -1417,6 +1436,7 @@ export class BrowserMidiPlayer {
       window.localStorage.setItem(
         "gys-midi-preferences-v1",
         JSON.stringify({
+          songId: this.state.songId,
           volume: this.state.volume,
           muted: this.state.muted,
           tempo: this.state.tempo,

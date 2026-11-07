@@ -120,6 +120,52 @@ describe("MIDI song tempo defaults", () => {
     expect(player.snapshot().transpose).toBe(0);
   });
 
+  it("keeps a saved tempo and pitch for the same song after a cold start", async () => {
+    vi.resetModules();
+    const store: Record<string, string> = {
+      "gys-midi-preferences-v1": JSON.stringify({
+        songId: "hymn-001",
+        volume: 0.6,
+        tempo: 220,
+        tempoOverride: true,
+        transpose: -3,
+        transposeOverride: true,
+        instrument: 40,
+      }),
+    };
+    vi.stubGlobal("window", {
+      addEventListener: () => undefined,
+      localStorage: {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+          store[key] = value;
+        },
+      },
+    });
+    try {
+      const { BrowserMidiPlayer } = await import("./midi-player.js");
+      const player = new BrowserMidiPlayer(async () => undefined);
+      const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
+
+      await player.load("hymn-001", "First hymn", midi, {
+        tempo: 76,
+        transpose: 0,
+      });
+      expect(player.snapshot().tempo).toBe(220);
+      expect(player.snapshot().transpose).toBe(-3);
+
+      await player.load("hymn-002", "Next hymn", midi, {
+        tempo: 84,
+        transpose: 1,
+      });
+      expect(player.snapshot().tempo).toBe(84);
+      expect(player.snapshot().transpose).toBe(1);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
+    }
+  });
+
   it("uses the new PDF pitch instead of a previous manual transpose", async () => {
     const player = new BrowserMidiPlayer(async () => undefined);
     const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
