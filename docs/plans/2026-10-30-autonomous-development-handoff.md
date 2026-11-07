@@ -6428,3 +6428,25 @@ override). Regresi: `e2e/midi-control-unification.spec.ts` "a saved transpose
 survives a cold reload" membandingkan label sebelum/sesudah reload dan nilai
 storage. Bukti: spec **10/10 (33,4 dtk)**, `test:e2e:core` **110/110 (5,1 mnt)**;
 buktinya browser, bukan native.
+
+### Preferensi tempo & nada disimpan per lagu (7 Nov)
+
+Soak native berikutnya gagal di asersi tempo setelah restart: dock menampilkan
+**76** sementara nilai yang disimpan **220**. Penelusuran menunjukkan dua
+masalah berlapis:
+
+1. `tempoOverride`/`transposeOverride` dihapus saat `load()` melihat lagu
+   berbeda — termasuk pada cold start saat `state.songId` masih kosong.
+2. Identitas lagu untuk preferensi mengikuti lagu yang terakhir diputar, jadi
+   autoplay ke trek berikutnya "mencuri" pemilik nilai yang dipilih pengguna.
+
+Perbaikan: `MidiPlayer` menyimpan peta `overrides` per `songId`
+(`{ tempo, transpose }`, dipangkas 40 entri) di `gys-midi-preferences-v1`.
+Saat sebuah lagu dimuat, nilai tersimpan untuk lagu itu dipakai dan override
+diaktifkan; sesi yang berpindah lagu tetap memakai nilai PDF lagu baru. Penulis
+nilai (`setTempo`/`setTranspose`) mencatat lagu yang sedang dimuat saat itu.
+
+Bukti: `midi-player.test.ts` **36/36** (termasuk "keeps the preference song id
+through autoplay and a cold start"), `pnpm vitest run src/midi` **51/51**,
+`midi-control-unification.spec.ts` **10/10 (42,7 dtk)**. Bukti browser, bukan
+native.
