@@ -3593,12 +3593,41 @@ try {
   );
 } catch (error) {
   const evidence = await diagnosticPage
-    ?.evaluate(() => ({
+    ?.evaluate(async () => ({
       route: location.pathname,
       speechButton: document
         .querySelector(".reader-speech-btn")
         ?.getAttribute("aria-label"),
       player: document.querySelector(".media-surface")?.className,
+      chord: {
+        markers: document.querySelectorAll(".chord-visual-marker").length,
+        toggle: document
+          .querySelector(
+            ".chord-capability button, .chord-capability [aria-label]",
+          )
+          ?.textContent?.trim(),
+        sheet: document.querySelector(".lyrics-sheet")?.getAttribute("class"),
+        index: await window.__TAURI_INTERNALS__
+          ?.invoke?.("key_value_get", { key: "gys-chord-cache-index-v1" })
+          .then((raw) => {
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            const song = location.pathname.match(/hymn-(\d{3}[a-z]?)/i)?.[1];
+            const key = song ? `hymn-${song.toUpperCase()}` : undefined;
+            const entry = key ? parsed[key] : undefined;
+            return {
+              keys: Object.keys(parsed).length,
+              entry: entry
+                ? {
+                    bytes: entry.bytes,
+                    pinned: entry.pinned,
+                    hasRef: Boolean(entry.ref),
+                  }
+                : null,
+            };
+          })
+          .catch(() => "unavailable"),
+      },
       diagnostics: JSON.parse(
         localStorage.getItem("gys-diagnostics-v1") ?? "[]",
       ),
