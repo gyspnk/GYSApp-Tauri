@@ -3279,9 +3279,15 @@ try {
     .getByRole("combobox", { name: "Language", exact: true })
     .click();
   await restoredPage.getByRole("option", { name: "ID", exact: true }).click();
-  await restoredPage
-    .getByRole("combobox", { name: "Tema", exact: true })
-    .click();
+  // The app restores onto the home route; the theme picker only exists on the
+  // appearance settings page, and its label follows the active locale.
+  await restoredPage.goto(new URL("/lainnya?section=appearance", origin).href);
+  const restoredTheme = restoredPage.getByRole("combobox", {
+    name: "Pilih Tema",
+    exact: true,
+  });
+  await restoredTheme.waitFor({ state: "visible", timeout: 20_000 });
+  await restoredTheme.click();
   await restoredPage
     .getByRole("option", { name: "Terang", exact: true })
     .click();
