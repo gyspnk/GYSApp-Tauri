@@ -472,33 +472,32 @@ export class BrowserMidiPlayer {
     const keepPlaying = options.keepPlaying && this.crossfadeMs > 0;
     if (!keepPlaying) this.stopAudio();
     if (!this.operationGate.isCurrent(generation)) return false;
-    // Manual tempo and transpose belong to the current song; a different song
-    // starts at its own detected values. A cold launch has no current song yet,
-    // so the values restored from storage must survive the first load instead
-    // of being cleared before they are ever applied.
-    // A cold launch has no current song yet, so the overrides restored from
-    // storage may only survive when they were saved for this same song;
-    // otherwise the song's own detected tempo and key win.
+    // Manual tempo and transpose belong to the song they were chosen for. A
+    // cold launch has no current song, so an override saved for the song being
+    // opened must survive the first load; every other song starts at its own
+    // detected values.
     const saved = this.songOverrides[songId];
-    if (saved?.tempo !== undefined && this.state.songId !== songId) {
+    let restoredTempo = false;
+    let restoredTranspose = false;
+    if (!this.state.songId && saved?.tempo !== undefined) {
       this.state.tempo = saved.tempo;
       this.tempoOverride = true;
+      restoredTempo = true;
     }
-    if (saved?.transpose !== undefined && this.state.songId !== songId) {
+    if (!this.state.songId && saved?.transpose !== undefined) {
       this.state.transpose = saved.transpose;
       this.transposeOverride = true;
+      restoredTranspose = true;
     }
-    const sameRestoredSong =
-      !this.state.songId && savedMidiPreferences.songId === songId;
     if (
       options.tempo !== undefined &&
-      !sameRestoredSong &&
+      !restoredTempo &&
       this.state.songId !== songId
     )
       this.tempoOverride = false;
     if (
       options.transpose !== undefined &&
-      !sameRestoredSong &&
+      !restoredTranspose &&
       this.state.songId !== songId
     )
       this.transposeOverride = false;
