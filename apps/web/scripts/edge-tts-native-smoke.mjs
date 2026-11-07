@@ -3154,9 +3154,10 @@ try {
     JSON.parse(localStorage.getItem("gys-midi-preferences-v1") ?? "null"),
   );
   assert.equal(typeof routeMidiPreferences.songId, "string");
-  // `songId` records the song the values belong to, not a preference.
+  // `songId` and `overrides` record where the values belong, not the values.
   const midiPreferenceValues = { ...routeMidiPreferences };
   delete midiPreferenceValues.songId;
+  delete midiPreferenceValues.overrides;
   assert.deepEqual(midiPreferenceValues, {
     volume: persistenceVolumeValue,
     muted: false,
