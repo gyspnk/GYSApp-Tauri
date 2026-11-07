@@ -67,6 +67,7 @@ function hostedPlan(files) {
 }
 
 function dispatchAndWatch(reference, extra = []) {
+  const since = Date.now();
   const run = gh("workflow", "run", "ci.yml", "--ref", reference, ...extra);
   if (run.code !== 0) {
     console.error(`gh workflow run failed: ${run.err || run.out}`);
@@ -75,9 +76,18 @@ function dispatchAndWatch(reference, extra = []) {
   console.log(
     `▶ requested ci.yml on ${reference}${extra.length ? ` (${extra.join(" ")})` : ""}`,
   );
+  const head_sha = git("rev-parse", "HEAD").out.trim();
+  const dispatched = waitForDispatchedRun(head_sha, since);
+  if (!dispatched) {
+    console.error(
+      "No dispatched ci.yml run appeared within 60 s; check `gh run list --workflow ci.yml`.",
+    );
+    process.exit(1);
+  }
+  return dispatched.databaseId;
 }
 
-function findRun(sha) {
+function listRuns(sha) {
   const listed = gh(
     "run",
     "list",
@@ -86,16 +96,45 @@ function findRun(sha) {
     "--commit",
     sha,
     "--limit",
-    "5",
+    "10",
     "--json",
-    "databaseId,status,conclusion,url,headBranch,event",
+    "databaseId,status,conclusion,url,headBranch,event,createdAt",
   );
-  if (listed.code !== 0) return null;
+  if (listed.code !== 0) return [];
   try {
-    return JSON.parse(listed.out || "[]")[0] ?? null;
+    return JSON.parse(listed.out || "[]");
   } catch {
-    return null;
+    return [];
   }
+}
+
+/** A dispatch never reuses the push run for the same commit. */
+export function pickDispatchedRun(runs, since) {
+  return (
+    runs
+      .filter(
+        (run) =>
+          run.event === "workflow_dispatch" &&
+          Date.parse(run.createdAt) >= since - 5_000,
+      )
+      .sort((a, b) => b.databaseId - a.databaseId)[0] ?? null
+  );
+}
+
+function waitForDispatchedRun(sha, since) {
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const match = pickDispatchedRun(listRuns(sha), since);
+    if (match) return match;
+    spawnSync("node", [
+      "-e",
+      "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,5000)",
+    ]);
+  }
+  return null;
+}
+
+function findRun(sha) {
+  return listRuns(sha)[0] ?? null;
 }
 
 function waitFor(runId) {
@@ -143,7 +182,10 @@ if (dirty)
     "  ! working tree is dirty: commit and push first, Actions only sees pushed commits",
   );
 
-if (qa) dispatchAndWatch(branch, ["-f", "qa=true"]);
+if (qa) {
+  const runId = dispatchAndWatch(branch, ["-f", "qa=true"]);
+  waitFor(runId);
+}
 
 let run = findRun(sha);
 if (!run) {
