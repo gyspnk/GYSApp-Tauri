@@ -99,6 +99,47 @@ function throwIfStale(gate: MidiOperationGate, generation: number): void {
   if (!gate.isCurrent(generation)) throw new StaleMidiOperation();
 }
 
+export type MidiSongOverrides = {
+  tempo?: number;
+  transpose?: number;
+};
+
+export function readSavedSongOverrides(): Record<string, MidiSongOverrides> {
+  if (typeof window === "undefined") return {};
+  try {
+    const value: unknown = JSON.parse(
+      window.localStorage.getItem("gys-midi-preferences-v1") ?? "null",
+    );
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    const raw = (value as Record<string, unknown>).overrides;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+    const result: Record<string, MidiSongOverrides> = {};
+    for (const [songId, entry] of Object.entries(
+      raw as Record<string, unknown>,
+    )) {
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue;
+      const candidate = entry as Record<string, unknown>;
+      const tempo =
+        typeof candidate.tempo === "number" && Number.isFinite(candidate.tempo)
+          ? Math.max(30, Math.min(220, Math.round(candidate.tempo)))
+          : undefined;
+      const transpose =
+        typeof candidate.transpose === "number" &&
+        Number.isFinite(candidate.transpose)
+          ? Math.max(-24, Math.min(24, Math.trunc(candidate.transpose)))
+          : undefined;
+      if (tempo === undefined && transpose === undefined) continue;
+      const savedEntry: MidiSongOverrides = {};
+      if (tempo !== undefined) savedEntry.tempo = tempo;
+      if (transpose !== undefined) savedEntry.transpose = transpose;
+      result[songId] = savedEntry;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 function readMidiPreferences(): {
   songId?: string;
   volume?: number;
@@ -325,6 +366,18 @@ export class BrowserMidiPlayer {
   private readonly operationGate = new MidiOperationGate();
   private transposeOverride = savedMidiPreferences.transposeOverride ?? false;
   private tempoOverride = savedMidiPreferences.tempoOverride ?? false;
+  /**
+   * The song the saved tempo/transpose were chosen for. Autoplay can move on to
+   * another track, so this must not follow the loaded song; otherwise a cold
+   * launch would drop the preference that still belongs to the opened song.
+   */
+  private preferenceSongId = savedMidiPreferences.songId;
+  /**
+   * Tempo and key the user chose per song, kept so a song that is opened again
+   * (including after a restart) starts with that choice. A live session still
+   * resets when it moves to a different song.
+   */
+  private songOverrides = readSavedSongOverrides();
   private requestId = 0;
   private readonly pending = new Map<number, PendingRequest>();
   private state: WebMidiSnapshot = { ...initial };
@@ -426,6 +479,15 @@ export class BrowserMidiPlayer {
     // A cold launch has no current song yet, so the overrides restored from
     // storage may only survive when they were saved for this same song;
     // otherwise the song's own detected tempo and key win.
+    const saved = this.songOverrides[songId];
+    if (saved?.tempo !== undefined && this.state.songId !== songId) {
+      this.state.tempo = saved.tempo;
+      this.tempoOverride = true;
+    }
+    if (saved?.transpose !== undefined && this.state.songId !== songId) {
+      this.state.transpose = saved.transpose;
+      this.transposeOverride = true;
+    }
     const sameRestoredSong =
       !this.state.songId && savedMidiPreferences.songId === songId;
     if (
@@ -725,7 +787,15 @@ export class BrowserMidiPlayer {
     if (options.userOverride === false && this.tempoOverride) return;
     const overrideChanged =
       options.userOverride !== false && !this.tempoOverride;
-    if (options.userOverride !== false) this.tempoOverride = true;
+    if (options.userOverride !== false) {
+      this.tempoOverride = true;
+      this.preferenceSongId = this.state.songId;
+      if (this.state.songId)
+        this.songOverrides[this.state.songId] = {
+          ...this.songOverrides[this.state.songId],
+          tempo: Math.max(30, Math.min(220, Math.round(tempo))),
+        };
+    }
     const next = Math.max(30, Math.min(220, Math.round(tempo)));
     if (next === this.state.tempo) {
       if (overrideChanged) this.persistPreferences();
@@ -754,7 +824,15 @@ export class BrowserMidiPlayer {
     if (options.userOverride === false && this.transposeOverride) return;
     const overrideChanged =
       options.userOverride !== false && !this.transposeOverride;
-    if (options.userOverride !== false) this.transposeOverride = true;
+    if (options.userOverride !== false) {
+      this.transposeOverride = true;
+      this.preferenceSongId = this.state.songId;
+      if (this.state.songId)
+        this.songOverrides[this.state.songId] = {
+          ...this.songOverrides[this.state.songId],
+          transpose: Math.max(-24, Math.min(24, Math.trunc(transpose))),
+        };
+    }
     const next = Math.max(-24, Math.min(24, Math.trunc(transpose)));
     if (next === this.state.transpose) {
       if (overrideChanged) this.persistPreferences();
@@ -1430,13 +1508,20 @@ export class BrowserMidiPlayer {
     for (const listener of this.listeners) listener();
   }
 
+  private prunedSongOverrides(): Record<string, MidiSongOverrides> {
+    const entries = Object.entries(this.songOverrides);
+    if (entries.length <= 40) return this.songOverrides;
+    return Object.fromEntries(entries.slice(-40));
+  }
+
   private persistPreferences(): void {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(
         "gys-midi-preferences-v1",
         JSON.stringify({
-          songId: this.state.songId,
+          songId: this.preferenceSongId,
+          overrides: this.prunedSongOverrides(),
           volume: this.state.volume,
           muted: this.state.muted,
           tempo: this.state.tempo,

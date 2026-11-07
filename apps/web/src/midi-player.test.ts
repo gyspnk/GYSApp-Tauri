@@ -166,6 +166,48 @@ describe("MIDI song tempo defaults", () => {
     }
   });
 
+  it("keeps the preference song id through autoplay and a cold start", async () => {
+    vi.resetModules();
+    const store: Record<string, string> = {};
+    vi.stubGlobal("window", {
+      addEventListener: () => undefined,
+      localStorage: {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+          store[key] = value;
+        },
+      },
+    });
+    const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
+    try {
+      const first = await import("./midi-player.js");
+      const player = new first.BrowserMidiPlayer(async () => undefined);
+      await player.load("hymn-001", "First hymn", midi, {
+        tempo: 76,
+        transpose: 0,
+      });
+      await player.setTempo(220);
+      // Autoplay advances to the next queue track; that must not steal the
+      // identity of the preference the user set on hymn-001.
+      await player.load("hymn-002", "Next hymn", midi, { tempo: 84 });
+      expect(JSON.parse(store["gys-midi-preferences-v1"]!).songId).toBe(
+        "hymn-001",
+      );
+
+      vi.resetModules();
+      const second = await import("./midi-player.js");
+      const restored = new second.BrowserMidiPlayer(async () => undefined);
+      await restored.load("hymn-001", "First hymn", midi, {
+        tempo: 76,
+        transpose: 0,
+      });
+      expect(restored.snapshot().tempo).toBe(220);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
+    }
+  });
+
   it("uses the new PDF pitch instead of a previous manual transpose", async () => {
     const player = new BrowserMidiPlayer(async () => undefined);
     const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
