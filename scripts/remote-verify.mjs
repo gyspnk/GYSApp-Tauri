@@ -17,7 +17,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { classifyChanges } from "./test-loop-core.mjs";
-import { collectChangedFiles } from "./test-e2e-selective-core.mjs";
+import { collectPushFiles } from "./changed-files.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -130,12 +130,7 @@ function waitFor(runId) {
   process.exit(watched.status === 0 ? 0 : 1);
 }
 
-let changed = [];
-try {
-  changed = collectChangedFiles({ rootDir });
-} catch {
-  changed = [];
-}
+const changed = collectPushFiles({ rootDir });
 
 const branch = git("rev-parse", "--abbrev-ref", "HEAD");
 const sha = git("rev-parse", "HEAD");

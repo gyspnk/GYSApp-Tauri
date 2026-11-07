@@ -10,7 +10,7 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { collectChangedFiles } from "./test-e2e-selective-core.mjs";
+import { collectPushFiles } from "./changed-files.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -29,12 +29,7 @@ const PRETTIER_EXTENSIONS = new Set([
   ".html",
 ]);
 
-let changed = [];
-try {
-  changed = collectChangedFiles({ rootDir });
-} catch {
-  changed = [];
-}
+const changed = collectPushFiles({ rootDir });
 
 const targets = changed.filter((file) =>
   PRETTIER_EXTENSIONS.has(path.extname(file)),
