@@ -6407,3 +6407,24 @@ beranda — juga membuka halaman Tampilan sebelum memilih "Pilih Tema"
 (`75218ac`). Bukti lokal: alur ini dijalankan di Chromium terhadap preview dan
 menghasilkan `data-theme="dark"` serta `gys-shell-settings-v1` yang sesuai;
 bukti native tetap menunggu soak berikutnya.
+
+### Transpose tersimpan tidak boleh ditimpa default lagu (7 Nov)
+
+Soak native berhenti pada asersi transpose setelah restart. Reproduksi lokal
+(dock MIDI hymn-001, klik turun dua kali, reload) menunjukkan nilai berubah
+**-3 → -1** dan `transposeOverride` di `gys-midi-preferences-v1` berubah
+`true → false`.
+
+Akar: efek mount `apps/web/src/kidung.tsx` memakai
+`midiPlayer.hasTransposePreference(songId)`, yang hanya cocok bila `songId`
+sama dengan lagu yang sedang dimuat pemutar — pada cold start daftar lagu masih
+kosong, jadi hasilnya `false` dan default `resolveHymnMidiDefaults` menimpa
+transpose pilihan pengguna.
+
+Perbaikan: `MidiPlayer.hasStoredTransposePreference()` (true bila storage
+memulihkan override) dipakai sebagai jalur kedua; nilai transpose yang
+dipulihkan menang sampai pengguna memilih lagu lain (yang memang mereset
+override). Regresi: `e2e/midi-control-unification.spec.ts` "a saved transpose
+survives a cold reload" membandingkan label sebelum/sesudah reload dan nilai
+storage. Bukti: spec **10/10 (33,4 dtk)**, `test:e2e:core` **110/110 (5,1 mnt)**;
+buktinya browser, bukan native.
