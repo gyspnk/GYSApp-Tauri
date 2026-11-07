@@ -76,7 +76,7 @@ function dispatchAndWatch(reference, extra = []) {
   console.log(
     `▶ requested ci.yml on ${reference}${extra.length ? ` (${extra.join(" ")})` : ""}`,
   );
-  const head_sha = git("rev-parse", "HEAD").out.trim();
+  const head_sha = git("rev-parse", "HEAD");
   const dispatched = waitForDispatchedRun(head_sha, since);
   if (!dispatched) {
     console.error(
