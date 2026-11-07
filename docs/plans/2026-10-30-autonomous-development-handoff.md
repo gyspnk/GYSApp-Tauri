@@ -6450,3 +6450,36 @@ Bukti: `midi-player.test.ts` **36/36** (termasuk "keeps the preference song id
 through autoplay and a cold start"), `pnpm vitest run src/midi` **51/51**,
 `midi-control-unification.spec.ts` **10/10 (42,7 dtk)**. Bukti browser, bukan
 native.
+
+### Semua proses di GitHub Actions, lokal hanya server web (8 Nov, putaran 217)
+
+Instruksi pemilik (7 Nov): **setiap** proses pengembangan — typecheck, unit,
+build, e2e/browser, visual, axe/audit, benchmark, soak native, bundle, verifikasi
+dokumentasi, format, screenshot — harus diproses di **GitHub Actions**; device
+ini hanya menjalankan **server web lokal** untuk melihat perubahan. Tujuannya
+membuat device tidak terbebani dan progres tetap cepat.
+
+Keputusan pelaksanaan:
+
+- `pnpm verify` (`scripts/remote-verify.mjs`) memetakan perubahan yang belum
+  diverifikasi, menyebut cakupan hosted-nya, lalu menampilkan run `ci.yml` untuk
+  HEAD; `--wait` menunggu verdict dan memakai exit code run tersebut;
+  `pnpm verify:qa` meminta matriks screenshot/audit lalu menunggu.
+- `pnpm test:loop` kini memanggil `remote-verify`; loop lokal tidak lagi
+  menjalankan typecheck/unit/browser. File `scripts/test-loop.mjs` tetap ada
+  sebagai escape hatch eksplisit dan menolak berjalan tanpa
+  `GYS_ALLOW_LOCAL_HEAVY=1`.
+- `scripts/local-heavy-guard.mjs` dipasang di 33 skrip berat (`test`, `build`,
+  `typecheck`, `lint`, `format:check`, `verify:*`, `test:e2e*`, `ui:*`,
+  `test:native*`, `test:performance*`, `audit:chords*`). Pesannya menyebut
+  jalur Actions dan escape hatch. `CI=true` (job hosted) melewati gerbang, jadi
+  workflow tidak berubah.
+- Pre-push hanya menjalankan tiga langkah < 2 dtk: Prettier untuk file yang
+  berubah (`scripts/format-changed.mjs`), `verify:docs`, dan `remote-verify`
+  (mencetak cakupan hosted). Typecheck, unit, build, dan e2e tidak lagi
+  berjalan saat push — push langsung memicu CI.
+- `verify:release`/`verify:generated`/`verify:bundle` ikut dijaga, sehingga
+  verifikasi rilis berarti menunggu run hosted untuk commit tersebut.
+
+Bukti yang diklaim tetap hosted: run id + artifact; tidak ada klaim verifikasi
+lokal untuk proses yang tidak lagi dijalankan di sini.

@@ -6,14 +6,20 @@ success, a skipped deployment or an old screenshot as new production evidence.
 
 ## Verification ladder
 
-| Work                         | Required local checks                                                                                                       |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Documentation                | Format changed prose, `pnpm verify:docs`, validate relative links and current facts against source/manifests.               |
-| Pure/domain/backend behavior | Relevant Vitest/Node tests, workspace typecheck; generated/contract changes also require provenance.                        |
-| Reader/player/UI behavior    | Production build, affected browser/keyboard/touch/Axe contracts and inspected screenshots.                                  |
-| Loading/cache/PDF/audio      | Real immutable fixtures, warm/cold or duplicate-request assertions, cancellation/retry/offline scenarios and bundle budget. |
-| Native boundary              | Rust format/check/test/clippy, packaged asset verification and available platform smoke.                                    |
-| Release                      | `pnpm verify:release`, full browser/native gates and explicit protected provider/signing/device evidence.                   |
+Owner policy (7 Nov): every process below runs in **GitHub Actions**; this
+device only serves the app (`pnpm dev` on 5173, `pnpm preview` on 4173). Heavy
+local commands refuse to start and point at the hosted path.
+`scripts/local-heavy-guard.mjs` enforces it; `CI=true` lets hosted jobs through,
+and `GYS_ALLOW_LOCAL_HEAVY=1` is the deliberate one-off escape.
+
+| Work                         | Hosted checks                                                                                               |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Documentation                | `verify` job: documentation gate, Prettier, generated-asset provenance.                                     |
+| Pure/domain/backend behavior | `web-build`: workspace unit tests, policy/script tests, typecheck, bundle budget.                           |
+| Reader/player/UI behavior    | Selective Playwright contracts for the touched features; full suite nightly / `full-ci` / release dispatch. |
+| Loading/cache/PDF/audio      | Same selective contracts plus the immersive soak when the range touches media, cache or the native shell.   |
+| Native boundary              | `native-check` on `apps/native/**`; packaged soak via the `edge-tts-native` dispatch (Windows runner).      |
+| Release                      | `pnpm verify --wait` for the release commit, plus explicit protected provider/signing/device evidence.      |
 
 No new test is needed merely to restate reversible CSS. Behavioral tests should
 prove a meaningful invariant: tap versus drag, explicit draft application,
@@ -23,16 +29,26 @@ last-good cache or reachable controls.
 ## Commands
 
 ```sh
-pnpm build:test-deps
-pnpm typecheck
-pnpm test
-pnpm build
-pnpm verify:generated
-pnpm verify:docs
-pnpm verify:native-assets
-pnpm verify:bundle
-pnpm format:check
+# Local: view the app only.
+pnpm dev
+pnpm preview
+
+# Hosted verification for HEAD (cheap; reads git and the Actions API).
+pnpm verify
+pnpm verify --wait
+pnpm verify:qa
+gh run list --workflow ci.yml --limit 5
+node scripts/ci-timings.mjs
+
+# Machine-readable proof for a hosted failure (artifacts, not local reruns).
+gh run view <run-id> --log-failed
+gh run download <run-id> -n e2e-selective-failures-<run-id> -D /tmp/e2e
 ```
+
+CI itself runs `pnpm build:test-deps`, `pnpm typecheck`, `pnpm test`,
+`pnpm build`, `pnpm verify:generated`, `pnpm verify:docs`,
+`pnpm verify:native-assets`, `pnpm verify:bundle` and `pnpm format:check`; those
+commands stay valid inside workflow jobs.
 
 `pnpm test` includes contracts/domain/testkit/BFF/web units, policy and root
 script regressions. `pnpm lint` is the package lint/type boundary. The initial
@@ -243,14 +259,18 @@ recovery and verifies monotonic requests, preserved availability and cleanup.
 
 `pnpm install` configures `.githooks`. Pre-commit validates formatted staged text
 and relevant docs/generated metadata; it does not rewrite work or fetch upstream.
-Pre-push runs formatting, documentation, generated provenance, types and all unit/
-policy/script checks. It omits expensive network/native/browser rebuilds for
-ordinary iteration; those remain explicit local and CI gates.
+Pre-push keeps the device idle: it formats only the changed files, runs the
+documentation gate, and prints the hosted plan (`scripts/format-changed.mjs`,
+`pnpm verify:docs`, `scripts/remote-verify.mjs`). Typecheck, unit tests, build
+and browser suites never run on push — the push itself queues the GitHub Actions
+run that owns them.
 
-`pnpm verify:release` adds authenticated local e-GYS source checks, strict chord
-audit, native checks, build/packaged assets, budget and full production browser
-verification. Keep ignored upstream snapshots out of Git. CI never clones the
-private e-GYS source; generated metadata is reviewed locally.
+`pnpm verify:release` is a hosted wait: it reports the `ci.yml` run for the
+release commit and only succeeds with that run's verdict. Authenticated e-GYS
+source checks, the strict chord audit, native checks and packaged-asset
+verification stay in their workflows. Keep ignored upstream snapshots out of
+Git. CI never clones the private e-GYS source; generated metadata is reviewed
+from hosted artifacts.
 
 Push only after explicit user authorization. For delivery directly to `main`,
 fetch/check the remote first, preserve any remote changes, use a normal

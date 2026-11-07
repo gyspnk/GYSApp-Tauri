@@ -36,6 +36,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const webDir = path.join(rootDir, "apps", "web");
 
+// Owner policy (7 Nov): verification runs in GitHub Actions; this device only
+// serves the site. `pnpm test:loop` now maps the change and hands it over.
+if (process.env.CI !== "true" && process.env.GYS_ALLOW_LOCAL_HEAVY !== "1") {
+  console.error(
+    "✋ The local loop moved to GitHub Actions. Use `pnpm verify --wait`; " +
+      "set GYS_ALLOW_LOCAL_HEAVY=1 only for a deliberate one-off local run.",
+  );
+  process.exit(1);
+}
+
 const args = process.argv.slice(2);
 const withE2E = args.includes("--with-e2e");
 const loopStartedAt = Date.now();

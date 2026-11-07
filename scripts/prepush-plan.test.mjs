@@ -2,65 +2,39 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createPrepushPlan } from "./prepush-plan.mjs";
 
-test("pre-push verification compiles the TypeScript workspace only once", () => {
-  const plan = createPrepushPlan({ full: true });
-  const pnpmCommands = plan
-    .filter((step) => step.command === "pnpm")
-    .map((step) => step.args.join(" "));
-
-  assert.equal(pnpmCommands.filter((command) => command === "build").length, 1);
-  assert.equal(pnpmCommands.includes("lint"), false);
-  assert.equal(pnpmCommands.includes("typecheck"), false);
-});
-
-test("full browser verification reuses the pre-push build", () => {
-  const plan = createPrepushPlan({ full: true });
-  const e2e = plan.find(
-    (step) =>
-      step.command === "pnpm" &&
-      step.args.join(" ") === "--filter @gys/web test:e2e",
-  );
-
-  assert.ok(e2e, "full web e2e step should remain in pre-push verification");
-  assert.equal(e2e.env?.GYS_E2E_PREBUILT, "1");
-});
-
-test("pre-push still keeps non-duplicate quality and native gates", () => {
-  const plan = createPrepushPlan({ full: true });
-  const commands = plan.map((step) =>
+test("pre-push hands verification to Actions instead of running it here", () => {
+  const commands = createPrepushPlan().map((step) =>
     `${step.command} ${step.args.join(" ")}`.trim(),
   );
 
-  for (const expected of [
-    "node scripts/sync-egys.mjs --strict",
-    "node scripts/check-egys-upstream.mjs --strict",
-    "pnpm format:check",
+  assert.deepEqual(commands, [
+    "node scripts/format-changed.mjs",
     "pnpm verify:docs",
-    "pnpm verify:generated",
-    "pnpm audit:chords:check",
-    "pnpm native:check",
+    "node scripts/remote-verify.mjs",
+  ]);
+});
+
+test("no typecheck, unit, build or browser work runs on the device", () => {
+  const commands = createPrepushPlan().map(
+    (step) => `${step.command} ${step.args.join(" ")}`,
+  );
+
+  for (const forbidden of [
+    "pnpm typecheck",
     "pnpm test",
     "pnpm build",
-    "pnpm verify:native-assets",
+    "pnpm format:check",
     "pnpm verify:bundle",
     "pnpm --filter @gys/web test:e2e",
   ]) {
-    assert.ok(
-      commands.includes(expected),
-      `missing pre-push gate: ${expected}`,
+    assert.equal(
+      commands.includes(forbidden),
+      false,
+      `${forbidden} must not run locally`,
     );
   }
 });
 
-test("default pre-push feedback is offline and excludes full release work", () => {
-  const commands = createPrepushPlan().map(
-    (step) => `${step.command} ${step.args.join(" ")}`,
-  );
-  assert.deepEqual(commands, [
-    "pnpm format:check",
-    "pnpm verify:docs",
-    "pnpm verify:generated",
-    "pnpm typecheck",
-    "pnpm test",
-  ]);
+test("the same plan applies to push and to explicit release requests", () => {
+  assert.deepEqual(createPrepushPlan({ full: true }), createPrepushPlan());
 });

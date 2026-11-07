@@ -138,32 +138,38 @@ Vite on 5173; `pnpm preview` serves the built application on 4173. Do not rebuil
 `dist` underneath an active browser run.
 
 ```sh
-# On this machine: view the live application only (owner decision, 2 Nov).
+# On this machine: view the live application only (owner decision, 7 Nov).
 pnpm dev                                   # 5173; VITE_BFF_BASE_URL comes from the process env
 pnpm preview                               # 4173, the built app under /GYSApp-Tauri/
-pnpm build                                 # refresh dist so the preview shows the change
 
-# Heavy verification runs in GitHub Actions, not here.
-#   CI (on every push/PR): changes, verify (docs/format/audit/secret scan),
-#     web-build (build + unit/policy suites + bundle budget), the selective
-#     browser contracts the range can affect; the complete 856-test suite runs
-#     nightly, on a `full-ci` label and on a release dispatch; navigation
-#     budgets run weekly.
+# Every process runs in GitHub Actions: typecheck, unit, build, browser,
+# visual, axe, audits, benchmarks, soak, bundle and docs. The local commands
+# below only talk to the hosted run — nothing heavy starts on this device.
+pnpm verify                                # what Actions covers for HEAD + its run
+pnpm verify --wait                         # wait for that run, exit with its verdict
+pnpm verify:qa                             # request the screenshot/audit matrix, then wait
 gh run list --workflow ci.yml --limit 5
-gh run watch <run-id> --exit-status
+node scripts/ci-timings.mjs                # measured wall time and slowest job per run
+```
 
-#   QA artifacts (manual dispatch of CI): route screenshots plus the overflow,
-#   card-in-card and alignment audits, published as artifacts.
+A heavy local command (`pnpm test`, `pnpm build`, `pnpm typecheck`, `test:e2e:*`,
+`ui:*`, benchmarks) now refuses to start and prints that pointer; pushing is the
+verification path. `GYS_ALLOW_LOCAL_HEAVY=1` is the deliberate one-off escape.
+
+CI itself is unchanged: `changes` classifies the push or PR, `verify` runs
+docs/format/audit gates, `web-build` builds once and runs the unit, policy and
+bundle suites, the selective browser contracts run only for what the range can
+affect; the complete suite runs nightly, on a `full-ci` label and on a release
+dispatch, and navigation budgets run weekly.
+
+QA artifacts (manual dispatch of CI): route screenshots plus the overflow,
+card-in-card and alignment audits, published as artifacts.
+
+```sh
 gh workflow run ci.yml --ref main -f qa=true \
   -f qa_themes=light,dark,sepia,amoled -f qa_widths=390,768,1440
 gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
 gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits
-node scripts/ci-timings.mjs                # measured wall time and slowest job per run
-
-# Reproduce a hosted failure locally (not the default loop):
-GYS_E2E_PREBUILT=1 pnpm test:e2e:changed   # only the specs the working tree touches
-GYS_E2E_PREBUILT=1 pnpm test:e2e:core      # 102 tests, ~3-5 min
-pnpm test:e2e:durations /tmp/e2e.json      # rank specs/tests from a JSON report
 ```
 
 `scripts/ci-timings.mjs` is the feedback loop for CI cost: it prints queue time,
