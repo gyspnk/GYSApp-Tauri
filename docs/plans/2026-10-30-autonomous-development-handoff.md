@@ -6390,3 +6390,20 @@ Diverifikasi lokal: tertutup `display:none`, terbuka `display:grid` dengan
 tombol reset 32/44 px yang memiliki titik tengahnya sendiri; `media-dock` +
 `midi-control-unification` + `reader-settings` + `kidung-usability` **69/69
 (3,1 mnt)**.
+
+### Langkah tema di soak native memakai halaman Tampilan (7 Nov)
+
+Soak Windows berulang kali gagal pada pemilih tema, bukan pada aplikasi:
+`edge-tts-native-smoke.mjs` menekan `combobox` bernama "Theme"/"Tema" padahal
+pemilih tema hanya ada di `/lainnya?section=appearance` (`apps/web/src/more.tsx`).
+Topbar beranda hanya punya tautan tampilan (`App.tsx`), dan nama aksesibel
+pemilihnya adalah `more.chooseTheme` — "Choose theme" pada locale EN dan
+"Pilih Tema" pada locale ID.
+
+Dua perbaikan: langkah berganti tema kini membuka
+`/lainnya?section=appearance` lebih dulu dan memakai nama "Choose theme"
+(`33dcba7`), dan langkah pemulihan setelah restart — aplikasi kembali ke
+beranda — juga membuka halaman Tampilan sebelum memilih "Pilih Tema"
+(`75218ac`). Bukti lokal: alur ini dijalankan di Chromium terhadap preview dan
+menghasilkan `data-theme="dark"` serta `gys-shell-settings-v1` yang sesuai;
+bukti native tetap menunggu soak berikutnya.
