@@ -3167,6 +3167,20 @@ try {
     transposeOverride: true,
     instrument: 40,
   });
+  // Preferences are per song, so the restore step later has to know which song
+  // owned the tempo it set. Print that map so a mismatch is visible in the run
+  // log instead of only as "76 !== 220".
+  console.log(
+    JSON.stringify({
+      midiPreferenceCapture: {
+        songId: routeMidiPreferences.songId,
+        tempo: routeMidiPreferences.tempo,
+        transpose: routeMidiPreferences.transpose,
+        overrideKeys: Object.keys(routeMidiPreferences.overrides ?? {}),
+        overrides: routeMidiPreferences.overrides,
+      },
+    }),
+  );
   const routeSpeechPreferences = await page.evaluate(() => ({
     engine: localStorage.getItem("gys-speech-engine-v1"),
     voice: localStorage.getItem("gys-speech-voice-v1"),
@@ -3562,13 +3576,31 @@ try {
   );
   if ((await restoredTempoToggle.getAttribute("aria-expanded")) !== "true")
     await restoredTempoToggle.click();
+  const restoredTempoInput = Number(
+    await restoredMidiSurface
+      .locator('.media-tempo-popover input[type="number"]')
+      .inputValue(),
+  );
+  const restoredPreferences = await restoredPage.evaluate(() =>
+    JSON.parse(localStorage.getItem("gys-midi-preferences-v1") ?? "null"),
+  );
+  console.log(
+    JSON.stringify({
+      midiPreferenceRestore: {
+        tempoInput: restoredTempoInput,
+        storedSongId: restoredPreferences?.songId,
+        storedTempo: restoredPreferences?.tempo,
+        storedOverrideKeys: Object.keys(restoredPreferences?.overrides ?? {}),
+        storedOverrides: restoredPreferences?.overrides,
+      },
+    }),
+  );
   assert.equal(
-    Number(
-      await restoredMidiSurface
-        .locator('.media-tempo-popover input[type="number"]')
-        .inputValue(),
-    ),
+    restoredTempoInput,
     routeMidiPreferences.tempo,
+    `MIDI tempo preference did not survive restarting packaged Tauri (stored ${JSON.stringify(
+      restoredPreferences?.overrides?.["hymn-001"],
+    )})`,
   );
 
   console.log(
