@@ -57,7 +57,10 @@ for (const viewport of viewports) {
             typeof el.className === "string" && el.className.trim()
               ? `.${el.className.trim().split(/\s+/).slice(0, 3).join(".")}`
               : "";
-          return `${el.tagName.toLowerCase()}${cls}`;
+          const name = (el.getAttribute("aria-label") ?? el.textContent ?? "")
+            .trim()
+            .slice(0, 24);
+          return `${el.tagName.toLowerCase()}${cls}${name ? `[${name}]` : ""}`;
         };
         const paint = (el) => {
           const s = getComputedStyle(el);
@@ -119,6 +122,7 @@ for (const viewport of viewports) {
           out.push({
             container: describe(parent),
             members: kids.map((el, index) => ({
+              index,
               element: describe(el),
               ...paints[index],
             })),
@@ -178,6 +182,7 @@ for (const viewport of viewports) {
                 out.push({
                   container: `row@${Math.round(row.centerY)}`,
                   members: cluster.map((entry, index) => ({
+                    index,
                     element: describe(entry.el),
                     ...paints[index],
                   })),
