@@ -5409,6 +5409,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   background: var(--surface-soft);
 }
 
+/* A disabled arrow loses its fill on purpose: the row then reads as "one
+   direction is unavailable" instead of "one button is missing". Peer-paint
+   audits skip disabled controls for the same reason. */
 .hymn-detail-page.is-text-viewer .hymn-text-footer > button:disabled {
   background: transparent;
 }

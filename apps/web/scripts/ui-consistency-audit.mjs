@@ -96,6 +96,9 @@ for (const viewport of viewports) {
                   checkVisibilityCSS: true,
                 })) &&
               !el.hasAttribute("aria-pressed") &&
+              // A disabled control is deliberately greyed out, so its fill is
+              // not a peer paint defect.
+              !el.matches(":disabled, [aria-disabled='true']") &&
               // Swatches are colour pickers: their paint IS the content.
               !/swatch/.test(
                 typeof el.className === "string" ? el.className : "",
@@ -146,7 +149,8 @@ for (const viewport of viewports) {
                 el.checkVisibility({
                   checkOpacity: true,
                   checkVisibilityCSS: true,
-                }))
+                })) &&
+              !el.matches(":disabled, [aria-disabled='true']")
             );
           },
         );
