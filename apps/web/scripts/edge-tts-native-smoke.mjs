@@ -1769,40 +1769,60 @@ try {
       recoveryChordItem.size,
       "Legacy chord fixture must preserve the old normalized-JSON format",
     );
-    const seededLegacyChordBytes = await page.evaluate(
-      async ({ ref, indexKey, blobKey, base64 }) => {
-        const invoke = window.__TAURI_INTERNALS__?.invoke?.bind(
-          window.__TAURI_INTERNALS__,
-        );
-        if (!invoke) throw new Error("Tauri invoke is unavailable");
-        const binary = atob(base64);
-        const bytes = new Uint8Array(binary.length);
-        for (let index = 0; index < binary.length; index++)
-          bytes[index] = binary.charCodeAt(index);
-        const encodedIndex = await invoke("key_value_get", { key: indexKey });
-        const index = encodedIndex ? JSON.parse(encodedIndex) : {};
-        const previous = index[ref.songId];
-        await invoke("blob_put_atomic", { key: blobKey, bytes: base64 });
-        index[ref.songId] = {
-          ref,
-          key: blobKey,
-          bytes: ref.size,
-          pinned: previous?.pinned ?? false,
-          lastAccess: previous?.lastAccess ?? 0,
-        };
-        await invoke("key_value_set", {
-          key: indexKey,
-          value: JSON.stringify(index),
-        });
-        return bytes.byteLength;
-      },
-      {
-        ref: recoveryChordRef,
-        indexKey: recoveryChordIndexKey,
-        blobKey: recoveryChordCacheKey,
-        base64: legacyChordBytes.toString("base64"),
-      },
-    );
+    const seedLegacyChord = () =>
+      page.evaluate(
+        async ({ ref, indexKey, blobKey, base64 }) => {
+          const invoke = window.__TAURI_INTERNALS__?.invoke?.bind(
+            window.__TAURI_INTERNALS__,
+          );
+          if (!invoke) throw new Error("Tauri invoke is unavailable");
+          const binary = atob(base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let index = 0; index < binary.length; index++)
+            bytes[index] = binary.charCodeAt(index);
+          const encodedIndex = await invoke("key_value_get", { key: indexKey });
+          const index = encodedIndex ? JSON.parse(encodedIndex) : {};
+          const previous = index[ref.songId];
+          await invoke("blob_put_atomic", { key: blobKey, bytes: base64 });
+          index[ref.songId] = {
+            ref,
+            key: blobKey,
+            bytes: ref.size,
+            pinned: previous?.pinned ?? false,
+            lastAccess: previous?.lastAccess ?? 0,
+          };
+          await invoke("key_value_set", {
+            key: indexKey,
+            value: JSON.stringify(index),
+          });
+          return bytes.byteLength;
+        },
+        {
+          ref: recoveryChordRef,
+          indexKey: recoveryChordIndexKey,
+          blobKey: recoveryChordCacheKey,
+          base64: legacyChordBytes.toString("base64"),
+        },
+      );
+    // A background chord sync may persist its own index snapshot right after an
+    // external write. Seed until the index really holds the entry, otherwise a
+    // reload can start without the cached document and fail offline.
+    let seededLegacyChordBytes = 0;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      seededLegacyChordBytes = await seedLegacyChord();
+      const present = await page.evaluate(
+        async ({ indexKey, songId }) => {
+          const raw = await window.__TAURI_INTERNALS__?.invoke?.(
+            "key_value_get",
+            { key: indexKey },
+          );
+          return raw ? Boolean(JSON.parse(raw)[songId]) : false;
+        },
+        { indexKey: recoveryChordIndexKey, songId: recoveryChordRef.songId },
+      );
+      if (present) break;
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
     assert.equal(seededLegacyChordBytes, legacyChordBytes.byteLength);
     await page.reload();
     await page
