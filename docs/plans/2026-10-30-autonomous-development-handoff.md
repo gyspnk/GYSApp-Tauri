@@ -2767,38 +2767,33 @@ mengenali dan melewatinya.
 
 ## 6. NEXT yang dapat langsung dikerjakan
 
-1. **B-32/B-33 — loop cepat**: `pnpm test:e2e:changed` (≈1,7 mnt) saat mengubah
-   beberapa spec, `pnpm test:e2e:core` (≈3,4 mnt) sebelum commit,
-   `pnpm test:e2e:local` (766 tes, tanpa baseline `-linux`) sebelum push, dan
-   `pnpm test:e2e:shards` di mesin ber-core banyak. Jangan menaikkan worker di
-   host 8-core ini: 2 worker sudah saturasi (179 dtk @2 vs 217 dtk @4 pada 55
-   tes yang sama). Biaya suite didominasi waktu tes (74 mnt browser untuk 826
-   tes), bukan overhead runner; pakai `pnpm test:e2e:durations` untuk melihat
-   spec termahal sebelum mengoptimalkan apa pun.
-2. **B-31 — verifikasi pemilik**: ulangi login WhatsApp. Bila badge "!" masih
+> Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
+> Semua perintah di bawah dijalankan sebagai workflow hosted; device hanya
+> menjalankan `pnpm dev` (5173) dan `pnpm preview` (4173) untuk melihat
+> perubahan. Skrip berat menolak berjalan lokal lewat
+> `scripts/local-heavy-guard.mjs`.
+
+1. **Verifikasi rutin (pengganti loop lokal):** `pnpm verify` mencetak rencana
+   hosted untuk HEAD, `pnpm verify --wait` menonton run dan memakai exit code
+   run itu, `pnpm verify:qa` meminta matriks screenshot/audit lalu menontonnya.
+   Push `main` otomatis menjalankan jalur selektif (≈75 dtk untuk perubahan
+   kode biasa; docs ≈45 dtk); suite penuh tetap di nightly/label `full-ci`.
+2. **B-31 — verifikasi pemilik:** ulangi login WhatsApp. Bila badge "!" masih
    muncul, buka Tentang & Bantuan → Diagnostik perangkat dan salin entri
    `egys.whatsapp.confirm` / `egys.whatsapp.profile`; pesan itu kini juga tampil
    di kartu akun. Tanpa data itu, jangan klaim penyebab lain.
-3. **B-30 — selesaikan suite penuh** `pnpm test:e2e --workers=2 --retries=0`
-   pada build final (826 tes) dan triase sisanya. Jalankan sendirian: proses
-   browser lain, termasuk `pnpm test:e2e -g`, membuat tes berbasis waktu gagal
-   palsu (terbukti pada `account-menu` dan 200% text di siklus 11).
-4. **B-15** — Minta pemilik menekan WhatsApp, mengirim pesan yang disiapkan, lalu
-   membuka Diagnostik: entri `egys.whatsapp.*` menunjukkan apakah frame tracking
-   datang dan field mana yang kurang. Tanpa data ini, penyebab tidak boleh diklaim.
-5. **B-24** — _(selesai 3 Nov: headroom 17,4 KiB, 162,6/180,0)_ Headroom dulu tinggal **0,4 KiB** (179,6/180,0) dan dua jalan
-   pintas sudah diukur gagal: impor dinamis `midi-queue` justru menaikkan graf
-   awal (179,1 → 179,3 KiB) karena `media-session.ts` mengimpornya statis, dan
-   jejak jaringan menunjukkan 62 chunk `/assets/*.js` tetap diambil karena
-   `route-preload` menghangatkan setiap rute — jadi angka anggaran lebih ketat
-   daripada muatan nyata. Perbaikan yang tersisa bersifat struktural: fasad
-   async untuk `MidiPlaylistController` (zod 27,8 KiB lewat 15 pemanggil
-   `.parse` sinkron) atau memisahkan katalog i18n en/zh (≈19 KiB). Setiap kode
-   JS baru harus masuk chunk rute, bukan menaikkan anggaran.
-6. **B-05** — Keputusan ditunda dengan bukti (cold 5,3 s / warm 0,49 s). Jika suatu
-   saat Worker boleh dideploy, konversi format adalah tuas utamanya.
-7. **B-10** — Snapshot Sauh ditutup sebagai keputusan data pemilik (tidak ada
-   generator; cache disegarkan otomatis saat online).
+3. **Soak native** (`gh workflow run edge-tts-native.yml --ref main -f samples=5`)
+   adalah satu-satunya bukti WebView2 untuk dock, PDF, MIDI, TTS. Setiap
+   kegagalan harus dibaca dari log `[soak]` + diagnostik; jangan mengubah CSS
+   sebelum ada bukti geometri.
+4. **B-37 — bukti native PDF:** PDF kidung masih mengambil URL rilis GitHub
+   langsung; proxy `fork-pdf`/`fork-manifest` sudah ada, ZIP paket belum. Bukti
+   native dibutuhkan sebelum menyimpulkan.
+5. **B-24 — bundle** 163,2/180,0 KiB. Tuas berikutnya bersifat struktural
+   (fasad async `MidiPlaylistController` untuk zod, pisah katalog i18n); setiap
+   kode JS baru harus masuk chunk rute, bukan menaikkan anggaran.
+6. **B-05** — ditunda dengan bukti (cold 5,3 dtk / warm 0,49 dtk).
+7. **B-10** — snapshot Sauh ditutup sebagai keputusan data pemilik.
 
 ## Beban kerja pindah ke GitHub Actions (2 Nov 2026)
 
