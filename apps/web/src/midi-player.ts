@@ -104,15 +104,52 @@ export type MidiSongOverrides = {
   transpose?: number;
 };
 
-export function readSavedSongOverrides(): Record<string, MidiSongOverrides> {
+export function clampSavedTempo(
+  value: unknown,
+  override: unknown,
+): number | undefined {
+  if (override !== true || typeof value !== "number" || !Number.isFinite(value))
+    return undefined;
+  return Math.max(30, Math.min(220, Math.round(value)));
+}
+
+function clampSavedTranspose(
+  value: unknown,
+  override: unknown,
+): number | undefined {
+  if (override !== true || typeof value !== "number" || !Number.isFinite(value))
+    return undefined;
+  return Math.max(-24, Math.min(24, Math.trunc(value)));
+}
+
+function readSavedSongOverrides(): Record<string, MidiSongOverrides> {
   if (typeof window === "undefined") return {};
   try {
     const value: unknown = JSON.parse(
       window.localStorage.getItem("gys-midi-preferences-v1") ?? "null",
     );
     if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-    const raw = (value as Record<string, unknown>).overrides;
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+    const saved = value as Record<string, unknown>;
+    const raw = saved.overrides;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      // Payloads written before the per-song map existed kept one song's
+      // overrides at the top level. Migrate it instead of dropping a choice
+      // the user already made.
+      const songId =
+        typeof saved.songId === "string" ? saved.songId : undefined;
+      if (!songId) return {};
+      const legacy: MidiSongOverrides = {};
+      const tempo = clampSavedTempo(saved.tempo, saved.tempoOverride);
+      const transpose = clampSavedTranspose(
+        saved.transpose,
+        saved.transposeOverride,
+      );
+      if (tempo !== undefined) legacy.tempo = tempo;
+      if (transpose !== undefined) legacy.transpose = transpose;
+      return tempo === undefined && transpose === undefined
+        ? {}
+        : { [songId]: legacy };
+    }
     const result: Record<string, MidiSongOverrides> = {};
     for (const [songId, entry] of Object.entries(
       raw as Record<string, unknown>,
