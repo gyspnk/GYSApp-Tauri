@@ -237,6 +237,47 @@ test("closed music panel stays out of layout until the disclosure opens", async 
   await expect(panel).toBeHidden();
 });
 
+test("a saved transpose survives a cold reload", async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1024, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await preparePinnedReaderAssets(page);
+  await preparePinnedMidiAsset(page);
+  const openDock = async () => {
+    await page.locator(".hymn-midi-toggle").click();
+    const player = page.locator(".media-surface.is-kidung-media");
+    await expect(player).toBeVisible({ timeout: 30_000 });
+    const advanced = player.locator(".media-advanced-controls");
+    if (!(await advanced.evaluate((el) => (el as HTMLDetailsElement).open)))
+      await advanced.locator("summary").click();
+    return player;
+  };
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
+  const first = await openDock();
+  const down = first.locator(".media-transpose button").first();
+  const start = Number(
+    (await first.locator(".media-transpose strong").innerText()).trim(),
+  );
+  await down.click();
+  await down.click();
+  const chosen = start - 2;
+  await expect(first.locator(".media-transpose strong")).toHaveText(
+    String(chosen),
+  );
+  // A reload must not let the reader's per-song default overwrite the
+  // transpose the user chose; `hasTransposePreference` cannot see it before
+  // the song loads, so the stored preference has to win instead.
+  await page.reload();
+  const second = await openDock();
+  await expect(second.locator(".media-transpose strong")).toHaveText(
+    String(chosen),
+  );
+  const stored = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("gys-midi-preferences-v1") ?? "null"),
+  );
+  expect(stored?.transpose).toBe(chosen);
+});
+
 test.describe("fullscreen lyrics", () => {
   test.use({ hasTouch: true });
   test("fullscreen lyrics reuse the dock control geometry", async ({

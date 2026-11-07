@@ -551,6 +551,12 @@ export class BrowserMidiPlayer {
   public getCurrentTranspose(): number {
     return this.state.transpose;
   }
+  /**
+   * Storage restored a transpose the user chose, even before any song loads.
+   * The reader uses this on a cold start so its per-song default cannot
+   * overwrite that choice.
+   */
+  public hasStoredTransposePreference = (): boolean => this.transposeOverride;
   public hasTransposePreference(songId?: string): boolean {
     return (
       this.transposeOverride &&

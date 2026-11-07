@@ -464,12 +464,19 @@ export function HymnDetail({
     setFitFontSize(readHymnTypography(songId).fontSize);
     // gyschordweb originalPdfKey: a detected PDF key is the display base;
     // natural-chord preference seeds a default -1 transpose for black keys.
-    const hasTransposePreference = midiPlayer.hasTransposePreference(songId);
+    // A transpose the reader restored from storage counts even before the song
+    // is loaded: `hasTransposePreference` only matches the player's current
+    // song, which is still empty on a cold start, so seeding the default here
+    // would overwrite the user's saved transpose on every reload.
+    const snapshot = midiPlayer.settingsSnapshot();
+    const hasTransposePreference =
+      midiPlayer.hasTransposePreference(songId) ||
+      midiPlayer.hasStoredTransposePreference();
     userSetTransposeRef.current = hasTransposePreference;
     const meta = getHymnPdfMeta(songId);
     const natural = readNaturalChordPreference();
     const baseTranspose = hasTransposePreference
-      ? midiPlayer.settingsSnapshot().transpose
+      ? snapshot.transpose
       : resolveHymnMidiDefaults(meta, natural).transpose;
     setTranspose(baseTranspose);
     transposeRef.current = baseTranspose;

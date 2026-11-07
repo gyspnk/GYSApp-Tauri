@@ -3482,12 +3482,17 @@ try {
     restoredInstrument.width > 40,
     `MIDI instrument label collapsed to ${restoredInstrument.width}px`,
   );
+  const restoredTranspose = (
+    await restoredMidiSurface.locator(".media-transpose strong").innerText()
+  ).trim();
   assert.equal(
-    (
-      await restoredMidiSurface.locator(".media-transpose strong").innerText()
-    ).trim(),
-    String(routeMidiPreferences.transpose),
-    "MIDI transpose preference did not survive restarting packaged Tauri",
+    restoredTranspose,
+    routeMidiPreferences.transpose > 0
+      ? `+${routeMidiPreferences.transpose}`
+      : String(routeMidiPreferences.transpose),
+    `MIDI transpose preference did not survive restarting packaged Tauri (saw ${JSON.stringify(
+      restoredTranspose,
+    )})`,
   );
   const restoredTempoToggle = restoredMidiSurface.locator(
     ".media-tempo-toggle",
