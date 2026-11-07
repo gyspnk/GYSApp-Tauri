@@ -6517,3 +6517,24 @@ lama tidak hilang saat aplikasi diperbarui.
 Bukti: soak `42420398158` (`samples=5`, head `dcc16c0`) dan CI untuk `dcc16c0`.
 Catatan penting: sesuai kebijakan baru, unit test tidak dijalankan di device —
 verdict diambil dari run hosted.
+
+### Audit konsistensi: kontrol nonaktif bukan cacat (8 Nov, putaran 217b)
+
+Matriks QA hosted pertama setelah semua perubahan dock/panel
+(`pnpm verify:qa` → run `42420519111`) hijau untuk screenshot (**132/132**, 0
+masalah), overflow (**192** cek, 0 temuan) dan box-in-box (**96** cek, 0
+temuan), tetapi gagal di `ui:consistency`: satu grup `nav.hymn-text-footer` di
+`/kidung/hymn-001` 1440 terang punya satu tombol dengan latar transparan.
+
+Laporan itu belum menyebut tombol mana, jadi `apps/web/scripts/ui-consistency-audit.mjs`
+kini menulis `index` + nama kontrol (aria-label/teks) di setiap anggota grup.
+Run berikutnya (`42422429533`) menunjukkan yang transparan adalah
+`button[Bait sebelumnya]` — tombol yang **nonaktif** di bait pertama. Latar
+transparan itu memang keputusan desain (baris terbaca "satu arah tidak
+tersedia", bukan "satu tombol hilang"), jadi yang salah adalah auditnya:
+kontrol `:disabled`/`aria-disabled="true"` kini dilewati saat membandingkan
+pewarnaan peer, dan alasannya dicatat sebagai komentar di
+`apps/web/src/app-design.css` tepat di atas aturan transparan tersebut.
+
+Bukti: `pnpm verify:qa` → run `42424250773` **success** (screenshot 132/132,
+overflow/box/consistency 0 temuan).
