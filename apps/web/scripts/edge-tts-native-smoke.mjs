@@ -3508,12 +3508,34 @@ try {
   );
   // `innerText` depends on layout: a collapsed width makes it empty and hides
   // whether the label or the box is wrong, so read the text and the box apart.
-  const restoredInstrument = await restoredMidiSurface
-    .locator(".media-instrument-control .control-select-value")
-    .evaluate((element) => ({
-      text: (element.textContent ?? "").trim(),
-      width: Math.round(element.getBoundingClientRect().width),
-    }));
+  const restoredInstrumentControl = restoredMidiSurface.locator(
+    ".media-instrument-control .control-select-value",
+  );
+  // The label width settles one frame after the disclosure opens; poll instead
+  // of sampling once so a slow first layout is not reported as a collapse.
+  await page
+    .waitForFunction(
+      () => {
+        const element = document.querySelector(
+          ".media-surface.is-kidung-media .media-instrument-control .control-select-value",
+        );
+        return Boolean(element && element.getBoundingClientRect().width > 40);
+      },
+      undefined,
+      { timeout: 15_000 },
+    )
+    .catch(() => undefined);
+  const restoredInstrument = await restoredInstrumentControl.evaluate(
+    (element) => {
+      const style = getComputedStyle(element);
+      return {
+        text: (element.textContent ?? "").trim(),
+        width: Math.round(element.getBoundingClientRect().width),
+        display: style.display,
+        overflow: style.overflow,
+      };
+    },
+  );
   assert.equal(
     restoredInstrument.text,
     "Violin",
@@ -3521,7 +3543,7 @@ try {
   );
   assert.ok(
     restoredInstrument.width > 40,
-    `MIDI instrument label collapsed to ${restoredInstrument.width}px`,
+    `MIDI instrument label collapsed to ${restoredInstrument.width}px (display ${restoredInstrument.display}, overflow ${restoredInstrument.overflow})`,
   );
   const restoredTranspose = (
     await restoredMidiSurface.locator(".media-transpose strong").innerText()
