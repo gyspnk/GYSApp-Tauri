@@ -6590,3 +6590,41 @@ Kesimpulan jujur: B-37 **tidak lagi punya bukti kegagalan**. Proxy
 mentah, tetapi PDF kidung tidak lagi bergantung padanya. Bila pemilik masih
 melihat PDF kosong di perangkatnya, langkah berikutnya adalah menyalin
 Diagnostik perangkat (entri `pdf.document`) — bukan menambah lapisan proxy.
+
+### Pack per kitab: bait pertama tidak lagi menunggu 1,7 MB (8 Nov, putaran 221)
+
+Build sudah menulis satu pack kecil per kitab (`apps/web/scripts/split-bible-pack.mjs`
+→ `dist/offline/bible/books/<id>.json.gz` + `index.json`, 66 kitab, 1 703 KiB
+total, Kejadian 79 705 B). Putaran ini menyambungkannya ke pembaca:
+
+- `apps/web/src/bible-progressive-pack.ts` — `loadBibleBookIndex()` membaca
+  `index.json`; `ProgressiveBiblePack.ensure(bookId)` memuat satu kitab
+  (permintaan ganda dipakai bersama lewat `#pending`) dan `snapshot()` memberi
+  pack berbentuk pembaca: **rak tetap lengkap dari indeks** (picker dan stepper
+  tidak kehilangan kitab), sedangkan `verses`/`pericopes` hanya untuk kitab yang
+  sudah tiba. Kitab yang tiba tanpa baris indeks tetap masuk rak (fallback).
+- `apps/web/src/bible.tsx` — efek pack memulai indeks + `ensure(selectedBook)`,
+  dan hanya mengganti keadaan `"loading"` dengan snapshot (pack penuh tetap
+  berjalan di latar; saat selesai, snapshot dilepas). Efek `[selectedBook]`
+  memuat kitab yang baru dibuka tanpa mengulang permintaan 1,7 MB.
+
+Dua bug ditemukan oleh kontrak baru, bukan oleh pembaca:
+
+1. `apps/web/e2e/bible-pack-boot.spec.ts` menangkap `pageerror`; penyebabnya
+   `ReferenceError: Cannot access 'F' before initialization` — pasangan
+   `selectedBookRef` diletakkan **sebelum** `useState(selectedBook)` sehingga
+   render membaca variabel sebelum deklarasinya. Fix `cc81a12`: pindah ke
+   `bible.tsx:183-184` (dipakai di `:540`).
+2. CI unit menolak `index.json` tanpa `short`/`chapters` → `split-bible-pack.mjs`
+   sekarang menulis keduanya (`Kel`, `40`), sehingga nama singkat di picker
+   tidak jatuh ke id mentah.
+
+Bukti hosted: run `42443202084` **hijau** (spec baru lolos; `bible-annotations`,
+`bible-picker-mobile` juga). Kontraknya menyatakan pembaca **meminta**
+`offline/bible/books/index.json` dan satu `books/<id>.json.gz` saat merender
+Kejadian 1 — permintaan `tb-reader.json.gz` tetap ada untuk rak penuh.
+
+Yang **belum** diukur: angka LCP/`bible-ready` hosted untuk jalur baru ini.
+Angka sebelum (jalur pack penuh, 390 px, 200 kB/s, 4× CPU): verse pertama
+**16,4–17,1 dtk** dengan dua permintaan pack. Pengukuran berikutnya memakai
+`pnpm test:performance` di jadwal nightly, bukan di device ini.
