@@ -6770,3 +6770,15 @@ langsung hilang.
 Sekarang hanya `.media-advanced-controls:not([open]) > :not(summary)` yang
 memakai `display: none`; disclosure lain tetap memakai transisi
 `::details-content` (160/180 ms). Bukti: run selektif `42474894952` hijau.
+
+### Toolbar Kidung: tab sama lebar hanya di rail, menumpuk di bawahnya (8 Nov, putaran 225)
+
+Tangkan 1440 menunjukkan tab “Kidung” dan “Antrean MIDI” berbeda lebar, jadi
+keduanya diberi `min-width: 124px` — tetapi aturan itu, bila aktif di 600–959 px,
+mendorong tombol koleksi keluar baris sehingga `getByRole("option", { name:
+"KR" })` tidak pernah muncul (`mobile-scroll-kidung.spec.ts`).
+
+Aturan akhir: `@media (min-width: 960px)` untuk lebar tab yang sama, dan
+`@media (max-width: 959px)` membuat `.kidung-controls-field` menjadi grid dua
+baris — tab satu baris penuh, lalu koleksi + tombol tampilan berbagi baris
+berikutnya. Tidak ada lagi tumpang tindih atau nama koleksi terpotong.
