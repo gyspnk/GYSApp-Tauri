@@ -160,8 +160,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const progressivePackRef = useRef<ProgressiveBiblePack | undefined>(
     undefined,
   );
-  const selectedBookRef = useRef(selectedBook);
-  selectedBookRef.current = selectedBook;
   const [packState, setPackState] = useState<PackState>(() => {
     const pack =
       readSavedVersion() === "b_tb" ? getCachedBundledBiblePack() : undefined;
@@ -182,6 +180,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [selectedChapter, setSelectedChapter] = useState(() =>
     readSavedNumber(CHAPTER_KEY, 1),
   );
+  const selectedBookRef = useRef(selectedBook);
+  selectedBookRef.current = selectedBook;
   const [bookmarks, setBookmarks] = useState<Set<string>>(() =>
     readStringSet(BOOKMARKS_KEY),
   );
