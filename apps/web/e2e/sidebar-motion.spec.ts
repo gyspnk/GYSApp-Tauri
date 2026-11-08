@@ -54,6 +54,10 @@ test("sidebar collapse keeps frames short on a long route", async ({
   console.log(`[sidebar-motion] ${JSON.stringify(collapseBaseline)}`);
   await toggle.click();
   await expect(page.locator(".workspace.is-sidebar-collapsed")).toHaveCount(1);
+  // The labels must be out of the way while the column moves, then return.
+  await expect(page.locator(".workspace.is-sidebar-animating")).toHaveCount(1, {
+    timeout: 500,
+  });
   const collapsed = await measure("collapsed");
   console.log(`[sidebar-motion] ${JSON.stringify(collapsed)}`);
   await toggle.click();

@@ -442,6 +442,21 @@ function Shell({
       typeof window === "undefined" ? undefined : window.localStorage,
     ),
   );
+  // The rail animates its column width, which re-wraps the route behind it on
+  // every frame. Sequencing the label fade against that motion (out first,
+  // in after) keeps the change reading as one movement instead of a squeeze.
+  const [sidebarAnimating, setSidebarAnimating] = useState(false);
+  const sidebarTimerRef = useRef<number | undefined>(undefined);
+  const toggleSidebar = useCallback(() => {
+    setSidebarAnimating(true);
+    setSidebarCollapsed((current) => !current);
+    window.clearTimeout(sidebarTimerRef.current);
+    sidebarTimerRef.current = window.setTimeout(
+      () => setSidebarAnimating(false),
+      260,
+    );
+  }, []);
+  useEffect(() => () => window.clearTimeout(sidebarTimerRef.current), []);
   useEffect(() => {
     writeSidebarCollapsed(
       typeof window === "undefined" ? undefined : window.localStorage,
@@ -600,13 +615,13 @@ function Shell({
         onFocusPageSearch={focusPageSearch}
       />
       <div
-        className={`workspace${sidebarCollapsed ? " is-sidebar-collapsed" : ""}`}
+        className={`workspace${sidebarCollapsed ? " is-sidebar-collapsed" : ""}${sidebarAnimating ? " is-sidebar-animating" : ""}`}
       >
         <aside className="navigation-shell">
           <button
             className="sidebar-collapse-toggle"
             type="button"
-            onClick={() => setSidebarCollapsed((current) => !current)}
+            onClick={toggleSidebar}
             aria-expanded={!sidebarCollapsed}
             aria-label={
               sidebarCollapsed

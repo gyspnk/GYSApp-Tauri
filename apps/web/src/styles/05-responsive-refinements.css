@@ -1920,6 +1920,17 @@ body:has(.home-page)::-webkit-scrollbar {
     opacity: 0;
     pointer-events: none;
   }
+  /* Labels leave before the column moves and return only after it settles, so
+     the squeeze never re-wraps or ellipsises text mid-flight. */
+  .workspace.is-sidebar-animating.is-sidebar-collapsed .nav-copy {
+    transition: opacity 70ms linear;
+  }
+  .workspace.is-sidebar-animating:not(.is-sidebar-collapsed) .nav-copy {
+    transition: opacity 120ms var(--sidebar-motion-ease) 100ms;
+  }
+  .workspace.is-sidebar-animating .nav-item {
+    transition: none;
+  }
 }
 @media (max-width: 959px) {
   .sidebar-collapse-toggle {
