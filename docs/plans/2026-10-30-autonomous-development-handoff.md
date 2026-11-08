@@ -6628,3 +6628,46 @@ Yang **belum** diukur: angka LCP/`bible-ready` hosted untuk jalur baru ini.
 Angka sebelum (jalur pack penuh, 390 px, 200 kB/s, 4× CPU): verse pertama
 **16,4–17,1 dtk** dengan dua permintaan pack. Pengukuran berikutnya memakai
 `pnpm test:performance` di jadwal nightly, bukan di device ini.
+
+### Angka perf hosted: pack per kitab dan CLS beranda (8 Nov, putaran 222)
+
+Pemilik memindahkan semua proses ke GitHub Actions, jadi angka perf juga harus
+datang dari runner. Alat baru `.github/workflows/perf.yml` (dispatch `ref`,
+`fetch-depth: 0` supaya commit lama bisa diukur) menjalankan
+`e2e/runtime-performance-baseline.spec.ts` di build yang dibangun sekali di
+runner, lalu menulis tabel per rute × viewport ke ringkasan run.
+
+**Efek pack per kitab (satu runner, satu build, preview tanpa throttle):**
+
+| Rute           | Sebelum (`7e47eea`)                           | Sesudah (`18129ea`) |
+| -------------- | --------------------------------------------- | ------------------- |
+| Bible, 390 px  | > 15 dtk (timeout kontrak), run `42443840651` | **1 951 ms**        |
+| Bible, 768 px  | > 15 dtk                                      | **1 636 ms**        |
+| Bible, 1440 px | > 15 dtk                                      | **1 642 ms**        |
+
+Angka “sesudah” dari run `42443832853`; empat belas rute lain tetap 555–1 107 ms
+dan nol `duplicateAssets`, nol error, nol panel loading yang terlihat. Baseline
+lama tidak bisa memberi angka pasti karena pembaca pack penuh tidak melukis
+dalam batas 15 dtk kontrak di runner — itu sendiri buktinya, bukan tebakan.
+
+**Temuan baru: CLS beranda di runner** — `home-phone` **0,14018**,
+`home-tablet` 0,12638, `home-desktop` 0,06875, padahal di device dengan
+throttle 400 kB/s angkanya 0,0001–0,0003. Karena kontrak pertama hanya mencetak
+skor, spec sekarang mencatat `layoutShiftSources`: pada 390 px
+`article.continue-panel` bergerak **297 px ke atas** (y 720 → 439) dan
+`section.home-media-section.home-suara-section` bergerak ke bawah (y 0 → 605);
+pada 768/1440 pola sama ditambah `home-literature-section`. Artinya tata letak
+awal mengasumsikan tinggi yang berbeda dari hasil akhir saat aset datang tanpa
+throttle. Probe berikutnya (`layoutTimeline`, hanya rute beranda) mencatat
+kotak `.sauh-card-media`, `.verse-panel`, `.continue-panel`, `.home-suara-section`
+dan `.home-literature-section` pada DOMContentLoaded dan pada `ready` supaya
+perbaikan menyasar kotak yang benar.
+
+Ini juga menutup celah kebijakan: `pnpm test:watch` sekarang lewat
+`scripts/local-heavy-guard.mjs` seperti perintah berat lain, dan
+`docs/testing-and-maintenance.md` menyebut bahwa `test:watch`/`test:e2e:dev`
+menolak berjalan lokal kecuali `GYS_ALLOW_LOCAL_HEAVY=1`.
+
+Catatan kejujuran: semua angka di atas **hosted preview tanpa throttle** (angka
+relatif sebelumnya→sesudah), bukan LCP di jaringan 400 kB/s; angka throttle
+terakhir berasal dari device dan sudah dicatat di putaran-putaran sebelumnya.
