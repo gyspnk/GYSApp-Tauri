@@ -172,6 +172,17 @@ gh run download <run-id> -n ui-screenshots-<run-id> -D /tmp/shots
 gh run download <run-id> -n ui-audit-<run-id> -D /tmp/audits
 ```
 
+Route timing is measured hosted too, because the device only runs the server and
+a screenshot cannot show a slow paint. Dispatch the perf baseline for the tip or
+for an older commit and compare the printed rows; the run summary carries one
+row per route and viewport.
+
+```sh
+gh workflow run perf.yml --ref main
+gh workflow run perf.yml --ref main -f ref=<older-sha>
+gh run view <run-id>                      # summary table, no artifact needed
+```
+
 `scripts/ci-timings.mjs` is the feedback loop for CI cost: it prints queue time,
 wall time, every job's duration and the slowest step, so the next optimisation
 (cache, shard, filter) is chosen from measurements. the `qa-artifacts` job in `ci.yml` builds once, then

@@ -1,0 +1,75 @@
+name: Perf baseline
+
+# The owner capped this device at running the web server only, so route timing
+# is measured on the hosted runner. Dispatch with the commit you want measured
+# (defaults to the branch tip) and compare the printed rows before/after a
+# change instead of guessing from screenshots.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit or branch to measure
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: perf-${{ github.ref_name }}-${{ inputs.ref }}
+  cancel-in-progress: true
+
+jobs:
+  route-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build the app once
+        run: pnpm build
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm --filter @gys/web exec playwright install --only-shell chromium
+      - name: Measure the primary routes
+        env:
+          GYS_E2E_PREBUILT: "1"
+        run: |
+          pnpm --filter @gys/web exec playwright test \
+            e2e/runtime-performance-baseline.spec.ts \
+            --grep "primary routes" --workers=1 --retries=0 2>&1 | tee perf.log
+      - name: Summarise the rows
+        if: always()
+        run: |
+          node --input-type=module -e '
+            import { readFileSync, appendFileSync } from "node:fs";
+            const raw = readFileSync("perf.log", "utf8");
+            const line = raw.split("\n").find((row) => row.includes("[runtime-performance]"));
+            const out = process.env.GITHUB_STEP_SUMMARY;
+            if (!line) {
+              appendFileSync(out, "No measurement rows were printed.\n");
+              process.exit(0);
+            }
+            const rows = JSON.parse(line.slice(line.indexOf("[runtime-performance]") + 21));
+            appendFileSync(out, "| route | viewport | ready ms | DOMContentLoaded ms | CLS | long tasks ms |\n| --- | --- | --- | --- | --- | --- |\n");
+            for (const row of rows) {
+              appendFileSync(out, `| ${row.id} | ${row.viewport} | ${row.readyMs} | ${row.domContentLoadedMs} | ${Number(row.layoutShift).toFixed(4)} | ${row.longTaskDuration} |\n`);
+            }
+          '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: perf-log-${{ github.run_id }}
+          path: perf.log
+          retention-days: 5
