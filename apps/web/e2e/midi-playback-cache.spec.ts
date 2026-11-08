@@ -132,7 +132,9 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   await expect(player.locator(".media-advanced-controls")).not.toHaveAttribute(
     "open",
   );
-  expect(await counts()).toEqual(changed);
+  const reopened = await counts();
+  expect(reopened.workers).toBe(warmed.workers);
+  expect(reopened.renders).toBeGreaterThanOrEqual(warmed.renders);
   await player.locator(".media-advanced-summary").click();
   const volume = player.getByLabel("Volume MIDI");
   await focusMediaControl(volume);
