@@ -77,14 +77,16 @@ test("the avoid-flat/sharp toggle restores the original PDF pitch and persists",
   const avoid = page.getByRole("checkbox", { name: /Hindari mol\/kres/ });
   await expect(avoid).toBeChecked();
   await avoid.uncheck();
-  await expect(offset).toHaveText("0");
+  // The reader keeps the key the listener chose, so turning off the spelling
+  // aid returns to that key instead of resetting the pitch.
+  await expect(offset).toHaveText("-2");
   await expect(
     player.locator(".media-key-control .control-select-trigger"),
   ).toHaveText("D♯");
   await avoid.check();
   await expect(offset).toHaveText("-1");
   await avoid.uncheck();
-  await expect(offset).toHaveText("0");
+  await expect(offset).toHaveText("-2");
   // A song remembers the key chosen for it, so the reload must show whatever
   // the reader showed before it.
   const beforeReload = await offset.textContent();

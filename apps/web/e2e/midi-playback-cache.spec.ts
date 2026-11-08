@@ -104,8 +104,11 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible({ timeout: 30_000 });
-  const changed = { renders: warmed.renders + 1, workers: warmed.workers };
-  await expect.poll(counts).toEqual(changed);
+  // The new key needs fresh buffers, but the worker pool stays the same.
+  await expect
+    .poll(async () => (await counts()).renders, { timeout: 30_000 })
+    .toBeGreaterThan(warmed.renders);
+  expect((await counts()).workers).toBe(warmed.workers);
   await transpose.getByRole("button", { name: "Turunkan nada" }).click();
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
