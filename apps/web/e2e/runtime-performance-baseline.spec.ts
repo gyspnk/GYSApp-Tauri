@@ -71,6 +71,12 @@ type RuntimeCase = {
   longTaskDuration: number;
   layoutShift: number;
   layoutShiftSources: string[];
+  // The home route reports the boxes that decide the shift, so a hosted run
+  // names the element that grows or shrinks instead of only the score.
+  layoutTimeline?: {
+    atDomContentLoaded: Record<string, { top: number; height: number } | null>;
+    atReady: Record<string, { top: number; height: number } | null>;
+  };
   scrollWidth: number;
   clientWidth: number;
   imageRequests: number;
@@ -201,6 +207,33 @@ async function browserMetrics(page: Page): Promise<BrowserPerformance> {
   });
 }
 
+const LAYOUT_PROBES = {
+  sauhMedia: ".sauh-card-media",
+  versePanel: ".verse-panel",
+  continuePanel: ".continue-panel",
+  suara: ".home-suara-section",
+  literature: ".home-literature-section",
+} as const;
+
+async function layoutSnapshot(page: Page) {
+  return page.evaluate((probes) => {
+    const boxes: Record<string, { top: number; height: number } | null> = {};
+    for (const [name, selector] of Object.entries(probes)) {
+      const element = document.querySelector<HTMLElement>(selector);
+      if (!element) {
+        boxes[name] = null;
+        continue;
+      }
+      const rect = element.getBoundingClientRect();
+      boxes[name] = {
+        top: Math.round(rect.top),
+        height: Math.round(rect.height),
+      };
+    }
+    return boxes;
+  }, LAYOUT_PROBES);
+}
+
 async function runRoute(
   page: Page,
   route: Route,
@@ -229,6 +262,8 @@ async function runRoute(
   await page.goto(`/GYSApp-Tauri${route.path}`, {
     waitUntil: "domcontentloaded",
   });
+  const atDomContentLoaded =
+    route.id === "home" ? await layoutSnapshot(page) : null;
   await page
     .locator(route.ready)
     .first()
@@ -240,6 +275,7 @@ async function runRoute(
   const readyMs = Date.now() - started;
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(100);
+  const atReady = route.id === "home" ? await layoutSnapshot(page) : null;
 
   const metrics = await page.evaluate(() => {
     const navigation = performance.getEntriesByType("navigation")[0] as
@@ -288,6 +324,9 @@ async function runRoute(
     viewport: viewport.name,
     readyMs,
     ...metrics,
+    ...(atDomContentLoaded && atReady
+      ? { layoutTimeline: { atDomContentLoaded, atReady } }
+      : {}),
     imageRequests: requests.filter(({ type }) => type === "image").length,
     pdfRequests: requests.filter(({ url }) => isPdfDocumentUrl(url)).length,
     duplicateAssets,

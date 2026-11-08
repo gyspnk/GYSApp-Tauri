@@ -82,13 +82,13 @@ For quick HMR iteration:
 
 ```sh
 pnpm dev:native
-pnpm test:watch
-pnpm test:e2e:dev smoke.spec.ts --workers=1
-pnpm test:e2e:dev --ui
 ```
 
 The dev wrapper builds small dependencies and starts Vite; stop production
 preview first. It is rejected in CI and with the prebuilt production flag.
+`pnpm test:watch` and `pnpm test:e2e:dev` also exist, but both are guarded: the
+owner keeps this device for the web server only (7 Nov), so they refuse unless
+`GYS_ALLOW_LOCAL_HEAVY=1` is set deliberately.
 Resource budgets, offline artifact checks and performance use production mode.
 
 ## Local surfaces and deploy checklist

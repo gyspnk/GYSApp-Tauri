@@ -56,7 +56,7 @@
     "verify:prepush": "node scripts/verify-prepush.mjs",
     "verify:native-assets": "node scripts/local-heavy-guard.mjs \"native asset verification\" && node scripts/verify-native-assets.mjs",
     "dev:native": "pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build && pnpm --filter @gys/native dev",
-    "test:watch": "pnpm --filter @gys/web test:watch",
+    "test:watch": "node scripts/local-heavy-guard.mjs \"unit watch\" && pnpm --filter @gys/web test:watch",
     "test:e2e:ui": "pnpm --filter @gys/web test:e2e:ui",
     "test:performance": "node scripts/local-heavy-guard.mjs \"performance suite\" && node scripts/test-performance.mjs",
     "verify:release": "node scripts/local-heavy-guard.mjs \"release verification\" && node scripts/verify-prepush.mjs --full",
