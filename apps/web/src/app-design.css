@@ -4002,7 +4002,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-width: 0;
 }
 .hymn-page .kidung-local-nav a {
-  min-width: 44px;
+  /* Both tabs keep one width so the pair reads as a single switch instead of
+     two differently sized buttons. */
+  min-width: 124px;
   min-height: 44px;
   padding: 8px 12px;
   display: inline-flex;
