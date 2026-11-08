@@ -127,15 +127,9 @@
      discrete `content-visibility` transition alone left the dock's music panel
      painted-but-inert in WebView2 (details.open === false, pointer-events
      inherited `none`), which made its controls unclickable. */
-  :is(
-      .media-advanced-controls,
-      .hymn-more-actions,
-      .hymn-reader-settings,
-      .pdf-music-menu,
-      .faith-pdf-sources,
-      .kidung-row-menu
-    ):not([open])
-    > :not(summary) {
+  /* Only the dock panel needed this: WebView2 has no `::details-content`, so
+     the panel painted while closed; the other disclosures keep their fade. */
+  .media-advanced-controls:not([open]) > :not(summary) {
     display: none;
   }
   details:not([open]) > :not(summary) {

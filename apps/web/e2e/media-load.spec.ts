@@ -305,8 +305,13 @@ test("literature cover states stay honest with one direct fallback attempt", asy
   const coverRequests = readCoverRequests();
   expect(coverRequests.length).toBeLessThanOrEqual(3);
   expect(new Set(coverRequests).size).toBe(coverRequests.length);
+  // The unreadable cover may be requested straight from the origin after the
+  // proxy refuses it; the readable one is served once.
   expect(
-    coverRequests.filter((url) => url.startsWith("https://tjcorguploads")),
+    coverRequests.filter((url) => url.endsWith("broken-cover.png")),
+  ).toHaveLength(1);
+  expect(
+    coverRequests.filter((url) => url.endsWith("official-cover.png")),
   ).toHaveLength(1);
   expect(imageRequests.some((url) => /coverless/.test(url))).toBe(false);
 });
