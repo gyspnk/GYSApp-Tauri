@@ -88,6 +88,10 @@ import {
   loadBundledBiblePack,
   getCachedBundledBiblePack,
 } from "./bible-pack-loader.js";
+import {
+  loadBibleBookIndex,
+  ProgressiveBiblePack,
+} from "./bible-progressive-pack.js";
 import { Icon } from "./icons.js";
 import { ChapterPane } from "./bible-chapter.js";
 import {
@@ -153,6 +157,11 @@ const EMPTY_HIGHLIGHTS: Record<string, string> = {};
 export function BiblePage({ locale }: { locale: Locale }) {
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const progressivePackRef = useRef<ProgressiveBiblePack | undefined>(
+    undefined,
+  );
+  const selectedBookRef = useRef(selectedBook);
+  selectedBookRef.current = selectedBook;
   const [packState, setPackState] = useState<PackState>(() => {
     const pack =
       readSavedVersion() === "b_tb" ? getCachedBundledBiblePack() : undefined;
@@ -520,9 +529,33 @@ export function BiblePage({ locale }: { locale: Locale }) {
             selectedVersionCode,
             getDistributedAssetManager().getStore(),
           );
+    // The shelf index is one small file and lets the reader paint the chapter
+    // it was opened on, instead of waiting for the whole 1,7 MB pack.
+    progressivePackRef.current = undefined;
+    if (selectedVersionCode === "b_tb") {
+      void loadBibleBookIndex()
+        .then(async (index) => {
+          const progressive = new ProgressiveBiblePack(index);
+          progressivePackRef.current = progressive;
+          await progressive.ensure(String(selectedBookRef.current));
+          if (controller.signal.aborted) return;
+          const snapshot = progressive.snapshot();
+          if (!snapshot) return;
+          setPackState((current) =>
+            current.status === "loading"
+              ? { status: "ready", pack: snapshot }
+              : current,
+          );
+        })
+        .catch(() => {
+          progressivePackRef.current = undefined;
+        });
+    }
     void request
       .then((pack) => {
-        if (!controller.signal.aborted) setPackState({ status: "ready", pack });
+        if (controller.signal.aborted) return;
+        progressivePackRef.current = undefined;
+        setPackState({ status: "ready", pack });
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted)
@@ -536,6 +569,17 @@ export function BiblePage({ locale }: { locale: Locale }) {
       });
     return () => controller.abort();
   }, [packAttempt, selectedVersionCode]);
+
+  // While the full pack is still arriving, opening another book loads just
+  // that book's file and refreshes the growing snapshot.
+  useEffect(() => {
+    const progressive = progressivePackRef.current;
+    if (!progressive) return;
+    void progressive.ensure(String(selectedBook)).then(() => {
+      const snapshot = progressive.snapshot();
+      if (snapshot) setPackState({ status: "ready", pack: snapshot });
+    });
+  }, [selectedBook]);
 
   useEffect(() => {
     localStorage.setItem("gys-bible-secondary-version", secondaryVersionCode);

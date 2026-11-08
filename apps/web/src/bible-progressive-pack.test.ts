@@ -73,14 +73,18 @@ describe("ProgressiveBiblePack", () => {
     await pack.ensure("1");
     expect(load).toHaveBeenCalledTimes(1);
     const first = pack.snapshot();
-    expect(first?.books.map((book) => book.name)).toEqual(["Kejadian"]);
+    expect(first?.books.map((book) => book.name)).toEqual([
+      "Kejadian",
+      "Keluaran",
+      "Mazmur",
+    ]);
     expect(first?.verses.map((verse) => verse.id)).toEqual(["1:1:1", "1:2:1"]);
     expect(first?.pericopes?.map((entry) => entry.title)).toEqual(["Judul 1"]);
 
     await pack.ensure("19");
     const second = pack.snapshot();
-    // Canonical index order, not load order.
-    expect(second?.books.map((book) => book.id)).toEqual([1, 19]);
+    // The shelf stays complete; only the verse text grows.
+    expect(second?.books).toHaveLength(3);
     expect(second?.verses).toHaveLength(4);
   });
 

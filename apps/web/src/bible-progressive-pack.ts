@@ -119,9 +119,9 @@ export class ProgressiveBiblePack {
       .map((entry) => entry.id)
       .filter((id) => this.#verses.has(id));
     if (!loaded.length) return undefined;
-    const books = loaded
-      .map((id) => this.#books.get(id))
-      .filter((book): book is BibleBook => Boolean(book));
+    // The shelf is complete from the index so the picker and the chapter
+    // stepper keep every book; only the verse text waits for its own file.
+    const books = this.#index.map(toReaderBook);
     return {
       version: 1,
       translation: this.#translation,
