@@ -137,36 +137,46 @@ function findRun(sha) {
   return listRuns(sha)[0] ?? null;
 }
 
-function waitFor(runId) {
-  console.log(
-    `▶ watching run ${runId} — hosted, nothing heavy runs on this device`,
-  );
-  const watched = spawnSync(
-    "gh",
-    ["run", "watch", String(runId), "--exit-status", "--interval", "20"],
-    {
-      cwd: rootDir,
-      stdio: "inherit",
-    },
-  );
+function readVerdict(runId) {
   const view = gh(
     "run",
     "view",
     String(runId),
     "--json",
-    "conclusion,url,displayTitle",
+    "status,conclusion,url",
   );
-  let summary = "";
   try {
-    const parsed = JSON.parse(view.out || "{}");
-    summary = `${parsed.conclusion ?? "unknown"} — ${parsed.url ?? ""}`;
+    return JSON.parse(view.out || "{}");
   } catch {
-    summary = "verdict unavailable";
+    return {};
   }
+}
+
+function waitFor(runId) {
   console.log(
-    `\n${watched.status === 0 ? "✅" : "❌"} run ${runId}: ${summary}`,
+    `▶ watching run ${runId} — hosted, nothing heavy runs on this device`,
   );
-  process.exit(watched.status === 0 ? 0 : 1);
+  spawnSync(
+    "gh",
+    ["run", "watch", String(runId), "--exit-status", "--interval", "20"],
+    { cwd: rootDir, stdio: "inherit" },
+  );
+  // The watch can end on a flaky GitHub API call (unexpected EOF), so the run's
+  // own verdict decides, not the watch exit code.
+  let verdict = readVerdict(runId);
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    if (verdict.status === "completed") break;
+    spawnSync("node", [
+      "-e",
+      "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,10000)",
+    ]);
+    verdict = readVerdict(runId);
+  }
+  const passed = verdict.conclusion === "success";
+  console.log(
+    `\n${passed ? "✅" : "❌"} run ${runId}: ${verdict.conclusion ?? "verdict unavailable"} — ${verdict.url ?? ""}`,
+  );
+  process.exit(passed ? 0 : 1);
 }
 
 const changed = collectPushFiles({ rootDir });
