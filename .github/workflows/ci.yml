@@ -526,6 +526,9 @@ jobs:
   # The `-linux` visual baselines must be regenerated on the hosted renderer
   # whenever a UI change is intentional. This manual job uploads fresh
   # screenshots for review instead of committing them blindly.
+  # `=all` matters: the default only writes MISSING snapshots, so a change that
+  # still passes the diff tolerance left the artifact byte-identical to the
+  # committed baselines and silently hid the update.
   update-visual-baselines:
     # A plain dispatch regenerates the baselines; `-f qa=true` only asks for
     # screenshots and audits, so it must not pay for a second build.
@@ -551,7 +554,7 @@ jobs:
       - name: Regenerate the visual baselines
         env:
           GYS_E2E_PREBUILT: "1"
-        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts e2e/visual-reading.spec.ts e2e/visual-consistency-matrix.spec.ts --update-snapshots --workers=2 --retries=0
+        run: pnpm --filter @gys/web exec playwright test e2e/visual.spec.ts e2e/visual-reading.spec.ts e2e/visual-consistency-matrix.spec.ts --update-snapshots=all --workers=2 --retries=0
       - name: Upload the regenerated baselines for review
         uses: actions/upload-artifact@v4
         with:
