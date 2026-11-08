@@ -6778,7 +6778,11 @@ keduanya diberi `min-width: 124px` — tetapi aturan itu, bila aktif di 600–95
 mendorong tombol koleksi keluar baris sehingga `getByRole("option", { name:
 "KR" })` tidak pernah muncul (`mobile-scroll-kidung.spec.ts`).
 
-Aturan akhir: `@media (min-width: 960px)` untuk lebar tab yang sama, dan
-`@media (max-width: 959px)` membuat `.kidung-controls-field` menjadi grid dua
-baris — tab satu baris penuh, lalu koleksi + tombol tampilan berbagi baris
-berikutnya. Tidak ada lagi tumpang tindih atau nama koleksi terpotong.
+Aturan akhir: lebar tab yang sama hanya berlaku di toolbar lebar
+(`@media (min-width: 1101px)`: nav 264 px + dua kolom `1fr`), karena di
+600–1100 px `.kidung-controls-field` sudah berupa grid tiga kolom dari
+`apps/web/src/kidung-responsive.css` (kolom nav 96 px, keduanya ikut `1fr`)
+sehingga tab sudah sama lebar tanpa `min-width` tambahan. Percobaan
+`min-width: 124px` global dan penumpukan sampai 959 px justru menggeser kolom
+koleksi (mode tertinggal 343 px dari tepi) dan membuat opsi “KR” tidak pernah
+muncul; keduanya dibatalkan.
