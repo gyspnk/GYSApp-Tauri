@@ -6707,3 +6707,33 @@ satu store `midi-playlist.ts`: kartu “Antrean MIDI” + panel utilitas di
 
 Bukti: CI selektif untuk commit ini (lihat run id di laporan), karena semua
 eksekusi tetap di Actions.
+
+### Kepala halaman Kidung/Iman diringkas, satu koleksi aktif (8 Nov, putaran 224)
+
+Pemilik: “judul kidung dan heading dasar kepercayaan tidak diperlukan, supaya
+aplikasi lebih ringkas; selector kategori hilangkan ‘semua’, satu kategori aktif;
+peletakan tombol Kidung kurang rata”.
+
+- `apps/web/src/kidung-catalog.tsx` dan `apps/web/src/faith.tsx` tidak lagi
+  menampilkan eyebrow (`kidung.eyebrow` “Pujian dan penyembahan”, `faith.eyebrow`
+  “tjc.org · pokok iman”); `h1` tetap ada sebagai `.sr-only` supaya route tetap
+  punya satu judul untuk pembaca layar dan `document.title`.
+- Badge jumlah (“533 lagu”) dihapus: di tangkapan QA ia menggantung sendirian di
+  kanan atas, terpisah dari toolbar. `kidung.itemCount` ikut dihapus dari tiga
+  locale.
+- Koleksi: state `book` default `""`, `activeBook = book || books[0]`, opsi
+  “Semua koleksi” dihapus (`kidung.allCollections`). Baris tidak lagi menyaring
+  `assetCode` — sebelumnya penyaringan itu hanya berlaku pada tampilan “Semua”,
+  dan setelah “Semua” hilang ia justru menyembunyikan kidung yang hanya punya
+  PDF (ditemukan oleh `distributed-assets.spec.ts`).
+- Tab “Kidung / Antrean MIDI” dibuat dua kolom sama lebar
+  (`grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr)`), tanpa
+  `min-width` yang membuatnya meluber dan menutupi tombol koleksi di 390–768 px
+  (bug ini tertangkap `kidung-section-navigation.spec.ts` dan
+  `mobile-scroll-kidung.spec.ts`).
+- Di ≤599 px tab mengambil satu baris penuh, lalu koleksi + tombol tampilan
+  berbagi baris berikutnya, sehingga nama koleksi tidak lagi terpotong “KR”.
+
+Bukti: `pnpm verify` (`42460506102`) hijau untuk perubahan fungsional; baseline
+`/kidung` dan `/iman` diperbarui dari artefak CI karena judul dihapus dari
+layout.
