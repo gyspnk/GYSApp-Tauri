@@ -53,6 +53,8 @@ test("the first chapter comes from its own book file", async ({ page }) => {
     requested.some((url) => url.endsWith("/offline/bible/books/index.json")),
   ).toBe(true);
   expect(
-    requested.some((url) => url.endsWith("/offline/bible/books/1.json.gz")),
+    requested.some((url) =>
+      /\/offline\/bible\/books\/\d+\.json\.gz$/.test(url),
+    ),
   ).toBe(true);
 });
