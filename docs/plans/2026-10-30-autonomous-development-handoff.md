@@ -6812,3 +6812,7 @@ muncul; keduanya dibatalkan.
 ### Baseline visual menulis ulang semua snapshot (10 Nov, putaran 225)
 
 Job `update-visual-baselines` memakai `--update-snapshots` (mode _missing_), jadi perubahan kecil yang masih lolos toleransi diff tidak pernah ditulis ulang: artefak terlihat identik dengan PNG yang sudah di-commit meski 55 tes lulus. Akibatnya adopsi baseline selama beberapa putaran tidak benar-benar menangkap perubahan tab Kidung 1440. `ci.yml` sekarang memakai `--update-snapshots=all` dengan komentar alasannya; regenerasi `42532740780` mengubah 19 PNG — satu di antaranya tab Kidung 126 px, sisanya noise anti-alias (ukuran byte identik). Setelah adopsi, sapuan penuh `42532995313` hijau di keempat shard.
+
+### Pil koleksi menempel ke panah dan sakelar mode (9 Nov, putaran 226)
+
+Pil koleksi tadinya ikut melebar mengisi kolom: pada 1024/768/390 selektornya sampai 617/501/216 px dan panahnya terdorong ke ujung, sehingga pil, panah, dan tombol Aa/partitur terbaca sebagai tiga pulau dengan ruang kosong di antaranya. Sekarang pil berukuran isi di semua lebar (`width: fit-content`, `min-width: 0`), panah menempel 6 px dari label (gap 6 px, padding 12/10), dan tata letak memakai `96px max-content max-content` di bawah 1101 px sehingga tombol mode langsung mengikuti pil. Terukur: 1440 → pil 58 px + mode 39 px (gap 2 px); 1024/768/390 → pil 58–60 px + mode 36 px (gap 4 px).

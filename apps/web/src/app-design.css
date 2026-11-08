@@ -5711,3 +5711,45 @@ body:has(.hymn-detail-page.is-text-viewer)
     justify-content: center;
   }
 }
+
+/* The collection pill is content-sized on every width. Stretching it pushed
+   the chevron to a far edge, so the pill, its arrow and the Aa/score switch
+   read as three unrelated islands with dead air between them. */
+.hymn-page .kidung-controls-field .kidung-header-filter {
+  flex: 0 0 auto;
+  width: fit-content;
+}
+.hymn-page .kidung-controls-field .kidung-collection-select {
+  flex: 0 0 auto;
+  width: fit-content;
+  min-width: 0;
+  max-width: min(60vw, 220px);
+}
+.hymn-page
+  .kidung-controls-field
+  .kidung-collection-select
+  .control-select-trigger {
+  width: auto;
+  min-width: 0;
+  justify-content: flex-start;
+  padding-inline: 12px 10px;
+  gap: 6px;
+}
+.hymn-page
+  .kidung-controls-field
+  .kidung-collection-select
+  .control-select-value {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  .hymn-page .kidung-controls-field {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+  .hymn-page .kidung-controls-field .kidung-mode-control {
+    justify-self: start;
+  }
+}

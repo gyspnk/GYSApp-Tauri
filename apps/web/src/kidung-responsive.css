@@ -278,3 +278,18 @@
   font-size: 1.125rem !important;
   line-height: 1 !important;
 }
+
+/* The collection pill hugs its label and arrow at every width; stretching the
+   cell left the arrow, the Aa/score switch and the search box spread apart. */
+@media (max-width: 1100px) {
+  .hymn-page .kidung-controls-field {
+    grid-template-columns: 96px max-content max-content;
+  }
+  .hymn-page .kidung-controls-field .kidung-collection-select {
+    width: fit-content;
+    max-width: min(60vw, 220px);
+  }
+  .hymn-page .kidung-controls-field .kidung-mode-control {
+    justify-self: start;
+  }
+}
