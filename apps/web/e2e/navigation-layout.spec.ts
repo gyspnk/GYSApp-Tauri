@@ -256,9 +256,28 @@ test.describe("responsive reader navigation", () => {
         expect(loadingGeometry.animationName).toBe("none");
       }
 
-      await expect(
-        page.locator(".bible-reader:not(.bible-loading-reader)"),
-      ).toBeVisible({ timeout: 90_000 });
+      try {
+        await expect(
+          page.locator(".bible-reader:not(.bible-loading-reader)"),
+        ).toBeVisible({ timeout: 90_000 });
+      } catch (error) {
+        console.log(
+          "[bible-settle]",
+          JSON.stringify(
+            await page.evaluate(() => ({
+              loading: Boolean(
+                document.querySelector('[data-testid="bible-loading-reader"]'),
+              ),
+              text: document.body.innerText.replace(/\s+/g, " ").slice(0, 240),
+              keys: Object.keys(localStorage).filter((key) =>
+                key.includes("bible"),
+              ),
+              errors: window.__gysPageErrors ?? null,
+            })),
+          ),
+        );
+        throw error;
+      }
       const settledGeometry = await page
         .locator(".bible-reader:not(.bible-loading-reader)")
         .evaluate((element) => {
