@@ -52,12 +52,29 @@ test("sidebar collapse keeps frames short on a long route", async ({
 
   const collapseBaseline = await measure("baseline");
   console.log(`[sidebar-motion] ${JSON.stringify(collapseBaseline)}`);
+  // Record every class the shell takes during the toggle, so the sequencing
+  // contract does not depend on how fast the runner is.
+  await page.evaluate(() => {
+    const shell = document.querySelector(".workspace");
+    const seen: string[] = [];
+    (window as unknown as { __sidebarClasses: string[] }).__sidebarClasses =
+      seen;
+    if (shell) {
+      new MutationObserver(() => seen.push(shell.className)).observe(shell, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    }
+  });
   await toggle.click();
   await expect(page.locator(".workspace.is-sidebar-collapsed")).toHaveCount(1);
   // The labels must be out of the way while the column moves, then return.
-  expect(await page.locator(".workspace").getAttribute("class")).toContain(
-    "is-sidebar-animating",
-  );
+  expect(
+    await page.evaluate(
+      () =>
+        (window as unknown as { __sidebarClasses: string[] }).__sidebarClasses,
+    ),
+  ).toContain("workspace is-sidebar-animating is-sidebar-collapsed");
   const collapsed = await measure("collapsed");
   console.log(`[sidebar-motion] ${JSON.stringify(collapsed)}`);
   await toggle.click();
