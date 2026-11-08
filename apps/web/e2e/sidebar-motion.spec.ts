@@ -13,7 +13,7 @@ test("sidebar collapse keeps frames short on a long route", async ({
   });
 
   const toggle = page.getByRole("button", {
-    name: /Sembunyikan navigasi|Tampilkan navigasi/,
+    name: /Ciutkan navigasi|Perluas navigasi/,
   });
   await expect(toggle).toBeVisible();
 
