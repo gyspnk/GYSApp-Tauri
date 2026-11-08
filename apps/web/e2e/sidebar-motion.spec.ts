@@ -47,17 +47,19 @@ test("sidebar collapse keeps frames short on a long route", async ({
         frameMax: Math.round((sorted.at(-1) ?? 0) * 10) / 10,
         longTasks: longTasks.map((value) => Math.round(value)),
       };
-      console.log(`[sidebar-motion] ${JSON.stringify(summary)}`);
       return summary;
     }, label);
 
-  const collapseBaseline = await measure("collapse");
+  const collapseBaseline = await measure("baseline");
+  console.log(`[sidebar-motion] ${JSON.stringify(collapseBaseline)}`);
   await toggle.click();
   await expect(page.locator(".workspace.is-sidebar-collapsed")).toHaveCount(1);
   const collapsed = await measure("collapsed");
+  console.log(`[sidebar-motion] ${JSON.stringify(collapsed)}`);
   await toggle.click();
   await expect(page.locator(".workspace.is-sidebar-collapsed")).toHaveCount(0);
   const expanded = await measure("expanded");
+  console.log(`[sidebar-motion] ${JSON.stringify(expanded)}`);
 
   // Baseline before the toggle must already be quiet; the animated window may
   // cost one frame more, never a stall.
