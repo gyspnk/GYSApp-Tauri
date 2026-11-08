@@ -67,6 +67,8 @@ export function writeSplitBiblePack({ source, outDir, log = console.log }) {
     index.push({
       id: entry.id,
       name: entry.book,
+      short: entry.short,
+      chapters: entry.chapters,
       file,
       bytes: entry.gzip.byteLength,
       verses: entry.verses,
