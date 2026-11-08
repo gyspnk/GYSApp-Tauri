@@ -5686,3 +5686,19 @@ body:has(.hymn-detail-page.is-text-viewer)
   .media-advanced-panel {
   display: none;
 }
+
+/* Wide catalogue toolbar: both destinations share one field width, so the
+   active indicator travels the same distance either way. The older 104px
+   flex-basis is narrower than "Antrean MIDI", which is what made the pair look
+   uneven; here each tab gets an equal share of a fixed 264px switch. */
+@media (min-width: 1101px) {
+  .hymn-page .kidung-controls-field .kidung-local-nav {
+    width: 264px;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav-links a {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    justify-content: center;
+  }
+}
