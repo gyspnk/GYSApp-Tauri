@@ -6677,3 +6677,33 @@ menolak berjalan lokal kecuali `GYS_ALLOW_LOCAL_HEAVY=1`.
 Catatan kejujuran: semua angka di atas **hosted preview tanpa throttle** (angka
 relatif sebelumnya→sesudah), bukan LCP di jaringan 400 kB/s; angka throttle
 terakhir berasal dari device dan sudah dicatat di putaran-putaran sebelumnya.
+
+### Antrean MIDI dan playlist jadi satu permukaan di Kidung (8 Nov, putaran 223)
+
+Pemilik: “antrean MIDI dan playlist di kidung dimerge jadi satu, fitur itu hanya
+muncul di kidung, tidak di halaman pengaturan”. Sebelumnya ada **dua** UI untuk
+satu store `midi-playlist.ts`: kartu “Antrean MIDI” + panel utilitas di
+`/lainnya?section=hymns` (`apps/web/src/more.tsx`) dan halaman
+`/kidung?section=playlist` (`apps/web/src/kidung-playlist-page.tsx`).
+
+- `more.tsx` kehilangan kartu itu, panel `.utility-panel` playlist, seluruh state
+  `playlistOpen`/`playlist`/`playlistFile`, langganan `subscribeMidiPlaylist`,
+  dan 9 impor dari `midi-playlist.js`. Halaman pengaturan tidak lagi menyimpan
+  salinan antrean; satu-satunya jalan adalah Kidung.
+- Nama disatukan: label `kidung.playlist` kini **“Antrean MIDI”** (en “MIDI
+  queue”, zh “MIDI 队列”), sama dengan badge dock (`media.queueTitle`) dan
+  tombol “Tambah antrean MIDI” di pembaca. Playlist tersimpan tetap ada di
+  halaman yang sama sebagai bagian “Playlist tersimpan”.
+- 22 kunci i18n yang hanya dipakai panel lama dihapus dari tiga locale
+  (`more.midiQueue`, `more.queueStatus/Automatic/Manual`, `more.playlist`,
+  `more.autoNext/shuffle/repeat/noRepeat/currentSong/allQueue`, `more.raise/lower`,
+  `more.exportQueue/importQueue/apply/clear/close`, `more.emptyPlaylist`,
+  `more.playlistImported/invalidPlaylist/playlistCleared`); `more.delete` tetap
+  karena dipakai panel lain.
+- Kontrak menyesuaikan: `smoke.spec.ts` kini menguji antrean bertahan dari detail
+  kidung ke `/kidung?section=playlist` (bukan panel pengaturan), dan label
+  “Playlist” di delapan spec diganti “Antrean MIDI”. Tidak ada baseline visual
+  untuk halaman ini, jadi tidak ada PNG yang perlu diperbarui.
+
+Bukti: CI selektif untuk commit ini (lihat run id di laporan), karena semua
+eksekusi tetap di Actions.

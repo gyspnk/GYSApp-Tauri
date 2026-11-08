@@ -1206,7 +1206,7 @@ test("Kidung playlist and reader semantic chrome stays localized @nightly", asyn
   await preparePinnedReaderAssets(page);
   const copies = {
     id: {
-      playlist: "Playlist",
+      playlist: "Antrean MIDI",
       import: "Impor",
       export: "Ekspor",
       exportQueue: "Ekspor antrean",
@@ -1221,7 +1221,7 @@ test("Kidung playlist and reader semantic chrome stays localized @nightly", asyn
       raiseCapo: "Naikkan Capo",
     },
     en: {
-      playlist: "Playlist",
+      playlist: "Antrean MIDI",
       import: "Import",
       export: "Export",
       exportQueue: "Export queue",

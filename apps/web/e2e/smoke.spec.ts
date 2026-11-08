@@ -1411,7 +1411,7 @@ test("literature article exposes an explicit jump to the saved scroll position",
   ).toBeVisible();
 });
 
-test("MIDI queue persists from a hymn detail into the utility surface", async ({
+test("MIDI queue persists from a hymn detail into the Kidung queue page", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/kidung/hymn-001");
@@ -1420,19 +1420,20 @@ test("MIDI queue persists from a hymn detail into the utility surface", async ({
   ).toBeVisible({ timeout: 15_000 });
   await page.locator("summary.hymn-more-actions-summary").click();
   await page.getByRole("button", { name: "Tambah antrean MIDI" }).click();
-  await page.goto("/GYSApp-Tauri/lainnya");
-  await ensureSettingOpen(page, "hymns");
-  await page.getByRole("button", { name: "Antrean MIDI" }).click();
-  await expect(page.locator(".playlist-list li")).toHaveCount(1);
+  // The queue and the saved playlists share one surface inside Kidung; the
+  // settings page no longer keeps a second copy of either.
+  await page.goto("/GYSApp-Tauri/kidung?section=playlist");
   await expect(
-    page.locator(".playlist-item-main", {
+    page.getByRole("heading", { name: "Antrean MIDI", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".kidung-playlist-list li")).toHaveCount(1);
+  await expect(
+    page.locator(".kidung-playlist-song", {
       hasText: "Pujilah Allah Yang Maha Esa",
     }),
   ).toBeVisible();
   await page.reload();
-  await ensureSettingOpen(page, "hymns");
-  await page.getByRole("button", { name: "Antrean MIDI" }).click();
-  await expect(page.locator(".playlist-list li")).toHaveCount(1);
+  await expect(page.locator(".kidung-playlist-list li")).toHaveCount(1);
 });
 
 test("Bible title tap opens standard book/chapter/verse picker dialog and navigates", async ({

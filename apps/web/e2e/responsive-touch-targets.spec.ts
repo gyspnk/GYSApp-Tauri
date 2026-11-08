@@ -71,7 +71,7 @@ test("phone Bible and Kidung controls expose comfortable touch targets", async (
   await expectFullyInViewport(
     page
       .locator(".kidung-local-nav")
-      .getByRole("link", { name: "Playlist", exact: true }),
+      .getByRole("link", { name: "Antrean MIDI", exact: true }),
     phoneWidth,
   );
   await expectFullyInViewport(

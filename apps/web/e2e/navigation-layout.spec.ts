@@ -971,12 +971,12 @@ test.describe("responsive reader navigation", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/GYSApp-Tauri/kidung?section=playlist");
     await expect(
-      page.getByRole("heading", { name: "Playlist", exact: true }),
+      page.getByRole("heading", { name: "Antrean MIDI", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
     const localNav = page.locator(".kidung-local-nav");
     await expect(localNav.getByRole("link", { name: "Kidung" })).toBeVisible();
     await expect(
-      localNav.getByRole("link", { name: "Playlist" }),
+      localNav.getByRole("link", { name: "Antrean MIDI" }),
     ).toHaveAttribute("aria-current", "page");
     await expect(localNav.getByRole("link")).toHaveCount(2);
     await localNav.getByRole("link", { name: "Kidung" }).click();

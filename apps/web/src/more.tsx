@@ -52,17 +52,6 @@ import { EgysWhatsApp } from "./egys-whatsapp.js";
 import { loadEgysApple, signInEgysApple } from "./egys-apple.js";
 import { EgysLoginMethods } from "./egys-login-methods.js";
 import { AudioSettingsInline } from "./audio-settings-inline.js";
-import {
-  clearMidiPlaylist,
-  downloadMidiPlaylist,
-  getMidiPlaylist,
-  importMidiPlaylist,
-  moveMidiPlaylistItem,
-  removeMidiPlaylistItem,
-  selectMidiPlaylistItem,
-  subscribeMidiPlaylist,
-  updateMidiPlaylistOptions,
-} from "./midi-playlist.js";
 import { Select } from "./select.js";
 import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { REMINDER_CHANGE_EVENT } from "./daily-reminder.js";
@@ -441,9 +430,6 @@ export function MorePage({
   const [egysGoogleError, setEgysGoogleError] = useState("");
   const [backupPassword, setBackupPassword] = useState("");
   const [backupFile, setBackupFile] = useState<PlatformFile>();
-  const [playlistOpen, setPlaylistOpen] = useState(false);
-  const [playlist, setPlaylist] = useState(() => getMidiPlaylist());
-  const [playlistFile, setPlaylistFile] = useState<File>();
   const [distributedAssets, setDistributedAssets] = useState<
     ManagedDistributedAsset[]
   >([]);
@@ -536,11 +522,6 @@ export function MorePage({
       });
     return () => controller.abort();
   }, []);
-
-  useEffect(
-    () => subscribeMidiPlaylist(() => setPlaylist(getMidiPlaylist())),
-    [],
-  );
 
   useEffect(() => {
     let active = true;
@@ -1482,26 +1463,6 @@ export function MorePage({
             )}
 
             <div className="more-secondary-grid">
-              <button
-                className="more-card more-action"
-                type="button"
-                onClick={() => setPlaylistOpen((open) => !open)}
-              >
-                <span className="more-icon">
-                  <Icon name="queueMusic" size={22} />
-                </span>
-                <strong>{translate(locale, "more.midiQueue")}</strong>
-                {playlist.items.length > 0 && (
-                  <small>
-                    {translate(locale, "more.queueStatus", {
-                      count: playlist.items.length,
-                      mode: playlist.autoNext
-                        ? translate(locale, "more.queueAutomatic")
-                        : translate(locale, "more.queueManual"),
-                    })}
-                  </small>
-                )}
-              </button>
               <div
                 className="more-card more-reminder-inline"
                 aria-label={translate(locale, "more.reminderPanel")}
@@ -1899,170 +1860,6 @@ export function MorePage({
         </details>
       </section>
 
-      {playlistOpen && (
-        <section
-          className="utility-panel"
-          aria-label={translate(locale, "more.playlist")}
-        >
-          <div className="more-card-heading">
-            <div>
-              <h2>{translate(locale, "more.playlist")}</h2>
-            </div>
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => setPlaylistOpen(false)}
-            >
-              {translate(locale, "more.close")}
-            </button>
-          </div>
-          <div className="playlist-settings">
-            <label className="control-check">
-              <input
-                type="checkbox"
-                checked={playlist.autoNext}
-                onChange={(event) =>
-                  updateMidiPlaylistOptions({ autoNext: event.target.checked })
-                }
-              />
-              <span>{translate(locale, "more.autoNext")}</span>
-            </label>
-            <label className="control-check">
-              <input
-                type="checkbox"
-                checked={playlist.shuffle}
-                onChange={(event) =>
-                  updateMidiPlaylistOptions({ shuffle: event.target.checked })
-                }
-              />
-              <span>{translate(locale, "more.shuffle")}</span>
-            </label>
-            <Select
-              value={playlist.loop}
-              onChange={(value) => updateMidiPlaylistOptions({ loop: value })}
-              label={translate(locale, "more.repeat")}
-              options={[
-                {
-                  value: "off" as const,
-                  label: translate(locale, "more.noRepeat"),
-                },
-                {
-                  value: "one" as const,
-                  label: translate(locale, "more.currentSong"),
-                },
-                {
-                  value: "all" as const,
-                  label: translate(locale, "more.allQueue"),
-                },
-              ]}
-            />
-          </div>
-          {playlist.items.length ? (
-            <ol className="playlist-list">
-              {playlist.items.map((item, index) => (
-                <li
-                  className={
-                    index === playlist.currentIndex ? "is-current" : ""
-                  }
-                  key={item.songId}
-                >
-                  <button
-                    className="playlist-item-main"
-                    type="button"
-                    onClick={() => selectMidiPlaylistItem(index)}
-                  >
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <strong>{item.title}</strong>
-                  </button>
-                  <div className="playlist-item-actions">
-                    <button
-                      className="text-button"
-                      type="button"
-                      disabled={index === 0}
-                      onClick={() => moveMidiPlaylistItem(index, index - 1)}
-                      aria-label={translate(locale, "more.raise", {
-                        title: item.title,
-                      })}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      className="text-button"
-                      type="button"
-                      disabled={index === playlist.items.length - 1}
-                      onClick={() => moveMidiPlaylistItem(index, index + 1)}
-                      aria-label={translate(locale, "more.lower", {
-                        title: item.title,
-                      })}
-                    >
-                      ↓
-                    </button>
-                    <button
-                      className="text-button"
-                      type="button"
-                      onClick={() => removeMidiPlaylistItem(item.songId)}
-                      aria-label={`${translate(locale, "more.delete")} ${item.title}`}
-                    >
-                      {translate(locale, "more.delete")}
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <div className="empty-inline">
-              <p>{translate(locale, "more.emptyPlaylist")}</p>
-            </div>
-          )}
-          <div className="utility-actions">
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={downloadMidiPlaylist}
-              disabled={!playlist.items.length}
-            >
-              {translate(locale, "more.exportQueue")}
-            </button>
-            <label className="quiet-button file-button">
-              {translate(locale, "more.importQueue")}
-              <input
-                type="file"
-                accept="application/json,.json"
-                onChange={(event) => setPlaylistFile(event.target.files?.[0])}
-              />
-            </label>
-            <button
-              className="quiet-button"
-              type="button"
-              disabled={!playlistFile}
-              onClick={() => {
-                if (!playlistFile) return;
-                void playlistFile
-                  .text()
-                  .then((value) => importMidiPlaylist(value))
-                  .then(() => {
-                    setPlaylistFile(undefined);
-                    show(translate(locale, "more.playlistImported"));
-                  })
-                  .catch(() => show(translate(locale, "more.invalidPlaylist")));
-              }}
-            >
-              {translate(locale, "more.apply")}
-            </button>
-            <button
-              className="text-button"
-              type="button"
-              disabled={!playlist.items.length}
-              onClick={() => {
-                clearMidiPlaylist();
-                show(translate(locale, "more.playlistCleared"));
-              }}
-            >
-              {translate(locale, "more.clear")}
-            </button>
-          </div>
-        </section>
-      )}
       {notice && (
         <div className="toast" role="status">
           {notice}

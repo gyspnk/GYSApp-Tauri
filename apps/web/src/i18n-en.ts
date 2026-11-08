@@ -455,7 +455,7 @@ export const enFeatureMessages: Record<string, string> = {
   "kidung.allCollections": "All",
   "kidung.navigation": "Hymn navigation",
   "kidung.songs": "Hymns",
-  "kidung.playlist": "Playlist",
+  "kidung.playlist": "MIDI queue",
   "kidung.viewMode": "Hymn view mode",
   "kidung.back": "← All hymns",
   "kidung.pdfNavigation": "Hymn viewer navigation",
@@ -835,10 +835,6 @@ export const enFeatureMessages: Record<string, string> = {
   "more.notChecked": "not checked",
   "more.backupImport": "Backup & import",
   "more.reminder": "Reminder",
-  "more.midiQueue": "MIDI queue",
-  "more.queueStatus": "{count} songs saved · {mode}",
-  "more.queueAutomatic": "automatic",
-  "more.queueManual": "manual",
   "more.deviceData": "Device & data",
   "more.resetDevice": "Reset device",
   "more.resetDeviceDesc":
@@ -873,20 +869,6 @@ export const enFeatureMessages: Record<string, string> = {
   "more.time": "Time",
   "more.saveReminder": "Save reminder",
   "more.disable": "Disable",
-  "more.playlist": "MIDI queue",
-  "more.autoNext": "Auto-advance",
-  "more.shuffle": "Shuffle",
-  "more.repeat": "Repeat",
-  "more.noRepeat": "Do not repeat",
-  "more.currentSong": "This song",
-  "more.allQueue": "Entire queue",
-  "more.emptyPlaylist": "No songs yet. Add one from a hymn detail page.",
-  "more.raise": "Move {title} up",
-  "more.lower": "Move {title} down",
-  "more.exportQueue": "Export queue",
-  "more.importQueue": "Import queue",
-  "more.apply": "Apply",
-  "more.clear": "Clear",
   "more.googleLogin": "Sign in with Google",
   "more.googleOriginMismatch":
     "Google sign-in only works when this origin is registered in Google Cloud Console. Seeing Error 400 origin_mismatch? Register the origin below (scheme, host and port must match exactly), then reload. The fastest alternative is WhatsApp sign-in.",
@@ -898,7 +880,6 @@ export const enFeatureMessages: Record<string, string> = {
   "more.whatsappExpired":
     "No WhatsApp message was detected. Send the prepared message in WhatsApp, then tap WhatsApp again.",
   "more.appleLogin": "Sign in with Apple",
-  "more.close": "Close",
   "more.confirmDeleteData":
     "Delete all GYS data on this device? Notes, reading progress, preferences, and local cache will be deleted.",
   "more.dataReset": "Local GYS data was reset. Reload if needed.",
@@ -933,9 +914,6 @@ export const enFeatureMessages: Record<string, string> = {
   "more.reminderSaved": "Reminder active daily at {time}.",
   "more.reminderNotificationPrompt":
     "Reminder time saved; allow notifications for alerts.",
-  "more.playlistImported": "MIDI queue imported.",
-  "more.invalidPlaylist": "Queue file is invalid.",
-  "more.playlistCleared": "MIDI queue cleared.",
   "more.notificationTitle": "GYS quiet time",
   "more.notificationBody":
     "It is time to read Scripture and today's reflection.",

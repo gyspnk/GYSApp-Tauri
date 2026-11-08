@@ -34,10 +34,10 @@ for (const width of [390, 768, 1440]) {
     );
     const originals = new Map<string, unknown>();
     for (const [index, label] of [
-      "Playlist",
+      "Antrean MIDI",
       "Kidung",
       "Kidung",
-      "Playlist",
+      "Antrean MIDI",
       "Kidung",
     ].entries()) {
       const nav = page.locator(".kidung-local-nav");

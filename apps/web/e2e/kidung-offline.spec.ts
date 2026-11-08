@@ -27,7 +27,9 @@ test("prepared catalog opens previously unvisited Kidung sections offline @night
   await expect(page.locator(".kidung-settings-section").first()).toBeVisible();
   await page.locator('a.nav-item[href$="/kidung"]').click();
   await page.locator('.kidung-local-nav a[href$="section=playlist"]').click();
-  await expect(page.locator(".kidung-tool-heading h1")).toHaveText("Playlist");
+  await expect(page.locator(".kidung-tool-heading h1")).toHaveText(
+    "Antrean MIDI",
+  );
   await page.locator('.kidung-local-nav a[href$="/kidung"]').click();
   await expect(page.locator(".pujian-item")).toHaveCount(533);
   const mode = page.locator(".kidung-mode-cycle");

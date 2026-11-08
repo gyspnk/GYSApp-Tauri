@@ -482,7 +482,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.allCollections": "Semua",
     "kidung.navigation": "Navigasi Kidung",
     "kidung.songs": "Kidung",
-    "kidung.playlist": "Playlist",
+    "kidung.playlist": "Antrean MIDI",
     "kidung.viewMode": "Mode tampilan kidung",
     "kidung.back": "← Semua kidung",
     "kidung.pdfNavigation": "Navigasi viewer Kidung",
@@ -862,10 +862,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.notChecked": "belum diperiksa",
     "more.backupImport": "Backup & import",
     "more.reminder": "Pengingat",
-    "more.midiQueue": "Antrean MIDI",
-    "more.queueStatus": "{count} lagu tersimpan · {mode}",
-    "more.queueAutomatic": "lanjut otomatis",
-    "more.queueManual": "manual",
     "more.deviceData": "Perangkat & data",
     "more.resetDevice": "Reset perangkat",
     "more.resetDeviceDesc":
@@ -899,20 +895,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.time": "Waktu",
     "more.saveReminder": "Simpan pengingat",
     "more.disable": "Nonaktifkan",
-    "more.playlist": "Antrean MIDI",
-    "more.autoNext": "Lanjut otomatis",
-    "more.shuffle": "Acak",
-    "more.repeat": "Ulangi",
-    "more.noRepeat": "Tidak mengulang",
-    "more.currentSong": "Lagu ini",
-    "more.allQueue": "Seluruh antrean",
-    "more.emptyPlaylist": "Belum ada lagu. Tambahkan dari detail Kidung.",
-    "more.raise": "Naikkan {title}",
-    "more.lower": "Turunkan {title}",
-    "more.exportQueue": "Ekspor antrean",
-    "more.importQueue": "Impor antrean",
-    "more.apply": "Terapkan",
-    "more.clear": "Kosongkan",
     "more.googleLogin": "Login dengan Google",
     "more.googleOriginMismatch":
       "Login Google hanya berfungsi jika origin ini terdaftar di Google Cloud Console. Muncul Error 400 origin_mismatch? Daftarkan origin di bawah ini (skema, host, dan port harus sama persis), lalu muat ulang. Alternatif tercepat: login WhatsApp.",
@@ -924,7 +906,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.whatsappExpired":
       "Pesan WhatsApp belum terdeteksi. Kirim pesan yang sudah disiapkan dari WhatsApp, lalu tekan WhatsApp lagi.",
     "more.appleLogin": "Login dengan Apple",
-    "more.close": "Tutup",
     "more.confirmDeleteData":
       "Hapus semua data GYS di perangkat ini? Catatan, progres baca, preferensi, dan cache lokal akan dihapus.",
     "more.dataReset":
@@ -962,9 +943,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.reminderSaved": "Pengingat aktif setiap hari pukul {time}.",
     "more.reminderNotificationPrompt":
       "Waktu pengingat tersimpan; izinkan notifikasi agar pemberitahuan muncul.",
-    "more.playlistImported": "Antrean MIDI berhasil diimpor.",
-    "more.invalidPlaylist": "File antrean tidak valid.",
-    "more.playlistCleared": "Antrean MIDI dikosongkan.",
     "more.notificationTitle": "Waktu teduh GYS",
     "more.notificationBody": "Saatnya membaca firman dan renungan hari ini.",
     "more.greeting": "Selamat datang, {name}.",

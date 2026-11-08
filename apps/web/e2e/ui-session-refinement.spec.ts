@@ -30,7 +30,7 @@ for (const width of [390, 768, 1440]) {
       );
     const bounds = new Map<string, unknown>();
     bounds.set(await surfaceOf(), await readBounds());
-    for (const section of ["Playlist", "Kidung"]) {
+    for (const section of ["Antrean MIDI", "Kidung"]) {
       await expect(page.locator("html")).not.toHaveClass(
         /is-reader-transition/,
       );

@@ -7,7 +7,7 @@ test("imports upstream playlist JSON and persists song reordering", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/kidung?section=playlist");
   await expect(
-    page.getByRole("heading", { name: "Playlist", exact: true }),
+    page.getByRole("heading", { name: "Antrean MIDI", exact: true }),
   ).toBeVisible();
 
   await page
