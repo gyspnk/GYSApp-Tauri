@@ -3967,9 +3967,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding-bottom: 10px;
 }
 
-/* Phones: the tabs take a full row, then the collection and the view switch
-   share one, so nothing is squeezed into a single line of four controls. */
-@media (max-width: 599px) {
+/* Narrow widths: the tabs take a full row, then the collection and the view
+   switch share one, so nothing is squeezed into a single line of four controls. */
+@media (max-width: 959px) {
   .kidung-controls-field {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

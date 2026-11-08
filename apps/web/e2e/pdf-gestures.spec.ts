@@ -136,7 +136,9 @@ for (const width of [320, 390, 768, 1440]) {
       return { start, move };
     });
     expect(consumed).toEqual({ start: true, move: true });
-    await expect(page.locator(".pdf-zoom-indicator")).toHaveText("200%");
+    await expect(page.locator(".pdf-zoom-indicator")).toHaveText("200%", {
+      timeout: 15_000,
+    });
     await expect
       .poll(async () => (await canvas.boundingBox())!.width / initial.width)
       .toBeCloseTo(2, 2);

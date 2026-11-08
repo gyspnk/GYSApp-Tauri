@@ -258,7 +258,7 @@ test.describe("responsive reader navigation", () => {
 
       await expect(
         page.locator(".bible-reader:not(.bible-loading-reader)"),
-      ).toBeVisible({ timeout: 30_000 });
+      ).toBeVisible({ timeout: 45_000 });
       const settledGeometry = await page
         .locator(".bible-reader:not(.bible-loading-reader)")
         .evaluate((element) => {

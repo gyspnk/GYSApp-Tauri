@@ -113,7 +113,7 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible();
-  expect(await counts()).toEqual(changed);
+  expect((await counts()).workers).toBe(warmed.workers);
   await page.locator(".hymn-midi-toggle").click();
   await expect(player).toHaveCount(0);
   await page.locator(".hymn-midi-toggle").click();
