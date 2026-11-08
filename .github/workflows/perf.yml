@@ -27,6 +27,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref || github.ref }}
+          # An older commit is often only reachable through history, and a
+          # short SHA cannot be fetched from a depth-1 clone.
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 11.21.0
