@@ -1221,7 +1221,7 @@ test("Kidung playlist and reader semantic chrome stays localized @nightly", asyn
       raiseCapo: "Naikkan Capo",
     },
     en: {
-      playlist: "Antrean MIDI",
+      playlist: "MIDI queue",
       import: "Import",
       export: "Export",
       exportQueue: "Export queue",
@@ -1236,7 +1236,7 @@ test("Kidung playlist and reader semantic chrome stays localized @nightly", asyn
       raiseCapo: "Raise capo",
     },
     zh: {
-      playlist: "播放列表",
+      playlist: "MIDI 队列",
       import: "导入",
       export: "导出",
       exportQueue: "导出队列",
