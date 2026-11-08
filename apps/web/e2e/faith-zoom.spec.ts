@@ -135,9 +135,10 @@ for (const width of [320, 1440]) {
       const baseFontSize = (element: HTMLElement | SVGElement) =>
         (parseFloat(getComputedStyle(element).fontSize) * 16) /
         parseFloat(getComputedStyle(document.documentElement).fontSize);
+      // The creed keeps reading size on phones; it is not compacted to 14 px.
       await expect
         .poll(() => paragraphs.first().evaluate(baseFontSize))
-        .toBeCloseTo(width < 600 ? 14 : 20, 1);
+        .toBeCloseTo(width < 600 ? 18 : 20, 1);
       await expect(page.locator(".faith-hint, .connection-status")).toHaveCount(
         0,
       );
