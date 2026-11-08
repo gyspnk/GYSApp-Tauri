@@ -818,8 +818,10 @@
     gap: 12px;
     padding: 16px 0;
   }
+  /* The creed is read, not scanned: it keeps the reading size on phones
+     instead of dropping to a compact 14 px. */
   .faith-page .faith-statement {
-    --faith-font-size: 0.875rem;
+    --faith-font-size: 1.125rem;
   }
   .faith-row > .faith-number {
     width: 28px;
