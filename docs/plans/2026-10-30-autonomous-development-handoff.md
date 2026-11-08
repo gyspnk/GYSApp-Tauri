@@ -6737,3 +6737,22 @@ peletakan tombol Kidung kurang rata”.
 Bukti: `pnpm verify` (`42460506102`) hijau untuk perubahan fungsional; baseline
 `/kidung` dan `/iman` diperbarui dari artefak CI karena judul dihapus dari
 layout.
+
+### Nada otomatis menggantikan nada tersimpan per kidung (8 Nov, putaran 225)
+
+Saat pemilik meminta transpose/tempo diingat per kidung (`gys-midi-preferences-v1`
+dengan `overrides[songId]`), muncul satu celah: menyalakan “Hindari mol/kres”
+menjalankan `applyTransposeDefault()` yang hanya menghapus flag override di
+memori, tetapi entri `overrides` untuk kidung itu tetap tersimpan. Akibatnya
+nada lama (-2) muncul lagi setelah reload, padahal layar menampilkan 0.
+
+- `apps/web/src/midi-player.ts` `applyTransposeDefault()` kini menghapus entri
+  `overrides[this.state.songId]` sebelum menyimpan preferensi, karena memilih
+  nada otomatis berarti melepas pilihan nada manual untuk kidung itu.
+- Unit test baru “forgets the key saved for a song when the automatic pitch is
+  chosen” membuktikan entri hilang dan cold start memakai default pemanggil.
+- Tab “Kidung / Antrean MIDI” tetap sama lebar hanya mulai 600 px; di ponsel
+  baris tab memang penuh sendiri, dan kontrak `mobile-scroll-kidung.spec.ts`
+  diubah menjadi uji tumpang tindih dua dimensi (bukan hanya sumbu x).
+
+Bukti: run selektif `42472427366` hijau (unit + e2e selektif).
