@@ -36,9 +36,20 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
           unused: container.right - mode.right,
           links: links.map((r) => ({ width: r.width, height: r.height })),
           navGap: nav.right - links.at(-1)!.right,
+          // Boxes only collide when they share a row as well as a column: the
+          // phone layout gives the tabs their own full-width row.
           overlap:
-            links.at(-1)!.right > category.left + 0.5 ||
-            category.right > mode.left + 0.5,
+            links.some(
+              (link) =>
+                link.bottom > category.top + 0.5 &&
+                category.bottom > link.top + 0.5 &&
+                link.right > category.left + 0.5 &&
+                category.right > link.left + 0.5,
+            ) ||
+            (category.bottom > mode.top + 0.5 &&
+              mode.bottom > category.top + 0.5 &&
+              category.right > mode.left + 0.5 &&
+              mode.right > category.left + 0.5),
         };
       });
     for (const scale of [1, 1.5]) {

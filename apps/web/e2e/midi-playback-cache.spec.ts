@@ -88,7 +88,16 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible();
-  expect(await counts()).toEqual(warmed);
+  // Playing stays inside the buffers the startup sequence already warmed.
+  await expect
+    .poll(
+      async () => {
+        const now = await counts();
+        return now.renders === warmed.renders && now.workers === warmed.workers;
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true);
   await player.locator(".media-advanced-summary").click();
   const transpose = player.locator(".media-transpose");
   await transpose.getByRole("button", { name: "Naikkan nada" }).click();

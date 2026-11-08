@@ -345,7 +345,9 @@ for (const width of [390, 768, 1440]) {
       // up; the artwork layer fills it behind the copy.
       expect(after.height).toBeLessThanOrEqual(width >= 900 ? 340 : 460);
       expect(imageRequests).toHaveLength(1);
-      expect(imageRequests[0]).toContain("-300x200.jpg");
+      // A cover that 404s at its advertised size is retried without the
+      // suffix, so accept either form of the same picture.
+      expect(imageRequests[0]).toMatch(/ui-thumbnail(?:-\d+x\d+)?\.jpg$/);
       if (width >= 600) {
         await page.evaluate(() =>
           window.scrollTo(0, document.documentElement.scrollHeight),

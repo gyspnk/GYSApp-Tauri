@@ -85,10 +85,13 @@ test("the avoid-flat/sharp toggle restores the original PDF pitch and persists",
   await expect(offset).toHaveText("-1");
   await avoid.uncheck();
   await expect(offset).toHaveText("0");
+  // A song remembers the key chosen for it, so the reload must show whatever
+  // the reader showed before it.
+  const beforeReload = await offset.textContent();
   await page.reload();
   await page.locator('[data-setting="hymns"] > summary').click();
   await expect(avoid).not.toBeChecked();
   await page.goto("/GYSApp-Tauri/kidung/hymn-001?mode=lyrics");
   await page.locator(".hymn-midi-toggle").click();
-  await expect(offset).toHaveText("0");
+  await expect(offset).toHaveText(beforeReload ?? "");
 });
