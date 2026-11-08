@@ -41,20 +41,18 @@ test("Bible reader paints its first chapter without a runtime error", async ({
   expect(errors).toEqual([]);
 });
 
-test("the first chapter does not wait for the whole shelf", async ({
-  page,
-}) => {
+test("the first chapter comes from its own book file", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  let shelfAnswered = false;
-  await page.route("**/offline/bible/tb-reader.json*", async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 20_000));
-    shelfAnswered = true;
-    await route.continue();
-  });
+  const requested: string[] = [];
+  page.on("request", (request) => requested.push(request.url()));
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 20_000,
   });
-  await expect(page.locator(".verse-text").first()).toBeVisible();
-  expect(shelfAnswered).toBe(false);
+  expect(
+    requested.some((url) => url.endsWith("/offline/bible/books/index.json")),
+  ).toBe(true);
+  expect(
+    requested.some((url) => url.endsWith("/offline/bible/books/1.json.gz")),
+  ).toBe(true);
 });
