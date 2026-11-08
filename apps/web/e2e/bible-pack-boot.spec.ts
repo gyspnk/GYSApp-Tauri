@@ -11,10 +11,30 @@ test("Bible reader paints its first chapter without a runtime error", async ({
   page.on("pageerror", (error) => {
     errors.push(String(error.stack ?? error));
   });
-  await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
-    timeout: 20_000,
+  const messages: string[] = [];
+  page.on("console", (message) => {
+    messages.push(`${message.type()}: ${message.text()}`);
   });
+  await page.goto("/GYSApp-Tauri/bible");
+  try {
+    await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible(
+      {
+        timeout: 20_000,
+      },
+    );
+  } finally {
+    if (errors.length || messages.length)
+      console.log(
+        `[bible-boot]${JSON.stringify({
+          errors: errors.slice(-3),
+          messages: messages.slice(-12),
+          body: await page
+            .locator("main")
+            .innerText()
+            .catch(() => ""),
+        })}`,
+      );
+  }
   await expect(page.locator(".verse-text").first()).toBeVisible();
   expect(errors).toEqual([]);
 });
