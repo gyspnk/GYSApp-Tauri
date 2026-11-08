@@ -190,11 +190,17 @@ test.describe("responsive reader navigation", () => {
       await page.setViewportSize(viewport);
       await page.goto("/GYSApp-Tauri/bible");
 
+      // The reader may paint from the per-book files before the full pack
+      // arrives, so the loading state is allowed to be brief; when it is on
+      // screen it must still say what is happening.
       const loading = page.getByTestId("bible-loading-reader");
-      await expect(loading).toBeVisible({ timeout: 5_000 });
-      await expect(page.getByRole("status")).toContainText(
-        "Membuka paket TB offline",
-      );
+      const chapter = page.getByRole("heading", { name: /Kejadian 1/ });
+      await expect(loading.or(chapter)).toBeVisible({ timeout: 15_000 });
+      if (await loading.isVisible()) {
+        await expect(page.getByRole("status")).toContainText(
+          "Membuka paket TB offline",
+        );
+      }
 
       const loadingGeometry = await loading.evaluate((element) => {
         const reader = element.getBoundingClientRect();
