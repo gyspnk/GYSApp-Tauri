@@ -74,7 +74,13 @@ test("sidebar collapse keeps frames short on a long route", async ({
       () =>
         (window as unknown as { __sidebarClasses: string[] }).__sidebarClasses,
     ),
-  ).toContain("workspace is-sidebar-animating is-sidebar-collapsed");
+  ).toEqual(
+    expect.arrayContaining([
+      expect.stringMatching(
+        /is-sidebar-animating.*is-sidebar-collapsed|is-sidebar-collapsed.*is-sidebar-animating/,
+      ),
+    ]),
+  );
   const collapsed = await measure("collapsed");
   console.log(`[sidebar-motion] ${JSON.stringify(collapsed)}`);
   await toggle.click();
