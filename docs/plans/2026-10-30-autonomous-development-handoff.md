@@ -6756,3 +6756,17 @@ nada lama (-2) muncul lagi setelah reload, padahal layar menampilkan 0.
   diubah menjadi uji tumpang tindih dua dimensi (bukan hanya sumbu x).
 
 Bukti: run selektif `42472427366` hijau (unit + e2e selektif).
+
+### `display: none` hanya untuk panel dock, bukan semua disclosure (8 Nov, putaran 226)
+
+Perbaikan dock di WebView2 (`cd1b180`) menambahkan
+`:is(.media-advanced-controls, .hymn-more-actions, .hymn-reader-settings,
+.pdf-music-menu, .faith-pdf-sources, .kidung-row-menu):not([open]) > :not(summary)
+{ display: none }`. Aturan itu benar untuk panel dock, tetapi mematikan animasi
+tutup panel lain: `menu-motion.spec.ts` mencari setidaknya satu frame dengan
+opasitas antara 0,01 dan 0,99, dan tidak ada frame sama sekali karena panel
+langsung hilang.
+
+Sekarang hanya `.media-advanced-controls:not([open]) > :not(summary)` yang
+memakai `display: none`; disclosure lain tetap memakai transisi
+`::details-content` (160/180 ms). Bukti: run selektif `42474894952` hijau.
