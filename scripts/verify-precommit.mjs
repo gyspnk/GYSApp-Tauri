@@ -46,13 +46,5 @@ for (const path of formatted) {
 
 if (staged.some((path) => path.startsWith("docs/") || path === "README.md"))
   run("pnpm", ["verify:docs"]);
-if (
-  staged.some(
-    (path) =>
-      path.startsWith("packages/contracts/generated/") ||
-      path.startsWith("apps/web/public/offline/") ||
-      path.includes("egys-contract") ||
-      path.includes("egys-provenance"),
-  )
-)
-  run("pnpm", ["verify:generated"]);
+// Generated-asset provenance belongs to the hosted verify job: the policy keeps
+// heavy checks off the device, and the script's guard refuses to run here.
