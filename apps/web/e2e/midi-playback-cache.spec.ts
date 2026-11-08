@@ -64,7 +64,23 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   await expect
     .poll(() => counts().then((value) => value.renders), { timeout: 30_000 })
     .toBeGreaterThan(0);
-  const warmed = await counts();
+  // A warmed buffer can still land from the startup sequence, so wait for the
+  // counters to stop moving before treating the state as warmed.
+  const settledCounts = async () => {
+    let previous = await counts();
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      await page.waitForTimeout(150);
+      const next = await counts();
+      if (
+        next.renders === previous.renders &&
+        next.workers === previous.workers
+      )
+        return next;
+      previous = next;
+    }
+    return previous;
+  };
+  const warmed = await settledCounts();
   expect(warmed.workers).toBeGreaterThan(0);
   const play = player.getByRole("button", { name: "Putar", exact: true });
   await expect(play).toBeVisible();
