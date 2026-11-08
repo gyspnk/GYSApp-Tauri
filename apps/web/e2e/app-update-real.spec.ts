@@ -3,6 +3,11 @@ import { createServer } from "node:http";
 
 test.use({ serviceWorkers: "allow" });
 
+// Offline reloads re-install the worker and boot the shell from cache; under a
+// sharded run that easily doubles the wall time, so this file keeps triple the
+// default budget instead of failing on contention.
+test.slow();
+
 test("the real installed build has no stale update banner after reload", async ({
   page,
 }) => {

@@ -3,6 +3,11 @@ import { readFile } from "node:fs/promises";
 
 test.use({ serviceWorkers: "allow" });
 
+// Offline reloads re-install the worker and boot the shell from cache; under a
+// sharded run that easily doubles the wall time, so this file keeps triple the
+// default budget instead of failing on contention.
+test.slow();
+
 test("downloaded literature PDF opens from cache after an offline reload", async ({
   page,
 }) => {

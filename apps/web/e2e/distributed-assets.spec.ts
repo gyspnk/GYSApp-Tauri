@@ -166,6 +166,11 @@ test.describe("distributed asset UI", () => {
 test.describe("distributed Bible lifecycle", () => {
   test.use({ serviceWorkers: "allow" });
 
+  // Offline reloads re-install the worker and boot the shell from cache; under a
+  // sharded run that easily doubles the wall time, so this file keeps triple the
+  // default budget instead of failing on contention.
+  test.slow();
+
   test("distributed Bible download survives reload, removal and reinstall", async ({
     page,
   }) => {

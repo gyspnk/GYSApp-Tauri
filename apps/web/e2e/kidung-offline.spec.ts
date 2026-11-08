@@ -2,6 +2,11 @@ import { expect, test } from "@playwright/test";
 
 test.use({ serviceWorkers: "allow" });
 
+// Offline reloads re-install the worker and boot the shell from cache; under a
+// sharded run that easily doubles the wall time, so this file keeps triple the
+// default budget instead of failing on contention.
+test.slow();
+
 test("prepared catalog opens previously unvisited Kidung sections offline @nightly", async ({
   page,
   context,
