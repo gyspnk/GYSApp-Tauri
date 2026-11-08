@@ -166,8 +166,9 @@ test.describe("responsive reader navigation", () => {
   test("Bible pack loading preserves reader geometry before the pack is ready", async ({
     page,
   }) => {
-    // Five viewports, each with a delayed pack: one budget is not enough.
-    test.slow();
+    // Five viewports, each waiting for a delayed pack: the default budget is
+    // not enough even when tripled, so state the whole expectation.
+    test.setTimeout(300_000);
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -200,7 +201,7 @@ test.describe("responsive reader navigation", () => {
       // With the per-book pack both states can be on screen for a frame.
       try {
         await expect(loading.or(chapter).first()).toBeVisible({
-          timeout: 30_000,
+          timeout: viewport.width === 320 ? 30_000 : 15_000,
         });
       } catch (error) {
         // A route error is a real failure; a slow paint under a sharded run is
