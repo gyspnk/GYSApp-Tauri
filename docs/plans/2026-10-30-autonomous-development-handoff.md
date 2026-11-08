@@ -6533,3 +6533,40 @@ pewarnaan peer, dan alasannya dicatat sebagai komentar di
 
 Bukti: `pnpm verify:qa` → run `42424250773` **success** (screenshot 132/132,
 overflow/box/consistency 0 temuan).
+
+### Soak native pertama yang hijau (8 Nov, putaran 219)
+
+`edge-tts-native.yml` untuk `main` akhirnya **success** penuh:
+run `42432616644` (dispatch `samples=5`, 01:04→01:23 UTC). Ini bukti
+native pertama yang utuh, bukan potongan: seluruh langkah lolos, termasuk
+langkah "Exercise full media soak and live keyless Edge" yang sebelumnya
+selalu berhenti di satu asersi.
+
+Angka dari ringkasan JSON langkah soak:
+
+| Ukuran                         | Nilai                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------- |
+| Runtime                        | packaged Tauri WebView2 + websocket plugin                                      |
+| Shell offline                  | lolos, `offlineShellBlockedRequestCount` 37, konten 22                          |
+| `homeReadyMs` / `bibleReadyMs` | 310 / 137                                                                       |
+| `bibleSearchMs`                | 45 (batas 1 500)                                                                |
+| PDF kanvas terakhir            | `pdfCanvas` 404×621, `pdfOfflineFallback` lolos                                 |
+| MIDI backend                   | `fluidsynth` (upstream juga)                                                    |
+| MIDI track penuh               | 57 966 ms pada 220 BPM                                                          |
+| MIDI antrean 2 track           | 58 517 / 95 211 ms, auto-advance lolos                                          |
+| Transisi MIDI                  | 120, `midiHeapRetainedBytes` 28 165 738, pasca-pemanasan 1 341 999              |
+| Restart preferensi             | bait/iman/PDF 2/26/palet/ tipografi/shell/rute audio semua lolos                |
+| Edge live                      | **dilewati jujur**: `/api/v1/tts/edge` menjawab 503 → set `EDGE_TTS_URL` (B-35) |
+
+Benchmark paket (`samples=5`, median/p95): shell proses 788/802 ms, sapaan
+1 077/1 086, sapaan offline 555/651, katalog 501/538, pasal 602/607,
+pencarian pertama 73/94, pencarian terindeks 14/113, halaman PDF pertama
+925/990 ms. Memori: heap renderer 24,98 MB, private 270 MB, working set
+655 MB. Semua itu dari runner Windows, bukan device pemilik.
+
+Dua perbaikan produk yang membuka jalan sudah dicatat di atas (transpose
+`6833afe`, tempo per-lagu `0b95c27` + migrasi `dcc16c0`). Sisa kegagalan
+berikutnya murni skrip soak dan diperbaiki satu per satu: label instrumen
+yang mengukur 0 px, variabel ringkasan yang sudah dihapus
+(`bibleExpandedSearchResults` `8ec4304`, `speechStopEvidence`/`audio`),
+serta lewati cepat saat provider Edge belum dikonfigurasi (`58f79a1`).
