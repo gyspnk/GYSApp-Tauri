@@ -62,9 +62,9 @@
       "kind": "pack",
       "source": "local",
       "path": "offline/faith.json",
-      "version": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
-      "sha256": "e05996ce5b3f50d66122606574d9eb64e78d884d75284bbdb4f15c615ba1af52",
-      "bytes": 8311,
+      "version": "8f8ef9a7c4113425660b4d90b673ce2c5bcf93855d3b731d677a7a41f1ea2f98",
+      "sha256": "8f8ef9a7c4113425660b4d90b673ce2c5bcf93855d3b731d677a7a41f1ea2f98",
+      "bytes": 8326,
       "status": "available",
       "lastUpdated": "2026-10-11T14:44:32.743Z"
     },
