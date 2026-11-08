@@ -1232,6 +1232,9 @@ try {
       );
     }
   }
+  let speechStopEvidence = null;
+  let edgeAudioEvents = [];
+  let edgePlaybackEvents = [];
   if (!edgeReachable) {
     // Nothing was synthesized, so there may be no media surface at all; stop
     // only if one exists and never fail the soak on the cleanup.
@@ -1250,7 +1253,7 @@ try {
     const stoppedSpeechDiagnostics = await page.evaluate(() =>
       JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]"),
     );
-    const speechStopEvidence = edgeStopEvidence(
+    speechStopEvidence = edgeStopEvidence(
       stoppedSpeechDiagnostics,
       previousSpeechDiagnostics,
     );
@@ -1273,8 +1276,14 @@ try {
     await readerButton.click();
 
     const voices = await waitForDiagnostic(page, "tts.edge.voice");
-    const audio = await waitForDiagnostic(page, "tts.edge.audio");
-    const playback = await waitForDiagnostic(page, "tts.edge.playback");
+    const audio = (edgeAudioEvents = await waitForDiagnostic(
+      page,
+      "tts.edge.audio",
+    ));
+    const playback = (edgePlaybackEvents = await waitForDiagnostic(
+      page,
+      "tts.edge.playback",
+    ));
     assert.ok(
       voices.some((event) => event.message === "id-ID-GadisNeural"),
       "The changed voice was not sent to the Edge provider",
@@ -3667,10 +3676,10 @@ try {
       speechStopEvidence,
       selectedVoice: "id-ID-GadisNeural",
       localTtsPlayback: localSpeechPlayback,
-      receivedAudio: audio.find((event) =>
+      receivedAudio: edgeAudioEvents.find((event) =>
         /Received [1-9]\d* audio bytes/.test(event.message),
       )?.message,
-      playedAudio: playback.find((event) =>
+      playedAudio: edgePlaybackEvents.find((event) =>
         /Playing [1-9]\d* audio bytes/.test(event.message),
       )?.message,
       pauseResumeStop: "passed",
