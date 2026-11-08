@@ -241,7 +241,8 @@ describe("MIDI song tempo defaults", () => {
         tempo: 76,
         transpose: 0,
       });
-      expect(restored.snapshot().transpose).toBe(-1);
+      // The remembered -2 is gone; the caller's own default applies.
+      expect(restored.snapshot().transpose).toBe(0);
     } finally {
       vi.unstubAllGlobals();
       vi.resetModules();
