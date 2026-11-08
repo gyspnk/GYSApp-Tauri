@@ -166,6 +166,8 @@ test.describe("responsive reader navigation", () => {
   test("Bible pack loading preserves reader geometry before the pack is ready", async ({
     page,
   }) => {
+    // Five viewports, each with a delayed pack: one budget is not enough.
+    test.slow();
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -254,11 +256,9 @@ test.describe("responsive reader navigation", () => {
         expect(loadingGeometry.animationName).toBe("none");
       }
 
-      // The full 1,7 MB pack still arrives after the first chapter, and the
-      // host can be slow with four workers, so give the settle its own budget.
       await expect(
         page.locator(".bible-reader:not(.bible-loading-reader)"),
-      ).toBeVisible({ timeout: 25_000 });
+      ).toBeVisible({ timeout: 15_000 });
       const settledGeometry = await page
         .locator(".bible-reader:not(.bible-loading-reader)")
         .evaluate((element) => {

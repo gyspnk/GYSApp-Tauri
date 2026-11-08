@@ -154,7 +154,9 @@ test.describe("distributed asset UI", () => {
       "English",
       "KR",
     ]);
-    await page.getByRole("option", { name: "English", exact: true }).click();
+    // The selected option carries a check mark in its accessible name, so match
+    // the label prefix instead of the exact string.
+    await page.getByRole("option", { name: /^English/ }).click();
     await expect(
       page.locator('.pujian-item[data-id="hymne-001"]'),
     ).toBeVisible();
