@@ -3960,15 +3960,33 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin: 0 0 16px;
 }
 /* Kidung and Iman open straight into their content: the destination is
-   already named by the sidebar and the tabs, so the intro keeps only the
-   count badge and a screen-reader heading. */
-.kidung-intro,
+   already named by the sidebar and the tabs, so the pages keep only a
+   screen-reader heading. */
 .faith-intro {
   align-items: center;
   padding-bottom: 10px;
 }
-.kidung-intro .pack-badge {
-  margin-inline-start: auto;
+
+/* Phones: the tabs take a full row, then the collection and the view switch
+   share one, so nothing is squeezed into a single line of four controls. */
+@media (max-width: 599px) {
+  .kidung-controls-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    width: 100%;
+  }
+  .kidung-controls-field > .kidung-local-nav {
+    grid-column: 1 / -1;
+  }
+  .kidung-controls-field .kidung-header-filter {
+    grid-column: 1;
+    width: 100%;
+    min-width: 0;
+  }
+  .kidung-controls-field .kidung-mode-control {
+    grid-column: 2;
+  }
 }
 
 /* Two destinations, two equal fields: the indicator then travels the same

@@ -192,13 +192,7 @@ export function HymnCatalog({
   };
   return (
     <div className="page hymn-page">
-      <section className="page-intro kidung-intro">
-        <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
-        <span className="pack-badge">
-          {translate(locale, "kidung.itemCount", { count: songCount })}
-        </span>
-      </section>
-
+      <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
       <div className="kidung-index-toolbar">
         <div className="kidung-controls-field">
           <KidungLocalNav active="songs" locale={locale} />

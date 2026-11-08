@@ -449,7 +449,6 @@ export const enFeatureMessages: Record<string, string> = {
   "kidung.chordLayer": "Chord layer",
   "kidung.search": "Search hymns",
   "kidung.searchPlaceholder": "Number or title…",
-  "kidung.itemCount": "{count} hymns",
   "kidung.collection": "Collection",
   "kidung.navigation": "Hymn navigation",
   "kidung.songs": "Hymns",
