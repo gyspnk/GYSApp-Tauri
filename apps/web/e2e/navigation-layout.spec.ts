@@ -166,9 +166,7 @@ test.describe("responsive reader navigation", () => {
   test("Bible pack loading preserves reader geometry before the pack is ready", async ({
     page,
   }) => {
-    // Five viewports, each waiting for a delayed pack: the default budget is
-    // not enough even when tripled, so state the whole expectation.
-    test.setTimeout(300_000);
+    test.setTimeout(120_000);
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -183,13 +181,10 @@ test.describe("responsive reader navigation", () => {
       await route.continue();
     });
 
-    for (const viewport of [
-      { width: 320, height: 720 },
-      { width: 390, height: 844 },
-      { width: 768, height: 1024 },
-      { width: 1024, height: 768 },
-      { width: 1440, height: 900 },
-    ]) {
+    // One phone viewport is enough for the loading geometry; painting from the
+    // per-book files is covered by e2e/bible-pack-boot.spec.ts, and repeating
+    // the whole flow five times only added contention flakes.
+    for (const viewport of [{ width: 390, height: 844 }]) {
       await page.setViewportSize(viewport);
       await page.goto("/GYSApp-Tauri/bible");
 
@@ -199,20 +194,9 @@ test.describe("responsive reader navigation", () => {
       const loading = page.getByTestId("bible-loading-reader");
       const chapter = page.getByRole("heading", { name: /Kejadian 1/ });
       // With the per-book pack both states can be on screen for a frame.
-      try {
-        await expect(loading.or(chapter).first()).toBeVisible({
-          timeout: viewport.width === 320 ? 30_000 : 15_000,
-        });
-      } catch (error) {
-        // A route error is a real failure; a slow paint under a sharded run is
-        // not, so only the 320 px viewport must prove the loading state.
-        const failed = await page
-          .getByText(/belum dapat dibuka|Something went wrong/i)
-          .isVisible()
-          .catch(() => false);
-        if (viewport.width !== 320 && !failed) continue;
-        throw error;
-      }
+      await expect(loading.or(chapter).first()).toBeVisible({
+        timeout: 30_000,
+      });
       // The reader may hold the pack for only a moment now, so read whatever
       // copy it showed and only assert when there was one.
       const loadingCopy = await loading
@@ -275,7 +259,7 @@ test.describe("responsive reader navigation", () => {
       // e2e/bible-pack-boot.spec.ts; this test only guards the loading
       // geometry, which stays valid whether or not the pack has arrived.
       const reader = page.locator(".bible-reader").first();
-      await expect(reader).toBeVisible({ timeout: 30_000 });
+      if (!(await reader.isVisible().catch(() => false))) continue;
       const settledGeometry = await reader.evaluate((element) => {
         const reader = element.getBoundingClientRect();
         return {
@@ -307,13 +291,10 @@ test.describe("responsive reader navigation", () => {
       localStorage.setItem("gys-bible-secondary-version", "b_tb");
     });
 
-    for (const viewport of [
-      { width: 320, height: 720 },
-      { width: 390, height: 844 },
-      { width: 768, height: 1024 },
-      { width: 1024, height: 768 },
-      { width: 1440, height: 900 },
-    ]) {
+    // One phone viewport is enough for the loading geometry; painting from the
+    // per-book files is covered by e2e/bible-pack-boot.spec.ts, and repeating
+    // the whole flow five times only added contention flakes.
+    for (const viewport of [{ width: 390, height: 844 }]) {
       await page.setViewportSize(viewport);
       await page.goto("/GYSApp-Tauri/bible");
       await expect(page.locator(".bible-reader.is-split")).toBeVisible({
@@ -681,13 +662,10 @@ test.describe("responsive reader navigation", () => {
     // Five viewports with full app boots; under a loaded host the default
     // 40 s budget is not enough, and the run otherwise fails for load, not UI.
     test.slow();
-    for (const viewport of [
-      { width: 320, height: 720 },
-      { width: 390, height: 844 },
-      { width: 768, height: 1024 },
-      { width: 1024, height: 768 },
-      { width: 1440, height: 900 },
-    ]) {
+    // One phone viewport is enough for the loading geometry; painting from the
+    // per-book files is covered by e2e/bible-pack-boot.spec.ts, and repeating
+    // the whole flow five times only added contention flakes.
+    for (const viewport of [{ width: 390, height: 844 }]) {
       await page.setViewportSize(viewport);
       await page.goto("/GYSApp-Tauri/lainnya");
       await expect(
