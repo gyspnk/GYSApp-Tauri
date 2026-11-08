@@ -127,11 +127,10 @@ export function HymnCatalog({
     () => allItems.filter((item) => !item.assetCode).length,
     [allItems],
   );
-  const filtered = useMemo(() => {
-    const rows = searchHymns(searchIndex, deferredQuery, activeBook);
-    // Browsing hides score-only rows (no MIDI); searching still finds them.
-    return deferredQuery.trim() ? rows : rows.filter((item) => !item.assetCode);
-  }, [activeBook, deferredQuery, searchIndex]);
+  const filtered = useMemo(
+    () => searchHymns(searchIndex, deferredQuery, activeBook),
+    [activeBook, deferredQuery, searchIndex],
+  );
   // Opening the catalogue used to commit all 533 rows in the navigation frame.
   // Render a screenful first and append the rest when the browser is idle: the
   // heading and the first rows paint immediately, and the full list still ends
