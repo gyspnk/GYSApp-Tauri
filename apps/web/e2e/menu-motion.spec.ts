@@ -610,6 +610,9 @@ test("reduced motion closes menus immediately without retained surfaces", async 
     .locator(".reader-version-select-wrap .control-select-trigger")
     .first();
   await version.click();
+  await expect(
+    page.locator(".reader-version-select-wrap .control-select-menu"),
+  ).toBeVisible();
   await version.press("Escape");
   expect(
     await page
