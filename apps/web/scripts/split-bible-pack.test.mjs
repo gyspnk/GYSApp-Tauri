@@ -70,6 +70,10 @@ test("writeSplitBiblePack emits one file per book plus an index", () => {
     );
     assert.equal(manifest.books.length, 2);
     assert.equal(manifest.books[0].bytes, file.byteLength);
+    // The reader needs the shelf metadata before it downloads a single book.
+    assert.equal(manifest.books[0].short, "Kej");
+    assert.equal(manifest.books[0].chapters, 2);
+    assert.equal(manifest.books[1].short, "Kel");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

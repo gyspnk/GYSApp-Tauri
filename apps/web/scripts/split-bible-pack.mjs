@@ -44,6 +44,9 @@ export function splitBiblePack(pack) {
       return {
         id,
         book: book?.name ?? id,
+        short: book?.short ?? id,
+        chapters:
+          book?.chapters ?? Math.max(...verses.map((verse) => verse.chapter)),
         verses: verses.length,
         gzip: gzipDeterministic(payload),
       };
