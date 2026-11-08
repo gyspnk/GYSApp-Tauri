@@ -6570,3 +6570,23 @@ berikutnya murni skrip soak dan diperbaiki satu per satu: label instrumen
 yang mengukur 0 px, variabel ringkasan yang sudah dihapus
 (`bibleExpandedSearchResults` `8ec4304`, `speechStopEvidence`/`audio`),
 serta lewati cepat saat provider Edge belum dikonfigurasi (`58f79a1`).
+
+### B-37: bukti native bahwa PDF kidung tampil (8 Nov, putaran 220)
+
+Premis B-37 adalah "packaged WebView2 gagal memuat PDF dari host mentah".
+Soak native yang kini hijau (`42432616644`) menjawabnya dengan angka:
+
+- Langkah soak mencatat `pdfOfflineFallback: "passed"` dan `pdfCanvas`
+  **404×621** — kanvas partitur benar-benar tergambar di jendela WebView2.
+- Permintaan `fork-pdf` pada log yang sama dijawab **200/206**, jadi host
+  `raw.githubusercontent.com`/`github.com` **tidak** diblokir di mesin runner;
+  kegagalan lama berasal dari pipeline render (retry storm, deadline, mode
+  tampilan) yang sudah diperbaiki (`96f7475`, `c6e711a`, `59b2eee`, `992b1ca`).
+- Edge TTS tetap satu-satunya yang `503` (secret `EDGE_TTS_URL` kosong), dan
+  itu memang B-35, bukan B-37.
+
+Kesimpulan jujur: B-37 **tidak lagi punya bukti kegagalan**. Proxy
+`fork-pdf`/`fork-manifest` tetap berguna untuk jaringan yang memblokir host
+mentah, tetapi PDF kidung tidak lagi bergantung padanya. Bila pemilik masih
+melihat PDF kosong di perangkatnya, langkah berikutnya adalah menyalin
+Diagnostik perangkat (entri `pdf.document`) — bukan menambah lapisan proxy.
