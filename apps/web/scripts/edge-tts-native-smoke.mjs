@@ -1186,26 +1186,51 @@ try {
       (event) => event.id,
     ),
   );
-  await readerButton.click();
+  // An unconfigured provider answers 503 immediately; waiting a minute for a
+  // socket that can never open just slows the soak down.
+  const edgeProviderConfigured = await page.evaluate(async (base) => {
+    if (!base) return true;
+    try {
+      const response = await fetch(
+        `${base.replace(/\/$/u, "")}/api/v1/tts/edge`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ text: "halo", voice: "id-ID-ArdiNeural" }),
+        },
+      );
+      return response.status !== 503;
+    } catch {
+      return true;
+    }
+  }, process.env.VITE_BFF_BASE_URL?.trim());
   let edgeReachable = true;
-  try {
-    await waitForDiagnostic(page, "tts.edge.receive", 60_000);
-  } catch (error) {
-    // B-35: some runners cannot open the keyless Edge socket at all. Say so
-    // loudly instead of reporting a product regression, and keep the rest of
-    // the soak running.
-    const scopes = await page.evaluate(() =>
-      JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").map(
-        (event) => event.scope,
-      ),
-    );
-    edgeReachable = scopes.includes("tts.edge.handshake");
-    if (edgeReachable) throw error;
+  if (!edgeProviderConfigured) {
     console.warn(
-      `[soak] SKIP live Edge: socket never accepted on this runner — ${String(
-        error,
-      ).slice(0, 160)}`,
+      "[soak] SKIP live Edge: /api/v1/tts/edge answers 503 — set the Worker secret EDGE_TTS_URL (B-35)",
     );
+    edgeReachable = false;
+  } else {
+    await readerButton.click();
+    try {
+      await waitForDiagnostic(page, "tts.edge.receive", 60_000);
+    } catch (error) {
+      // B-35: some runners cannot open the keyless Edge socket at all. Say so
+      // loudly instead of reporting a product regression, and keep the rest of
+      // the soak running.
+      const scopes = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("gys-diagnostics-v1") ?? "[]").map(
+          (event) => event.scope,
+        ),
+      );
+      edgeReachable = scopes.includes("tts.edge.handshake");
+      if (edgeReachable) throw error;
+      console.warn(
+        `[soak] SKIP live Edge: socket never accepted on this runner — ${String(
+          error,
+        ).slice(0, 160)}`,
+      );
+    }
   }
   if (!edgeReachable) {
     // Nothing was synthesized, so there may be no media surface at all; stop
