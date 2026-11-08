@@ -936,9 +936,10 @@ try {
   const bibleSearchMs = bibleSearchAutomationMs;
   const verseResults = picker.locator(".bible-picker-result.is-verse");
   await verseResults.first().waitFor({ state: "visible", timeout: 10_000 });
+  const bibleExpandedSearchResults = await verseResults.count();
   assert.ok(
-    (await verseResults.count()) >= 8,
-    "Packaged Bible picker search did not return verse results",
+    bibleExpandedSearchResults >= 8,
+    `Packaged Bible picker search returned ${bibleExpandedSearchResults} verse results`,
   );
   assert.equal(
     await page.evaluate(
