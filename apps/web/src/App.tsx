@@ -453,7 +453,7 @@ function Shell({
     window.clearTimeout(sidebarTimerRef.current);
     sidebarTimerRef.current = window.setTimeout(
       () => setSidebarAnimating(false),
-      260,
+      220,
     );
   }, []);
   useEffect(() => () => window.clearTimeout(sidebarTimerRef.current), []);
@@ -634,10 +634,9 @@ function Shell({
                 : translate(locale, "shell.collapseNavigation")
             }
           >
-            <Icon
-              name={sidebarCollapsed ? "chevronRight" : "chevronLeft"}
-              size={16}
-            />
+            <span className="sidebar-toggle-glyph" aria-hidden="true">
+              <Icon name="chevronLeft" size={16} />
+            </span>
           </button>
           <Navigation locale={locale} />
           <div className="sidebar-media-anchor" aria-hidden="true" />

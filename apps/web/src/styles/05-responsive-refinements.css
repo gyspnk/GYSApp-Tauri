@@ -1809,8 +1809,8 @@ body:has(.home-page)::-webkit-scrollbar {
 /* Long-horizon shell refinement: desktop sidebar collapse */
 @media (min-width: 960px) {
   .workspace {
-    --sidebar-motion-duration: 240ms;
-    --sidebar-motion-ease: var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+    --sidebar-motion-duration: 200ms;
+    --sidebar-motion-ease: cubic-bezier(0.2, 0, 0, 1);
     --sidebar-expanded-width: 256px;
     --sidebar-collapsed-width: 80px;
     grid-template-columns: var(--sidebar-expanded-width) minmax(0, 1fr);
@@ -1858,6 +1858,15 @@ body:has(.home-page)::-webkit-scrollbar {
       var(--accent, var(--blue)) 7%,
       var(--surface)
     );
+  }
+  .sidebar-toggle-glyph {
+    display: inline-grid;
+    place-items: center;
+    transition: transform var(--sidebar-motion-duration)
+      var(--sidebar-motion-ease);
+  }
+  .workspace.is-sidebar-collapsed .sidebar-toggle-glyph {
+    transform: rotate(180deg);
   }
   .sidebar-collapse-toggle:focus-visible {
     outline: 2px solid var(--accent, var(--blue));
