@@ -105,6 +105,10 @@ describe("ProgressiveBiblePack", () => {
     );
     await pack.ensure("2");
     const snapshot = pack.snapshot();
-    expect(snapshot?.books[0]).toMatchObject({ id: 2, name: "2", chapters: 3 });
+    expect(snapshot?.books.find((book) => book.id === 2)).toMatchObject({
+      id: 2,
+      name: "2",
+      chapters: 3,
+    });
   });
 });

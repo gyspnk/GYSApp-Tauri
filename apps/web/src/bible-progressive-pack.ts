@@ -115,20 +115,31 @@ export class ProgressiveBiblePack {
    * loading state instead of rendering an empty chapter list.
    */
   snapshot(): BibleReaderPack | undefined {
-    const loaded = this.#index
-      .map((entry) => entry.id)
-      .filter((id) => this.#verses.has(id));
+    const loaded = [...this.#verses.keys()].sort(
+      (a, b) => Number(a) - Number(b),
+    );
     if (!loaded.length) return undefined;
-    // The shelf is complete from the index so the picker and the chapter
-    // stepper keep every book; only the verse text waits for its own file.
-    const books = this.#index.map(toReaderBook);
+    // The shelf is complete so the picker and the chapter stepper keep every
+    // book; a book that arrived without an index row still joins the shelf.
+    const entries = new Map(this.#index.map((entry) => [entry.id, entry]));
+    const order = [...new Set([...entries.keys(), ...loaded])].sort(
+      (a, b) => Number(a) - Number(b),
+    );
+    const books = order
+      .map((id) => {
+        const known = this.#books.get(id);
+        if (known) return known;
+        const entry = entries.get(id);
+        return entry ? toReaderBook(entry) : undefined;
+      })
+      .filter((book): book is BibleBook => Boolean(book));
     return {
       version: 1,
       translation: this.#translation,
       source: this.#source,
       books,
-      verses: loaded.flatMap((id) => this.#verses.get(id) ?? []),
-      pericopes: loaded.flatMap((id) => this.#pericopes.get(id) ?? []),
+      verses: order.flatMap((id) => this.#verses.get(id) ?? []),
+      pericopes: order.flatMap((id) => this.#pericopes.get(id) ?? []),
     };
   }
 }
