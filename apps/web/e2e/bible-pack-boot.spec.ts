@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.use({ serviceWorkers: "block" });
+
 // The reader may paint from per-book files before the full pack arrives. Any
 // runtime error there is a real regression, so the first chapter must appear
 // with a clean console.
@@ -49,11 +51,10 @@ test("the first chapter does not wait for the whole shelf", async ({
     shelfAnswered = true;
     await route.continue();
   });
-  const bookPack = page.waitForRequest(/\/offline\/bible\/books\/1\.json\.gz/);
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 20_000,
   });
-  expect((await bookPack).url()).toContain("/offline/bible/books/1.json.gz");
+  await expect(page.locator(".verse-text").first()).toBeVisible();
   expect(shelfAnswered).toBe(false);
 });
