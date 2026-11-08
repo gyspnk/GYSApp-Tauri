@@ -3991,6 +3991,15 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 /* Two destinations, two equal fields: the indicator then travels the same
    distance whichever tab is active, so the pair reads as one control. */
+@media (min-width: 600px) {
+  /* Both tabs keep one width so the pair reads as a single switch instead of
+     two differently sized buttons; phones already split the row evenly. */
+  .hymn-page .kidung-local-nav a,
+  .kidung-tool-page .kidung-local-nav a {
+    min-width: 124px;
+  }
+}
+
 .hymn-page .kidung-local-nav-links,
 .kidung-tool-page .kidung-local-nav-links {
   display: grid;
@@ -4002,9 +4011,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   min-width: 0;
 }
 .hymn-page .kidung-local-nav a {
-  /* Both tabs keep one width so the pair reads as a single switch instead of
-     two differently sized buttons. */
-  min-width: 124px;
+  min-width: 44px;
   min-height: 44px;
   padding: 8px 12px;
   display: inline-flex;
