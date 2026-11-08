@@ -3995,14 +3995,11 @@ body:has(.hymn-detail-page.is-text-viewer)
 .kidung-tool-page .kidung-local-nav-links {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  /* minmax(0, 1fr) keeps both fields equal without letting a long label push
+     the toolbar past the viewport. */
+  grid-auto-columns: minmax(0, 1fr);
   gap: 4px;
-}
-.hymn-page .kidung-local-nav-links {
-  min-width: 260px;
-}
-.kidung-tool-page .kidung-local-nav-links {
-  min-width: 240px;
+  min-width: 0;
 }
 .hymn-page .kidung-local-nav a {
   min-width: 44px;

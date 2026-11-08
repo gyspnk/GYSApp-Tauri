@@ -149,8 +149,8 @@ test.describe("distributed asset UI", () => {
     ).toBeVisible({ timeout: 15_000 });
     const filter = page.locator(".kidung-header-filter .control-select");
     await filter.locator(".control-select-trigger").click();
+    // One collection is always active, so "Semua" is no longer offered.
     await expect(filter.locator(".control-select-option")).toHaveText([
-      "Semua",
       "English",
       "KR",
     ]);

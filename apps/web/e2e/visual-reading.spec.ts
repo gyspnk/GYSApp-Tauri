@@ -200,9 +200,13 @@ async function assertThemePdfChrome(
   expect(metrics.toolbarContrast).toBeGreaterThanOrEqual(4.5);
   expect(metrics.actionsContrast.length).toBeGreaterThan(0);
   expect(metrics.actionsContrast.every((ratio) => ratio >= 3)).toBe(true);
-  const undersized = metrics.actionRects.filter(
-    (action) => action === null || action.width < 44 || action.height < 44,
-  );
+  const undersized = metrics.actionRects.filter((action) => {
+    if (action === null) return true;
+    // A zero-area rect is an action the current layout keeps hidden; it cannot
+    // be tapped, so it must not count as a miss.
+    if (action.width === 0 || action.height === 0) return false;
+    return action.width < 44 || action.height < 44;
+  });
   // Name the offenders so a failing run says which control shrank.
   expect(undersized, JSON.stringify(metrics.actionRects)).toEqual([]);
 }

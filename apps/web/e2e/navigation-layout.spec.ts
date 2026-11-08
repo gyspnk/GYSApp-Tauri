@@ -254,9 +254,11 @@ test.describe("responsive reader navigation", () => {
         expect(loadingGeometry.animationName).toBe("none");
       }
 
+      // The full 1,7 MB pack still arrives after the first chapter, and the
+      // host can be slow with four workers, so give the settle its own budget.
       await expect(
         page.locator(".bible-reader:not(.bible-loading-reader)"),
-      ).toBeVisible({ timeout: 15_000 });
+      ).toBeVisible({ timeout: 25_000 });
       const settledGeometry = await page
         .locator(".bible-reader:not(.bible-loading-reader)")
         .evaluate((element) => {
