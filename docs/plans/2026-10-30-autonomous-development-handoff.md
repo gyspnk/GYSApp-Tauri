@@ -6808,3 +6808,7 @@ sehingga tab sudah sama lebar tanpa `min-width` tambahan. Percobaan
 `min-width: 124px` global dan penumpukan sampai 959 px justru menggeser kolom
 koleksi (mode tertinggal 343 px dari tepi) dan membuat opsi “KR” tidak pernah
 muncul; keduanya dibatalkan.
+
+### Baseline visual menulis ulang semua snapshot (10 Nov, putaran 225)
+
+Job `update-visual-baselines` memakai `--update-snapshots` (mode _missing_), jadi perubahan kecil yang masih lolos toleransi diff tidak pernah ditulis ulang: artefak terlihat identik dengan PNG yang sudah di-commit meski 55 tes lulus. Akibatnya adopsi baseline selama beberapa putaran tidak benar-benar menangkap perubahan tab Kidung 1440. `ci.yml` sekarang memakai `--update-snapshots=all` dengan komentar alasannya; regenerasi `42532740780` mengubah 19 PNG — satu di antaranya tab Kidung 126 px, sisanya noise anti-alias (ukuran byte identik). Setelah adopsi, sapuan penuh `42532995313` hijau di keempat shard.
