@@ -3966,37 +3966,19 @@ body:has(.hymn-detail-page.is-text-viewer)
   align-items: center;
   padding-bottom: 10px;
 }
-
-/* Narrow widths: the tabs take a full row, then the collection and the view
-   switch share one, so nothing is squeezed into a single line of four controls. */
-@media (max-width: 959px) {
-  .kidung-controls-field {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
-    width: 100%;
-  }
-  .kidung-controls-field > .kidung-local-nav {
-    grid-column: 1 / -1;
-  }
-  .kidung-controls-field .kidung-header-filter {
-    grid-column: 1;
-    width: 100%;
-    min-width: 0;
-  }
-  .kidung-controls-field .kidung-mode-control {
-    grid-column: 2;
-  }
-}
-
 /* Two destinations, two equal fields: the indicator then travels the same
    distance whichever tab is active, so the pair reads as one control. */
-@media (min-width: 960px) {
-  /* Both tabs keep one width so the pair reads as a single switch instead of
-     two differently sized buttons; phones already split the row evenly. */
-  .hymn-page .kidung-local-nav a,
-  .kidung-tool-page .kidung-local-nav a {
-    min-width: 124px;
+@media (min-width: 1101px) {
+  /* Wide toolbars give the switch a fixed width so both tabs share one field;
+     narrower layouts already split a grid column evenly. */
+  .hymn-page .kidung-controls-field .kidung-local-nav {
+    width: 264px;
+  }
+  .hymn-page .kidung-controls-field .kidung-local-nav-links,
+  .kidung-tool-page .kidung-local-nav-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
   }
 }
 
