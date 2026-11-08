@@ -47,7 +47,7 @@ test("the first chapter does not wait for the whole shelf", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   let shelfAnswered = false;
   await page.route("**/offline/bible/tb-reader.json*", async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 5_000));
+    await new Promise((resolve) => setTimeout(resolve, 20_000));
     shelfAnswered = true;
     await route.continue();
   });
