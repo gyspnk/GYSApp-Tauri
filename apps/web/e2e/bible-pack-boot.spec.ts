@@ -44,11 +44,19 @@ test("Bible reader paints its first chapter without a runtime error", async ({
 test("the first chapter comes from its own book file", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const requested: string[] = [];
+  const answered: string[] = [];
   page.on("request", (request) => requested.push(request.url()));
+  page.on("response", (response) =>
+    answered.push(`${response.status()} ${response.url()}`),
+  );
   await page.goto("/GYSApp-Tauri/bible");
   await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
     timeout: 20_000,
   });
+  console.log(
+    "[bible-boot] books",
+    JSON.stringify({ requested, answered }, null, 2),
+  );
   expect(
     requested.some((url) => url.endsWith("/offline/bible/books/index.json")),
   ).toBe(true);
