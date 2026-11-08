@@ -200,11 +200,11 @@ async function assertThemePdfChrome(
   expect(metrics.toolbarContrast).toBeGreaterThanOrEqual(4.5);
   expect(metrics.actionsContrast.length).toBeGreaterThan(0);
   expect(metrics.actionsContrast.every((ratio) => ratio >= 3)).toBe(true);
-  expect(
-    metrics.actionRects.every(
-      (action) => action !== null && action.width >= 44 && action.height >= 44,
-    ),
-  ).toBe(true);
+  const undersized = metrics.actionRects.filter(
+    (action) => action === null || action.width < 44 || action.height < 44,
+  );
+  // Name the offenders so a failing run says which control shrank.
+  expect(undersized, JSON.stringify(metrics.actionRects)).toEqual([]);
 }
 
 async function setShellTheme(
