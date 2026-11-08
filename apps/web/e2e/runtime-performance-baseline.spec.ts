@@ -57,6 +57,7 @@ type BrowserPerformance = {
   longTaskCount: number;
   longTaskDuration: number;
   layoutShift: number;
+  layoutShiftSources: string[];
 };
 
 type RuntimeCase = {
@@ -69,6 +70,7 @@ type RuntimeCase = {
   longTaskCount: number;
   longTaskDuration: number;
   layoutShift: number;
+  layoutShiftSources: string[];
   scrollWidth: number;
   clientWidth: number;
   imageRequests: number;
@@ -102,6 +104,7 @@ async function prepare(page: Page): Promise<void> {
       longTaskCount: 0,
       longTaskDuration: 0,
       layoutShift: 0,
+      layoutShiftSources: [],
     };
     const target = window as unknown as {
       __gysRuntimePerformance: BrowserPerformance;
@@ -125,7 +128,33 @@ async function prepare(page: Page): Promise<void> {
               hadRecentInput?: boolean;
               value?: number;
             };
-            if (!shift.hadRecentInput) state.layoutShift += shift.value ?? 0;
+            if (shift.hadRecentInput) continue;
+            state.layoutShift += shift.value ?? 0;
+            // A number alone cannot be fixed: record which element moved and
+            // by how much, biggest first, so a hosted run names the culprit.
+            const sources = (
+              entry as PerformanceEntry & {
+                sources?: {
+                  node?: Node | null;
+                  previousRect?: DOMRectReadOnly;
+                  currentRect?: DOMRectReadOnly;
+                }[];
+              }
+            ).sources;
+            for (const source of sources ?? []) {
+              const node = source.node;
+              if (!(node instanceof Element)) continue;
+              const previous = source.previousRect;
+              const current = source.currentRect;
+              const label = `${node.tagName.toLowerCase()}.${[...node.classList].join(".") || "-"}`;
+              const delta = Math.round(
+                Math.abs((previous?.y ?? 0) - (current?.y ?? 0)) +
+                  Math.abs((previous?.height ?? 0) - (current?.height ?? 0)),
+              );
+              state.layoutShiftSources.push(
+                `${label} moved ${delta}px (y ${Math.round(previous?.y ?? 0)} -> ${Math.round(current?.y ?? 0)})`,
+              );
+            }
           }
         }).observe({ type: "layout-shift", buffered: true });
       } catch {
@@ -161,7 +190,14 @@ async function browserMetrics(page: Page): Promise<BrowserPerformance> {
     const state = (
       window as unknown as { __gysRuntimePerformance?: BrowserPerformance }
     ).__gysRuntimePerformance;
-    return state ?? { longTaskCount: 0, longTaskDuration: 0, layoutShift: 0 };
+    return (
+      state ?? {
+        longTaskCount: 0,
+        longTaskDuration: 0,
+        layoutShift: 0,
+        layoutShiftSources: [],
+      }
+    );
   });
 }
 
@@ -221,6 +257,7 @@ async function runRoute(
       longTaskCount: state?.longTaskCount ?? 0,
       longTaskDuration: state?.longTaskDuration ?? 0,
       layoutShift: state?.layoutShift ?? 0,
+      layoutShiftSources: (state?.layoutShiftSources ?? []).slice(0, 8),
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       loadedImages: images.filter(
