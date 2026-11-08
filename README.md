@@ -160,7 +160,12 @@ CI itself is unchanged: `changes` classifies the push or PR, `verify` runs
 docs/format/audit gates, `web-build` builds once and runs the unit, policy and
 bundle suites, the selective browser contracts run only for what the range can
 affect; the complete suite runs nightly, on a `full-ci` label and on a release
-dispatch, and navigation budgets run weekly.
+dispatch, and navigation budgets run weekly. To re-run the whole browser suite
+on a tree that the cache already marked verified:
+
+```sh
+gh workflow run ci.yml --ref main -f full=true
+```
 
 QA artifacts (manual dispatch of CI): route screenshots plus the overflow,
 card-in-card and alignment audits, published as artifacts.
