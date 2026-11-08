@@ -73,7 +73,8 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
     const geometry = await inspect();
     expect(geometry.overlap).toBe(false);
     await field.getByRole("combobox").click();
-    await page.getByRole("option", { name: "KR", exact: true }).click();
+    // The chosen option renders a check, so its accessible name is "KR ✓".
+    await page.getByRole("option", { name: /^KR/ }).click();
     await expect(field.getByRole("combobox")).toContainText("KR");
     expect((await inspect()).overlap).toBe(false);
   });

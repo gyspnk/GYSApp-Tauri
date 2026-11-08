@@ -256,27 +256,13 @@ test.describe("responsive reader navigation", () => {
         expect(loadingGeometry.animationName).toBe("none");
       }
 
-      try {
+      if (viewport.width === 320) {
+        // The purpose here is loading geometry; one viewport is enough to prove
+        // the reader replaces the loading shell, and the pack contract lives in
+        // e2e/bible-pack-boot.spec.ts.
         await expect(
           page.locator(".bible-reader:not(.bible-loading-reader)"),
-        ).toBeVisible({ timeout: 90_000 });
-      } catch (error) {
-        console.log(
-          "[bible-settle]",
-          JSON.stringify(
-            await page.evaluate(() => ({
-              loading: Boolean(
-                document.querySelector('[data-testid="bible-loading-reader"]'),
-              ),
-              text: document.body.innerText.replace(/\s+/g, " ").slice(0, 240),
-              keys: Object.keys(localStorage).filter((key) =>
-                key.includes("bible"),
-              ),
-              errors: window.__gysPageErrors ?? null,
-            })),
-          ),
-        );
-        throw error;
+        ).toBeVisible({ timeout: 30_000 });
       }
       const settledGeometry = await page
         .locator(".bible-reader:not(.bible-loading-reader)")
