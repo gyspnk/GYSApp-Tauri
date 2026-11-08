@@ -6656,12 +6656,18 @@ throttle 400 kB/s angkanya 0,0001–0,0003. Karena kontrak pertama hanya menceta
 skor, spec sekarang mencatat `layoutShiftSources`: pada 390 px
 `article.continue-panel` bergerak **297 px ke atas** (y 720 → 439) dan
 `section.home-media-section.home-suara-section` bergerak ke bawah (y 0 → 605);
-pada 768/1440 pola sama ditambah `home-literature-section`. Artinya tata letak
-awal mengasumsikan tinggi yang berbeda dari hasil akhir saat aset datang tanpa
-throttle. Probe berikutnya (`layoutTimeline`, hanya rute beranda) mencatat
-kotak `.sauh-card-media`, `.verse-panel`, `.continue-panel`, `.home-suara-section`
-dan `.home-literature-section` pada DOMContentLoaded dan pada `ready` supaya
-perbaikan menyasar kotak yang benar.
+pada 768/1440 pola sama ditambah `home-literature-section`.
+
+Probe `layoutTimeline` (rute beranda saja) menjawabnya: pada DOMContentLoaded
+**semua kotak masih `null`** — beranda belum ter-render — dan pada `ready`
+tingginya 390: `.verse-panel` 179, `.continue-panel` 140, `.home-suara-section`
+346, `.home-literature-section` 359; 768: 181/102/384/359; 1440: 131/68/329/337.
+Jadi skor itu mengukur **pergantian skeleton (`.verse-panel:has(.sauh-skeleton)`
+= 290 px) ke kartu tanpa data**, bukan tata letak produksi: spec ini memblokir
+gambar jarak jauh dan preview tanpa BFF, sehingga Sauh tidak pernah terisi.
+Angka throttle di device (0,0001–0,0003) tetap bukti yang lebih dekat ke
+pengguna; angka hosted dicatat sebagai “halaman tanpa data”, dan tidak ada CSS
+yang diubah hanya karena artefak fixture ini.
 
 Ini juga menutup celah kebijakan: `pnpm test:watch` sekarang lewat
 `scripts/local-heavy-guard.mjs` seperti perintah berat lain, dan
