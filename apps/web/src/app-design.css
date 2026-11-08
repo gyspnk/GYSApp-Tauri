@@ -3959,8 +3959,32 @@ body:has(.hymn-detail-page.is-text-viewer)
   background: var(--surface-soft);
   margin: 0 0 16px;
 }
-.hymn-page .kidung-local-nav-links {
+/* Kidung and Iman open straight into their content: the destination is
+   already named by the sidebar and the tabs, so the intro keeps only the
+   count badge and a screen-reader heading. */
+.kidung-intro,
+.faith-intro {
+  align-items: center;
+  padding-bottom: 10px;
+}
+.kidung-intro .pack-badge {
+  margin-inline-start: auto;
+}
+
+/* Two destinations, two equal fields: the indicator then travels the same
+   distance whichever tab is active, so the pair reads as one control. */
+.hymn-page .kidung-local-nav-links,
+.kidung-tool-page .kidung-local-nav-links {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 4px;
+}
+.hymn-page .kidung-local-nav-links {
+  min-width: 260px;
+}
+.kidung-tool-page .kidung-local-nav-links {
+  min-width: 240px;
 }
 .hymn-page .kidung-local-nav a {
   min-width: 44px;

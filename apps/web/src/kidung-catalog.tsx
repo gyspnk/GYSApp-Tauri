@@ -58,7 +58,7 @@ export function HymnCatalog({
     );
   });
   const [query, setQuery] = useState("");
-  const [book, setBook] = useState("all");
+  const [book, setBook] = useState("");
   const deferredQuery = useDeferredValue(query);
   const allItems = useMemo(
     () => (state.status === "ready" ? uniqueItems(state.items) : []),
@@ -120,15 +120,18 @@ export function HymnCatalog({
     () => [...new Set(allItems.map((item) => item.book))].sort(),
     [allItems],
   );
+  // One collection is always active: the catalogue opens on the first one and
+  // "all" is not offered, so the rows and the count never mix collections.
+  const activeBook = book || books[0] || "";
   const songCount = useMemo(
     () => allItems.filter((item) => !item.assetCode).length,
     [allItems],
   );
   const filtered = useMemo(() => {
-    if (!deferredQuery.trim() && book === "all")
-      return allItems.filter((item) => !item.assetCode);
-    return searchHymns(searchIndex, deferredQuery, book);
-  }, [allItems, book, deferredQuery, searchIndex]);
+    const rows = searchHymns(searchIndex, deferredQuery, activeBook);
+    // Browsing hides score-only rows (no MIDI); searching still finds them.
+    return deferredQuery.trim() ? rows : rows.filter((item) => !item.assetCode);
+  }, [activeBook, deferredQuery, searchIndex]);
   // Opening the catalogue used to commit all 533 rows in the navigation frame.
   // Render a screenful first and append the rest when the browser is idle: the
   // heading and the first rows paint immediately, and the full list still ends
@@ -190,10 +193,7 @@ export function HymnCatalog({
   return (
     <div className="page hymn-page">
       <section className="page-intro kidung-intro">
-        <div>
-          <p className="date-line">{translate(locale, "kidung.eyebrow")}</p>
-          <h1>{translate(locale, "page.kidungTitle")}</h1>
-        </div>
+        <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
         <span className="pack-badge">
           {translate(locale, "kidung.itemCount", { count: songCount })}
         </span>
@@ -205,21 +205,15 @@ export function HymnCatalog({
           {state.status === "ready" && (
             <div className="kidung-header-filter">
               <Select
-                value={book}
+                value={activeBook}
                 onChange={setBook}
                 className="kidung-collection-select"
                 animated
                 label={translate(locale, "kidung.collection")}
-                options={[
-                  {
-                    value: "all",
-                    label: translate(locale, "kidung.allCollections"),
-                  },
-                  ...books.map((value) => ({
-                    value,
-                    label: hymnCollectionLabel(value),
-                  })),
-                ]}
+                options={books.map((value) => ({
+                  value,
+                  label: hymnCollectionLabel(value),
+                }))}
               />
             </div>
           )}
