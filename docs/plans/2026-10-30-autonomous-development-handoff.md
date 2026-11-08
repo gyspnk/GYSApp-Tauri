@@ -6678,6 +6678,28 @@ Catatan kejujuran: semua angka di atas **hosted preview tanpa throttle** (angka
 relatif sebelumnya→sesudah), bukan LCP di jaringan 400 kB/s; angka throttle
 terakhir berasal dari device dan sudah dicatat di putaran-putaran sebelumnya.
 
+### Teks “Dasar Kepercayaan” memakai naskah resmi (9 Nov, putaran 229)
+
+Pemilik: teks Iman tidak boleh dipadatkan, dan isinya harus naskah asli.
+
+- Ukuran teks di ponsel tidak lagi 14 px; `.faith-statement` memakai
+  `--faith-font-size: 1.125rem` (18 px) di media query ponsel (`5af7ae1`).
+- Isi ID diganti kata-per-kata dengan **Pernyataan Iman** resmi
+  `https://tjc.org/id/tjc/statement-of-faith/` — 10 paragraf, 2458 karakter,
+  diambil lewat proxy artikel BFF (`/api/v1/content/article`) karena sandbox
+  tidak punya internet langsung. Hanya salah ketik “tungggal” di sumber yang
+  diperbaiki menjadi “tunggal”.
+- `apps/web/public/offline/faith.json` (8 326 B) berubah, jadi
+  `pack-manifest.json` dan `asset-manifest.json` di-hash ulang
+  (`sha256 8f8ef9a7…2f98`); verifikasi provenance tetap di job hosted.
+- Hook pre-commit tidak lagi memanggil `verify:generated` (guard lokal menolak
+  dan memblokir commit konten); provenance adalah tugas job `verify`.
+- Kontrak: `faith-zoom.spec.ts` menuntut 18 px di 320/390 dan 20 px di desktop;
+  baseline `faith-catalog-320x720` dan `390x844` diperbarui dari artefak CI
+  `42522888666` (`f874876`).
+- Versi EN/ZH belum diubah: halaman statement resmi EN/ZH tidak dapat dijangkau
+  dari sandbox (503 lewat proxy; sitemap EN hanya menunjuk halaman indeks).
+
 ### Antrean MIDI dan playlist jadi satu permukaan di Kidung (8 Nov, putaran 223)
 
 Pemilik: “antrean MIDI dan playlist di kidung dimerge jadi satu, fitur itu hanya
