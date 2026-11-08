@@ -892,6 +892,9 @@ export class BrowserMidiPlayer {
   /** Selecting the PDF key policy replaces a previous manual transpose. */
   public async applyTransposeDefault(transpose: number): Promise<void> {
     this.transposeOverride = false;
+    // Choosing the automatic pitch replaces any key saved for this song, so a
+    // later cold start must not resurrect the old one.
+    if (this.state.songId) delete this.songOverrides[this.state.songId];
     this.persistPreferences();
     await this.setTranspose(transpose, { userOverride: false });
   }

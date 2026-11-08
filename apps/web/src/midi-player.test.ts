@@ -208,6 +208,46 @@ describe("MIDI song tempo defaults", () => {
     }
   });
 
+  it("forgets the key saved for a song when the automatic pitch is chosen", async () => {
+    vi.resetModules();
+    const store: Record<string, string> = {};
+    vi.stubGlobal("window", {
+      addEventListener: () => undefined,
+      localStorage: {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+          store[key] = value;
+        },
+      },
+    });
+    const midi: NormalizedMidi = { ppq: 480, tempo: 100, events: [] };
+    try {
+      const first = await import("./midi-player.js");
+      const player = new first.BrowserMidiPlayer(async () => undefined);
+      await player.load("hymn-001", "First hymn", midi, {
+        tempo: 76,
+        transpose: 0,
+      });
+      await player.setTranspose(-2);
+      // Turning the spelling aid on hands the pitch back to the automatic rule.
+      await player.applyTransposeDefault(-1);
+      const saved = JSON.parse(store["gys-midi-preferences-v1"]!);
+      expect(saved.overrides?.["hymn-001"]?.transpose).toBeUndefined();
+
+      vi.resetModules();
+      const second = await import("./midi-player.js");
+      const restored = new second.BrowserMidiPlayer(async () => undefined);
+      await restored.load("hymn-001", "First hymn", midi, {
+        tempo: 76,
+        transpose: 0,
+      });
+      expect(restored.snapshot().transpose).toBe(-1);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
+    }
+  });
+
   it("restores the opened song even when another song was played last", async () => {
     vi.resetModules();
     const store: Record<string, string> = {};
