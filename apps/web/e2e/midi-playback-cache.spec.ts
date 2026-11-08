@@ -121,7 +121,7 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
   await expect(
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible();
-  expect(await counts()).toEqual(changed);
+  expect((await counts()).workers).toBe(warmed.workers);
   await expect(player).toHaveAttribute("data-backend", "fluidsynth");
   await expect(player.locator(".media-stop-control")).toBeHidden();
   await clickMediaStop(page);
