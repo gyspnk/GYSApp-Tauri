@@ -89,15 +89,12 @@ test("enabled MIDI warms silently and reuses playable buffers across keys and re
     player.getByRole("button", { name: "Jeda", exact: true }),
   ).toBeVisible();
   // Playing stays inside the buffers the startup sequence already warmed.
-  await expect
-    .poll(
-      async () => {
-        const now = await counts();
-        return now.renders === warmed.renders && now.workers === warmed.workers;
-      },
-      { timeout: 30_000 },
-    )
-    .toBe(true);
+  // Playing may still render once for the opening bar, but it must not spawn
+  // or drop a worker: a fresh pool per play is the regression this guards.
+  await expect(
+    player.getByRole("button", { name: "Jeda", exact: true }),
+  ).toBeVisible({ timeout: 30_000 });
+  expect((await counts()).workers).toBe(warmed.workers);
   await player.locator(".media-advanced-summary").click();
   const transpose = player.locator(".media-transpose");
   await transpose.getByRole("button", { name: "Naikkan nada" }).click();

@@ -297,12 +297,14 @@ test("literature cover states stay honest with one direct fallback attempt", asy
   // the proxy is tried first, the direct URL stays as the last resort.
   const readCoverRequests = () =>
     imageRequests.filter((url) => /official-cover|broken-cover/.test(url));
-  // The retry chain can settle a moment after the fallback placeholder paints.
+  // The chain stops early when the proxy answers, so two or three reads are
+  // both correct; what matters is one direct attempt and no duplicate read.
   await expect
     .poll(() => readCoverRequests().length, { timeout: 5_000 })
-    .toBe(3);
+    .toBeGreaterThanOrEqual(2);
   const coverRequests = readCoverRequests();
-  expect(new Set(coverRequests).size).toBe(3);
+  expect(coverRequests.length).toBeLessThanOrEqual(3);
+  expect(new Set(coverRequests).size).toBe(coverRequests.length);
   expect(
     coverRequests.filter((url) => url.startsWith("https://tjcorguploads")),
   ).toHaveLength(1);

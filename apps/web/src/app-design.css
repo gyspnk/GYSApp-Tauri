@@ -3991,7 +3991,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 /* Two destinations, two equal fields: the indicator then travels the same
    distance whichever tab is active, so the pair reads as one control. */
-@media (min-width: 600px) {
+@media (min-width: 960px) {
   /* Both tabs keep one width so the pair reads as a single switch instead of
      two differently sized buttons; phones already split the row evenly. */
   .hymn-page .kidung-local-nav a,

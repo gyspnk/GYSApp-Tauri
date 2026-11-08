@@ -311,7 +311,9 @@ for (const width of [320, 390, 768, 1440]) {
     const chromeWidths = await page
       .locator(".hymn-pdf-viewer-chrome .viewer-chrome-button")
       .evaluateAll((nodes) =>
-        nodes.map((node) => Math.round(node.getBoundingClientRect().width)),
+        nodes
+          .filter((node) => node.getClientRects().length > 0)
+          .map((node) => Math.round(node.getBoundingClientRect().width)),
       );
     expect(chromeWidths.length).toBeGreaterThan(0);
     for (const width of chromeWidths) {

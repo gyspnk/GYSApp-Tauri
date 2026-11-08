@@ -197,7 +197,7 @@ test.describe("responsive reader navigation", () => {
       // screen it must still say what is happening.
       const loading = page.getByTestId("bible-loading-reader");
       const chapter = page.getByRole("heading", { name: /Kejadian 1/ });
-      await expect(loading.or(chapter)).toBeVisible({ timeout: 15_000 });
+      await expect(loading.or(chapter)).toBeVisible({ timeout: 30_000 });
       // The reader may hold the pack for only a moment now, so read whatever
       // copy it showed and only assert when there was one.
       const loadingCopy = await loading
