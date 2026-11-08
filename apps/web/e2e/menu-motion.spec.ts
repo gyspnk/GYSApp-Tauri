@@ -304,9 +304,13 @@ for (const width of [320, 390, 768, 1440]) {
     // The PDF chrome keeps its own larger overlay scale; inside that chrome
     // every button stays square and shares one corner.
     expect(after.width).toBeCloseTo(after.height, 0);
+    // The chrome hides itself after a moment of stillness, and a hidden button
+    // has no box at all, so wake it before measuring each control.
+    await page.locator(".hymn-pdf-viewer-chrome").hover();
     for (const control of await page
       .locator(".hymn-pdf-viewer-chrome .viewer-chrome-button")
       .all()) {
+      await expect(control).toBeVisible();
       expect((await control.boundingBox())!.width).toBe(after.width);
     }
     expect(after.radius).toBeTruthy();
