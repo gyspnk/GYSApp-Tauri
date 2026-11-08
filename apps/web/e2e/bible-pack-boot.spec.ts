@@ -38,3 +38,22 @@ test("Bible reader paints its first chapter without a runtime error", async ({
   await expect(page.locator(".verse-text").first()).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("the first chapter does not wait for the whole shelf", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  let shelfAnswered = false;
+  await page.route("**/offline/bible/tb-reader.json*", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 5_000));
+    shelfAnswered = true;
+    await route.continue();
+  });
+  const bookPack = page.waitForRequest(/\/offline\/bible\/books\/1\.json\.gz/);
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(page.getByRole("heading", { name: /Kejadian 1/ })).toBeVisible({
+    timeout: 20_000,
+  });
+  expect((await bookPack).url()).toContain("/offline/bible/books/1.json.gz");
+  expect(shelfAnswered).toBe(false);
+});
