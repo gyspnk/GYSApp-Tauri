@@ -45,6 +45,8 @@ test("the first chapter comes from its own book file", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const requested: string[] = [];
   const answered: string[] = [];
+  const messages: string[] = [];
+  page.on("console", (message) => messages.push(message.text()));
   page.on("request", (request) => requested.push(request.url()));
   page.on("response", (response) =>
     answered.push(`${response.status()} ${response.url()}`),
@@ -55,7 +57,7 @@ test("the first chapter comes from its own book file", async ({ page }) => {
   });
   console.log(
     "[bible-boot] books",
-    JSON.stringify({ requested, answered }, null, 2),
+    JSON.stringify({ requested, answered, messages }, null, 2),
   );
   expect(
     requested.some((url) => url.endsWith("/offline/bible/books/index.json")),

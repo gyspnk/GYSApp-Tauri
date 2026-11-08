@@ -547,8 +547,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
               : current,
           );
         })
-        .catch(() => {
+        .catch((error: unknown) => {
           progressivePackRef.current = undefined;
+          console.warn("[bible] progressive pack unavailable", error);
         });
     }
     void request
