@@ -127,9 +127,11 @@ export function HymnCatalog({
     const byId = new Map(corpus?.map((item) => [item.id, item]));
     return allItems.map((item) => byId.get(item.id) ?? item);
   }, [allItems, corpus]);
+  // Building the search index touches every entry, and the catalogue is useful
+  // before anyone types: keep it lazy so opening Kidung only pays for the rows.
   const searchIndex = useMemo(
-    () => buildHymnSearchIndex(searchableItems),
-    [searchableItems],
+    () => (deferredQuery.trim() ? buildHymnSearchIndex(searchableItems) : null),
+    [deferredQuery, searchableItems],
   );
   const books = useMemo(
     () => [...new Set(allItems.map((item) => item.book))].sort(),
@@ -149,10 +151,12 @@ export function HymnCatalog({
     () => allItems.filter((item) => !item.assetCode).length,
     [allItems],
   );
-  const filtered = useMemo(
-    () => searchHymns(searchIndex, deferredQuery, activeBook),
-    [activeBook, deferredQuery, searchIndex],
-  );
+  const filtered = useMemo(() => {
+    if (searchIndex) return searchHymns(searchIndex, deferredQuery, activeBook);
+    return allItems
+      .filter((item) => item.book === activeBook && !item.assetCode)
+      .sort((a, b) => a.number - b.number);
+  }, [activeBook, allItems, deferredQuery, searchIndex]);
   // Opening the catalogue used to commit all 533 rows in the navigation frame.
   // Render a screenful first and append the rest when the browser is idle: the
   // heading and the first rows paint immediately, and the full list still ends
