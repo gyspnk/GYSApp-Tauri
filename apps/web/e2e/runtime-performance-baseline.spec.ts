@@ -493,17 +493,19 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
       id: step.id,
       ms,
       clickedAt,
-      marks: await page.evaluate((clickedAt) =>
-        performance
-          .getEntriesByType("mark")
-          .filter((entry) => entry.name.startsWith("gys-"))
-          .map((entry) => ({
-            name: entry.name,
-            // Offsets from the click are what say which part was slow; absolute
-            // marks cannot be compared across steps.
-            at: Math.round(entry.startTime) - clickedAt,
-          })),
-      , clickedAt),
+      marks: await page.evaluate(
+        (clicked) =>
+          performance
+            .getEntriesByType("mark")
+            .filter((entry) => entry.name.startsWith("gys-"))
+            .map((entry) => ({
+              name: entry.name,
+              // Offsets from the click are what say which part was slow;
+              // absolute marks cannot be compared across steps.
+              at: Math.round(entry.startTime) - clicked,
+            })),
+        clickedAt,
+      ),
       resources: await page.evaluate(() =>
         performance
           .getEntriesByType("resource")
