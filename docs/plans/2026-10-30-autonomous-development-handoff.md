@@ -2865,6 +2865,15 @@ Satu run `perf.yml` `42657705173` (21 baris, 0 error, 0 duplicate asset, 0 panel
 - Indeks pencarian Kidung dibuat _lazy_ (dibangun saat pembaca mengetik, bukan saat katalog dibuka) supaya pembukaan hanya membayar baris. Diukur: `kidung` ready 561/546/692 ms (sebelum 499/502/514) — **di dalam noise ±30 %**, jadi tidak diklaim sebagai perbaikan; alasan mempertahankannya adalah pekerjaan yang tidak lagi dikerjakan di jalur buka.
 - Navigasi klik, median tiga run `perf.yml` (`42657705173`, `42667029246`, `42672123041`): beranda→Alkitab **268 ms**, Alkitab→Kidung **902 ms**, Kidung→pembaca **898 ms**. Target < 300 ms belum tercapai untuk dua langkah; `marks`/`resources` kosong sehingga biayanya mount/render. Percobaan hangatkan payload saat hover sudah ditolak sebelumnya (1 007/1 050 ms).
 
+### Seleksi ketuk-kedua diverifikasi native, header Literatur diringkas (9 Nov, putaran 204)
+
+- Seleksi adaptif (ketuk ayat lain saat satu ayat aktif → multi) mengubah kontrak soak: skrip harus membersihkan seleksi sebelum menyorot ayat kedua. `apps/web/scripts/edge-tts-native-smoke.mjs` diperbaiki (`04828ed`), lalu **soak `42679348758` hijau** — bukti native untuk gestur baru, termasuk restore catatan/sorotan setelah reload.
+- Indeks pencarian Kidung sekarang dibangun saat pembaca mengetik, bukan saat katalog dibuka (`b8ed30c`). Angka `kidung` ready 561/546/692 ms vs 499/502/514 sebelumnya berada di dalam noise ±30 %, jadi tidak diklaim sebagai perbaikan.
+- Full sweep `42676792152` menangkap regresi nyata dari jalur jelajah: `.pujian-item[data-id="hymne-001"]` hilang karena filter `!item.assetCode`, yang menyembunyikan paket himne terpasang. Diperbaiki `989999a`; full sweep **`42682509583` hijau**.
+- Header `/literatur` diringkas (`70ddc8d`): eyebrow “Tulisan & Renungan” dan badge jumlah dihapus karena mengulang label navigasi dan hitungan hasil; kunci `literature.eyebrow` dihapus dari tiga locale. Selective `42684403901` hijau, dan full sweep `42685345381` (dispatch pada HEAD) **hijau** termasuk regenerasi baseline.
+- Baseline: hanya `kidung-1440x900-linux.png` berbeda pada artefak `visual-baselines-42685345381`, dan karena tes visualnya lulus terhadap PNG yang tersimpan, selisih itu noise anti-alias (ukuran byte sama) — **tidak** diadopsi agar tidak menambah churn.
+- Catatan platform: satu run docs (`42673891107`) berakhir `failure` meski semua job sukses/`skipped` dengan `changes` “abandoned”, dan satu dispatch soak melaporkan “workflow file issue”; keduanya tidak berulang pada dispatch berikutnya, jadi dicatat sebagai gangguan layanan, bukan cacat repo.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
