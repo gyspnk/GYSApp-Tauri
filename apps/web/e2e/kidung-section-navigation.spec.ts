@@ -185,3 +185,20 @@ test("Kidung preferences live in main settings and legacy links redirect", async
   await expect(settings.locator(".kidung-settings-section")).toHaveCount(2);
   await expect(page.locator(".kidung-local-nav")).toHaveCount(0);
 });
+
+test("the catalogue opens on KR and remembers the chosen book", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung");
+  const collection = page.getByRole("combobox", { name: /Koleksi/i });
+  await expect(collection).toBeVisible();
+  await expect(collection).toHaveAttribute("aria-label", /Koleksi/i);
+  await expect(collection).toContainText("KR");
+  await collection.click();
+  await page.getByRole("option", { name: "Pujian", exact: true }).click();
+  await expect(collection).toContainText("Pujian");
+  await page.reload();
+  await expect(page.getByRole("combobox", { name: /Koleksi/i })).toContainText(
+    "Pujian",
+  );
+});
