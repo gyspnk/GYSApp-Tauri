@@ -7060,3 +7060,18 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
 - Unit: `edge-speech.test.ts` menambah kasus 503-not-configured, dan
   `speech-player.test.ts` kini mengharapkan rantai
   `Edge → sistem → lokal` juga untuk mode Edge eksplisit.
+
+## Jalur Azure Speech tanpa relay sendiri (9 Nov, putaran 239b)
+
+- Rute `POST /api/v1/tts/edge` tetap memprioritaskan relay `EDGE_TTS_URL`.
+  Bila relay tidak diisi tetapi `AZURE_SPEECH_KEY` dan `AZURE_SPEECH_REGION`
+  ada, Worker memanggil Azure Speech langsung dengan nama voice Edge yang
+  sama (format `audio-24khz-48kbitrate-mono-mp3`, batas 10 MiB, timeout 20
+  detik). Tanpa ketiganya jawabannya tetap 503 yang jujur.
+- SSML tidak menulis atribut prosodi netral: Azure menolak pitch berHz
+  `+0Hz`, dan atribut yang tidak ada sudah berarti “tidak berubah”.
+- Bukti: `apps/bff/src/azure-speech.test.ts` (SSML, escape, status upstream,
+  media bukan audio), dua uji rute dengan fetch palsu, dan `unit` hosted
+  hijau `42573527688`. Tanpa secret Azure, probe langsung ke Worker tetap
+  `503 Edge compatibility speech is not configured` — jalur Azure belum bisa
+  dibuktikan di produksi sampai owner menambahkan dua secret itu.
