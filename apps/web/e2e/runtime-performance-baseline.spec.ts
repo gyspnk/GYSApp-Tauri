@@ -462,10 +462,14 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     await page.evaluate(() => performance.clearResourceTimings());
     const started = Date.now();
     if (step.link) {
-      await page
+      const link = page
         .locator(".navigation-shell")
-        .getByRole("link", { name: step.link, exact: true })
-        .click();
+        .getByRole("link", { name: step.link, exact: true });
+      // A reader moves the pointer over a destination before clicking it; that
+      // hover is what warms the route, so measure the same path.
+      await link.hover();
+      await page.waitForTimeout(150);
+      await link.click();
     } else {
       // Aim like a reader: hover warms the reader chunk before the click, so
       // this measures the click-to-paint path rather than a cold cascade.
