@@ -27,10 +27,12 @@ import {
   type CatalogState,
   numberLabel,
   hymnCollectionLabel,
-  readStoredCollection,
-  writeStoredCollection,
   uniqueItems,
 } from "./kidung-shared.js";
+import {
+  readStoredCollection,
+  writeStoredCollection,
+} from "./kidung-collection-store.js";
 import { loadHymnSearchCorpus } from "./hymn-search-corpus.js";
 import { KidungLocalNav } from "./kidung-local-nav.js";
 import { readHymnViewerMode, writeHymnViewerMode } from "./hymn-view-mode.js";
