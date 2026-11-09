@@ -834,6 +834,7 @@ const THEME_ROUTES = [
   "/bible/kejadian/1",
   "/kidung",
   "/kidung/hymn-001",
+  "/kidung?section=playlist",
   "/suara",
   "/iman",
   "/literatur",

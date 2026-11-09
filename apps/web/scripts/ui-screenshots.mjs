@@ -57,6 +57,12 @@ const routes = [
       },
     ],
   },
+  {
+    // The merged queue/playlist surface has no other screenshot coverage.
+    slug: "kidung-antrean",
+    path: "/kidung?section=playlist",
+    marker: ".kidung-tool-page",
+  },
   { slug: "iman", path: "/iman", marker: ".faith-statement" },
   { slug: "literatur", path: "/literatur", marker: ".literature-page" },
   { slug: "suara", path: "/suara", marker: ".suara-library-grid" },
