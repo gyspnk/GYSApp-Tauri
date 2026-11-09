@@ -502,7 +502,7 @@ jobs:
   # hand). Hosted pull-request runners cannot meet them — the same two cases
   # fail on the 8-core ARM host — so they no longer turn every PR shard red.
   perf-budget:
-    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1' && needs.changes.outputs.web == 'true') || (github.event_name == 'workflow_dispatch' && inputs.full == 'true') }}
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1' && needs.changes.outputs.web == 'true') || (github.event_name == 'workflow_dispatch' && github.event.inputs.full == 'true') }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 10
