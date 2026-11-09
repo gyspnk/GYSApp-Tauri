@@ -728,6 +728,10 @@
 }
 
 .literature-shelf-item strong {
+  /* Every shelf card reserves three title lines, so the dates sit on one line
+     instead of stepping down wherever a title wraps once more. */
+  min-height: calc(3 * 1.35em);
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   /* Three lines fit the 148 px shelves; clamping keeps the card from growing a
