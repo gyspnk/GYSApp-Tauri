@@ -361,7 +361,7 @@ test("primary routes runtime performance baseline", async ({
   }
 
   await testInfo.attach("runtime-performance-baseline.json", {
-    body: Buffer.from(JSON.stringify({ results }, null, 2)),
+    body: Buffer.from(JSON.stringify({ results, details }, null, 2)),
     contentType: "application/json",
   });
   console.log(`[runtime-performance] ${JSON.stringify(results)}`);
@@ -422,7 +422,14 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   ] as const;
 
   const results: Array<{ id: string; ms: number }> = [];
+  const details: Array<{
+    id: string;
+    ms: number;
+    marks: string[];
+    resources: Array<{ name: string; ms: number; bytes: number }>;
+  }> = [];
   for (const step of transitions) {
+    await page.evaluate(() => performance.clearResourceTimings());
     const started = Date.now();
     if (step.link) {
       await page
@@ -439,7 +446,34 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     await expect(page.locator(step.ready).first()).toBeVisible({
       timeout: 60_000,
     });
-    results.push({ id: step.id, ms: Date.now() - started });
+    const ms = Date.now() - started;
+    results.push({ id: step.id, ms });
+    // The number alone never says which part was slow; record what the step
+    // actually fetched and which warm marks exist.
+    details.push({
+      id: step.id,
+      ms,
+      marks: await page.evaluate(() =>
+        performance
+          .getEntriesByType("mark")
+          .map((entry) => entry.name)
+          .filter((name) => name.startsWith("gys-")),
+      ),
+      resources: await page.evaluate(() =>
+        performance
+          .getEntriesByType("resource")
+          .map((entry) => ({
+            name: entry.name.split("/").pop() ?? entry.name,
+            ms: Math.round(entry.duration),
+            bytes:
+              (entry as PerformanceResourceTiming).transferSize > 0
+                ? (entry as PerformanceResourceTiming).transferSize
+                : 0,
+          }))
+          .sort((a, b) => b.ms - a.ms)
+          .slice(0, 8),
+      ),
+    });
   }
 
   await testInfo.attach("runtime-navigation-baseline.json", {
@@ -447,6 +481,7 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     contentType: "application/json",
   });
   console.log(`[runtime-navigation] ${JSON.stringify(results)}`);
+  console.log(`[runtime-navigation-detail] ${JSON.stringify(details)}`);
   expect(results).toHaveLength(transitions.length);
   for (const result of results) {
     // Generous guard: the number is the evidence, a hard 300 ms gate would
