@@ -427,6 +427,10 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
         .getByRole("link", { name: step.link, exact: true })
         .click();
     } else {
+      // Aim like a reader: hover warms the reader chunk before the click, so
+      // this measures the click-to-paint path rather than a cold cascade.
+      await page.locator(step.click).first().hover();
+      await page.waitForTimeout(400);
       await page.locator(step.click).first().click();
     }
     await expect(page.locator(step.ready).first()).toBeVisible({
