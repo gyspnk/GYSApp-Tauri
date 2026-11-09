@@ -137,7 +137,7 @@ export function HymnCatalog({
   // One collection is always active: KR (Kidung Rohani) unless the reader
   // chose another one, and "all" is not offered, so rows and count never mix.
   const activeBook = useMemo(() => {
-    if (book && books.includes(book)) return book;
+    if (book && books.some((entry) => entry === book)) return book;
     return (
       books.find((entry) => hymnCollectionLabel(entry) === "KR") ??
       books[0] ??
