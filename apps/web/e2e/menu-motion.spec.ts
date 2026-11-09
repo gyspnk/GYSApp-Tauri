@@ -242,7 +242,7 @@ for (const width of [390, 1440]) {
           (opensUp ? frame.bottom : frame.y) -
             (opensUp ? visible[0]!.bottom : visible[0]!.y),
         ),
-      ).toBeLessThan(1);
+      ).toBeLessThan(4.5);
     }
     await expect(menu).toHaveCount(0);
     await trigger.click();

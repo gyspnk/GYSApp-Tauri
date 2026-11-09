@@ -273,6 +273,17 @@ test("native touchscreen pinch and Ctrl wheel stay inside the reader on a 3x dis
   expect(await page.evaluate(() => visualViewport!.scale)).toBe(1);
   const tiles = page.locator("canvas[data-pdf-detail]");
   await expect(tiles.first()).toBeVisible();
+  await expect
+    .poll(() =>
+      tiles.evaluateAll((elements) =>
+        elements.map(
+          (element) =>
+            (element as HTMLCanvasElement).width /
+            parseFloat((element as HTMLElement).style.width),
+        ),
+      ),
+    )
+    .toEqual(expect.arrayContaining([expect.any(Number)]));
   for (const density of await tiles.evaluateAll((elements) =>
     elements.map(
       (element) =>

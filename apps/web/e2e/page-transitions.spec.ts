@@ -157,6 +157,11 @@ test("navigation from a scrolled catalog starts the destination at its top", asy
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/kidung");
   await expect(page.locator(".pujian-list > li").first()).toBeVisible();
+  // The catalogue paints 14 rows first and grows in idle batches, so the page
+  // must be tall enough before a 700 px scroll means anything.
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollHeight))
+    .toBeGreaterThan(1_600);
   await page.evaluate(() => window.scrollTo({ top: 700, behavior: "instant" }));
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(700);
   await page.locator('.primary-nav a[href$="/iman"]').click();
