@@ -6960,3 +6960,10 @@ Dua hal lain yang ikut ditemukan pada putaran ini:
 
 Verifikasi: push `69a86e1` → run `42551201925` **success** (verify, unit,
 e2e selektif).
+
+Verifikasi akhir putaran ini: selective `42552650117` **success** untuk
+`190649a`, lalu full sweep `42552821897` **success** — keempat shard hijau
+(`e2e-shard (1..4)`), `verify` hijau, dan artefak `visual-baselines-42552821897`
+menyimpan 140 PNG yang **identik byte** dengan repo, jadi tidak ada baseline
+yang perlu diadopsi. `apps/web/src/bible.tsx` tetap membiarkan pack penuh
+mengambil alih saat tiba.
