@@ -460,8 +460,10 @@
 }
 .kidung-tool-page .kidung-empty-state {
   /* An empty queue has one sentence of content; a full-bleed card would be a
-     wide frame with nothing in it at 1440. */
+     wide frame with nothing in it at 1440, and a card glued to the left edge
+     leaves the page looking half-built, so it sits in the middle instead. */
   max-width: 640px;
+  margin-inline: auto;
   padding: 28px 20px;
   text-align: center;
   border: 1px dashed var(--line-strong);
