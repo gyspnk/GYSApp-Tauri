@@ -77,6 +77,7 @@ const initial: SpeechSnapshot = {
 class BrowserSpeechSession {
   private readonly browserProvider = new BrowserSpeechProvider();
   private readonly localSpeechProvider = new BrowserSpeechProvider(true);
+  private edgeFallbackRefreshed = false;
   private readonly edgeProvider = new EdgeSpeechProvider();
   private orchestrator = new SpeechOrchestrator([
     this.edgeProvider,
@@ -114,16 +115,21 @@ class BrowserSpeechSession {
         this.browserProvider.status(),
         this.localSpeechProvider.status(),
       ]);
+      const edgeEffective = edgeStatus.available;
+      // A voice the gateway cannot synthesize must not sit in the picker: the
+      // reader would accept the choice and then speak with something else.
+      const usableEdgeVoices =
+        engine !== "local" && edgeEffective ? edgeVoices : [];
       const voices = [
-        ...edgeVoices,
+        ...usableEdgeVoices,
         ...browserVoices.filter(
-          (voice) => !edgeVoices.some((candidate) => candidate.id === voice.id),
+          (voice) =>
+            !usableEdgeVoices.some((candidate) => candidate.id === voice.id),
         ),
       ];
-      const edgeEffective = edgeStatus.available;
       this.patch({
         voices,
-        edgeVoices,
+        edgeVoices: usableEdgeVoices,
         available:
           engine === "edge"
             ? edgeEffective
@@ -337,7 +343,7 @@ class BrowserSpeechSession {
         if (controller.signal.aborted || generation !== this.playbackGeneration)
           return;
         if (
-          this.state.engine === "auto" &&
+          this.state.engine !== "local" &&
           result.providerId !== this.edgeProvider.id
         ) {
           recordDiagnostic(
@@ -345,6 +351,12 @@ class BrowserSpeechSession {
             "tts.edge.retry",
             "Using system speech because Edge was unavailable or failed",
           );
+          if (!this.edgeFallbackRefreshed) {
+            // Reload once so the picker stops offering voices the gateway
+            // cannot synthesize for the rest of the session.
+            this.edgeFallbackRefreshed = true;
+            void this.loadVoices();
+          }
         }
         this.patch({ providerId: result.providerId, offline: result.offline });
       }
