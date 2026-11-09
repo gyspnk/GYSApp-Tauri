@@ -1332,7 +1332,10 @@ export function createApp(
           });
           c.header("content-type", "audio/mpeg");
           c.header("content-length", String(audio.byteLength));
-          return c.body(audio);
+          return new Response(audio, {
+            status: 200,
+            headers: c.res.headers,
+          });
         } catch (error) {
           return errorResponse(
             c,
