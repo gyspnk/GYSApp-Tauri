@@ -7021,3 +7021,29 @@ menggantikan snapshot: penangan sentuh menempel di `.bible-pane`, dan panes
 diganti di tengah gestur sehingga niat bab hilang. Penangan sekarang menempel
 di `.bible-reader` yang bertahan (`ef248a8`), dan selective `42561954200`
 **success**.
+
+## Edge TTS tanpa secret: diuji, ditolak, lalu diganti rantai fallback (9 Nov, putaran 238)
+
+Pemilik meminta Edge TTS bekerja otomatis tanpa `EDGE_TTS_URL`. Yang diukur:
+
+- Protokol read-aloud Microsoft diimplementasikan langsung di Worker
+  (`apps/bff/src/edge-tts.ts`, commit `adc9364`/`559616d`/`587a8e7`). Live
+  Worker menjawab `403`, lalu `Edge speech upgrade failed (403)`.
+- Handshake yang sama dijalankan dari mesin pengembangan (curl, header
+  Chrome/Edge lengkap, `Sec-MS-GEC` versi `1-130…`) juga **403**, jadi bukan
+  masalah IP Cloudflare.
+- `edge-tts` terbaru memakai `Sec-MS-GEC` **v2** (`<CS64>-<SHA256>`, Chromium
+  `143.0.3650.75`, koreksi clock skew). Itu algoritme DRM ter-obfuscate; klon di
+  Worker akan rapuh, jadi eksperimen di-revert (`c0c579f`). Tidak ada jalur
+  tanpa secret yang jujur.
+- Kompensasi produk (`3281a31`, `f4d5a0c`): rantai provider menjadi
+  `Edge → sistem → lokal` untuk mode otomatis dan Edge eksplisit, dan provider
+  Edge berhenti dicoba setelah gateway menjawab 503 "not configured"
+  (diuji unit + hosted `42567341714` success). Bacaan tidak lagi senyap dan
+  tidak lagi membayar satu permintaan gagal per kalimat.
+
+Google: client bawaan `748303683851-…` terbukti ada lewat endpoint token
+(`client_secret is missing` vs `invalid_client` untuk ID palsu), tetapi project
+`748303851` menjawab `403 PERMISSION_DENIED` untuk akun yang login, dan tidak
+ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
+`docs/cloudflare-worker-setup.md`.

@@ -90,16 +90,46 @@ backend e-GYS menerima audience tersebut. Begitu juga
 `VITE_EGYS_GOOGLE_CLIENT_ID` di build frontend: keduanya harus selaras bila
 override memang diperlukan.
 
+Client bawaan di `apps/web/src/egys-google.ts` (`748303683851-...`) terbukti
+**masih ada**: `POST https://oauth2.googleapis.com/token` dengan ID itu menjawab
+`invalid_request: client_secret is missing`, sedangkan ID palsu menjawab
+`invalid_client: The OAuth client was not found`. Namun project pemiliknya
+(`748303851`) menjawab `403 PERMISSION_DENIED` untuk akun yang login di mesin
+pengembangan, dan Google tidak menyediakan API publik untuk membaca daftar
+OAuth client maupun _Authorized JavaScript origins_ (semua endpoint
+`oauthClients`/`brands` menjawab 404; IAP API tidak aktif). Karena itu origins
+harus diperiksa manual di Console untuk client tersebut:
+`https://gyspnk.github.io`, `http://localhost:5173`, `http://127.0.0.1:5173`,
+`http://localhost:4173`, `http://127.0.0.1:4173`.
+
 Pengaturan opsional:
 
 - `EDGE_TTS_URL`: secret berisi gateway audio Edge yang sudah diverifikasi.
 - `EDGE_TTS_VOICES_URL`: secret URL katalog suara gateway tersebut, bila tersedia.
 
-Jangan mengisi URL gateway fiktif. Tanpa gateway, TTS Edge tidak otomatis aktif;
-provider suara lain tetap mengikuti kemampuan platform. Secret Worker bukan
-GitHub secret bernama sama: workflow deploy saat ini tidak menyalin binding
-runtime dari GitHub secara otomatis. Secret yang disimpan pada Worker tetap
-terpisah dari variabel publik di TOML.
+Jangan mengisi URL gateway fiktif. Kontrak gateway: `POST` JSON
+`{text, voice, rate, pitch, volume}` dan balasan `audio/*` (maksimum 10 MiB).
+
+**Kenapa tidak ada jalur tanpa secret (diukur 9 Nov 2026).** Worker pernah
+dicoba bicara langsung ke endpoint read-aloud Microsoft
+(`speech.platform.bing.com/.../readaloud/edge/v1`) memakai `Sec-MS-GEC` versi
+lama: handshake dari Worker dan dari mesin pengembang sama-sama dijawab
+**403**, karena Microsoft kini meminta token v2 `<CS64>-<SHA256>` dengan
+koreksi clock skew (Chromium `143.0.3650.75`). Menyalin algoritme DRM itu ke
+Worker berarti memelihara klon yang bisa mati sewaktu-waktu, jadi eksperimen
+tersebut di-revert (commit `c0c579f`).
+
+Tanpa gateway, aplikasi tetap membaca: rantai suara sekarang
+`Edge → suara sistem → suara lokal` untuk mode otomatis **dan** mode Edge
+eksplisit, dan provider Edge berhenti mencoba setelah gateway menjawab 503
+"not configured" sehingga tidak ada permintaan gagal sebelum tiap kalimat
+(commit `3281a31`, `f4d5a0c`). Untuk suara cloud yang stabil, pilih salah satu:
+relay sendiri (gateway di atas) atau kunci Azure Speech resmi — dukungan
+`AZURE_SPEECH_KEY` dapat ditambahkan bila pemilik menghendaki jalur berbayar.
+
+Secret Worker bukan GitHub secret bernama sama: workflow deploy saat ini tidak
+menyalin binding runtime dari GitHub secara otomatis. Secret yang disimpan pada
+Worker tetap terpisah dari variabel publik di TOML.
 
 ## 6. Periksa CORS dan sumber konten
 
