@@ -40,10 +40,11 @@ describe("speech engine routing", () => {
     expect(local.speak).not.toHaveBeenCalled();
   });
 
-  it("does not switch providers when Edge is explicitly selected", async () => {
+  it("keeps reading with on-device speech when Edge is chosen but fails", async () => {
     const edge = createProvider("edge");
     edge.speak.mockRejectedValueOnce(new Error("network unavailable"));
     const system = createProvider("system");
+    system.speak.mockRejectedValueOnce(new Error("no system voice"));
     const local = createProvider("local");
     const orchestrator = new SpeechOrchestrator(
       speechProvidersForEngine(
@@ -54,12 +55,12 @@ describe("speech engine routing", () => {
       ),
     );
 
-    await expect(orchestrator.speak("verse", {})).rejects.toThrow(
-      "network unavailable",
-    );
+    await expect(orchestrator.speak("verse", {})).resolves.toMatchObject({
+      providerId: "local",
+    });
     expect(edge.speak).toHaveBeenCalledOnce();
-    expect(system.speak).not.toHaveBeenCalled();
-    expect(local.speak).not.toHaveBeenCalled();
+    expect(system.speak).toHaveBeenCalledOnce();
+    expect(local.speak).toHaveBeenCalledOnce();
   });
 
   it("uses only the local provider in local mode", async () => {

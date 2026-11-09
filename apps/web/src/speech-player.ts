@@ -32,9 +32,10 @@ export function speechProvidersForEngine(
   systemProvider: SpeechProvider,
   localProvider: SpeechProvider,
 ): SpeechProvider[] {
-  if (engine === "edge") return [edgeProvider];
   if (engine === "local") return [localProvider];
-  return [edgeProvider, systemProvider];
+  // Edge is a cloud voice; a network or quota failure must not leave the
+  // reader silent, so every non-local engine ends with on-device speech.
+  return [edgeProvider, systemProvider, localProvider];
 }
 
 export type SpeechSnapshot = {
