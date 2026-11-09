@@ -1,4 +1,5 @@
-import { AccountProfileSchema, type AccountProfile } from "@gys/contracts";
+import type { AccountProfile } from "@gys/contracts";
+import { loadContracts } from "./contracts-schemas.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import {
   getNativeEgysToken,
@@ -197,7 +198,9 @@ export async function getEgysProfile(
     throw failure;
   }
   const body = (await response.json()) as { profile?: unknown };
-  return body.profile ? AccountProfileSchema.parse(body.profile) : undefined;
+  if (!body.profile) return undefined;
+  const { AccountProfileSchema } = await loadContracts();
+  return AccountProfileSchema.parse(body.profile);
 }
 
 export async function signInEgysWithGoogle(credential: string): Promise<void> {
@@ -236,13 +239,28 @@ export function subscribeEgysProfile(listener: () => void): () => void {
   };
 }
 
+/**
+ * The cache is written only after the schema validated the profile, so the
+ * synchronous read checks the two required fields instead of pulling zod into
+ * the first paint (B-24).
+ */
+function isCachedProfile(value: unknown): value is AccountProfile {
+  if (!value || typeof value !== "object") return false;
+  const profile = value as { id?: unknown; displayName?: unknown };
+  return (
+    typeof profile.id === "string" &&
+    profile.id.length > 0 &&
+    typeof profile.displayName === "string" &&
+    profile.displayName.length > 0
+  );
+}
+
 export function readCachedEgysProfile(): AccountProfile | undefined {
   try {
     const raw = localStorage.getItem(EGYS_PROFILE_KEY);
     if (!raw) return undefined;
     const parsed: unknown = JSON.parse(raw);
-    const validated = AccountProfileSchema.safeParse(parsed);
-    return validated.success ? validated.data : undefined;
+    return isCachedProfile(parsed) ? parsed : undefined;
   } catch {
     return undefined;
   }

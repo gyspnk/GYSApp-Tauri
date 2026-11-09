@@ -1,9 +1,9 @@
-import {
-  EdgeTtsRequestSchema,
-  EdgeTtsVoicesResponseSchema,
-  type SpeechProvider,
-  type SpeechVoice,
+import type {
+  EdgeTtsRequest,
+  SpeechProvider,
+  SpeechVoice,
 } from "@gys/contracts";
+import { loadContracts } from "./contracts-schemas.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import {
   canUseNativeEdgeTransport,
@@ -190,6 +190,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
     if (signal?.aborted) throw abortError();
     this.paused = false;
     await this.stop();
+    const { EdgeTtsRequestSchema } = await loadContracts();
     const parsed = EdgeTtsRequestSchema.parse({
       text: text.slice(0, 8_000),
       voice: this.selectVoice(options.voiceId, options.languageTag),
@@ -251,7 +252,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
 
   private async fetchGatewayAudio(
     endpoint: string,
-    parsed: ReturnType<typeof EdgeTtsRequestSchema.parse>,
+    parsed: EdgeTtsRequest,
     signal?: AbortSignal,
   ): Promise<Blob> {
     const requestInit: RequestInit = {
@@ -385,6 +386,7 @@ export class EdgeSpeechProvider implements SpeechProvider {
       });
       if (!response.ok) return [];
       const payload: unknown = await response.json();
+      const { EdgeTtsVoicesResponseSchema } = await loadContracts();
       const parsed = EdgeTtsVoicesResponseSchema.safeParse(
         Array.isArray(payload) ? { voices: payload } : payload,
       );

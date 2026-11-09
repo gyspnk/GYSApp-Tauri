@@ -1,11 +1,7 @@
 import type { HymnCatalogEntry, MidiPlaylistItem } from "@gys/contracts";
 import type { MidiLoader } from "@gys/domain/midi-loader";
 import { midiPlayer } from "./midi-player.js";
-import {
-  findMusicAsset,
-  loadMusicAsset,
-  loadMusicLock,
-} from "./music-assets.js";
+
 import {
   getMidiPlaylist,
   nextMidiPlaylistItem,
@@ -66,6 +62,8 @@ async function loadItem(
   const hymn = catalog.find((candidate) => candidate.id === item.songId);
   if (!hymn) throw new Error(`Kidung ${item.songId} tidak ditemukan`);
   const songMetaPromise = warmHymnPdfMeta(hymn);
+  const { findMusicAsset, loadMusicAsset, loadMusicLock } =
+    await import("./music-assets.js");
   const lock = await loadMusicLock();
   const ref = findMusicAsset(lock, "midi", hymn.midiPath);
   if (!ref) throw new Error(`MIDI ${hymn.title} tidak tersedia`);
