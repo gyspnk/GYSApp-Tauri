@@ -83,6 +83,21 @@ test("a partial PR range falls back to local detection instead of guessing", () 
   ]);
 });
 
+test("an edited spec always runs, even without layout files", () => {
+  const plan = resolveSelectiveTestArgs(
+    [
+      "apps/web/e2e/accessibility.spec.ts",
+      "apps/web/scripts/ui-screenshots.mjs",
+    ],
+    [],
+  );
+  assert.ok(
+    plan.args.includes("e2e/accessibility.spec.ts"),
+    plan.args.join(" "),
+  );
+  assert.ok(!plan.args.includes("e2e/smoke.spec.ts"), plan.args.join(" "));
+});
+
 test("Bible render modules include annotation migration and visual contracts without title filtering", () => {
   for (const module of [
     "bible.tsx",

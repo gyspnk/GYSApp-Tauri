@@ -322,7 +322,17 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     ),
   );
   const routineSweeps = new Set(["e2e/responsive-layout-matrix.spec.ts"]);
+  // A spec that was edited must always run, even when the change carries no
+  // layout files: pruning it turned "update this test" into "run smoke".
+  const editedSpecs = new Set(
+    changedFiles
+      .filter(
+        (file) => file.startsWith("apps/web/e2e/") && file.endsWith(".spec.ts"),
+      )
+      .map((file) => file.replace("apps/web/", "")),
+  );
   for (const spec of generalSweeps) {
+    if (editedSpecs.has(spec)) continue;
     const keep = touchesLayout && (globalLayout || routineSweeps.has(spec));
     if (!keep) specFiles.delete(spec);
   }
