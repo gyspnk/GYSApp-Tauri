@@ -144,6 +144,9 @@ for (const viewport of viewports) {
                 typeof el.className === "string" ? el.className : "",
               ) &&
               rect.width >= 24 &&
+              // A settings row spans the page; sharing its centre line with the
+              // topbar controls does not make it their peer.
+              rect.width <= Math.min(320, window.innerWidth * 0.45) &&
               rect.height >= 24 &&
               (typeof el.checkVisibility !== "function" ||
                 el.checkVisibility({
