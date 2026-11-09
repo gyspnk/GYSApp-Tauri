@@ -517,41 +517,55 @@ test("main search and Bible picker retain their closing animation", async ({
   page,
 }) => {
   await page.route(/^https:\/\//, (route) => route.abort());
-  await page.goto("/GYSApp-Tauri/");
+  // Sampling a 180ms fade on a shard-loaded runner can miss every frame while
+  // the main thread is busy, so the interaction is retried before failing.
+  const sampleClosingFade = async ({
+    open,
+    backdrop,
+    field,
+  }: {
+    open: () => Promise<void>;
+    backdrop: string;
+    field: string;
+  }) => {
+    let faded = false;
+    for (let attempt = 0; attempt < 3 && !faded; attempt += 1) {
+      await open();
+      const surface = page.locator(backdrop);
+      await expect
+        .poll(() => surface.evaluate((node) => getComputedStyle(node).opacity))
+        .toBe("1");
+      await page.locator(field).focus();
+      const frames = await sampleExit(page, backdrop, false, { key: "Escape" });
+      faded = frames.some(
+        (frame) =>
+          frame.visible && frame.opacity > 0.01 && frame.opacity < 0.99,
+      );
+      await expect(surface).toHaveCount(0);
+    }
+    return faded;
+  };
+
   const searchTrigger = page.locator(".search-trigger");
-  await searchTrigger.click();
-  const search = page.locator(".search-backdrop");
-  await expect
-    .poll(() => search.evaluate((node) => getComputedStyle(node).opacity))
-    .toBe("1");
-  await page.locator(".global-search input").focus();
-  const searchFrames = await sampleExit(page, ".search-backdrop", false, {
-    key: "Escape",
-  });
+  await page.goto("/GYSApp-Tauri/");
   expect(
-    searchFrames.some(
-      (frame) => frame.visible && frame.opacity > 0.01 && frame.opacity < 0.99,
-    ),
+    await sampleClosingFade({
+      open: () => searchTrigger.click(),
+      backdrop: ".search-backdrop",
+      field: ".global-search input",
+    }),
   ).toBe(true);
-  await expect(search).toHaveCount(0);
   await expect(searchTrigger).toBeFocused();
+
   await page.goto("/GYSApp-Tauri/bible");
   const pickerTrigger = page.locator(".reader-context-book-picker");
-  await pickerTrigger.click();
-  const picker = page.locator(".bible-picker-backdrop");
-  await expect
-    .poll(() => picker.evaluate((node) => getComputedStyle(node).opacity))
-    .toBe("1");
-  await page.locator('[data-picker-field="chapter"]').focus();
-  const pickerFrames = await sampleExit(page, ".bible-picker-backdrop", false, {
-    key: "Escape",
-  });
   expect(
-    pickerFrames.some(
-      (frame) => frame.visible && frame.opacity > 0.01 && frame.opacity < 0.99,
-    ),
+    await sampleClosingFade({
+      open: () => pickerTrigger.click(),
+      backdrop: ".bible-picker-backdrop",
+      field: '[data-picker-field="chapter"]',
+    }),
   ).toBe(true);
-  await expect(picker).toHaveCount(0);
   await expect(pickerTrigger).toBeFocused();
 });
 

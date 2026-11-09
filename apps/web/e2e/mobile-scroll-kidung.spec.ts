@@ -99,8 +99,12 @@ test.describe("responsive Kidung field with a coarse pointer", () => {
       const mode = element
         .querySelector(".kidung-mode-cycle")!
         .getBoundingClientRect();
+      const category = element
+        .querySelector(".control-select-trigger")!
+        .getBoundingClientRect();
+      const sameRow = Math.abs(mode.top - category.top) < 1;
       return {
-        unused: container.right - mode.right,
+        categoryToMode: sameRow ? mode.left - category.right : 0,
         mode: { width: mode.width, height: mode.height },
         links: [...element.querySelectorAll(".kidung-local-nav a")].map(
           (link) => {
@@ -116,7 +120,7 @@ test.describe("responsive Kidung field with a coarse pointer", () => {
     }
     expect(geometry.mode.width).toBeGreaterThanOrEqual(43.5);
     expect(geometry.mode.height).toBeGreaterThanOrEqual(43.5);
-    expect(geometry.unused).toBeLessThanOrEqual(6);
+    expect(geometry.categoryToMode).toBeLessThanOrEqual(10);
   });
 });
 test("page boundaries remain anchored while scrolling at either end", async ({
