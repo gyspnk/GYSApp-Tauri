@@ -2880,6 +2880,14 @@ Satu run `perf.yml` `42657705173` (21 baris, 0 error, 0 duplicate asset, 0 panel
 - Perbaikan CSS-only (`e06cc88`, `apps/web/src/app-design.css`): pada `min-width: 1100px` daftar menjadi dua kolom (`grid-template-columns: repeat(2, minmax(0, 1fr))`, jarak 28 px), urutan baca kiri→kanan lalu bawah. Tidak ada snapshot visual `/literatur` di suite, jadi tidak ada baseline yang bergeser.
 - Bukti: selective `42690398273` hijau; tangkapan QA `42691869243` (`literatur-1440-light.png`) menunjukkan dua kolom terisi penuh dan sejajar, tanpa teks terpotong.
 
+### Kepala halaman diringkas: Literatur dua kolom, eyebrow Suara hilang (9 Nov, putaran 205–206)
+
+- `/literatur` pada ≥1100 px memakai daftar dua kolom (`apps/web/src/app-design.css`, `e06cc88`): sebelumnya satu baris hanya memakai ~300 px lalu menyisakan pita kosong sampai chevron.
+- Eyebrow berulang dihapus dari `/literatur` (“Tulisan & Renungan” + badge jumlah) dan `/suara` (“CERITA DAN KESAKSIAN”); judul + jumlah hasil filter sudah cukup. Kunci `literature.eyebrow` dan `suara.eyebrow` dihapus dari tiga locale (`70ddc8d`, `e032dd3`).
+- Baseline visual disegarkan dari artefak `visual-baselines-42699185232`: **9 PNG** berubah (8 literatur 320–1920 + `kidung-1440x900` yang memang belum pernah di-baseline ulang setelah katalog dua kolom). Semua diadopsi setelah diperiksa, bukan demi membuat merah jadi hijau.
+- Full sweep `42699185232` **hijau**: `verify`, `web-build`, `perf-budget`, `e2e`, `update-visual-baselines`; selective/unit n/a karena dispatch penuh.
+- Catatan navigasi: satu run `perf.yml` (`42695044125`) mengukur beranda→Alkitab 303 ms, Alkitab→Kidung **287 ms**, Kidung→pembaca 659 ms, tetapi run lain 866–1 257 ms; variasi ±30 % tetap, jadi angka median (~880 ms) dipakai dan target < 300 ms belum diklaim tercapai.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
