@@ -153,8 +153,10 @@ export function HymnCatalog({
   );
   const filtered = useMemo(() => {
     if (searchIndex) return searchHymns(searchIndex, deferredQuery, activeBook);
+    // Every song in the active collection: an installed hymnal pack carries an
+    // asset code, and hiding those made its songs vanish from the catalogue.
     return allItems
-      .filter((item) => item.book === activeBook && !item.assetCode)
+      .filter((item) => item.book === activeBook)
       .sort((a, b) => a.number - b.number);
   }, [activeBook, allItems, deferredQuery, searchIndex]);
   // Opening the catalogue used to commit all 533 rows in the navigation frame.
