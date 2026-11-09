@@ -7047,3 +7047,16 @@ Google: client bawaan `748303683851-…` terbukti ada lewat endpoint token
 `748303851` menjawab `403 PERMISSION_DENIED` untuk akun yang login, dan tidak
 ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
 `docs/cloudflare-worker-setup.md`.
+
+## Suara: fallback yang tidak membayar kegagalan berulang (9 Nov, putaran 239)
+
+- Provider Edge sekarang menyimpan hasil `503 … not configured`: setelah satu
+  kegagalan, `status()` melaporkan tidak tersedia dengan alasan yang dibaca
+  pengguna, jadi orkestrator melewatinya dan bacaan langsung memakai suara
+  perangkat tanpa satu pun permintaan gagal per kalimat (`f4d5a0c`).
+- Pilihan suara yang tidak bisa disintesis gateway tidak lagi muncul di picker;
+  snapshot memuat ulang sekali setelah fallback supaya daftar itu konsisten
+  dengan apa yang benar-benar dipakai (`f4d5a0c`).
+- Unit: `edge-speech.test.ts` menambah kasus 503-not-configured, dan
+  `speech-player.test.ts` kini mengharapkan rantai
+  `Edge → sistem → lokal` juga untuk mode Edge eksplisit.
