@@ -36,10 +36,10 @@ function loadRouteCode(id: RouteId): Promise<unknown> {
 async function loadRouteData(id: RouteId): Promise<void> {
   if (id === "faith")
     await import("./faith-payloads.js").then((m) => m.loadFaithPack());
-  if (id === "bible")
-    await import("./bible-pack-loader.js").then((m) =>
-      m.loadBundledBiblePack(),
-    );
+  // The reader paints from the per-book files, so warming the full 7,6 MB
+  // shelf on hover would spend bandwidth the click does not need. Warm the
+  // index and the first book instead; the full pack still starts after paint.
+  if (id === "bible") await warmBibleFirstChapter();
   if (id === "kidung")
     await Promise.all([
       import("./kidung-page.js").then((m) => m.preloadKidungCatalog()),
