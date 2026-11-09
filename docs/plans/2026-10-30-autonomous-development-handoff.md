@@ -6816,3 +6816,21 @@ Job `update-visual-baselines` memakai `--update-snapshots` (mode _missing_), jad
 ### Pil koleksi menempel ke panah dan sakelar mode (9 Nov, putaran 226)
 
 Pil koleksi tadinya ikut melebar mengisi kolom: pada 1024/768/390 selektornya sampai 617/501/216 px dan panahnya terdorong ke ujung, sehingga pil, panah, dan tombol Aa/partitur terbaca sebagai tiga pulau dengan ruang kosong di antaranya. Sekarang pil berukuran isi di semua lebar (`width: fit-content`, `min-width: 0`), panah menempel 6 px dari label (gap 6 px, padding 12/10), dan tata letak memakai `96px max-content max-content` di bawah 1101 px sehingga tombol mode langsung mengikuti pil. Terukur: 1440 → pil 58 px + mode 39 px (gap 2 px); 1024/768/390 → pil 58–60 px + mode 36 px (gap 4 px).
+
+### Harness perf: panaskan rute sebelum mengukur (9 Nov, putaran 227)
+
+Dua kali dispatch `perf.yml` pada commit yang sama memberi angka yang tidak masuk akal: `kidung-desktop` **637 ms** lalu **2 524 ms**, `kidung-phone` 1 470 vs 1 330 ms. Penyebabnya urutan, bukan produk: rute pertama membayar cache font/chunk yang dinikmati rute berikutnya. `runRoute` sekarang melakukan satu navigasi pemanasan (goto + tunggu `ready` + `document.fonts.ready`) sebelum pengukuran, dan listener error/request baru dipasang setelah pemanasan supaya artefak tidak mencampur dua navigasi.
+
+Sesudah pemanasan, dua sampel berurutan (`42543097864`, `42543213307`; hosted, preview tanpa BFF, gambar S3 distub 1 px):
+
+| rute      | sampel 1 (phone/tablet/desktop) | sampel 2              |
+| --------- | ------------------------------- | --------------------- |
+| home      | 481 / 492 / 508                 | 610 / 588 / 597       |
+| bible     | 1 332 / 1 026 / 1 007           | 2 192 / 1 554 / 1 528 |
+| kidung    | 504 / 506 / 507                 | 715 / 611 / 1 104     |
+| iman      | 457 / 428 / 449                 | 555 / 683 / 518       |
+| literatur | 653 / 622 / 626                 | 825 / 823 / 853       |
+| suara     | 645 / 610 / 582                 | 695 / 710 / 729       |
+| lainnya   | 500 / 516 / 518                 | 569 / 630 / 610       |
+
+Kesimpulan jujur: pemanasan menghilangkan artefak urutan (kidung 1 470 → 504 ms), tetapi variasi antar-run masih ±30 % karena runner dipakai bersama — angka perf dipakai untuk membandingkan **dalam satu run**, atau median ≥3 run, bukan satu sampel. `bible` tetap yang termahal (1,0–2,2 dtk) walau pack per kitab sudah aktif, karena parse pack penuh di latar tetap berjalan.
