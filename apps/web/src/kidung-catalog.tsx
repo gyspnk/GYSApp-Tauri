@@ -1,6 +1,6 @@
 import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
-import { startTransition, useSyncExternalStore } from "react";
+import { startTransition, useCallback, useSyncExternalStore } from "react";
 import {
   useEffect,
   useDeferredValue,
@@ -27,6 +27,8 @@ import {
   type CatalogState,
   numberLabel,
   hymnCollectionLabel,
+  readStoredCollection,
+  writeStoredCollection,
   uniqueItems,
 } from "./kidung-shared.js";
 import { loadHymnSearchCorpus } from "./hymn-search-corpus.js";
@@ -62,7 +64,13 @@ export function HymnCatalog({
     );
   });
   const [query, setQuery] = useState("");
-  const [book, setBook] = useState("");
+  // The reader picks a collection once; reopening the catalogue should land on
+  // the same book instead of jumping back to the first one.
+  const [book, setBookState] = useState(readStoredCollection);
+  const setBook = useCallback((next: string) => {
+    setBookState(next);
+    writeStoredCollection(next);
+  }, []);
   const deferredQuery = useDeferredValue(query);
   const allItems = useMemo(
     () => (state.status === "ready" ? uniqueItems(state.items) : []),
@@ -124,9 +132,16 @@ export function HymnCatalog({
     () => [...new Set(allItems.map((item) => item.book))].sort(),
     [allItems],
   );
-  // One collection is always active: the catalogue opens on the first one and
-  // "all" is not offered, so the rows and the count never mix collections.
-  const activeBook = book || books[0] || "";
+  // One collection is always active: KR (Kidung Rohani) unless the reader
+  // chose another one, and "all" is not offered, so rows and count never mix.
+  const activeBook = useMemo(() => {
+    if (book && books.includes(book)) return book;
+    return (
+      books.find((entry) => hymnCollectionLabel(entry) === "KR") ??
+      books[0] ??
+      ""
+    );
+  }, [book, books]);
   const songCount = useMemo(
     () => allItems.filter((item) => !item.assetCode).length,
     [allItems],
@@ -366,7 +381,7 @@ export function HymnCatalog({
                     className="text-button"
                     onClick={() => {
                       setQuery("");
-                      setBook("all");
+                      setBook(activeBook);
                     }}
                   >
                     {translate(locale, "catalog.reset")}

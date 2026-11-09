@@ -4,9 +4,11 @@ import type { DistributedAssetStore } from "./distributed-asset-store.js";
 const HYMNAL_CONFIG = {
   HYMNE: { book: "english", folder: "hymne" },
   MDR: { book: "mandarin", folder: "mdr" },
-  "ASM-I": { book: "anak", folder: "asm_i" },
-  "ASM-M": { book: "anak", folder: "asm_m" },
-  "ASM-P": { book: "anak", folder: "asm_p" },
+  // Each Aku Senang Menyanyi volume is its own book; merging them under one
+  // "anak" category hid the volume a reader actually wanted.
+  "ASM-I": { book: "ASM-I", folder: "asm_i" },
+  "ASM-M": { book: "ASM-M", folder: "asm_m" },
+  "ASM-P": { book: "ASM-P", folder: "asm_p" },
 } as const;
 
 export function normalizeDistributedHymnIndex(

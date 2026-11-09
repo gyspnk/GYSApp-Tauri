@@ -29,6 +29,9 @@ export function numberLabel(number: number, id?: string) {
 
 export function hymnCollectionLabel(book: string) {
   if (book === "rohani") return "KR";
+  // Installed packs carry their code as the book; do not title-case it into
+  // "Asm I", the reader knows the code from the printed book.
+  if (/^[A-Z]{2,4}-[A-Z]$/.test(book)) return book;
   return book
     .split("-")
     .map((word) => word.charAt(0).toLocaleUpperCase("id-ID") + word.slice(1))
