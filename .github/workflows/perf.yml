@@ -51,7 +51,7 @@ jobs:
         run: |
           pnpm --filter @gys/web exec playwright test \
             e2e/runtime-performance-baseline.spec.ts \
-            --grep "primary routes" --workers=1 --retries=0 2>&1 | tee perf.log
+            --grep "performance baseline" --workers=1 --retries=0 2>&1 | tee perf.log
       - name: Summarise the rows
         if: always()
         run: |

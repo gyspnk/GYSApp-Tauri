@@ -390,6 +390,64 @@ test("primary routes runtime performance baseline", async ({
   }
 });
 
+test("client navigation performance baseline", async ({ page }, testInfo) => {
+  // The owner target is "page change under 300 ms". Full page loads are
+  // measured above; this one measures the shell's own client-side moves, which
+  // is what a reader actually feels once the app is open.
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await prepare(page);
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.locator(".home-page")).toBeVisible({ timeout: 60_000 });
+
+  const transitions = [
+    {
+      id: "beranda-alkitab",
+      link: "Alkitab",
+      ready: ".verse-text",
+    },
+    {
+      id: "alkitab-kidung",
+      link: "Kidung",
+      ready: ".kidung-controls-field",
+    },
+    {
+      id: "kidung-pembaca",
+      link: null,
+      ready: ".hymn-detail-page",
+      click: ".pujian-item .pujian-title",
+    },
+  ] as const;
+
+  const results: Array<{ id: string; ms: number }> = [];
+  for (const step of transitions) {
+    const started = Date.now();
+    if (step.link) {
+      await page
+        .locator(".navigation-shell")
+        .getByRole("link", { name: step.link, exact: true })
+        .click();
+    } else {
+      await page.locator(step.click).first().click();
+    }
+    await expect(page.locator(step.ready).first()).toBeVisible({
+      timeout: 60_000,
+    });
+    results.push({ id: step.id, ms: Date.now() - started });
+  }
+
+  await testInfo.attach("runtime-navigation-baseline.json", {
+    body: Buffer.from(JSON.stringify({ results }, null, 2)),
+    contentType: "application/json",
+  });
+  console.log(`[runtime-navigation] ${JSON.stringify(results)}`);
+  expect(results).toHaveLength(transitions.length);
+  for (const result of results) {
+    // Generous guard: the number is the evidence, a hard 300 ms gate would
+    // fail on the shared runner before it fails anywhere real.
+    expect(result.ms, result.id).toBeLessThan(5_000);
+  }
+});
+
 test("local PDF runtime has one fetch and reaches rendered state", async ({
   page,
 }, testInfo) => {
