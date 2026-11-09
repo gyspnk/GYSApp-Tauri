@@ -6967,3 +6967,27 @@ Verifikasi akhir putaran ini: selective `42552650117` **success** untuk
 menyimpan 140 PNG yang **identik byte** dengan repo, jadi tidak ada baseline
 yang perlu diadopsi. `apps/web/src/bible.tsx` tetap membiarkan pack penuh
 mengambil alih saat tiba.
+
+## CLS desktop menyusut, bundle di bawah target, dan kontrak soak koleksi (9 Nov, putaran 234)
+
+Perf hosted `42555121038` setelah reservasi skeleton dirapatkan (`4f1882f`):
+
+| rute                | sebelum         | sesudah             |
+| ------------------- | --------------- | ------------------- |
+| home-desktop shift  | 0,0222          | **0,0166**          |
+| home-phone shift    | 0,003           | 0,003               |
+| home-tablet shift   | 0,002           | 0,002               |
+| home ready (p/t/d)  | 520 / 529 / 519 | **475 / 487 / 519** |
+| bible ready (p/t/d) | 500 / 499 / 522 | 500 / 499 / 522     |
+
+Sisa 48 px di desktop adalah blok progres pemuatan yang harus tetap
+terlihat sebagai bukti “sedang memuat”, jadi tidak ditutupi; angkanya sudah
+di pita “baik”. Bundle hosted (`web-build` `42552821897`): `index` **86,0 KiB**
+gzip, initial graph **155,2 KiB** dari batas 180 — B-24 tidak lagi menjadi
+tekanan.
+
+Soak native `42555225464` gagal pada kontrak usang, bukan produk: skrip masih
+mengharapkan opsi “Semua” di filter koleksi Kidung, padahal pemilik meminta
+hanya satu koleksi aktif. `apps/web/scripts/edge-tts-native-smoke.mjs` sekarang
+membandingkan daftar koleksi tanpa entri “Semua”, menormalkan glyph centang
+pada opsi terpilih, dan memilih opsi lewat indeks (`9aa5c79`).
