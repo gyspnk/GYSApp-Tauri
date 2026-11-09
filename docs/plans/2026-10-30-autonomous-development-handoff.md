@@ -7118,3 +7118,22 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
   ikon karena kolomnya sempit, teksnya tetap ada untuk pembaca layar.
 - Bukti: verify `42580550308` dan `42582419528` hijau; QA `42581353804` dan
   `42582886120` (181 screenshot) memperlihatkan kartu 640 px dan label tab di 390.
+
+### Perpindahan halaman diukur hosted (9 Nov, putaran 242)
+
+- Uji baru `client navigation performance baseline` di
+  `apps/web/e2e/runtime-performance-baseline.spec.ts` (1280×800) mengukur
+  beranda → Alkitab → Kidung → pembaca, dijalankan `perf.yml`
+  (`--grep "performance baseline"` kini mencakup kedua uji).
+- Angka (hosted, preview lokal runner): klik dingin `42586435835` =
+  **1 183 / 111 / 1 591 ms**; setelah jeda baca 2,5 dtk + hover baris
+  `42590517769` = **673 / 75 / 852 ms**. Target < 300 ms baru tercapai untuk
+  Kidung (75–111 ms); dua lompatan pertama masih 0,7–0,9 dtk karena chunk +
+  data kunjungan pertama.
+- Tuas yang dicoba: hover baris katalog memanaskan modul pembaca
+  (`a3ee9af`) dan idle-warm indeks + kitab pertama Alkitab (`0761378`).
+  Instrumentasi `performance.mark` untuk warm itu tidak pernah muncul di
+  runner (mungkin karena jalur warm tidak berjalan di halaman ukur), jadi
+  klaim “lebih cepat karena warm” **tidak** dibuat; angka di atas murni
+  pengukuran.
+- Bukti: `42591016976` (verify + selektif) hijau.
