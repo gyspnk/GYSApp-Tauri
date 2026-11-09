@@ -454,7 +454,7 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   const details: Array<{
     id: string;
     ms: number;
-    marks: string[];
+    marks: Array<{ name: string; start: number }>;
     resources: Array<{ name: string; ms: number; bytes: number }>;
   }> = [];
   for (const step of transitions) {
@@ -485,8 +485,11 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
       marks: await page.evaluate(() =>
         performance
           .getEntriesByType("mark")
-          .map((entry) => entry.name)
-          .filter((name) => name.startsWith("gys-")),
+          .filter((entry) => entry.name.startsWith("gys-"))
+          .map((entry) => ({
+            name: entry.name,
+            start: Math.round(entry.startTime),
+          })),
       ),
       resources: await page.evaluate(() =>
         performance

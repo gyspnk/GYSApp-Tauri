@@ -1,6 +1,6 @@
 import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
-import { startTransition, useSyncExternalStore } from "react";
+import { startTransition, useEffect, useSyncExternalStore } from "react";
 import {
   useEffect,
   useDeferredValue,
@@ -171,6 +171,15 @@ export function HymnCatalog({
       if (batchHandle !== undefined) window.clearTimeout(batchHandle);
     };
   }, [filtered.length, deferredQuery, book]);
+  // Marks let the hosted navigation baseline say whether a slow step was
+  // mount work or data; they are two entries and cost nothing at runtime.
+  useEffect(() => {
+    performance.mark("gys-kidung-catalog-mounted");
+    const frame = window.requestAnimationFrame(() => {
+      performance.mark("gys-kidung-catalog-painted");
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
   const listRef = useRef<HTMLOListElement>(null);
   const queue = useSyncExternalStore(
     subscribeMidiPlaylist,
