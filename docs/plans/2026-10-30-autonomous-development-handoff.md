@@ -2839,6 +2839,16 @@ Permintaan pemilik: koleksi awal harus **KR**, sub-kategori anak dipisah per buk
 - Bukti: unit `kidung-collection-store.test.ts` (3 kasus) dan `distributed-hymnals.test.ts` (tiga kode ASM) hijau di run `42647363064`; e2e `kidung-section-navigation` mengunci default "KR" karena CI hanya membawa satu koleksi bawaan.
 - Percobaan membuat tab Kidung selebar satu baris penuh (agar label muncul juga di halaman katalog) **dibatalkan**: aturan grid 96 px yang lebih akhir tetap menang, dan baris ringkas inilah yang sudah disetujui pemilik. Tidak ada perubahan layout bersih dari percobaan itu.
 
+### Tombol “Pilih banyak ayat” dihapus: ketukan kedua langsung multi (9 Nov, putaran 203)
+
+Permintaan pemilik: tombol pintu masuk multi-ayat dihilangkan; saat satu ayat sudah terpilih, mengetuk ayat lain langsung menyalakan multi-select.
+
+- `apps/web/src/bible.tsx` `selectVerse` sekarang: ketukan biasa pada ayat berbeda saat ada `selectedVerseId` → `setMultiVerseIds([selected, verse])` (anchor pindah ke ayat yang baru diketuk). Jalur long-press / ⌘·Ctrl / Shift tetap terpisah dan tidak terpengaruh.
+- Mengetuk ayat yang sudah terpilih di dalam multi akan melepasnya; bila tersisa **satu**, mode multi ditutup dan ayat itu menjadi pilihan tunggal — jadi toolbar Catatan/Bagikan tetap bisa dipakai tanpa jebakan “kosong”.
+- Tombol “Pilih banyak ayat” dihapus dari toolbar; yang tersisa hanya “Selesai memilih” saat multi aktif. Kunci i18n `bible.selectMore` dihapus dari tiga bahasa dan petunjuk diubah menjadi “Ketuk ayat lain untuk memilih beberapa” / “Tap another verse…” / “点击其他经文以多选”.
+- Kontrak diperbarui: `apps/web/e2e/bible-multi-select.spec.ts` tidak lagi menekan tombol masuk; `apps/web/e2e/bible-annotations.spec.ts` keluar dari multi sebelum memeriksa catatan ayat kedua.
+- Bukti hosted: `42647363064` (sebelum perilaku baru), `42655488176` **hijau** setelah jalur modifier dipisahkan (dua kegagalan shift-range di `42654374623` menunjukkan kenapa pemisahan itu perlu).
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
