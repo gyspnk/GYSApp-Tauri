@@ -2909,7 +2909,9 @@ Angka `perf.yml` (`42711266936`, `42711696187`, `42713083381`), tiga run, 1280×
 
 - Target <300 ms baru tercapai untuk Kidung; pembaca masih 611 ms dan tidak diklaim selesai. Spec sekarang mencatat dua titik untuk pembaca: shell `.hymn-detail-page` dan ayat `.verse-text`, agar putaran berikutnya tahu apakah sisanya data atau render.
 - Variance runner tetap ±30 %, jadi angka ini median tiga run pada kode yang sama, bukan satu sampel.
-  Pemisahan titik ukur pembaca (`42714237203`): shell `.hymn-detail-page` **639 ms** dan ayat `.lyrics-sheet` **650 ms** — keduanya hampir bersamaan, jadi 600 ms itu biaya render/mount komponen pembaca (chunk sudah hangat, tidak ada permintaan jaringan), bukan menunggu data. Langkah berikutnya harus memecah pohon pembaca, bukan menambah prefetch.
+  Kartu “Antrean kosong” di `/kidung?section=playlist` tadinya menempel di kiri pada 1440 (sisa pita kosong di kanan); perbaikan `2697404` membuatnya `width: min(100%, 640px)` dan `margin-inline: auto`, jadi kartu 640 px berada di tengah (QA `42714966594`; percobaan pertama `42714617674` justru menyusut selebar isi).
+
+Pemisahan titik ukur pembaca (`42714237203`): shell `.hymn-detail-page` **639 ms** dan ayat `.lyrics-sheet` **650 ms** — keduanya hampir bersamaan, jadi 600 ms itu biaya render/mount komponen pembaca (chunk sudah hangat, tidak ada permintaan jaringan), bukan menunggu data. Langkah berikutnya harus memecah pohon pembaca, bukan menambah prefetch.
 
 ## 6. NEXT yang dapat langsung dikerjakan
 
