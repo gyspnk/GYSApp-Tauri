@@ -1322,11 +1322,13 @@ export function createApp(
         c.header("content-type", "audio/mpeg");
         c.header("content-length", String(audio.byteLength));
         return new Response(audio, { status: 200, headers: c.res.headers });
-      } catch {
+      } catch (error) {
+        const reason =
+          error instanceof Error ? error.message.slice(0, 160) : "unknown";
         return errorResponse(
           c,
           "UPSTREAM_UNAVAILABLE",
-          "Edge speech is unavailable",
+          `Edge speech is unavailable (${reason})`,
         );
       }
     }
