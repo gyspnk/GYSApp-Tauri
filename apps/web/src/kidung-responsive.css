@@ -53,7 +53,7 @@
   }
   /* The queue page tabs have the full field, so 320 px still fits both
      labels; only the catalogue (icons-only there) waits for more room. */
-  @container kidung-nav (min-width: 17em) {
+  @container kidung-nav (min-width: 20em) {
     .hymn-page .kidung-controls-field .kidung-local-nav a > span {
       display: block;
       position: static;
@@ -147,7 +147,8 @@
   .hymn-page.kidung-tool-page .kidung-local-nav a > span {
     display: none;
   }
-  @container kidung-nav (min-width: 20em) {
+  /* The queue tabs have the full field; their labels fit at 320 px. */
+  @container kidung-nav (min-width: 17em) {
     .hymn-page.kidung-tool-page .kidung-local-nav a > span {
       display: block;
       min-width: 0;
