@@ -541,7 +541,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
       void request
         .then((pack) => {
           if (controller.signal.aborted) return;
-          progressivePackRef.current = undefined;
+          // The per-book snapshot already paints every loaded chapter. Swapping
+          // it for the full shelf again re-mounts the chapter mid-gesture and
+          // drops swipes, so the snapshot stays the render source once it is up.
+          if (progressivePackRef.current) return;
           setPackState({ status: "ready", pack });
         })
         .catch((error: unknown) => {
