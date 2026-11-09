@@ -301,9 +301,13 @@ function Navigation({ locale }: { locale: Locale }) {
       />
       {DESTINATIONS.map((destination) => {
         const label = translate(locale, destination.labelKey);
+        // Hovering a destination is a clear intent to go there, so warm its
+        // payloads too: the click then only has to render, not fetch.
         const preload = () =>
           void import("./route-preload.js")
-            .then((module) => module.preloadRoute(destination.path))
+            .then((module) =>
+              module.preloadRoute(destination.path, { data: true }),
+            )
             .catch(() => undefined);
         return (
           <Link
