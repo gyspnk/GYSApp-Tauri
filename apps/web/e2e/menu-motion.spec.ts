@@ -1,4 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+
+// These tests sample animation frames and route swaps; a shard-loaded runner
+// needs more than the default 30 s before the wall-clock assertions mean
+// anything.
+test.describe.configure({ timeout: 90_000 });
 import { preparePinnedReaderAssets } from "./pinned-reader-fixtures.js";
 import { focusMediaControl } from "../scripts/native-media-controls.mjs";
 

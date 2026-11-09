@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+// These tests sample animation frames and route swaps; a shard-loaded runner
+// needs more than the default 30 s before the wall-clock assertions mean
+// anything.
+test.describe.configure({ timeout: 90_000 });
+
 test("back navigation cancels a link still waiting for a cold route", async ({
   page,
 }) => {
