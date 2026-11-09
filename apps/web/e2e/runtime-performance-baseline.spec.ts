@@ -402,6 +402,21 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   // destinations on idle, so the honest "move between pages" number is taken
   // after that warm-up rather than at the instant of the first paint.
   await page.waitForTimeout(2_500);
+  const warmMarks = await page.evaluate(() => ({
+    marks: performance
+      .getEntriesByType("mark")
+      .map((entry) => entry.name)
+      .filter((name) => name.includes("gys-route-preloaded")),
+    bible: performance
+      .getEntriesByType("resource")
+      .filter((entry) => entry.name.includes("offline/bible"))
+      .map((entry) => ({
+        name: entry.name.split("/").slice(-2).join("/"),
+        start: Math.round(entry.startTime),
+        duration: Math.round(entry.duration),
+      })),
+  }));
+  console.log(`[runtime-warm] ${JSON.stringify(warmMarks)}`);
 
   const transitions = [
     {
