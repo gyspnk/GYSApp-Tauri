@@ -227,6 +227,10 @@ jobs:
       - name: Build and typecheck once
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm build
+      # `vite build` transpiles without checking, so a type error would only
+      # surface when someone ran `pnpm typecheck` locally.
+      - name: Typecheck the app sources
+        run: pnpm --filter @gys/web typecheck
       - run: pnpm verify:native-assets
       - run: pnpm verify:bundle
       - name: Upload verified build outputs
@@ -339,6 +343,10 @@ jobs:
       - name: Build and typecheck once
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: pnpm build
+      # `vite build` transpiles without checking, so a type error would only
+      # surface when someone ran `pnpm typecheck` locally.
+      - name: Typecheck the app sources
+        run: pnpm --filter @gys/web typecheck
       - name: Verify the shipped bundle budget
         run: pnpm verify:bundle
       # GitHub's Ubuntu image already carries Chromium runtime libraries. Avoid

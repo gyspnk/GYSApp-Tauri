@@ -13,7 +13,7 @@ export const BUNDLED_SOUNDFONT = "TimGM6mb";
 export const OPTIONAL_SOUNDFONT = "GeneralUser-GS";
 
 export async function getActiveSoundfontName(): Promise<string> {
-  return (await distributedStore()).hasCachedPayload(OPTIONAL_SOUNDFONT)
+  return (await (await distributedStore()).hasCachedPayload(OPTIONAL_SOUNDFONT))
     ? OPTIONAL_SOUNDFONT
     : BUNDLED_SOUNDFONT;
 }
