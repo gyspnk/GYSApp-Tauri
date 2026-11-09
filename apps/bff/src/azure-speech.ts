@@ -48,7 +48,7 @@ export async function synthesizeAzureSpeech(
     signal?: AbortSignal;
     fetchImpl?: typeof fetch;
   },
-): Promise<Uint8Array> {
+): Promise<ArrayBuffer> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), AZURE_SPEECH_TIMEOUT_MS);
@@ -71,7 +71,7 @@ export async function synthesizeAzureSpeech(
     const contentType = response.headers.get("content-type") ?? "";
     if (!contentType.startsWith("audio/"))
       throw new Error("Azure speech returned invalid media");
-    const audio = new Uint8Array(await response.arrayBuffer());
+    const audio = await response.arrayBuffer();
     if (!audio.byteLength) throw new Error("Azure speech returned no audio");
     if (audio.byteLength > AZURE_SPEECH_MAX_BYTES)
       throw new Error("Azure speech media is too large");
