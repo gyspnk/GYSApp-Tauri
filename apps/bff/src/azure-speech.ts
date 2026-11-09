@@ -25,14 +25,25 @@ function signed(value: number, unit: string): string {
 }
 
 export function buildAzureSsml(request: EdgeTtsRequest): string {
+  // Prosody attributes are omitted at their neutral value: Azure rejects a
+  // pitch expressed in Hz as "+0Hz", and an absent attribute already means
+  // "unchanged".
+  const prosody: string[] = [];
+  if (request.rate !== 1)
+    prosody.push(`rate="${signed((request.rate - 1) * 100, "%")}"`);
+  if (request.pitch !== 1)
+    prosody.push(`pitch="${signed((request.pitch - 1) * 50, "%")}"`);
+  if (request.volume !== 1)
+    prosody.push(`volume="${signed((request.volume - 1) * 100, "%")}"`);
+  const open = prosody.length ? `<prosody ${prosody.join(" ")}>` : "";
+  const close = prosody.length ? "</prosody>" : "";
   return [
     '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">',
     `<voice name="${request.voice}">`,
-    `<prosody rate="${signed((request.rate - 1) * 100, "%")}"`,
-    ` pitch="${signed((request.pitch - 1) * 100, "Hz")}"`,
-    ` volume="${signed((request.volume - 1) * 100, "%")}">`,
+    open,
     escapeSsml(request.text),
-    "</prosody></voice></speak>",
+    close,
+    "</voice></speak>",
   ].join("");
 }
 
