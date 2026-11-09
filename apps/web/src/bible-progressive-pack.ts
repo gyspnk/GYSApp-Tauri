@@ -72,6 +72,10 @@ export class ProgressiveBiblePack {
     string,
     NonNullable<BibleReaderPack["pericopes"]>
   >();
+  readonly #crossRefs = new Map<
+    string,
+    NonNullable<BibleReaderPack["crossRefs"]>
+  >();
 
   constructor(
     index: BibleBookIndexEntry[],
@@ -103,6 +107,7 @@ export class ProgressiveBiblePack {
         this.#books.set(id, toReaderBook(entry ?? fallbackEntry(id, pack)));
         this.#verses.set(id, pack.verses);
         this.#pericopes.set(id, pack.pericopes ?? []);
+        if (pack.crossRefs) this.#crossRefs.set(id, pack.crossRefs);
       })
       .finally(() => this.#pending.delete(id));
     this.#pending.set(id, request);
@@ -140,6 +145,12 @@ export class ProgressiveBiblePack {
       books,
       verses: order.flatMap((id) => this.#verses.get(id) ?? []),
       pericopes: order.flatMap((id) => this.#pericopes.get(id) ?? []),
+      // Markers paint with the chapter; waiting for the full shelf made verses
+      // grow their reference count after the reader already showed them.
+      crossRefs: Object.assign(
+        {},
+        ...order.map((id) => this.#crossRefs.get(id) ?? {}),
+      ),
     };
   }
 }

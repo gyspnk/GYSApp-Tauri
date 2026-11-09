@@ -22,6 +22,12 @@ export function splitBiblePack(pack) {
     if (!byBook.has(key)) byBook.set(key, []);
     byBook.get(key).push(verse);
   }
+  const crossRefs = new Map();
+  for (const [key, refs] of Object.entries(pack.crossRefs ?? {})) {
+    const book = key.split(":")[0];
+    if (!crossRefs.has(book)) crossRefs.set(book, {});
+    crossRefs.get(book)[key] = refs;
+  }
   const pericopes = new Map();
   for (const pericope of pack.pericopes ?? []) {
     const key = String(pericope.book);
@@ -40,6 +46,10 @@ export function splitBiblePack(pack) {
         book: book ?? { id, name: id },
         verses,
         pericopes: pericopes.get(id) ?? [],
+        // Inline chapter cross-references must arrive with the book itself:
+        // when they landed later with the full shelf, the painted verses grew
+        // their reference markers after first paint.
+        crossRefs: crossRefs.get(id) ?? {},
       };
       return {
         id,

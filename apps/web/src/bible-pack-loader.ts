@@ -112,6 +112,7 @@ export type BibleBookPack = {
   version: number;
   translation: string;
   book: { id: string | number; name?: string };
+  crossRefs?: BibleReaderPack["crossRefs"];
   verses: BibleReaderPack["verses"];
   pericopes?: NonNullable<BibleReaderPack["pericopes"]>;
 };

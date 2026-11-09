@@ -9,7 +9,7 @@ for (const width of [390, 768, 1440]) {
     await page.goto("/GYSApp-Tauri/bible");
     const text = page.locator(".verse-text").first();
     await expect(text).toBeVisible();
-    const content = await page.locator(".verse-row").allTextContents();
+    const content = await page.locator(".verse-text").allTextContents();
     const initial = await text.evaluate((el) =>
       parseFloat(getComputedStyle(el).fontSize),
     );
@@ -67,7 +67,9 @@ for (const width of [390, 768, 1440]) {
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBeLessThanOrEqual(width);
     }
-    expect(await page.locator(".verse-row").allTextContents()).toEqual(content);
+    expect(await page.locator(".verse-text").allTextContents()).toEqual(
+      content,
+    );
     expect(
       await control.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
     ).toBe(controlSize);

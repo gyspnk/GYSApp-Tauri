@@ -79,7 +79,7 @@ test("Bible vertical intent remains cancelled even when the gesture ends horizon
   await expect(pane.locator(".verse-text").first()).toBeVisible({
     timeout: 20_000,
   });
-  const before = await page.locator(".bible-reader").textContent();
+  const before = await page.locator(".verse-text").allTextContents();
   const box = (await pane.boundingBox())!;
   const cdp = await context.newCDPSession(page);
   const send = (type: string, x: number, y: number) =>
@@ -91,7 +91,7 @@ test("Bible vertical intent remains cancelled even when the gesture ends horizon
   await send("touchMove", box.x + 215, box.y + 120);
   await send("touchMove", box.x + 100, box.y + 115);
   await send("touchEnd", 0, 0);
-  await expect(page.locator(".bible-reader")).toHaveText(before!);
+  expect(await page.locator(".verse-text").allTextContents()).toEqual(before);
 });
 
 for (const fullscreen of [false, true]) {
