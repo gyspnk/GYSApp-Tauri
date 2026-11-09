@@ -50,7 +50,7 @@
   .hymn-page .kidung-controls-field .kidung-local-nav a > span {
     display: none;
   }
-  @container kidung-nav (min-width: 24em) {
+  @container kidung-nav (min-width: 20em) {
     .hymn-page .kidung-controls-field .kidung-local-nav a > span {
       display: block;
       position: static;
@@ -144,7 +144,7 @@
   .hymn-page.kidung-tool-page .kidung-local-nav a > span {
     display: none;
   }
-  @container kidung-nav (min-width: 24em) {
+  @container kidung-nav (min-width: 20em) {
     .hymn-page.kidung-tool-page .kidung-local-nav a > span {
       display: block;
       min-width: 0;
