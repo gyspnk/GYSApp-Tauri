@@ -148,6 +148,15 @@ export function HymnDetail({
       ? state.items.find((candidate) => candidate.id === songId)
       : undefined;
   const readerControlGroup = useId();
+  // The hosted navigation baseline needs to know whether the click waited for
+  // data or for this render; two marks are enough and cost nothing at runtime.
+  useEffect(() => {
+    performance.mark("gys-reader-mounted");
+    const frame = requestAnimationFrame(() =>
+      performance.mark("gys-reader-painted"),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, []);
   const [verseIndex, setVerseIndex] = useState(() => {
     const last = getActivity().hymn;
     return last?.id === songId ? Math.max(0, last.verseIndex) : 0;

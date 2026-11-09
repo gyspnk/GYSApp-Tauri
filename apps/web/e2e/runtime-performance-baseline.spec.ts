@@ -455,7 +455,8 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   const details: Array<{
     id: string;
     ms: number;
-    marks: Array<{ name: string; start: number }>;
+    clickedAt: number;
+    marks: Array<{ name: string; at: number }>;
     resources: Array<{ name: string; ms: number; bytes: number }>;
   }> = [];
   for (const step of transitions) {
@@ -480,6 +481,7 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     await expect(page.locator(step.ready).first()).toBeVisible({
       timeout: 60_000,
     });
+    const clickedAt = await page.evaluate(() => Math.round(performance.now()));
     const ms = Date.now() - started;
     results.push({ id: step.id, ms });
     // Mount marks are written in effects, which can land a frame after the
@@ -490,15 +492,18 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     details.push({
       id: step.id,
       ms,
-      marks: await page.evaluate(() =>
+      clickedAt,
+      marks: await page.evaluate((clickedAt) =>
         performance
           .getEntriesByType("mark")
           .filter((entry) => entry.name.startsWith("gys-"))
           .map((entry) => ({
             name: entry.name,
-            start: Math.round(entry.startTime),
+            // Offsets from the click are what say which part was slow; absolute
+            // marks cannot be compared across steps.
+            at: Math.round(entry.startTime) - clickedAt,
           })),
-      ),
+      , clickedAt),
       resources: await page.evaluate(() =>
         performance
           .getEntriesByType("resource")
