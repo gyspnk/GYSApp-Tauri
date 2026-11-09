@@ -57,7 +57,10 @@ for (const width of [390, 768, 1440]) {
     const category = (await controls
       .locator(".control-select-trigger")
       .boundingBox())!;
-    expect(category.width).toBeGreaterThanOrEqual(75);
+    // The collection pill hugs its own label and arrow now, so it is only as
+    // wide as "KR ⌄" plus padding — still a valid touch target.
+    expect(category.width).toBeGreaterThanOrEqual(44);
+    expect(category.width).toBeLessThanOrEqual(220);
     expect(mode.x + mode.width).toBeLessThanOrEqual(field.x + field.width);
   });
 

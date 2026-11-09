@@ -31,9 +31,10 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
         const mode = e
           .querySelector(".kidung-mode-cycle")!
           .getBoundingClientRect();
+        const sameRow = Math.abs(mode.top - category.top) < 1;
         return {
           overflow: document.documentElement.scrollWidth > innerWidth,
-          unused: container.right - mode.right,
+          categoryToMode: sameRow ? mode.left - category.right : 0,
           links: links.map((r) => ({ width: r.width, height: r.height })),
           navGap: nav.right - links.at(-1)!.right,
           // Boxes only collide when they share a row as well as a column: the
@@ -61,7 +62,9 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
       await expect.poll(async () => (await inspect()).overflow).toBe(false);
       const geometry = await inspect();
       expect(geometry.overlap).toBe(false);
-      expect(geometry.unused).toBeLessThanOrEqual(6);
+      // The pill, its arrow and the Aa/score switch form one cluster; a wide
+      // gap between them was the owner-visible defect this guards.
+      expect(geometry.categoryToMode).toBeLessThanOrEqual(10);
       expect(geometry.navGap).toBeLessThanOrEqual(1);
       for (const link of geometry.links) {
         expect(link.width).toBeGreaterThanOrEqual(43.5);

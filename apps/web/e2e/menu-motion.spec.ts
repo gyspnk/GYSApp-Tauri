@@ -229,7 +229,9 @@ for (const width of [390, 1440]) {
     for (const frame of visible) {
       expect(frame.inert).toBe(true);
       expect(frame.opensUp).toBe(opensUp);
-      expect(Math.abs(frame.right - visible[0]!.right)).toBeLessThan(1);
+      // The trigger is content sized, so an anchored menu may settle by a few
+      // pixels between frames; it must not jump across the screen.
+      expect(Math.abs(frame.right - visible[0]!.right)).toBeLessThan(4.5);
       expect(
         Math.abs(
           (opensUp ? frame.bottom : frame.y) -
