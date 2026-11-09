@@ -368,7 +368,7 @@ test("primary routes runtime performance baseline", async ({
   }
 
   await testInfo.attach("runtime-performance-baseline.json", {
-    body: Buffer.from(JSON.stringify({ results, details }, null, 2)),
+    body: Buffer.from(JSON.stringify({ results }, null, 2)),
     contentType: "application/json",
   });
   // GitHub truncates very long log lines, which silently cut the JSON and
@@ -510,6 +510,10 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     contentType: "application/json",
   });
   console.log(`[runtime-navigation] ${JSON.stringify(results)}`);
+  await testInfo.attach("runtime-navigation-detail.json", {
+    body: Buffer.from(JSON.stringify(details, null, 2)),
+    contentType: "application/json",
+  });
   console.log(`[runtime-navigation-detail] ${JSON.stringify(details)}`);
   expect(results).toHaveLength(transitions.length);
   for (const result of results) {
