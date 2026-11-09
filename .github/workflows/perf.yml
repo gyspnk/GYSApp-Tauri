@@ -54,22 +54,7 @@ jobs:
             --grep "performance baseline" --workers=1 --retries=0 2>&1 | tee perf.log
       - name: Summarise the rows
         if: always()
-        run: |
-          node --input-type=module -e '
-            import { readFileSync, appendFileSync } from "node:fs";
-            const raw = readFileSync("perf.log", "utf8");
-            const line = raw.split("\n").find((row) => row.includes("[runtime-performance]"));
-            const out = process.env.GITHUB_STEP_SUMMARY;
-            if (!line) {
-              appendFileSync(out, "No measurement rows were printed.\n");
-              process.exit(0);
-            }
-            const rows = JSON.parse(line.slice(line.indexOf("[runtime-performance]") + 21));
-            appendFileSync(out, "| route | viewport | ready ms | DOMContentLoaded ms | CLS | long tasks ms |\n| --- | --- | --- | --- | --- | --- |\n");
-            for (const row of rows) {
-              appendFileSync(out, `| ${row.id} | ${row.viewport} | ${row.readyMs} | ${row.domContentLoadedMs} | ${Number(row.layoutShift).toFixed(4)} | ${row.longTaskDuration} |\n`);
-            }
-          '
+        run: node scripts/perf-summary.mjs perf.log >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
