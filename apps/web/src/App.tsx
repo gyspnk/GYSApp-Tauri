@@ -301,13 +301,12 @@ function Navigation({ locale }: { locale: Locale }) {
       />
       {DESTINATIONS.map((destination) => {
         const label = translate(locale, destination.labelKey);
-        // Hovering a destination is a clear intent to go there, so warm its
-        // payloads too: the click then only has to render, not fetch.
+        // Hover warms the route code only. Warming payloads here made the
+        // measured click slower (1 007 ms vs 786 ms), because parsing the data
+        // competes with the render the click is waiting for.
         const preload = () =>
           void import("./route-preload.js")
-            .then((module) =>
-              module.preloadRoute(destination.path, { data: true }),
-            )
+            .then((module) => module.preloadRoute(destination.path))
             .catch(() => undefined);
         return (
           <Link
