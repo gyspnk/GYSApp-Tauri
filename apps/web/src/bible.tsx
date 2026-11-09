@@ -977,8 +977,8 @@ export function BiblePage({ locale }: { locale: Locale }) {
     // Closing the note popup ends that verse's inspection, so the next tap on
     // another verse is a fresh single selection instead of a merge into the
     // adaptive multi selection.
-    setSelectedVerseId((current) => (multiMode ? current : undefined));
-  }, [notesPopupOpen, multiMode]);
+    setSelectedVerseId(undefined);
+  }, [notesPopupOpen]);
 
   useEffect(() => {
     if (selectedVerseId) {
