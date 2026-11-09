@@ -31,6 +31,7 @@ import {
 } from "./kidung-shared.js";
 import {
   readStoredCollection,
+  resolveCollection,
   writeStoredCollection,
 } from "./kidung-collection-store.js";
 import { loadHymnSearchCorpus } from "./hymn-search-corpus.js";

@@ -18,3 +18,15 @@ export function writeStoredCollection(book: string) {
     /* private mode */
   }
 }
+
+/**
+ * One collection is always active. A remembered book wins when the catalogue
+ * still has it, otherwise KR is the default and the first book is the fallback.
+ */
+export function resolveCollection(
+  books: readonly string[],
+  stored: string,
+): string {
+  if (stored && books.includes(stored)) return stored;
+  return books.includes("rohani") ? "rohani" : (books[0] ?? "");
+}
