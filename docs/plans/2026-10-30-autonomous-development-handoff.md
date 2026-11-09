@@ -6834,3 +6834,40 @@ Sesudah pemanasan, dua sampel berurutan (`42543097864`, `42543213307`; hosted, p
 | lainnya   | 500 / 516 / 518                 | 569 / 630 / 610       |
 
 Kesimpulan jujur: pemanasan menghilangkan artefak urutan (kidung 1 470 → 504 ms), tetapi variasi antar-run masih ±30 % karena runner dipakai bersama — angka perf dipakai untuk membandingkan **dalam satu run**, atau median ≥3 run, bukan satu sampel. `bible` tetap yang termahal (1,0–2,2 dtk) walau pack per kitab sudah aktif, karena parse pack penuh di latar tetap berjalan.
+
+## Skema kontrak keluar dari first paint (B-24, 9 Nov 2026)
+
+Rantai eager yang ditemukan dari `apps/web/src/main.tsx`:
+`App → midi-player → soundfont → distributed-asset-manager → distributed-assets/distributed-hymnals`,
+ditambah `midi-queue → music-assets`, `account-menu → egys`, dan `speech-player → edge-speech`.
+Kelima modul itu mengimpor skema zod sebagai nilai, jadi chunk bersama
+`dist-*.js` (**28,3 KiB gzip**) ikut diunduh sebelum shell bisa melukis.
+
+Perubahan (commit `eb5dcad`):
+
+- `apps/web/src/contracts-schemas.ts` baru: `loadContracts()` meng-cache
+  `import("@gys/contracts")`; semua pemanggilan skema terjadi di jalur fetch
+  yang sudah async.
+- `edge-speech.ts`, `egys.ts`: impor tipe saja + `await loadContracts()` di
+  situs parse. `readCachedEgysProfile()` tetap sinkron, memakai guard lokal
+  `isCachedProfile()` (id + displayName) karena cache hanya ditulis setelah
+  skema memvalidasi.
+- `soundfont.ts` dan `midi-queue.ts`: `distributed-asset-manager`/`music-assets`
+  dimuat lewat `await import()` di fungsi async, bukan impor statis.
+
+Hasil terukur (job `web-build` di run `42544496524`):
+
+| metrik                             | sebelum               | sesudah         |
+| ---------------------------------- | --------------------- | --------------- |
+| entry `index-*.js` (gzip)          | 87,9 KiB              | **86,0 KiB**    |
+| initial graph (19 modul + startup) | 163,3 KiB             | **155,2 KiB**   |
+| chunk skema `dist-*.js`            | statis di first paint | lazy (28,3 KiB) |
+
+Verifikasi hosted: `42544496524` **success** (verify, web-build, 4 shard e2e).
+Bukti statis pada build Pages: chunk entry `assets/index-DC4ejRjO.js` **tidak**
+lagi memuat `ZodError` maupun impor statis `dist-*.js`; impor statisnya hanya
+`./midi-playlist-*.js` (0 kemunculan zod).
+
+Sisa B-24: total anggaran 155,2/180,0 KiB; tuas berikutnya `pdf-document-cache`
+(123,6 KiB gzip) hanya untuk rute PDF, dan `bible-search-worker` (29,8 KiB)
+tetap di rute Alkitab.
