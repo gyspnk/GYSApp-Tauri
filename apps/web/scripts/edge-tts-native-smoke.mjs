@@ -3616,9 +3616,20 @@ try {
   const expectedTranspose =
     restoredPreferences?.overrides?.["hymn-001"]?.transpose ??
     routeMidiPreferences.transpose;
-  const restoredTranspose = (
-    await restoredMidiSurface.locator(".media-transpose strong").innerText()
-  ).trim();
+  // `innerText` is layout-dependent: an element that is visible but not yet
+  // laid out reads as an empty string, which the assertion would blame on the
+  // preference. Read the text payload and the box separately.
+  const restoredTransposeBox = await restoredMidiSurface
+    .locator(".media-transpose strong")
+    .evaluate((element) => ({
+      text: (element.textContent ?? "").trim(),
+      width: Math.round(element.getBoundingClientRect().width),
+    }));
+  assert.ok(
+    restoredTransposeBox.width > 0,
+    `MIDI transpose value has no box (width ${restoredTransposeBox.width})`,
+  );
+  const restoredTranspose = restoredTransposeBox.text;
   assert.equal(
     restoredTranspose,
     expectedTranspose > 0 ? `+${expectedTranspose}` : String(expectedTranspose),
