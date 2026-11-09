@@ -19,16 +19,10 @@
 /* Fill phone/tablet fields without a trailing empty cell. Category text keeps
    its natural width; navigation shares the remainder and Aa stays a clear tap. */
 @media (max-width: 1100px) {
-  /* Both Kidung pages use one field shape: the two tabs own a full row, so the
-     labels stay readable instead of vanishing on the catalogue page while the
-     queue page showed them. */
   .hymn-page .kidung-controls-field {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
+    grid-template-columns: 96px minmax(0, 1fr) max-content;
     gap: 4px;
-  }
-  .hymn-page .kidung-controls-field .kidung-local-nav {
-    grid-column: 1 / -1;
   }
   .hymn-page .kidung-controls-field .kidung-local-nav,
   .hymn-page .kidung-controls-field .kidung-header-filter {

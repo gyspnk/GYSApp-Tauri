@@ -2837,7 +2837,7 @@ Permintaan pemilik: koleksi awal harus **KR**, sub-kategori anak dipisah per buk
 - `hymnCollectionLabel()` mempertahankan kode paket apa adanya (tidak lagi menjadi "Asm I"), sedangkan `rohani` tetap tampil "KR".
 - `apps/web/src/kidung-collection-store.ts` menyimpan pilihan di `localStorage["gys-kidung-collection-v1"]` dan `resolveCollection(books, stored)` memilih: buku tersimpan bila masih ada → `rohani` (KR) → buku pertama. Katalog memakainya sebagai `activeBook`, jadi membuka ulang katalog kembali ke koleksi terakhir.
 - Bukti: unit `kidung-collection-store.test.ts` (3 kasus) dan `distributed-hymnals.test.ts` (tiga kode ASM) hijau di run `42647363064`; e2e `kidung-section-navigation` mengunci default "KR" karena CI hanya membawa satu koleksi bawaan.
-- Toolbar Kidung juga kini memakai satu bentuk untuk kedua halaman: tab dua baris penuh di ≤1100 px supaya label tidak hilang di halaman katalog tetapi muncul di halaman antrean (commit `d4ec367`).
+- Percobaan membuat tab Kidung selebar satu baris penuh (agar label muncul juga di halaman katalog) **dibatalkan**: aturan grid 96 px yang lebih akhir tetap menang, dan baris ringkas inilah yang sudah disetujui pemilik. Tidak ada perubahan layout bersih dari percobaan itu.
 
 ## 6. NEXT yang dapat langsung dikerjakan
 
