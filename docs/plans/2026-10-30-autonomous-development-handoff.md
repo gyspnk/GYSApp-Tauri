@@ -2896,6 +2896,20 @@ Satu run `perf.yml` `42657705173` (21 baris, 0 error, 0 duplicate asset, 0 panel
 - Keterangan “T…” pada tile Aa di 320 px hilang dengan menyembunyikan caption di bawah 420 px; glyph dan `aria-label` tetap, dibuktikan QA `42708370436`.
 - Angka: QA 4 tema × 320–1440 = **241 tangkapan** (`42703451959`, 0 overflow/0 box/0 konsistensi), regenerasi baseline penuh `42699185232` hijau dengan **9 PNG** diadopsi (8 `literature-catalog-*`, 1 `kidung-1440x900`).
 
+### Navigasi hangat tidak lagi menunggu balapan preload (9 Nov, putaran 208)
+
+`navigateSmooth` selalu menunggu `Promise.race(preloadRoute, 180 ms)` sebelum berpindah, termasuk saat rute sudah hangat; jadi setiap klik membayar hingga 180 ms untuk pekerjaan yang sudah selesai. Sekarang `route-preload.ts` menyimpan daftar rute hangat (`warmRoutes`, kode + data) dan `navigateSmooth` langsung berpindah bila rute itu sudah hangat, sambil tetap memperbarui di latar belakang.
+Angka `perf.yml` (`42711266936`, `42711696187`, `42713083381`), tiga run, 1280×800, klik+hover seperti pembaca:
+
+| Langkah         | Sebelum (median 3 run) | Sesudah (median 3 run)               |
+| --------------- | ---------------------- | ------------------------------------ |
+| beranda→Alkitab | 264 ms                 | **256 ms**                           |
+| Alkitab→Kidung  | 866 ms                 | **274 ms** (target <300 ms tercapai) |
+| Kidung→pembaca  | 898 ms                 | **611 ms**                           |
+
+- Target <300 ms baru tercapai untuk Kidung; pembaca masih 611 ms dan tidak diklaim selesai. Spec sekarang mencatat dua titik untuk pembaca: shell `.hymn-detail-page` dan ayat `.verse-text`, agar putaran berikutnya tahu apakah sisanya data atau render.
+- Variance runner tetap ±30 %, jadi angka ini median tiga run pada kode yang sama, bukan satu sampel.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
