@@ -166,6 +166,14 @@ export function HymnCatalog({
     () => new Set(queue.items.map((entry) => entry.songId)),
     [queue],
   );
+  // Warming the reader on hover costs nothing until a pointer/focus actually
+  // arrives, and it turns the first row click into a paint instead of a chunk
+  // cascade (measured 1 591 ms cold on the hosted runner).
+  const warmRow = (songId: string) => {
+    void import("./route-preload.js")
+      .then((module) => module.preloadRoute(`/kidung/${songId}`))
+      .catch(() => undefined);
+  };
   const onRowClick = (
     event: ReactMouseEvent<HTMLButtonElement>,
     songId: string,
@@ -361,6 +369,8 @@ export function HymnCatalog({
                     className="pujian-title"
                     aria-label={item.title}
                     onClick={(event) => onRowClick(event, item.id)}
+                    onPointerEnter={() => warmRow(item.id)}
+                    onFocus={() => warmRow(item.id)}
                   >
                     <span className="pujian-title-label">{item.title}</span>
                   </button>
