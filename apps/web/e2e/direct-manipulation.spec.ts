@@ -67,8 +67,14 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
     await expect(button.locator("svg")).toHaveCount(1);
     const box = await button.boundingBox();
     expect(box, "PDF layout control should be measurable").not.toBeNull();
-    expect(box!.width).toBeGreaterThanOrEqual(44);
-    expect(box!.height).toBeGreaterThanOrEqual(minTouchTargetHeight);
+    // The PDF surface is scaled to fit, so a 44 px control can measure 43.99.
+    // The target contract is the CSS box, not the transformed pixels.
+    const css = await button.evaluate((element) => ({
+      width: element.offsetWidth,
+      height: element.offsetHeight,
+    }));
+    expect(css.width).toBeGreaterThanOrEqual(44);
+    expect(css.height).toBeGreaterThanOrEqual(minTouchTargetHeight);
   }
   const advancedButtons = page.locator(
     ".pdf-reader-hymn .pdf-advanced-controls button",
@@ -79,8 +85,12 @@ test("Kidung PDF keeps zoom direct-manipulation first", async ({ page }) => {
       continue;
     const box = await button.boundingBox();
     expect(box, "PDF advanced control should be measurable").not.toBeNull();
-    expect(box!.width).toBeGreaterThanOrEqual(44);
-    expect(box!.height).toBeGreaterThanOrEqual(minTouchTargetHeight);
+    const css = await button.evaluate((element) => ({
+      width: element.offsetWidth,
+      height: element.offsetHeight,
+    }));
+    expect(css.width).toBeGreaterThanOrEqual(44);
+    expect(css.height).toBeGreaterThanOrEqual(minTouchTargetHeight);
   }
   await expect
     .poll(() =>
