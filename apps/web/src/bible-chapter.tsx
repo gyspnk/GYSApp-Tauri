@@ -278,6 +278,14 @@ export function ChapterPane({
                         press.current.timer = undefined;
                       }
                     }}
+                    onContextMenu={(event) => {
+                      // Android raises its own text menu on a long press,
+                      // which cancels the hold before 450 ms; while the hold
+                      // is armed, keep that menu out of the way.
+                      if (press.current.timer || press.current.long) {
+                        event.preventDefault();
+                      }
+                    }}
                     onPointerUp={() => {
                       if (press.current.timer) {
                         window.clearTimeout(press.current.timer);

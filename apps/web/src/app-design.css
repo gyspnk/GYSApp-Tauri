@@ -1594,6 +1594,11 @@
 }
 .bible-reader .verse-content .verse-text {
   text-align: inherit;
+  /* The press-and-hold gesture must win over the platform text callout; the
+     text stays selectable for copying. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: text;
+  user-select: text;
 }
 @media (max-width: 959px) {
   .app-frame.is-reader-route .bible-reader {

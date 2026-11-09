@@ -1198,6 +1198,16 @@ export function BiblePage({ locale }: { locale: Locale }) {
       hapticTick("light");
       return;
     }
+    // A second tap on another verse is the adaptive multi-select: the reader
+    // never has to find the “Pilih banyak ayat” button first.
+    if (selectedVerseId && selectedVerseId !== verse.id) {
+      multiAnchorRef.current = selectedVerseId;
+      setMultiVerseIds([selectedVerseId, verse.id]);
+      setSelectedVerseId(undefined);
+      setExitingVerse(false);
+      hapticTick("light");
+      return;
+    }
     setSelectedVerseId((current) =>
       current === verse.id ? undefined : verse.id,
     );
