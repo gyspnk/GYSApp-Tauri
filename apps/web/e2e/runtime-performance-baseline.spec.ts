@@ -447,6 +447,9 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
       id: "kidung-pembaca",
       link: null,
       ready: ".hymn-detail-page",
+      // The reader shell and its verses are two different waits; the owner
+      // target is about seeing the page, so both numbers are recorded.
+      content: ".verse-text",
       click: ".pujian-item .pujian-title",
     },
   ] as const;
@@ -483,7 +486,14 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     });
     const clickedAt = await page.evaluate(() => Math.round(performance.now()));
     const ms = Date.now() - started;
-    results.push({ id: step.id, ms });
+    const contentMs = step.content
+      ? await page
+          .locator(step.content)
+          .first()
+          .waitFor({ state: "visible", timeout: 60_000 })
+          .then(() => Date.now() - started)
+      : undefined;
+    results.push({ id: step.id, ms, ...(contentMs ? { contentMs } : {}) });
     // Mount marks are written in effects, which can land a frame after the
     // ready selector; give them one beat so the detail names the slow part.
     await page.waitForTimeout(250);
