@@ -5,12 +5,16 @@ test("warm navigation reuses core payloads without optional downloads @perf", as
 }) => {
   // Measure route readiness independently of the intentional page snapshot fade.
   await page.emulateMedia({ reducedMotion: "reduce" });
-  let bibleRequests = 0;
+  let bibleIndexRequests = 0;
+  let biblePackRequests = 0;
   let hymnRequests = 0;
   let faithRequests = 0;
   let pdfRequests = 0;
   page.on("request", (request) => {
-    if (request.url().includes("/offline/bible/")) bibleRequests++;
+    if (request.url().endsWith("/offline/bible/books/index.json"))
+      bibleIndexRequests++;
+    if (request.url().includes("/offline/bible/tb-reader.json"))
+      biblePackRequests++;
     if (request.url().endsWith("/offline/hymn-metadata.json")) hymnRequests++;
     if (request.url().endsWith("/offline/faith.json")) faithRequests++;
     if (/\.pdf(?:$|\?)/.test(request.url())) pdfRequests++;
@@ -47,7 +51,10 @@ test("warm navigation reuses core payloads without optional downloads @perf", as
     await expect(page.locator(".route-loading")).toHaveCount(0);
   }
   console.log("Warm navigation", timings);
-  expect(bibleRequests).toBe(1);
+  // The reader paints from the per-book files, so a warm revisit may load a
+  // book again but must never pull the 7,6 MB shelf.
+  expect(biblePackRequests).toBe(0);
+  expect(bibleIndexRequests).toBeLessThanOrEqual(2);
   expect(hymnRequests).toBe(1);
   expect(faithRequests).toBe(1);
   expect(pdfRequests).toBe(0);
