@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { gunzipSync } from "node:zlib";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -27,7 +28,25 @@ const pack = {
   pericopes: [
     { id: "1001001", book: "1", chapter: 1, verse: 1, title: "Penciptaan" },
   ],
+  crossRefs: {
+    "1:1:1": [{ book: "43", chapter: 1, verse: 1 }],
+    "2:1:1": [{ book: "40", chapter: 5, verse: 8 }],
+  },
 };
+
+test("split sends each book its own cross references", () => {
+  const books = splitBiblePack(pack);
+  const refsOf = (id) =>
+    JSON.parse(gunzipSync(books.find((entry) => entry.id === id).gzip))
+      .crossRefs;
+
+  assert.deepEqual(refsOf("1"), {
+    "1:1:1": [{ book: "43", chapter: 1, verse: 1 }],
+  });
+  assert.deepEqual(refsOf("2"), {
+    "2:1:1": [{ book: "40", chapter: 5, verse: 8 }],
+  });
+});
 
 test("split groups verses and pericopes per book", () => {
   const books = splitBiblePack(pack);

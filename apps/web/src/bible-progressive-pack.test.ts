@@ -66,6 +66,35 @@ describe("ProgressiveBiblePack", () => {
     expect(pack.loadedBooks).toEqual([]);
   });
 
+  it("carries each book's cross references into the snapshot", async () => {
+    const load = vi.fn((id: string) =>
+      Promise.resolve({
+        ...bookPack(id, [1]),
+        crossRefs: {
+          [`${id}:1:1`]: [
+            { book: "43", chapter: 1, verse: 1 },
+            { book: "45", chapter: 5, verse: 8 },
+          ],
+        },
+      }),
+    );
+    const pack = new ProgressiveBiblePack(index, { load });
+
+    await pack.ensure("1");
+    expect(pack.snapshot()?.crossRefs).toEqual({
+      "1:1:1": [
+        { book: "43", chapter: 1, verse: 1 },
+        { book: "45", chapter: 5, verse: 8 },
+      ],
+    });
+
+    await pack.ensure("19");
+    expect(Object.keys(pack.snapshot()?.crossRefs ?? {}).sort()).toEqual([
+      "1:1:1",
+      "19:1:1",
+    ]);
+  });
+
   it("loads one book at a time and grows the reader pack", async () => {
     const load = vi.fn((id: string) => Promise.resolve(bookPack(id, [1, 2])));
     const pack = new ProgressiveBiblePack(index, { load });
