@@ -1185,7 +1185,13 @@ export function BiblePage({ locale }: { locale: Locale }) {
     // A second tap is itself the signal: with one verse selected, tapping a
     // different verse selects both instead of replacing the first one. There is
     // no mode button to press first.
-    if (selectedVerseId && selectedVerseId !== verse.id) {
+    if (
+      selectedVerseId &&
+      selectedVerseId !== verse.id &&
+      !modifiers?.additive &&
+      !modifiers?.longPress &&
+      !modifiers?.shiftKey
+    ) {
       multiAnchorRef.current = verse.id;
       setMultiVerseIds([selectedVerseId, verse.id]);
       setSelectedVerseId(undefined);
