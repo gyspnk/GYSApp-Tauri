@@ -72,11 +72,11 @@ export function ChapterPane({
   // One shared hold state: only one verse is pressed at a time, and a long
   // press must not be undone by the click event that follows it.
   const press = useRef<{
-    timer?: number;
+    timer: number | undefined;
     x?: number;
     y?: number;
     long?: boolean;
-  }>({});
+  }>({ timer: undefined });
   const chapterPericopes = useMemo(() => {
     if (!pericopes?.length) return [];
     return pericopes.filter(
