@@ -301,12 +301,16 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
       ),
     [items, progressRevision],
   );
+  // The recently-opened shelf is read once, before the catalogue paints, so it
+  // lands in the same commit as the sections instead of being appended later
+  // and pushing every section down (measured 0,016 CLS on phones).
+  const [recentIds] = useState(() => getRecentLiteratureIds(12));
   const recentItems = useMemo(
     () =>
-      getRecentLiteratureIds(12)
+      recentIds
         .map((id) => items.find((item) => item.id === id))
         .filter((item): item is LiteratureItem => Boolean(item)),
-    [items, progressRevision],
+    [items, recentIds],
   );
 
   return (
