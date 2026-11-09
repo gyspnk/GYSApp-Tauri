@@ -2765,6 +2765,13 @@ milestone. Sinyal per perubahan adalah `test:loop` (1,4 dtk – 2,7 mnt).
 Perubahan dokumentasi tidak memerlukan browser sama sekali — `test:loop`
 mengenali dan melewatinya.
 
+### Stabilitas hosted: swipe kitab, retry chord soak, kontrol PDF (9 Nov, putaran 243)
+
+- **Swipe kitab** (`af09496`): tes `gesture-regressions` bisa memulai swipe saat pack per-kitab masih diganti pack penuh, sehingga `data-chapter` tetap `1`; tes sekarang menunggu `networkidle` sebelum mengirim sentuhan. Full sweep `42601721976` dan `42605407918` hijau.
+- **Soak chord** (`af09496`): tunggu 30 dtk pada `.chord-visual-marker` bisa kalah cepat oleh sinkronisasi chord dingin; soak memuat ulang sekali lalu menunggu 45 dtk sebelum menyatakan cacat. Soak `42601717243` **hijau**.
+- **Kontrol PDF 44 px** (`f4f7246`): `boundingBox()` pada stage yang di-scale memberi 43,991 px; kontrak kini memakai `offsetWidth/offsetHeight` (kotak CSS) dan tetap memastikan elemen terukur.
+- **Tab antrean** (`e6f62d1`, `0196f37`): tes baru memastikan dua tab halaman antrean sama lebar (selisih ≤1 px) di 390/768/1440; CSS diberi aturan gabungan `.hymn-page.kidung-tool-page` agar tidak kalah oleh aturan flex katalog. QA `42605363836` menghasilkan screenshot yang identik byte-per-byte, artinya lebar tab memang sudah sama — inset yang terlihat hanyalah indikator aktif.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
