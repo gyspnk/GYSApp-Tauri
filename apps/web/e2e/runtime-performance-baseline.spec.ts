@@ -396,49 +396,11 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   // is what a reader actually feels once the app is open.
   await page.setViewportSize({ width: 1280, height: 800 });
   await prepare(page);
-  await page.addInitScript(() => {
-    const target = window as unknown as { __idleCalls: number };
-    target.__idleCalls = 0;
-    const original = window.requestIdleCallback?.bind(window);
-    if (original) {
-      window.requestIdleCallback = ((callback, options) => {
-        target.__idleCalls += 1;
-        return original(callback, options);
-      }) as typeof window.requestIdleCallback;
-    }
-  });
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".home-page")).toBeVisible({ timeout: 60_000 });
-  // A reader looks at the home page before moving on; the shell warms the next
-  // destinations on idle, so the honest "move between pages" number is taken
-  // after that warm-up rather than at the instant of the first paint.
+  // A reader looks at the home page before moving on; the numbers here are what
+  // a reader feels after a moment of reading, not at first paint.
   await page.waitForTimeout(2_500);
-  const warmMarks = await page.evaluate(() => ({
-    marks: performance
-      .getEntriesByType("mark")
-      .map((entry) => entry.name)
-      .filter((name) => name.includes("gys-")),
-    bible: performance
-      .getEntriesByType("resource")
-      .filter((entry) => entry.name.includes("offline/bible"))
-      .map((entry) => ({
-        name: entry.name.split("/").slice(-2).join("/"),
-        start: Math.round(entry.startTime),
-        duration: Math.round(entry.duration),
-      })),
-  }));
-  const warmState = await page.evaluate(() => ({
-    idleCalls: (window as unknown as { __idleCalls?: number }).__idleCalls,
-    visibility: document.visibilityState,
-    effectiveType: (
-      navigator as Navigator & { connection?: { effectiveType?: string } }
-    ).connection?.effectiveType,
-    chunks: performance
-      .getEntriesByType("resource")
-      .map((entry) => entry.name.split("/").pop() ?? "")
-      .filter((name) => /kidung-page|route-preload|bible-page/.test(name)),
-  }));
-  console.log(`[runtime-warm] ${JSON.stringify({ ...warmMarks, warmState })}`);
 
   const transitions = [
     {

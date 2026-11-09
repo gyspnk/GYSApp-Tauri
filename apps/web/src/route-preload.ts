@@ -96,7 +96,6 @@ async function warmBibleFirstChapter(): Promise<void> {
 
 /** Warm sequentially after first paint, avoiding optional downloads and data-saving connections. */
 export function warmNavigation(): () => void {
-  performance.mark("gys-warm-navigation:start");
   const connection = (
     navigator as Navigator & {
       connection?: { saveData?: boolean; effectiveType?: string };
@@ -106,7 +105,6 @@ export function warmNavigation(): () => void {
     connection?.saveData ||
     /(^|-)2g$/.test(connection?.effectiveType ?? "")
   ) {
-    performance.mark("gys-warm-navigation:skipped-connection");
     return () => {};
   }
   let cancelled = false;
@@ -187,7 +185,6 @@ export function warmNavigation(): () => void {
         { once: true },
       );
   }
-  performance.mark("gys-warm-navigation:scheduled");
   timer = window.setTimeout(next, 200);
   return () => {
     cancelled = true;
