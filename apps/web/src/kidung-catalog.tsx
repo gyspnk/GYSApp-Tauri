@@ -1,6 +1,6 @@
 import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
-import { startTransition, useEffect, useSyncExternalStore } from "react";
+import { startTransition, useSyncExternalStore } from "react";
 import {
   useEffect,
   useDeferredValue,
