@@ -186,6 +186,8 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.voice": "Pilihan Suara",
     "bible.defaultVoice": "Otomatis (Default)",
     "bible.localTts": "TTS lokal",
+    "bible.voicePreview": "Coba suara",
+    "bible.voicePreviewLabel": "Pratinjau suara",
     "bible.edgeHint":
       "Edge neural perlu internet. Otomatis memakai suara sistem di browser; TTS lokal hanya memakai suara perangkat.",
     "bible.edgeFallback":

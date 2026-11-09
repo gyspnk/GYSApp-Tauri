@@ -163,6 +163,8 @@ export const zhMessages: Record<string, string> = {
   "bible.voice": "声音",
   "bible.defaultVoice": "自动（默认）",
   "bible.localTts": "本地 TTS",
+  "bible.voicePreview": "试听声音",
+  "bible.voicePreviewLabel": "试听声音",
   "bible.edgeHint":
     "Edge 神经语音需要联网。浏览器中自动模式使用系统语音；本地 TTS 仅使用设备语音。",
   "bible.edgeFallback":

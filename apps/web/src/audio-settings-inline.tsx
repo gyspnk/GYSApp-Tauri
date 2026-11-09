@@ -41,6 +41,33 @@ export function AudioSettingsInline({ locale }: { locale: Locale }) {
           ))}
         </select>
       </label>
+      <button
+        type="button"
+        className="audio-setting-preview"
+        onClick={() =>
+          void speechPlayer
+            .speak(
+              [
+                {
+                  // Proper nouns carry the pronunciation the reader cares
+                  // about, so the preview uses words rather than a beep.
+                  id: "voice-preview",
+                  text: "Allah, Yesus Kristus, Roh Kudus.",
+                  context: {
+                    path: "/lainnya",
+                    label: translate(locale, "bible.voicePreviewLabel"),
+                  },
+                },
+              ],
+              { voiceId: selectedVoice || undefined },
+            )
+            .catch(() => undefined)
+        }
+        disabled={speech.status !== "idle"}
+      >
+        <Icon name="volume" size={16} />
+        {translate(locale, "bible.voicePreview")}
+      </button>
       {speech.engine !== "local" && !isEdgeSpeechConfigured() && (
         <p className="audio-setting-hint">
           {translate(locale, "bible.edgeHint")}

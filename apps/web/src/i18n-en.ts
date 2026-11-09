@@ -170,6 +170,8 @@ export const enMessages: Record<string, string> = {
   "bible.voice": "Voice",
   "bible.defaultVoice": "Automatic (Default)",
   "bible.localTts": "Local TTS",
+  "bible.voicePreview": "Try the voice",
+  "bible.voicePreviewLabel": "Try the voice",
   "bible.edgeHint":
     "Edge neural needs internet. Automatic uses system voices in browsers; local TTS uses only device voices.",
   "bible.edgeFallback":
