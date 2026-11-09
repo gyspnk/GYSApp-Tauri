@@ -175,7 +175,7 @@ export const enMessages: Record<string, string> = {
   "bible.edgeHint":
     "Edge neural needs internet. Automatic uses system voices in browsers; local TTS uses only device voices.",
   "bible.edgeFallback":
-    "System speech is in use because Edge failed or is unavailable. Quality and intonation follow the device voice — pick another voice above if it sounds off.",
+    "System speech is in use because Edge failed or is unavailable. Quality and intonation follow the device voice — press “Try the voice”, then pick whichever sounds right.",
   "bible.audioSettingsLink":
     "Voice, speed and pitch are set in Audio settings →",
   "bible.audioEngineSettings": "Voice engine & gateway in the Bible drawer →",

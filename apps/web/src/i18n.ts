@@ -191,7 +191,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.edgeHint":
       "Edge neural perlu internet. Otomatis memakai suara sistem di browser; TTS lokal hanya memakai suara perangkat.",
     "bible.edgeFallback":
-      "Suara sistem dipakai karena Edge gagal atau tidak tersedia. Kualitas dan intonasi mengikuti voice perangkat — pilih voice lain di atas bila terdengar kurang pas.",
+      "Suara sistem dipakai karena Edge gagal atau tidak tersedia. Kualitas dan intonasi mengikuti voice perangkat — tekan “Coba suara” lalu pilih voice yang paling pas.",
     "bible.audioSettingsLink":
       "Suara, kecepatan, dan nada diatur di Pengaturan Audio →",
     "bible.audioEngineSettings": "Mesin & gateway suara di laci Alkitab →",

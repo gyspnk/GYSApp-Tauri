@@ -168,7 +168,7 @@ export const zhMessages: Record<string, string> = {
   "bible.edgeHint":
     "Edge 神经语音需要联网。浏览器中自动模式使用系统语音；本地 TTS 仅使用设备语音。",
   "bible.edgeFallback":
-    "Edge 失败或不可用，正在使用系统语音。音质和语调取决于设备语音——如不合适可在上方选择其他语音。",
+    "Edge 失败或不可用，正在使用系统语音。音质和语调取决于设备语音——按“试听声音”后选择最合适的一个。",
   "bible.audioSettingsLink": "语音、速度和音调在音频设置中调整 →",
   "bible.audioEngineSettings": "语音引擎与网关在圣经抽屉中 →",
   "bible.appearanceSettingsLink": "主题在外观设置中调整 →",
