@@ -398,6 +398,10 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   await prepare(page);
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".home-page")).toBeVisible({ timeout: 60_000 });
+  // A reader looks at the home page before moving on; the shell warms the next
+  // destinations on idle, so the honest "move between pages" number is taken
+  // after that warm-up rather than at the instant of the first paint.
+  await page.waitForTimeout(2_500);
 
   const transitions = [
     {
