@@ -2810,6 +2810,14 @@ Karena itu **keputusan performa navigasi harus memakai median ≥3 run**, bukan 
 
 Yang tetap valid dari putaran ini adalah angka route-ready (stabil ±10 % antar run): `kidung-phone` **538 ms** (1 314 sebelumnya), `kidung-desktop` **604 ms** (980), route lain 500–770 ms, `e2e` sweep penuh `42612762973` **hijau 4/4 shard**.
 
+### CLS Literatur: slot cadangan tidak mengubah angka (9 Nov, putaran 201)
+
+Sumber geseran sudah terbaca dari baris perf: `div.literature-sections moved 114px (y 627 -> 684)` di ponsel, 76 px di tablet, 54 px di desktop; nilainya identik sampai 15 desimal di tiga run, jadi ini deterministik, bukan varians.
+
+Percobaan: `div.literature-featured-slot` dengan `min-height` 290/276/254 px (tinggi `literature-featured` yang terukur) dirender sebelum data tiba, ditambah pembacaan riwayat sekali di awal. Hasil: **angka CLS tidak berubah sama sekali** (0,016232905781930047 di ponsel). Slot lalu **dihapus** karena tidak memberi manfaat terukur dan hanya menyisakan pita kosong; pembacaan riwayat juga dikembalikan agar shelf riwayat tetap hidup (kontrak `smoke.spec.ts` "literature history removes one selected reading" sempat merah dan sudah hijau lagi di `42616645918`).
+
+Yang tetap dipakai dari percobaan ini: `layoutShiftSources` kini ikut dicetak di setiap `[perf-row]`, jadi penyebab geseran selalu terlihat tanpa run tambahan. CLS Literatur (0,016) dan desktop beranda (0,017) berada di ambang "good" (≤0,1); keduanya dicatat sebagai kandidat, bukan cacat yang diklaim sudah diperbaiki.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
