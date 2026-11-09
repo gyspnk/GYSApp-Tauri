@@ -1144,7 +1144,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
 
   const selectVerse = (
     verse: BibleVerse,
-    modifiers?: { shiftKey?: boolean },
+    modifiers?: { shiftKey?: boolean; additive?: boolean; longPress?: boolean },
   ) => {
     setNoteTargetIds([]);
     if (multiMode) {
@@ -1171,6 +1171,31 @@ export function BiblePage({ locale }: { locale: Locale }) {
           ? current.filter((id) => id !== verse.id)
           : [...current, verse.id],
       );
+      return;
+    }
+    // Adaptive entry: a long press, ⌘/Ctrl click or shift click is itself the
+    // signal that the reader wants more than one verse, so no mode button has
+    // to be pressed first.
+    if (modifiers?.additive || modifiers?.longPress || modifiers?.shiftKey) {
+      const anchor = selectedVerseId ?? verse.id;
+      const anchorIndex = chapterVerses.findIndex((item) => item.id === anchor);
+      const targetIndex = chapterVerses.findIndex(
+        (item) => item.id === verse.id,
+      );
+      const picked =
+        modifiers.shiftKey && anchorIndex >= 0 && targetIndex >= 0
+          ? chapterVerses
+              .slice(
+                Math.min(anchorIndex, targetIndex),
+                Math.max(anchorIndex, targetIndex) + 1,
+              )
+              .map((item) => item.id)
+          : [verse.id];
+      multiAnchorRef.current = anchor;
+      setMultiVerseIds(Array.from(new Set(picked)));
+      setSelectedVerseId(undefined);
+      setExitingVerse(false);
+      hapticTick("light");
       return;
     }
     setSelectedVerseId((current) =>

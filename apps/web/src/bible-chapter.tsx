@@ -2,7 +2,7 @@ import {
   DEFAULT_HIGHLIGHT_COLORS,
   isCustomHighlightColor,
 } from "./bible-highlights.js";
-import { useMemo, type CSSProperties, type TouchEvent } from "react";
+import { useMemo, useRef, type CSSProperties, type TouchEvent } from "react";
 import type {
   BibleBook,
   BibleCrossReference,
@@ -59,13 +59,24 @@ export function ChapterPane({
   secondary?: boolean;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
   onScroll?: () => void;
-  onSelect: (verse: BibleVerse, modifiers?: { shiftKey?: boolean }) => void;
+  onSelect: (
+    verse: BibleVerse,
+    modifiers?: { shiftKey?: boolean; additive?: boolean; longPress?: boolean },
+  ) => void;
   onBookmark: (id: string) => void;
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchMove?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchCancel?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
 }) {
+  // One shared hold state: only one verse is pressed at a time, and a long
+  // press must not be undone by the click event that follows it.
+  const press = useRef<{
+    timer?: number;
+    x?: number;
+    y?: number;
+    long?: boolean;
+  }>({});
   const chapterPericopes = useMemo(() => {
     if (!pericopes?.length) return [];
     return pericopes.filter(
@@ -242,9 +253,56 @@ export function ChapterPane({
                     className="verse-text"
                     role="button"
                     tabIndex={0}
-                    onClick={(event) =>
-                      onSelect(verse, { shiftKey: event.shiftKey })
-                    }
+                    onPointerDown={(event) => {
+                      // Press-and-hold is the adaptive way into multi-select:
+                      // nothing has to be switched on first.
+                      if (event.button !== 0) return;
+                      press.current = {
+                        x: event.clientX,
+                        y: event.clientY,
+                        timer: window.setTimeout(() => {
+                          press.current.timer = undefined;
+                          press.current.long = true;
+                          onSelect(verse, { longPress: true });
+                        }, 450),
+                      };
+                    }}
+                    onPointerMove={(event) => {
+                      const state = press.current;
+                      if (!state.timer) return;
+                      if (
+                        Math.abs(event.clientX - (state.x ?? 0)) > 10 ||
+                        Math.abs(event.clientY - (state.y ?? 0)) > 10
+                      ) {
+                        window.clearTimeout(state.timer);
+                        press.current.timer = undefined;
+                      }
+                    }}
+                    onPointerUp={() => {
+                      if (press.current.timer) {
+                        window.clearTimeout(press.current.timer);
+                        press.current.timer = undefined;
+                      }
+                    }}
+                    onPointerCancel={() => {
+                      if (press.current.timer) {
+                        window.clearTimeout(press.current.timer);
+                        press.current.timer = undefined;
+                      }
+                      press.current.long = false;
+                    }}
+                    onClick={(event) => {
+                      // The hold already added the verse; the click that follows
+                      // must not toggle it back off.
+                      if (press.current.long) {
+                        press.current.long = false;
+                        return;
+                      }
+                      onSelect(verse, {
+                        shiftKey: event.shiftKey,
+                        additive: event.metaKey || event.ctrlKey,
+                      });
+                    }}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();

@@ -146,6 +146,41 @@ test.describe("Bible multi-verse selection", () => {
     await expect(page.locator(".verse-row.is-selected")).toHaveCount(5);
   });
 
+  test("starts a multi selection by holding a verse", async ({ page }) => {
+    await openReader(page);
+    const verses = page.locator(".verse-text");
+    const toolbar = page.getByTestId("selected-verse-toolbar");
+    await verses.nth(0).dispatchEvent("pointerdown", {
+      button: 0,
+      clientX: 12,
+      clientY: 12,
+    });
+    await page.waitForTimeout(650);
+    await verses.nth(0).dispatchEvent("pointerup", { button: 0 });
+    await expect(toolbar).toBeVisible();
+    await expect(toolbar.locator(".selected-verse-context strong")).toHaveText(
+      "1 ayat dipilih",
+    );
+    await verses.nth(2).click();
+    await expect(page.locator(".verse-row.is-selected")).toHaveCount(2);
+  });
+
+  test("shift-click from one verse chooses the whole range", async ({
+    page,
+  }) => {
+    await openReader(page);
+    const verses = page.locator(".verse-text");
+    const toolbar = page.getByTestId("selected-verse-toolbar");
+    await verses.nth(0).click();
+    await verses.nth(2).click({ modifiers: ["Shift"] });
+    await expect(toolbar.locator(".selected-verse-context strong")).toHaveText(
+      "3 ayat dipilih",
+    );
+    await expect(
+      toolbar.locator(".selected-verse-context span").first(),
+    ).toHaveText("Kejadian 1:1–3");
+  });
+
   test("leaves the multi-select with Escape", async ({ page }) => {
     await openReader(page);
     const verses = page.locator(".verse-text");
