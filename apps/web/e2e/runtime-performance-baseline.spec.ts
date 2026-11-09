@@ -213,6 +213,8 @@ const LAYOUT_PROBES = {
   continuePanel: ".continue-panel",
   suara: ".home-suara-section",
   literature: ".home-literature-section",
+  literatureFeatured: ".literature-featured",
+  literatureSections: ".literature-sections",
 } as const;
 
 async function layoutSnapshot(page: Page) {
@@ -273,7 +275,9 @@ async function runRoute(
     waitUntil: "domcontentloaded",
   });
   const atDomContentLoaded =
-    route.id === "home" ? await layoutSnapshot(page) : null;
+    route.id === "home" || route.id === "literatur"
+      ? await layoutSnapshot(page)
+      : null;
   await page
     .locator(route.ready)
     .first()
@@ -285,7 +289,10 @@ async function runRoute(
   const readyMs = Date.now() - started;
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(100);
-  const atReady = route.id === "home" ? await layoutSnapshot(page) : null;
+  const atReady =
+    route.id === "home" || route.id === "literatur"
+      ? await layoutSnapshot(page)
+      : null;
 
   const metrics = await page.evaluate(() => {
     const navigation = performance.getEntriesByType("navigation")[0] as
