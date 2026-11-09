@@ -240,6 +240,20 @@ async function runRoute(
   viewport: Viewport,
 ): Promise<RuntimeCase> {
   const id = `${route.id}-${viewport.name}`;
+  await page.setViewportSize({
+    width: viewport.width,
+    height: viewport.height,
+  });
+  // Warm the route once before measuring. Without it the first route of a run
+  // paid for the font and chunk cache that every later route inherited, which
+  // made the same commit report 637ms and 2524ms for kidung-desktop.
+  await page.goto(`/GYSApp-Tauri${route.path}`, { waitUntil: "load" });
+  await page
+    .locator(route.ready)
+    .first()
+    .waitFor({ state: "visible", timeout: 15_000 })
+    .catch(() => undefined);
+  await page.evaluate(() => document.fonts.ready).catch(() => undefined);
   const errors: string[] = [];
   const requests: { url: string; type: string }[] = [];
   page.on("request", (request) => {
@@ -253,10 +267,6 @@ async function runRoute(
     ) {
       errors.push(`console: ${message.text()}`);
     }
-  });
-  await page.setViewportSize({
-    width: viewport.width,
-    height: viewport.height,
   });
   const started = Date.now();
   await page.goto(`/GYSApp-Tauri${route.path}`, {
