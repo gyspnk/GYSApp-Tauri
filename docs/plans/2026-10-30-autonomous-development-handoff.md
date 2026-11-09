@@ -6871,3 +6871,32 @@ lagi memuat `ZodError` maupun impor statis `dist-*.js`; impor statisnya hanya
 Sisa B-24: total anggaran 155,2/180,0 KiB; tuas berikutnya `pdf-document-cache`
 (123,6 KiB gzip) hanya untuk rute PDF, dan `bible-search-worker` (29,8 KiB)
 tetap di rute Alkitab.
+
+## Alkitab: pack penuh dimulai setelah buku pertama terlukis (9 Nov, putaran 191)
+
+`apps/web/src/bible.tsx` dulu memulai `loadBundledBiblePack()` (1,7 MB) berbarengan
+dengan chunk buku pertama, jadi di tautan lambat keduanya berebut bandwidth dan
+`bible readyMs` tertahan 1,5–1,7 dtk walau reader sudah bisa melukis lebih awal.
+
+Sekarang pack penuh dijadwalkan setelah snapshot progresif terpasang
+(`requestIdleCallback`, `timeout: 1_500`, fallback `setTimeout 600`), dan
+langsung dimulai bila indeks buku gagal, snapshot kosong, atau versinya bukan TB.
+Commit `b8acf8e` (perubahan fungsional) — perilaku produk sama, hanya urutan
+unduhan yang berubah.
+
+Angka hosted `perf.yml` (satu sampel per run, runner bersama):
+
+| rute (p/t/d) | run `42545886211` (sebelum) | run `42546451795` (sesudah) |
+| ------------ | --------------------------- | --------------------------- |
+| home         | 583 / 586 / 607             | 539 / 569 / 577             |
+| **bible**    | **1 605 / 1 653 / 1 548**   | **554 / 593 / 653**         |
+| kidung       | 626 / 1 731 / 1 061         | 1 516 / 1 147 / 1 458       |
+| iman         | 536 / 496 / 526             | 540 / 503 / 537             |
+| literatur    | 822 / 798 / 834             | 797 / 813 / 835             |
+| suara        | 704 / 689 / 732             | 645 / 690 / 715             |
+| lainnya      | 579 / 584 / 611             | 611 / 602 / 592             |
+
+Bible turun ~1,0 dtk (2,7×) dan home ~40 ms; angka kidung naik-turun di rentang
+500–1 700 ms pada kedua sisi (variasi runner, bukan efek perubahan ini), sesuai
+catatan sebelumnya bahwa variasi antar-run ±30 %. Verifikasi selektif
+`42546295853` **success** (unit + e2e selektif, termasuk kontrak pack Alkitab).
