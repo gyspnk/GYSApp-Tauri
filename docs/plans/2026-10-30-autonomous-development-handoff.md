@@ -2849,6 +2849,15 @@ Permintaan pemilik: tombol pintu masuk multi-ayat dihilangkan; saat satu ayat su
 - Kontrak diperbarui: `apps/web/e2e/bible-multi-select.spec.ts` tidak lagi menekan tombol masuk; `apps/web/e2e/bible-annotations.spec.ts` keluar dari multi sebelum memeriksa catatan ayat kedua.
 - Bukti hosted: `42647363064` (sebelum perilaku baru), `42655488176` **hijau** setelah jalur modifier dipisahkan (dua kegagalan shift-range di `42654374623` menunjukkan kenapa pemisahan itu perlu).
 
+### Baseline perf hosted selepas batching katalog & pack per kitab (9 Nov, putaran 203)
+
+Satu run `perf.yml` `42657705173` (21 baris, 0 error, 0 duplicate asset, 0 panel loading terlihat):
+
+- `readyMs` ponsel/tablet/desktop: beranda 505/533/530, Alkitab 540/550/541, **Kidung 499/502/514** (sebelum batching 1 067/1 214/839), Iman 470/481/479, Literatur 705/717/775, Suara 583/744/648, Lainnya 521/535/566. Semua rute < 800 ms di runner dua worker.
+- CLS: beranda 0,003/0,002/0,017; Alkitab 0,013/0,025/0,002; Kidung ≤0,006; Iman 0; Literatur 0,016/0,012/0,006; Suara/Lainnya 0. Semua di ambang “good”.
+- Navigator klik (detail rute): beranda→Alkitab **90 ms**, Alkitab→Kidung **786 ms**, Kidung→pembaca **898 ms**. Dua yang terakhir belum < 300 ms; `marks`/`resources` kosong, jadi biayanya mount/render, bukan fetch — dicatat sebagai lever berikutnya, bukan klaim selesai.
+- Sumber CLS beranda desktop tetap `section.home-suara-section` bergeser 48 px (blok progres loading yang disengaja) dan `div.literature-sections` di Literatur 114 px (rak “terbaru” muncul setelah data); keduanya di ambang baik dan sudah dicoba dinaikkan tanpa hasil.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
