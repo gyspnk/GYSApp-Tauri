@@ -6997,3 +6997,27 @@ QA hosted `42558303492` **success** (132 screenshot, 0 masalah overflow/box,
 0 temuan konsistensi). Audit konsistensi sempat gagal pada `42557623910` karena
 baris pengaturan selebar 1170 px ikut dihitung sebagai peer tombol topbar —
 baris seperti itu sekarang dikecualikan (`927ab93`), bukan dilonggarkan.
+
+## Perf hosted terbaru dan swipe kitab yang tahan pergantian pack (9 Nov, putaran 234b)
+
+`perf.yml` `42560497682` (head `de35ae8`, rata-rata satu run; variansi ±30 %):
+
+| rute      | ready ponsel/tablet/desktop | shift ponsel |
+| --------- | --------------------------- | ------------ |
+| Beranda   | 472 / 506 / 590 ms          | 0,003        |
+| Alkitab   | 525 / 511 / 551 ms          | 0,013        |
+| Kidung    | 1 067 / 1 214 / 839 ms      | 0,006        |
+| Iman      | 471 / 449 / 464 ms          | 0            |
+| Literatur | 657 / 765 / 752 ms          | 0,016        |
+| Suara     | 608 / 633 / 642 ms          | 0            |
+| Lainnya   | 524 / 504 / 537 ms          | 0            |
+
+Sisa shift Literatur berasal dari shelf “terbaru” yang baru muncul setelah
+katalog tiba — konten nyata, bukan reservasi yang salah; dicatat sebagai
+pekerjaan berikutnya bila ingin dihilangkan.
+
+Swipe bab Alkitab sempat gagal di `gesture-regressions` saat pack penuh
+menggantikan snapshot: penangan sentuh menempel di `.bible-pane`, dan panes
+diganti di tengah gestur sehingga niat bab hilang. Penangan sekarang menempel
+di `.bible-reader` yang bertahan (`ef248a8`), dan selective `42561954200`
+**success**.
