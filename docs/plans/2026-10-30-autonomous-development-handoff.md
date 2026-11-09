@@ -2818,6 +2818,17 @@ Percobaan: `div.literature-featured-slot` dengan `min-height` 290/276/254 px (ti
 
 Yang tetap dipakai dari percobaan ini: `layoutShiftSources` kini ikut dicetak di setiap `[perf-row]`, jadi penyebab geseran selalu terlihat tanpa run tambahan. CLS Literatur (0,016) dan desktop beranda (0,017) berada di ambang "good" (≤0,1); keduanya dicatat sebagai kandidat, bukan cacat yang diklaim sudah diperbaiki.
 
+### Perf hosted: katalog kidung, indeks Alkitab, dan gerbang perf mingguan (9 Nov, putaran 201)
+
+Angka sesudah, satu run `perf.yml` (`42616896420`), 1280×800, variance runner ±30 %:
+
+- `kidung-phone` **1 314 → 538 ms**, `kidung-desktop` **980 → 604 ms** setelah katalog merender 14 baris dulu lalu 80 baris per idle turn (`startTransition`), alih-alih 60 lalu 533 sekaligus (`f05c6f5`).
+- Navigasi beranda→Alkitab **78 ms** (sebelumnya 673 ms warm / 1 183 ms cold) setelah hover hanya menghangatkan indeks + kitab pertama (`cf3ce40`), bukan 7,6 MB.
+- Indeks kitab sekarang satu promise per URL (`apps/web/src/bible-progressive-pack.ts`), karena budget warm-navigation sempat melihat **9** permintaan indeks; unit test baru menjaga cache dan retry.
+- `layoutShiftSources` ikut dicetak di setiap `[perf-row]`, jadi penyebab CLS terlihat tanpa run tambahan. Percobaan slot cadangan untuk CLS Literatur **tidak mengubah angka** dan sudah dihapus; CLS Literatur 0,016 dan beranda desktop 0,017 berada di ambang “good”, dicatat sebagai kandidat.
+- Gerbang `perf-budget` (jadwal Senin) adalah satu-satunya job merah di nightly `42601448960`; penyebabnya kontrak lama (`tb-reader.json` / `.verse-row`) dan sekarang memakai `.bible-reader`, menghitung `books/index.json`, dan menyatakan harga first-visit pack per kitab (1 000 ms untuk Alkitab, 750 ms untuk rute markup) alih-alih mengklaim 250 ms yang tidak pernah tercapai di runner dua worker.
+- Full sweep `42630521036` **hijau** termasuk `perf-budget`; `e2e-shard` tidak lagi diduplikasi saat dispatch `full=true` (suite penuh sudah ada di job `e2e`).
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
