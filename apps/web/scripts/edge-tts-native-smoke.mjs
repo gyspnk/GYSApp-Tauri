@@ -1106,6 +1106,10 @@ try {
     .getByRole("button", { name: "Tutup catatan ayat", exact: true })
     .click();
   await annotationToolbar.getByRole("button", { name: "Sorot biru" }).click();
+  // Tapping another verse while one is selected now starts a multi selection,
+  // which is the shipped behaviour. Clear verse 1 first so the next verse gets
+  // its own custom highlight.
+  await page.locator(".verse-row").first().locator(".verse-text").click();
   const customAnnotatedVerse = page.locator(".verse-row").nth(1);
   await customAnnotatedVerse.locator(".verse-text").click();
   await annotationToolbar
