@@ -396,6 +396,17 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   // is what a reader actually feels once the app is open.
   await page.setViewportSize({ width: 1280, height: 800 });
   await prepare(page);
+  await page.addInitScript(() => {
+    const target = window as unknown as { __idleCalls: number };
+    target.__idleCalls = 0;
+    const original = window.requestIdleCallback?.bind(window);
+    if (original) {
+      window.requestIdleCallback = ((callback, options) => {
+        target.__idleCalls += 1;
+        return original(callback, options);
+      }) as typeof window.requestIdleCallback;
+    }
+  });
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".home-page")).toBeVisible({ timeout: 60_000 });
   // A reader looks at the home page before moving on; the shell warms the next
@@ -416,7 +427,18 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
         duration: Math.round(entry.duration),
       })),
   }));
-  console.log(`[runtime-warm] ${JSON.stringify(warmMarks)}`);
+  const warmState = await page.evaluate(() => ({
+    idleCalls: (window as unknown as { __idleCalls?: number }).__idleCalls,
+    visibility: document.visibilityState,
+    effectiveType: (
+      navigator as Navigator & { connection?: { effectiveType?: string } }
+    ).connection?.effectiveType,
+    chunks: performance
+      .getEntriesByType("resource")
+      .map((entry) => entry.name.split("/").pop() ?? "")
+      .filter((name) => /kidung-page|route-preload|bible-page/.test(name)),
+  }));
+  console.log(`[runtime-warm] ${JSON.stringify({ ...warmMarks, warmState })}`);
 
   const transitions = [
     {
