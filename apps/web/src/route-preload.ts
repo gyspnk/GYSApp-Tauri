@@ -80,6 +80,20 @@ export function preloadRoute(
     : withView;
 }
 
+/** Warm only the first Bible chapter (index + one book, ~90 KiB) instead of
+ * the 7.6 MB pack: a first visit then paints chapter 1 from cache while the
+ * rest of the shelf still loads lazily. */
+async function warmBibleFirstChapter(): Promise<void> {
+  const [{ loadBibleBookIndex, bibleBookIndexUrl }, loader] = await Promise.all(
+    [import("./bible-progressive-pack.js"), import("./bible-pack-loader.js")],
+  );
+  const index = await loadBibleBookIndex(
+    bibleBookIndexUrl(import.meta.env.BASE_URL),
+  );
+  const first = index[0];
+  if (first) await loader.loadBibleBookPack(first.id);
+}
+
 /** Warm sequentially after first paint, avoiding optional downloads and data-saving connections. */
 export function warmNavigation(): () => void {
   const connection = (
@@ -148,6 +162,13 @@ export function warmNavigation(): () => void {
   const payloadWarmAllowed =
     !/(^|-)2g$|(^|-)3g$/.test(connection?.effectiveType ?? "") &&
     (memory ?? 8) >= 4;
+  if (payloadWarmAllowed && !visitedBible) {
+    // First visit used to open the Bible cold (measured 1 183 ms). The chapter
+    // itself is small, so it is warmed for everyone once the queue is warm.
+    timer = window.setTimeout(() => {
+      void warmBibleFirstChapter().catch(() => undefined);
+    }, 1_500);
+  }
   if (payloadWarmAllowed) {
     if (document.readyState === "complete")
       timer = window.setTimeout(warmPayloads, 150);
