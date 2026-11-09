@@ -48,7 +48,11 @@ jobs:
       - name: Measure the primary routes
         env:
           GYS_E2E_PREBUILT: "1"
+        # Without pipefail the tee exit code hid a failing measurement step,
+        # so a broken perf test still showed the job green.
+        shell: bash
         run: |
+          set -o pipefail
           pnpm --filter @gys/web exec playwright test \
             e2e/runtime-performance-baseline.spec.ts \
             --grep "performance baseline" --workers=1 --retries=0 2>&1 | tee perf.log

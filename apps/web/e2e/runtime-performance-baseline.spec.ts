@@ -449,7 +449,7 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
       ready: ".hymn-detail-page",
       // The reader shell and its verses are two different waits; the owner
       // target is about seeing the page, so both numbers are recorded.
-      content: ".verse-text",
+      content: ".lyrics-sheet",
       click: ".pujian-item .pujian-title",
     },
   ] as const;
