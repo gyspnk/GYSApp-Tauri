@@ -90,7 +90,12 @@ test("Bible render modules include annotation migration and visual contracts wit
     "bible-verse-text.tsx",
   ]) {
     const result = resolveSelectiveTestArgs([`apps/web/src/${module}`], []);
-    for (const spec of ["bible-annotations", "reader-data-loading"]) {
+    for (const spec of [
+      "bible-annotations",
+      "reader-data-loading",
+      "bible-multi-select",
+      "bible-picker-mobile",
+    ]) {
       assert.ok(
         result.args.includes(`e2e/${spec}.spec.ts`),
         `${module}: ${spec}`,

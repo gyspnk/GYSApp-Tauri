@@ -157,6 +157,9 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     ) {
       specFiles.add("e2e/bible-annotations.spec.ts");
       specFiles.add("e2e/reader-data-loading.spec.ts");
+      // Selection, picker and hold gestures live in these two render modules.
+      specFiles.add("e2e/bible-multi-select.spec.ts");
+      specFiles.add("e2e/bible-picker-mobile.spec.ts");
       specFiles.add("e2e/visual.spec.ts");
       specFiles.add("e2e/accessibility.spec.ts");
       // Annotation tests include legacy migration without "Bible" in the title.
