@@ -2796,6 +2796,20 @@ Perf hosted `42612434748` (head `f05c6f5`, 1280×800, satu run):
 
 Catatan: kontrak `toHaveCount(533)` pada `kidung-loading`/`kidung-offline` tetap berlaku karena batch idle menyelesaikan seluruh daftar < 1 dtk; sweep penuh memverifikasinya.
 
+### Catatan varians navigasi klien (9 Nov, putaran 200 lanjutan)
+
+Dua run `perf.yml` berurutan pada kode yang sama memberi angka yang tidak bisa dipakai sebagai bukti regresi:
+
+| Langkah           | run `42612434748` | run `42613631829` |
+| ----------------- | ----------------- | ----------------- |
+| beranda → Alkitab | 120 ms            | 872 ms            |
+| Alkitab → Kidung  | 1 080 ms          | 88 ms             |
+| Kidung → pembaca  | 1 090 ms          | 973 ms            |
+
+Karena itu **keputusan performa navigasi harus memakai median ≥3 run**, bukan satu run. `[runtime-navigation-detail]` juga mengembalikan `marks: []` meski `performance.mark("gys-kidung-catalog-*")` sudah dipasang, jadi klaim “mount vs data” belum punya bukti dan tidak dipakai untuk menyimpulkan apa pun.
+
+Yang tetap valid dari putaran ini adalah angka route-ready (stabil ±10 % antar run): `kidung-phone` **538 ms** (1 314 sebelumnya), `kidung-desktop` **604 ms** (980), route lain 500–770 ms, `e2e` sweep penuh `42612762973` **hijau 4/4 shard**.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
