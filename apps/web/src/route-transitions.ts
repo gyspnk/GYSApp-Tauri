@@ -1,5 +1,5 @@
 import { transitionReader } from "./reader-transition.js";
-import { preloadRoute } from "./route-preload.js";
+import { isRouteWarm, preloadRoute } from "./route-preload.js";
 
 let navigationGeneration = 0;
 
@@ -45,13 +45,19 @@ export async function navigateSmooth(
   const current = ++navigationGeneration;
   const origin = `${location.pathname}${location.search}`;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  await Promise.race([
-    preloadRoute(path).catch(() => undefined),
-    new Promise<void>((resolve) => {
-      timer = setTimeout(resolve, PRELOAD_BUDGET_MS);
-    }),
-  ]);
-  clearTimeout(timer);
+  if (isRouteWarm(path)) {
+    // Everything the route needs is already parsed; waiting the preload race
+    // only added up to PRELOAD_BUDGET_MS before the click did anything.
+    void preloadRoute(path).catch(() => undefined);
+  } else {
+    await Promise.race([
+      preloadRoute(path).catch(() => undefined),
+      new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, PRELOAD_BUDGET_MS);
+      }),
+    ]);
+    clearTimeout(timer);
+  }
   if (current !== navigationGeneration) return;
   // A history move or another navigation already left this page.
   if (`${location.pathname}${location.search}` !== origin) return;

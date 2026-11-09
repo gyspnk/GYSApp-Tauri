@@ -51,6 +51,24 @@ async function loadRouteData(id: RouteId): Promise<void> {
     );
 }
 
+/** Routes whose code (and, when asked, data) already finished warming. A warm
+ * route can navigate without the preload race, which used to cost up to
+ * PRELOAD_BUDGET_MS on every click even when nothing was left to fetch. */
+const warmRoutes = new Set<string>();
+
+function warmKey(path: string, data: boolean) {
+  return `${data ? "data" : "code"}:${path.split(/[?#]/)[0] ?? "/"}`;
+}
+
+export function isRouteWarm(
+  path: string,
+  { data = true }: PreloadOptions = {},
+): boolean {
+  return (
+    warmRoutes.has(warmKey(path, data)) && warmRoutes.has(warmKey(path, false))
+  );
+}
+
 export function preloadRoute(
   path: string,
   { data = true }: PreloadOptions = {},
@@ -70,14 +88,19 @@ export function preloadRoute(
           import("./kidung-page.js").then((m) => m.preloadKidungView(path)),
         ])
       : route;
-  return (pathname.startsWith("/literatur/") &&
-    /[?&]read=1(?:&|$)/.test(path)) ||
+  const settles =
+    (pathname.startsWith("/literatur/") && /[?&]read=1(?:&|$)/.test(path)) ||
     (pathname.startsWith("/kidung/") && /[?&]mode=pdf(?:&|$)/.test(path))
-    ? Promise.all([
-        withView,
-        import("./pdf-reader-loader.js").then((m) => m.preloadPdfReader()),
-      ])
-    : withView;
+      ? Promise.all([
+          withView,
+          import("./pdf-reader-loader.js").then((m) => m.preloadPdfReader()),
+        ])
+      : withView;
+  return settles.then((value) => {
+    warmRoutes.add(warmKey(path, false));
+    if (data) warmRoutes.add(warmKey(path, true));
+    return value;
+  });
 }
 
 /** Warm only the first Bible chapter (index + one book, ~90 KiB) instead of
