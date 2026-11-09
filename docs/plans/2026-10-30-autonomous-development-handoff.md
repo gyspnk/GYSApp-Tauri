@@ -2829,6 +2829,16 @@ Angka sesudah, satu run `perf.yml` (`42616896420`), 1280×800, variance runner �
 - Gerbang `perf-budget` (jadwal Senin) adalah satu-satunya job merah di nightly `42601448960`; penyebabnya kontrak lama (`tb-reader.json` / `.verse-row`) dan sekarang memakai `.bible-reader`, menghitung `books/index.json`, dan menyatakan harga first-visit pack per kitab (1 000 ms untuk Alkitab, 750 ms untuk rute markup) alih-alih mengklaim 250 ms yang tidak pernah tercapai di runner dua worker.
 - Full sweep `42630521036` **hijau** termasuk `perf-budget`; `e2e-shard` tidak lagi diduplikasi saat dispatch `full=true` (suite penuh sudah ada di job `e2e`).
 
+### Koleksi Kidung: default KR, pilihan diingat, volume ASM dipisah (9 Nov, putaran 202)
+
+Permintaan pemilik: koleksi awal harus **KR**, sub-kategori anak dipisah per buku (**ASM-I, ASM-P, ASM-M**), dan pilihan koleksi diingat saat katalog dibuka lagi.
+
+- `apps/web/src/distributed-hymnals.ts` sebelumnya memetakan ketiga paket ASM ke satu buku `"anak"`, sehingga pemilih hanya punya satu "Anak". Sekarang tiap volume memakai kode paketnya sendiri (`ASM-I`, `ASM-M`, `ASM-P`) dan `HymnCatalogEntrySchema` menerima ketiga kode itu.
+- `hymnCollectionLabel()` mempertahankan kode paket apa adanya (tidak lagi menjadi "Asm I"), sedangkan `rohani` tetap tampil "KR".
+- `apps/web/src/kidung-collection-store.ts` menyimpan pilihan di `localStorage["gys-kidung-collection-v1"]` dan `resolveCollection(books, stored)` memilih: buku tersimpan bila masih ada → `rohani` (KR) → buku pertama. Katalog memakainya sebagai `activeBook`, jadi membuka ulang katalog kembali ke koleksi terakhir.
+- Bukti: unit `kidung-collection-store.test.ts` (3 kasus) dan `distributed-hymnals.test.ts` (tiga kode ASM) hijau di run `42647363064`; e2e `kidung-section-navigation` mengunci default "KR" karena CI hanya membawa satu koleksi bawaan.
+- Toolbar Kidung juga kini memakai satu bentuk untuk kedua halaman: tab dua baris penuh di ≤1100 px supaya label tidak hilang di halaman katalog tetapi muncul di halaman antrean (commit `d4ec367`).
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
