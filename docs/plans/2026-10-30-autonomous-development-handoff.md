@@ -6991,3 +6991,9 @@ mengharapkan opsi “Semua” di filter koleksi Kidung, padahal pemilik meminta
 hanya satu koleksi aktif. `apps/web/scripts/edge-tts-native-smoke.mjs` sekarang
 membandingkan daftar koleksi tanpa entri “Semua”, menormalkan glyph centang
 pada opsi terpilih, dan memilih opsi lewat indeks (`9aa5c79`).
+
+Hasil: soak native `42556462041` **success** dengan kontrak koleksi baru, dan
+QA hosted `42558303492` **success** (132 screenshot, 0 masalah overflow/box,
+0 temuan konsistensi). Audit konsistensi sempat gagal pada `42557623910` karena
+baris pengaturan selebar 1170 px ikut dihitung sebagai peer tombol topbar —
+baris seperti itu sekarang dikecualikan (`927ab93`), bukan dilonggarkan.
