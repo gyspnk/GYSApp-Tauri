@@ -3997,6 +3997,10 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
+.kidung-tool-page .kidung-local-nav,
+.kidung-tool-page .kidung-local-nav-links {
+  width: 100%;
+}
 .hymn-page .kidung-local-nav-links,
 .kidung-tool-page .kidung-local-nav-links {
   display: grid;

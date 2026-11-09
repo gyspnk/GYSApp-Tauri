@@ -98,6 +98,19 @@ for (const width of [390, 768, 1440]) {
   });
 }
 
+test("tool page tabs share one width at every breakpoint", async ({ page }) => {
+  for (const width of [390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 720 });
+    await page.goto("/GYSApp-Tauri/kidung?section=playlist");
+    const links = page.locator(".kidung-tool-page .kidung-local-nav-links a");
+    await expect(links).toHaveCount(2);
+    const kidung = await links.nth(0).boundingBox();
+    const queue = await links.nth(1).boundingBox();
+    expect(kidung!.width).toBeGreaterThan(80);
+    expect(Math.abs(kidung!.width - queue!.width)).toBeLessThanOrEqual(1);
+  }
+});
+
 test("section links retain smooth fallback motion without View Transitions", async ({
   page,
 }) => {
