@@ -398,6 +398,15 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
           )}
         </div>
       )}
+      {status !== "error" &&
+        !query &&
+        category === "all" &&
+        !(status === "ready" && featured.length > 0) && (
+          // Reserve the shelf before its data lands: the sections below were
+          // pushed 114 px when it appeared after the first paint (measured
+          // 0,016 CLS on phones).
+          <div className="literature-featured-slot" aria-hidden="true" />
+        )}
       {status === "ready" &&
         featured.length > 0 &&
         !query &&
