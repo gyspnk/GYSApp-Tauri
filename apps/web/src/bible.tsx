@@ -194,6 +194,9 @@ export function BiblePage({ locale }: { locale: Locale }) {
   const [selectedVerseId, setSelectedVerseId] = useState<string>();
   const [multiVerseIds, setMultiVerseIds] = useState<string[]>([]);
   const multiAnchorRef = useRef<string | undefined>(undefined);
+  // When the last verse tap happened: a second tap within a few seconds reads
+  // as "select more", a slow one as "show me this verse".
+  const lastVerseTapRef = useRef<number | undefined>(undefined);
   const [noteTargetIds, setNoteTargetIds] = useState<string[]>([]);
   const [selectedNoteId, setSelectedNoteId] = useState<string>();
   const selectedNoteIdRef = useRef<string | undefined>(undefined);
@@ -974,10 +977,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (notesPopupOpen) return;
     setNoteTargetIds([]);
-    // Closing the note popup ends that verse's inspection, so the next tap on
-    // another verse is a fresh single selection instead of a merge into the
-    // adaptive multi selection.
-    setSelectedVerseId(undefined);
   }, [notesPopupOpen]);
 
   useEffect(() => {
@@ -1203,9 +1202,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
       hapticTick("light");
       return;
     }
-    // A second tap on another verse is the adaptive multi-select: the reader
-    // never has to find the “Pilih banyak ayat” button first.
-    if (selectedVerseId && selectedVerseId !== verse.id) {
+    // A quick second tap on another verse is the adaptive multi-select: the
+    // reader never has to find the “Pilih banyak ayat” button first. A slow
+    // tap is inspection (open this verse's notes), so the timer keeps the two
+    // intents apart.
+    const quick =
+      lastVerseTapRef.current !== undefined &&
+      Date.now() - lastVerseTapRef.current < 4_000;
+    lastVerseTapRef.current = Date.now();
+    if (quick && selectedVerseId && selectedVerseId !== verse.id) {
       multiAnchorRef.current = selectedVerseId;
       setMultiVerseIds([selectedVerseId, verse.id]);
       setSelectedVerseId(undefined);
