@@ -2784,6 +2784,18 @@ Perf hosted `42609143945` (head `cf3ce40`, satu run, 1280×800):
 
 Route siap: home 445–496 ms, bible 462–518, kidung 465–1 439 (varians runner), iman 434–447, literatur 601–908, suara 496–599, lainnya 475–477. CLS beranda 0,003/0,002/0,017 (desktop masih 48 px dari blok progres loading, disengaja).
 
+### Katalog Kidung: 1 314 → 538 ms (9 Nov, putaran 200)
+
+Baris katalog dirender 14 baris pertama lalu ditambah 80 baris per giliran idle. Sebelumnya 60 baris pertama, lalu sisanya (533) di-commit sekaligus dalam satu transisi — biaya commit 533 baris itu yang dominan.
+
+Perf hosted `42612434748` (head `f05c6f5`, 1280×800, satu run):
+
+- `kidung-phone` **538 ms** (sebelumnya 1 314 ms), `kidung-tablet` 578 (593), `kidung-desktop` **604 ms** (980).
+- `home` 573/563/647, `bible` 566/569/617, `literatur` 748/763/765 — tidak berubah berarti.
+- Navigasi klien: beranda → Alkitab 120 ms; Alkitab → Kidung 1 080 ms; Kidung → pembaca 1 090 ms (dua angka terakhir masih varians runner, perlu ≥3 sampel sebelum disimpulkan).
+
+Catatan: kontrak `toHaveCount(533)` pada `kidung-loading`/`kidung-offline` tetap berlaku karena batch idle menyelesaikan seluruh daftar < 1 dtk; sweep penuh memverifikasinya.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
