@@ -2859,6 +2859,12 @@ Satu run `perf.yml` `42657705173` (21 baris, 0 error, 0 duplicate asset, 0 panel
 - Percobaan menghangatkan **payload** saat hover (`preloadRoute(path, { data: true })`) **ditolak**: klik jadi 296 / 1 007 / 1 050 ms karena parsing data bersaing dengan render. `apps/web/src/App.tsx` kembali menghangatkan kode saja (`a5b6ada`), dengan komentar berisi angka tersebut. Uji perf tetap memakai hover 150 ms agar jalurnya sama dengan pembaca (`f2410eb`).
 - Sumber CLS beranda desktop tetap `section.home-suara-section` bergeser 48 px (blok progres loading yang disengaja) dan `div.literature-sections` di Literatur 114 px (rak “terbaru” muncul setelah data); keduanya di ambang baik dan sudah dicoba dinaikkan tanpa hasil.
 
+### Seleksi adaptif & biaya buka Kidung (9 Nov, putaran 204)
+
+- Ketuk ayat lain saat satu ayat aktif sekarang langsung membuka multi-select (tanpa tombol). Tahan/⌘/Ctrl/Shift tetap ada. Konsekuensi kontrak: `apps/web/scripts/edge-tts-native-smoke.mjs` harus membersihkan seleksi sebelum menyorot ayat berikutnya — soak `42669919409` gagal di langkah palet warna karena ketukan kedua menjadi multi; diperbaiki di `04828ed` dan di-dispatch ulang (`42673014711`).
+- Indeks pencarian Kidung dibuat _lazy_ (dibangun saat pembaca mengetik, bukan saat katalog dibuka) supaya pembukaan hanya membayar baris. Diukur: `kidung` ready 561/546/692 ms (sebelum 499/502/514) — **di dalam noise ±30 %**, jadi tidak diklaim sebagai perbaikan; alasan mempertahankannya adalah pekerjaan yang tidak lagi dikerjakan di jalur buka.
+- Navigasi klik, median tiga run `perf.yml` (`42657705173`, `42667029246`, `42672123041`): beranda→Alkitab **268 ms**, Alkitab→Kidung **902 ms**, Kidung→pembaca **898 ms**. Target < 300 ms belum tercapai untuk dua langkah; `marks`/`resources` kosong sehingga biayanya mount/render. Percobaan hangatkan payload saat hover sudah ditolak sebelumnya (1 007/1 050 ms).
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
