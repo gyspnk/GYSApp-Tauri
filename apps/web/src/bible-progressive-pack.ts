@@ -36,8 +36,29 @@ function isIndexEntry(value: unknown): value is BibleBookIndexEntry {
   );
 }
 
+// The index is the same 66-row document on every visit; re-fetching it per
+// navigation cost 9 requests in the warm-navigation budget test.
+const indexRequests = new Map<string, Promise<BibleBookIndexEntry[]>>();
+
+export function clearBibleBookIndexCache() {
+  indexRequests.clear();
+}
+
 export async function loadBibleBookIndex(
   url = bibleBookIndexUrl(),
+): Promise<BibleBookIndexEntry[]> {
+  const cached = indexRequests.get(url);
+  if (cached) return cached;
+  const request = fetchBibleBookIndex(url).catch((error: unknown) => {
+    indexRequests.delete(url);
+    throw error;
+  });
+  indexRequests.set(url, request);
+  return request;
+}
+
+async function fetchBibleBookIndex(
+  url: string,
 ): Promise<BibleBookIndexEntry[]> {
   const response = await fetch(url, { cache: "force-cache" });
   if (!response.ok)

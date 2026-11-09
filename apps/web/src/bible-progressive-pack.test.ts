@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { ProgressiveBiblePack } from "./bible-progressive-pack.js";
+import {
+  clearBibleBookIndexCache,
+  loadBibleBookIndex,
+  ProgressiveBiblePack,
+} from "./bible-progressive-pack.js";
 import type { BibleBookPack } from "./bible-pack-loader.js";
 
 const index = [
@@ -139,5 +143,45 @@ describe("ProgressiveBiblePack", () => {
       name: "2",
       chapters: 3,
     });
+  });
+});
+
+describe("bible book index", () => {
+  it("is fetched once and reused across navigations", async () => {
+    clearBibleBookIndexCache();
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ books: index }),
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    const first = await loadBibleBookIndex(
+      "/base/offline/bible/books/index.json",
+    );
+    const second = await loadBibleBookIndex(
+      "/base/offline/bible/books/index.json",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(second).toEqual(first);
+    vi.unstubAllGlobals();
+  });
+
+  it("retries after a failure instead of caching it", async () => {
+    clearBibleBookIndexCache();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ books: index }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(loadBibleBookIndex("/base/index.json")).rejects.toThrow(
+      "Bible book index failed: 503",
+    );
+    await expect(loadBibleBookIndex("/base/index.json")).resolves.toHaveLength(
+      3,
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
   });
 });

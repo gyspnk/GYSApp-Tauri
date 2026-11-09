@@ -387,7 +387,9 @@ jobs:
     # The whole 856-test suite belongs to the nightly schedule, a `full-ci`
     # labelled pull request, or a manual dispatch (the QA-only dispatch has its
     # own job). Ordinary pushes use the selective path.
-    if: ${{ (inputs.full == true || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.qa != true) || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' || inputs.full == true }}
+    # A full dispatch already runs the whole suite in the `e2e` job; sharding it
+    # again duplicated work and doubled the flake surface.
+    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.qa != true && inputs.full != true) || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
