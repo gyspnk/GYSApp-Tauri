@@ -124,7 +124,9 @@ type EdgeSocket = {
 export type SpeechSocketFactory = (url: string) => Promise<EdgeSocket>;
 
 async function openSpeechSocket(url: string): Promise<EdgeSocket> {
-  const response = await fetch(url, {
+  // `fetch` refuses a `wss:` URL; the upgrade handshake wants the same
+  // endpoint over `https:` and answers 101 with `response.webSocket`.
+  const response = await fetch(url.replace(/^wss:/, "https:"), {
     headers: {
       Upgrade: "websocket",
       Origin: ORIGIN,
