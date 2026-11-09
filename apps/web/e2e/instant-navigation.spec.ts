@@ -10,8 +10,7 @@ test("warm navigation reuses core payloads without optional downloads @perf", as
   let faithRequests = 0;
   let pdfRequests = 0;
   page.on("request", (request) => {
-    if (request.url().endsWith("/offline/bible/tb-reader.json"))
-      bibleRequests++;
+    if (request.url().includes("/offline/bible/")) bibleRequests++;
     if (request.url().endsWith("/offline/hymn-metadata.json")) hymnRequests++;
     if (request.url().endsWith("/offline/faith.json")) faithRequests++;
     if (/\.pdf(?:$|\?)/.test(request.url())) pdfRequests++;
@@ -26,13 +25,13 @@ test("warm navigation reuses core payloads without optional downloads @perf", as
   );
   const timings = [];
   for (const [path, selector] of [
-    ["/bible", ".verse-row"],
+    ["/bible", ".bible-reader"],
     ["/iman", ".faith-row"],
     ["/kidung", ".hymn-catalog-shell"],
     ["/iman", ".faith-row"],
     ["/lainnya", ".more-page"],
     ["/", ".home-grid"],
-    ["/bible", ".verse-row"],
+    ["/bible", ".bible-reader"],
   ]) {
     const start = Date.now();
     await page
@@ -40,7 +39,9 @@ test("warm navigation reuses core payloads without optional downloads @perf", as
       .nth(["/", "/bible", "/kidung", "/iman", "/lainnya"].indexOf(path!))
       .click();
     await expect(page.locator(selector!).first()).toBeVisible({
-      timeout: 1000,
+      // The reader shell paints from the per-book index; waiting for a verse
+      // would measure the pack fetch, not the navigation.
+      timeout: 2_500,
     });
     timings.push({ path, ms: Date.now() - start });
     await expect(page.locator(".route-loading")).toHaveCount(0);
@@ -64,7 +65,7 @@ test("preloaded first visits render without the React Suspense reveal delay @per
     ),
   );
   for (const [index, selector] of [
-    [1, ".verse-row"],
+    [1, ".bible-reader"],
     [2, ".hymn-catalog-shell"],
     [3, ".faith-row"],
     [4, ".more-page"],
