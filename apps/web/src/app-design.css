@@ -5777,4 +5777,17 @@ body:has(.hymn-detail-page.is-text-viewer)
   .home-grid .verse-panel:has(.sauh-skeleton) {
     min-height: 132px;
   }
+
+  /* The flex children kept their phone padding, so the card still grew to
+     194 px before the verse arrived and pushed everything below it up by
+     64 px (hosted desktop shift 0.022). Compact them to the painted height. */
+  .home-grid .sauh-card-content:has(.sauh-skeleton) {
+    min-height: 0;
+    padding: 6px 12px;
+  }
+
+  .home-grid .verse-panel:has(.sauh-skeleton) .sauh-skeleton {
+    min-height: 0;
+    padding: 4px 0;
+  }
 }
