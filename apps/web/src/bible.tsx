@@ -1526,7 +1526,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setPickerModalOpen(true);
   };
 
-  const onVerseTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+  const onVerseTouchStart = (event: TouchEvent<HTMLElement>) => {
     if (
       event.target instanceof Element &&
       event.target.closest("button, a, input, textarea, [contenteditable]")
@@ -1536,10 +1536,10 @@ export function BiblePage({ locale }: { locale: Locale }) {
     }
     chapterSwipe.current.start(event.touches, event.timeStamp);
   };
-  const onVerseTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+  const onVerseTouchMove = (event: TouchEvent<HTMLElement>) => {
     chapterSwipe.current.move(event.touches);
   };
-  const onVerseTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+  const onVerseTouchEnd = (event: TouchEvent<HTMLElement>) => {
     const delta = chapterSwipe.current.end(
       event.changedTouches,
       event.touches.length,
@@ -1687,10 +1687,19 @@ export function BiblePage({ locale }: { locale: Locale }) {
         </div>
       )}
 
+      {/* The swipe lives on the reader, not the pane: a pack swap replaces the
+          pane mid-gesture and used to drop the chapter intent. */}
       {packState.status === "ready" && book && (
         <section
           className={`bible-reader${splitView ? " is-split" : ""}`}
           aria-label={translate(locale, "page.bibleTitle")}
+          onTouchStart={onVerseTouchStart}
+          onTouchMove={onVerseTouchMove}
+          onTouchEnd={onVerseTouchEnd}
+          onTouchCancel={() => {
+            chapterSwipe.current.cancel();
+            chapterSwipe.current.end([], 0, 0);
+          }}
         >
           <div
             className="bible-reader-layout"
@@ -1722,13 +1731,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
               onScroll={onPrimaryScroll}
               onSelect={selectVerse}
               onBookmark={toggleBookmark}
-              onTouchStart={onVerseTouchStart}
-              onTouchMove={onVerseTouchMove}
-              onTouchCancel={() => {
-                chapterSwipe.current.cancel();
-                chapterSwipe.current.end([], 0, 0);
-              }}
-              onTouchEnd={onVerseTouchEnd}
             />
             {splitView && (
               <div
