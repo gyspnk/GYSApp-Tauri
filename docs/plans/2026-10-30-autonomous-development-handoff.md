@@ -2772,6 +2772,18 @@ mengenali dan melewatinya.
 - **Kontrol PDF 44 px** (`f4f7246`): `boundingBox()` pada stage yang di-scale memberi 43,991 px; kontrak kini memakai `offsetWidth/offsetHeight` (kotak CSS) dan tetap memastikan elemen terukur.
 - **Tab antrean** (`e6f62d1`, `0196f37`): tes baru memastikan dua tab halaman antrean sama lebar (selisih ≤1 px) di 390/768/1440; CSS diberi aturan gabungan `.hymn-page.kidung-tool-page` agar tidak kalah oleh aturan flex katalog. QA `42605363836` menghasilkan screenshot yang identik byte-per-byte, artinya lebar tab memang sudah sama — inset yang terlihat hanyalah indikator aktif.
 
+### Navigasi klien: Alkitab 673 → 78 ms (9 Nov, putaran 244)
+
+`route-preload.ts` masih menghangatkan **seluruh** pack Alkitab (7,6 MB) saat hover/kunjungan berulang, padahal pembaca kini melukis dari file per-kitab. `loadRouteData("bible")` sekarang memanggil `warmBibleFirstChapter()` (index + kitab pertama, ~90 KiB), dan pack penuh tetap mulai setelah paint.
+
+Perf hosted `42609143945` (head `cf3ce40`, satu run, 1280×800):
+
+- beranda → Alkitab **78 ms** (sebelumnya 673 ms sesudah hover; 1 183 ms pada run dingin).
+- Alkitab → Kidung **646 ms** (sebelumnya 75–111 ms; angka ini naik-turun antar run, perlu sampel ≥3 sebelum disimpulkan).
+- Kidung → pembaca **869 ms** (sebelumnya 852 ms).
+
+Route siap: home 445–496 ms, bible 462–518, kidung 465–1 439 (varians runner), iman 434–447, literatur 601–908, suara 496–599, lainnya 475–477. CLS beranda 0,003/0,002/0,017 (desktop masih 48 px dari blok progres loading, disengaja).
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
