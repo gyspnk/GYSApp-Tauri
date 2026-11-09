@@ -73,11 +73,14 @@ test("preloaded first visits render without the React Suspense reveal delay @per
       (id) => performance.getEntriesByName(`gys-route-preloaded:${id}`).length,
     ),
   );
-  for (const [index, selector] of [
-    [1, ".bible-reader"],
-    [2, ".hymn-catalog-shell"],
-    [3, ".faith-row"],
-    [4, ".more-page"],
+  // The Bible shell now needs its per-book index before the reader exists; that
+  // first fetch is the price of not shipping 1,7 MB on every visit, so its
+  // budget is stated instead of pretending it is free.
+  for (const [index, selector, budget] of [
+    [1, ".bible-reader", 1_000],
+    [2, ".hymn-catalog-shell", 250],
+    [3, ".faith-row", 250],
+    [4, ".more-page", 250],
   ] as const) {
     const elapsed = await page.evaluate(
       ({ index, selector }) =>
@@ -96,7 +99,7 @@ test("preloaded first visits render without the React Suspense reveal delay @per
         }),
       { index, selector },
     );
-    expect(elapsed, selector).toBeLessThan(250);
+    expect(elapsed, selector).toBeLessThan(budget);
     await expect(page.locator(".route-loading")).toHaveCount(0);
   }
 });
