@@ -1517,8 +1517,9 @@ try {
   const collectionLabels = await collectionFilter
     .locator(".control-select-option")
     .allTextContents();
+  // The catalogue keeps exactly one collection active (owner request), so the
+  // option list is the collection list without an "all" entry.
   const expectedCollectionLabels = [
-    "Semua",
     ...[...new Set(hymnCatalog.items.map((item) => item.book))]
       .sort()
       .map((book) =>
@@ -1533,17 +1534,20 @@ try {
               .join(" "),
       ),
   ];
+  const normalizeOption = (value) => value.replace(/\s*\u2713\s*$/, "").trim();
   assert.deepEqual(
-    collectionLabels,
+    collectionLabels.map(normalizeOption),
     expectedCollectionLabels,
     "Packaged hymnal collection names differ from the installed catalog",
   );
-  for (const label of expectedCollectionLabels.slice(1)) {
-    await collectionFilter
-      .getByRole("option", { name: label, exact: true })
-      .click();
+  for (const [index, label] of expectedCollectionLabels.entries()) {
+    if (index > 0)
+      await collectionFilter.locator(".control-select-trigger").click();
+    await collectionFilter.locator(".control-select-option").nth(index).click();
     assert.equal(
-      await collectionFilter.locator(".control-select-value").innerText(),
+      normalizeOption(
+        await collectionFilter.locator(".control-select-value").innerText(),
+      ),
       label,
       `Packaged collection filter did not select ${label}`,
     );
@@ -1551,11 +1555,7 @@ try {
       (await page.locator(".pujian-item").count()) > 0,
       `Packaged collection ${label} returned no hymns`,
     );
-    await collectionFilter.locator(".control-select-trigger").click();
   }
-  await collectionFilter
-    .getByRole("option", { name: "Semua", exact: true })
-    .click();
 
   await page.goto(new URL("/kidung/hymn-051A", origin).href);
   await page.getByRole("heading", { name: "Batu Zaman", exact: true }).waitFor({
