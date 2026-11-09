@@ -105,6 +105,12 @@ harus diperiksa manual di Console untuk client tersebut:
 Pengaturan opsional:
 
 - `EDGE_TTS_URL`: secret berisi gateway audio Edge yang sudah diverifikasi.
+  Kalau secret ini kosong, Worker memakai **Azure Speech** langsung asalkan dua
+  binding berikut ada (dua-duanya secret, bukan variabel publik):
+  `AZURE_SPEECH_KEY` dan `AZURE_SPEECH_REGION` (mis. `southeastasia`). Jalur
+  Azure memakai nama voice Edge yang sama, format
+  `audio-24khz-48kbitrate-mono-mp3`, batas 10 MiB dan timeout 20 detik. Tanpa
+  ketiga binding, rute menjawab 503 dan aplikasi membaca dengan suara perangkat.
 - `EDGE_TTS_VOICES_URL`: secret URL katalog suara gateway tersebut, bila tersedia.
 
 Jangan mengisi URL gateway fiktif. Kontrak gateway: `POST` JSON

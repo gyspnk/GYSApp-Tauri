@@ -856,6 +856,101 @@ describe("BFF public boundary", () => {
     }
   });
 
+  it("synthesizes Edge voices through Azure when no relay is configured", async () => {
+    const originalFetch = globalThis.fetch;
+    let seenUrl = "";
+    let seenKey = "";
+    let seenBody = "";
+    globalThis.fetch = (async (input, init) => {
+      seenUrl = String(input);
+      seenKey = String(
+        (init?.headers as Record<string, string> | undefined)?.[
+          "Ocp-Apim-Subscription-Key"
+        ] ?? "",
+      );
+      seenBody = String(init?.body ?? "");
+      return new Response(new Uint8Array([73, 68, 51]), {
+        status: 200,
+        headers: { "content-type": "audio/mpeg", "content-length": "3" },
+      });
+    }) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/tts/edge",
+        {
+          method: "POST",
+          headers: {
+            Origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            text: "Bacaan hari ini",
+            voice: "id-ID-GadisNeural",
+            rate: 0.9,
+            pitch: 1,
+            volume: 1,
+          }),
+        },
+        {
+          AZURE_SPEECH_KEY: "test-key",
+          AZURE_SPEECH_REGION: "southeastasia",
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("audio/mpeg");
+      expect(seenUrl).toBe(
+        "https://southeastasia.tts.speech.microsoft.com/cognitiveservices/v1",
+      );
+      expect(seenKey).toBe("test-key");
+      expect(seenBody).toContain("id-ID-GadisNeural");
+      expect(seenBody).toContain("Bacaan hari ini");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("reports the Azure reason when speech synthesis fails", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response("denied", { status: 401 })) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request(
+        "/api/v1/tts/edge",
+        {
+          method: "POST",
+          headers: {
+            Origin: "http://localhost:5173",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            text: "Bacaan hari ini",
+            voice: "id-ID-GadisNeural",
+          }),
+        },
+        {
+          AZURE_SPEECH_KEY: "test-key",
+          AZURE_SPEECH_REGION: "southeastasia",
+        },
+      );
+      expect(response.status).toBe(503);
+      const body = await response.json();
+      expect(JSON.stringify(body)).toContain("Azure speech is unavailable");
+      expect(JSON.stringify(body)).toContain("401");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("normalizes a validated Edge voice catalog without exposing its URL", async () => {
     const originalFetch = globalThis.fetch;
     let seenUrl = "";

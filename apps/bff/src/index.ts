@@ -34,6 +34,7 @@ import { egysUpstreamCommit } from "./egys-provenance.js";
 import { egysOpenApiContract } from "./egys-contract.js";
 import { forkPdfSource } from "./fork-pdf-source.js";
 import { normalizeEgysV1Profile } from "./egys-v1.js";
+import { synthesizeAzureSpeech } from "./azure-speech.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -139,6 +140,8 @@ export type BffBindings = {
   EGYS_GOOGLE_CLIENT_ID?: string;
   EDGE_TTS_URL?: string;
   EDGE_TTS_VOICES_URL?: string;
+  AZURE_SPEECH_KEY?: string;
+  AZURE_SPEECH_REGION?: string;
   LITERATURE_SOURCE_URL?: string;
   EGYS_UPSTREAM_COMMIT?: string;
 };
@@ -1306,12 +1309,44 @@ export function createApp(
   app.post("/api/v1/tts/edge", async (c) => {
     c.header("cache-control", "no-store");
     const configured = c.env?.EDGE_TTS_URL?.trim();
-    if (!configured)
+    if (!configured) {
+      // No relay: Azure Speech is the supported cloud service behind the same
+      // voice names. Two bindings replace a self-hosted gateway; without them
+      // the old "not configured" answer stands.
+      const azureKey = c.env?.AZURE_SPEECH_KEY?.trim();
+      const azureRegion = c.env?.AZURE_SPEECH_REGION?.trim();
+      if (azureKey && azureRegion) {
+        const azureRequest = EdgeTtsRequestSchema.safeParse(
+          await c.req.json().catch(() => undefined),
+        );
+        if (!azureRequest.success)
+          return errorResponse(
+            c,
+            "VALIDATION_ERROR",
+            "Edge speech request is invalid",
+          );
+        try {
+          const audio = await synthesizeAzureSpeech(azureRequest.data, {
+            key: azureKey,
+            region: azureRegion,
+          });
+          c.header("content-type", "audio/mpeg");
+          c.header("content-length", String(audio.byteLength));
+          return c.body(audio);
+        } catch (error) {
+          return errorResponse(
+            c,
+            "UPSTREAM_UNAVAILABLE",
+            `Azure speech is unavailable (${error instanceof Error ? error.message : "unknown error"})`,
+          );
+        }
+      }
       return errorResponse(
         c,
         "UPSTREAM_UNAVAILABLE",
         "Edge compatibility speech is not configured",
       );
+    }
     let endpoint: URL;
     try {
       endpoint = new URL(configured);
