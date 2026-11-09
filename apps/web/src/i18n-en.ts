@@ -638,7 +638,6 @@ export const enFeatureMessages: Record<string, string> = {
   "faith.loadingPdfViewer": "Loading PDF viewer…",
   "faith.pdfStats":
     "Page {page}/{totalPages} · {percent}% · Last opened {date}",
-  "literature.eyebrow": "tjc.org · spiritual library",
   "literature.title": "Literature",
   "literature.itemCount": "{count} titles",
   "literature.latest": "Latest picks",

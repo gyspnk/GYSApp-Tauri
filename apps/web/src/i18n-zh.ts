@@ -624,7 +624,6 @@ export const zhFeatureMessages: Record<string, string> = {
   "faith.openOfficialSource": "打开官方来源页面 ↗",
   "faith.loadingPdfViewer": "正在加载 PDF 查看器…",
   "faith.pdfStats": "第 {page}/{totalPages} 页 · {percent}% · 上次打开 {date}",
-  "literature.eyebrow": "tjc.org · 灵修图书馆",
   "literature.title": "文献",
   "literature.itemCount": "{count} 个标题",
   "literature.latest": "最新精选",

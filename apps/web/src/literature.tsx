@@ -312,15 +312,9 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
   return (
     <div className="page literature-page">
       <section className="page-intro literature-intro">
-        <div>
-          <p className="date-line">{translate(locale, "literature.eyebrow")}</p>
-          <h1>{translate(locale, "literature.title")}</h1>
-        </div>
-        <span className="pack-badge">
-          {translate(locale, "literature.itemCount", {
-            count: items.length || "—",
-          })}
-        </span>
+        {/* The title alone: the eyebrow repeated the navigation label, and the
+            badge repeated the result count the filter row already states. */}
+        <h1>{translate(locale, "literature.title")}</h1>
       </section>
 
       <section

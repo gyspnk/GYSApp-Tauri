@@ -666,7 +666,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.loadingPdfViewer": "Memuat viewer PDF…",
     "faith.pdfStats":
       "Halaman {page}/{totalPages} · {percent}% · Terakhir dibuka {date}",
-    "literature.eyebrow": "tjc.org · perpustakaan rohani",
     "literature.title": "Literatur",
     "literature.itemCount": "{count} judul",
     "literature.latest": "Pilihan terbaru",
