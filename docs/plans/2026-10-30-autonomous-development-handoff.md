@@ -7075,3 +7075,20 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
   hijau `42573527688`. Tanpa secret Azure, probe langsung ke Worker tetap
   `503 Edge compatibility speech is not configured` — jalur Azure belum bisa
   dibuktikan di produksi sampai owner menambahkan dua secret itu.
+
+## Pilihan banyak ayat yang adaptif (9 Nov, putaran 240)
+
+- Tombol “Pilih banyak ayat” tidak lagi syarat masuk. Menahan ayat 450 ms,
+  ⌘/Ctrl-klik, atau Shift-klik langsung membuka mode pilihan; Shift-klik dari
+  satu ayat terpilih mengambil seluruh rentang di antaranya. Geser lebih dari
+  10 px membatalkan tahanan supaya menggulir tidak memilih ayat.
+- Penanda tahanan dipakai bersama satu `ref` dan klik tepat setelah tahanan
+  diabaikan, jadi ayat tidak terpilih lalu langsung batal dalam satu sentuhan.
+  Tombol lama tetap ada sebagai jalan yang mudah ditemukan untuk pengguna
+  keyboard atau yang belum tahu gestur.
+- Pemetaan CI ikut diperbaiki: perubahan `bible.tsx`/`bible-chapter.tsx` kini
+  menjalankan `bible-multi-select` dan `bible-picker-mobile`, tidak hanya
+  anotasi — sebelumnya spec pilihan tidak pernah ikut pada jalur selektif.
+- Bukti: unit + pemetaan hijau `42576200401`; full sweep `42576222764`
+  (4/4 shard) hijau, termasuk dua uji baru (“starts a multi selection by
+  holding a verse”, “shift-click from one verse chooses the whole range”).
