@@ -34,7 +34,6 @@ import { egysUpstreamCommit } from "./egys-provenance.js";
 import { egysOpenApiContract } from "./egys-contract.js";
 import { forkPdfSource } from "./fork-pdf-source.js";
 import { normalizeEgysV1Profile } from "./egys-v1.js";
-import { NATIVE_EDGE_VOICES, synthesizeEdgeSpeech } from "./edge-tts.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -1256,7 +1255,7 @@ export function createApp(
       "public, max-age=300, stale-while-revalidate=900",
     );
     const configured = c.env?.EDGE_TTS_VOICES_URL?.trim();
-    if (!configured) return c.json({ voices: NATIVE_EDGE_VOICES });
+    if (!configured) return c.json({ voices: [] });
     let endpoint: URL;
     try {
       endpoint = new URL(configured);
@@ -1306,32 +1305,13 @@ export function createApp(
 
   app.post("/api/v1/tts/edge", async (c) => {
     c.header("cache-control", "no-store");
-    const parsed = EdgeTtsRequestSchema.safeParse(
-      await c.req.json().catch(() => undefined),
-    );
-    if (!parsed.success)
+    const configured = c.env?.EDGE_TTS_URL?.trim();
+    if (!configured)
       return errorResponse(
         c,
-        "VALIDATION_ERROR",
-        "Edge speech request is invalid",
+        "UPSTREAM_UNAVAILABLE",
+        "Edge compatibility speech is not configured",
       );
-    const configured = c.env?.EDGE_TTS_URL?.trim();
-    if (!configured) {
-      try {
-        const audio = await synthesizeEdgeSpeech(parsed.data);
-        c.header("content-type", "audio/mpeg");
-        c.header("content-length", String(audio.byteLength));
-        return new Response(audio, { status: 200, headers: c.res.headers });
-      } catch (error) {
-        const reason =
-          error instanceof Error ? error.message.slice(0, 160) : "unknown";
-        return errorResponse(
-          c,
-          "UPSTREAM_UNAVAILABLE",
-          `Edge speech is unavailable (${reason})`,
-        );
-      }
-    }
     let endpoint: URL;
     try {
       endpoint = new URL(configured);
@@ -1347,6 +1327,15 @@ export function createApp(
         c,
         "FORBIDDEN",
         "Edge speech endpoint must use HTTPS",
+      );
+    const parsed = EdgeTtsRequestSchema.safeParse(
+      await c.req.json().catch(() => undefined),
+    );
+    if (!parsed.success)
+      return errorResponse(
+        c,
+        "VALIDATION_ERROR",
+        "Edge speech request is invalid",
       );
     try {
       const upstream = await fetch(endpoint, {
