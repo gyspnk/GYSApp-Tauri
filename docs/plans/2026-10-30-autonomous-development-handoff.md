@@ -2855,7 +2855,8 @@ Satu run `perf.yml` `42657705173` (21 baris, 0 error, 0 duplicate asset, 0 panel
 
 - `readyMs` ponsel/tablet/desktop: beranda 505/533/530, Alkitab 540/550/541, **Kidung 499/502/514** (sebelum batching 1 067/1 214/839), Iman 470/481/479, Literatur 705/717/775, Suara 583/744/648, Lainnya 521/535/566. Semua rute < 800 ms di runner dua worker.
 - CLS: beranda 0,003/0,002/0,017; Alkitab 0,013/0,025/0,002; Kidung ≤0,006; Iman 0; Literatur 0,016/0,012/0,006; Suara/Lainnya 0. Semua di ambang “good”.
-- Navigator klik (detail rute): beranda→Alkitab **90 ms**, Alkitab→Kidung **786 ms**, Kidung→pembaca **898 ms**. Dua yang terakhir belum < 300 ms; `marks`/`resources` kosong, jadi biayanya mount/render, bukan fetch — dicatat sebagai lever berikutnya, bukan klaim selesai.
+- Navigator klik (detail rute, diukur setelah hover 150 ms seperti pembaca): beranda→Alkitab **268 ms**, Alkitab→Kidung **866 ms**, Kidung→pembaca **827 ms** (`42667029246`); tanpa hover 90 / 786 / 898 (`42657705173`). Dua yang terakhir belum < 300 ms; `marks`/`resources` kosong, jadi biayanya mount/render, bukan fetch.
+- Percobaan menghangatkan **payload** saat hover (`preloadRoute(path, { data: true })`) **ditolak**: klik jadi 296 / 1 007 / 1 050 ms karena parsing data bersaing dengan render. `apps/web/src/App.tsx` kembali menghangatkan kode saja (`a5b6ada`), dengan komentar berisi angka tersebut. Uji perf tetap memakai hover 150 ms agar jalurnya sama dengan pembaca (`f2410eb`).
 - Sumber CLS beranda desktop tetap `section.home-suara-section` bergeser 48 px (blok progres loading yang disengaja) dan `div.literature-sections` di Literatur 114 px (rak “terbaru” muncul setelah data); keduanya di ambang baik dan sudah dicoba dinaikkan tanpa hasil.
 
 ## 6. NEXT yang dapat langsung dikerjakan
