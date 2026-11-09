@@ -6941,9 +6941,9 @@ Perbaikan:
   gzip di seluruh Alkitab), sehingga penanda ada di paint pertama.
 - `apps/web/src/bible-progressive-pack.ts` menggabungkan `crossRefs` tiap kitab
   ke `snapshot()`.
-- `apps/web/src/bible.tsx`: setelah snapshot tampil, pack penuh **tidak** lagi
-  menggantikan `packState` — snapshot tetap sumber render, jadi tidak ada
-  mount ulang di tengah gestur; pack penuh hanya dipakai untuk pencarian.
+- `apps/web/src/bible.tsx` tetap membiarkan pack penuh menggantikan snapshot
+  saat tiba (percobaan menahannya membuat pemilih kitab kehilangan batas ayat
+  untuk kitab yang belum dimuat, sehingga tombol “Buka ayat” nonaktif).
 - Kontrak `apps/web/e2e/bible-zoom.spec.ts` dan `gesture-regressions.spec.ts`
   membandingkan `.verse-text`, bukan seluruh blob reader, supaya penanda tidak
   dianggap perubahan teks.
