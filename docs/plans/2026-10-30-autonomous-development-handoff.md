@@ -7107,3 +7107,14 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
 - Bukti: axe empat tema hijau pada full sweep `42578279371` (4/4 shard), unit +
   pemetaan hijau `42577979339`; QA screenshot menyusul lewat dispatch
   `42579280691`.
+
+### Kartu kosong antrean dan label tab di ponsel (9 Nov, putaran 241)
+
+- Kartu “Playlist masih kosong” tadinya melebar 1 180 px di 1440 dengan satu
+  kalimat di tengah; sekarang dibatasi `max-width: 640px` supaya tidak jadi
+  bingkai kosong (aturan pemilik: kartu tidak melebar tanpa isi).
+- Label tab Kidung/“Antrean MIDI” muncul di 390 px pada halaman antrean
+  (container query `kidung-nav` turun 24em → 20em); di katalog 390 tab tetap
+  ikon karena kolomnya sempit, teksnya tetap ada untuk pembaca layar.
+- Bukti: verify `42580550308` dan `42582419528` hijau; QA `42581353804` dan
+  `42582886120` (181 screenshot) memperlihatkan kartu 640 px dan label tab di 390.
