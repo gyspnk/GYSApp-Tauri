@@ -522,17 +522,51 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setPackState(
       cached ? { status: "ready", pack: cached } : { status: "loading" },
     );
-    const request =
+    const loadFull = () =>
       selectedVersionCode === "b_tb"
         ? loadBundledBiblePack()
         : loadBibleReaderPack(
             selectedVersionCode,
             getDistributedAssetManager().getStore(),
           );
+    let request: Promise<BibleReaderPack> | undefined;
     // The shelf index is one small file and lets the reader paint the chapter
-    // it was opened on, instead of waiting for the whole 1,7 MB pack.
+    // it was opened on, instead of waiting for the whole 1,7 MB pack. On a
+    // slow link the full pack would compete with that first book, so it is
+    // started once the painted snapshot is in place (fallbacks keep it
+    // correct when the index is unavailable).
+    const startFullPack = () => {
+      if (controller.signal.aborted || request) return;
+      request = loadFull();
+      void request
+        .then((pack) => {
+          if (controller.signal.aborted) return;
+          progressivePackRef.current = undefined;
+          setPackState({ status: "ready", pack });
+        })
+        .catch((error: unknown) => {
+          if (!controller.signal.aborted)
+            setPackState({
+              status: "error",
+              message:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to load the offline TB reader",
+            });
+        });
+    };
+    const startFullPackWhenIdle = () => {
+      if (controller.signal.aborted || request) return;
+      if (typeof window.requestIdleCallback === "function") {
+        window.requestIdleCallback(() => startFullPack(), { timeout: 1_500 });
+      } else {
+        window.setTimeout(startFullPack, 600);
+      }
+    };
     progressivePackRef.current = undefined;
-    if (selectedVersionCode === "b_tb") {
+    if (selectedVersionCode !== "b_tb") {
+      startFullPack();
+    } else {
       void loadBibleBookIndex()
         .then(async (index) => {
           const progressive = new ProgressiveBiblePack(index);
@@ -540,34 +574,23 @@ export function BiblePage({ locale }: { locale: Locale }) {
           await progressive.ensure(String(selectedBookRef.current));
           if (controller.signal.aborted) return;
           const snapshot = progressive.snapshot();
-          if (!snapshot) return;
+          if (!snapshot) {
+            startFullPack();
+            return;
+          }
           setPackState((current) =>
             current.status === "loading"
               ? { status: "ready", pack: snapshot }
               : current,
           );
+          startFullPackWhenIdle();
         })
         .catch((error: unknown) => {
           progressivePackRef.current = undefined;
           console.warn("[bible] progressive pack unavailable", error);
+          startFullPack();
         });
     }
-    void request
-      .then((pack) => {
-        if (controller.signal.aborted) return;
-        progressivePackRef.current = undefined;
-        setPackState({ status: "ready", pack });
-      })
-      .catch((error: unknown) => {
-        if (!controller.signal.aborted)
-          setPackState({
-            status: "error",
-            message:
-              error instanceof Error
-                ? error.message
-                : "Unable to load the offline TB reader",
-          });
-      });
     return () => controller.abort();
   }, [packAttempt, selectedVersionCode]);
 
