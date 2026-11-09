@@ -6881,7 +6881,7 @@ dengan chunk buku pertama, jadi di tautan lambat keduanya berebut bandwidth dan
 Sekarang pack penuh dijadwalkan setelah snapshot progresif terpasang
 (`requestIdleCallback`, `timeout: 1_500`, fallback `setTimeout 600`), dan
 langsung dimulai bila indeks buku gagal, snapshot kosong, atau versinya bukan TB.
-Commit `b8acf8e` (perubahan fungsional) — perilaku produk sama, hanya urutan
+Commit `32b6d95` (perubahan fungsional) — perilaku produk sama, hanya urutan
 unduhan yang berubah.
 
 Angka hosted `perf.yml` (satu sampel per run, runner bersama):
