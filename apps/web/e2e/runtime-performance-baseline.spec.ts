@@ -382,6 +382,7 @@ test("primary routes runtime performance baseline", async ({
         domContentLoadedMs: row.domContentLoadedMs,
         layoutShift: row.layoutShift,
         longTaskDuration: row.longTaskDuration,
+        layoutShiftSources: row.layoutShiftSources,
       })}`,
     );
     if (row.layoutTimeline) {
