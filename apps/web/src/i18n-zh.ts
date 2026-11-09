@@ -212,6 +212,7 @@ export const zhMessages: Record<string, string> = {
   "bible.quickContinue": "松开到第 1 节 · 停留 1 秒继续",
   "bible.previous": "← 上一章",
   "bible.next": "下一章 →",
+  "bible.multiHint": "长按其他经文以多选",
   "bible.selectedVerseActions": "已选经文操作",
   "bible.selectMore": "多选经文",
   "bible.doneSelecting": "完成选择",

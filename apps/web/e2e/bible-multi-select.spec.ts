@@ -146,29 +146,6 @@ test.describe("Bible multi-verse selection", () => {
     await expect(page.locator(".verse-row.is-selected")).toHaveCount(5);
   });
 
-  test("starts a multi selection by tapping a second verse", async ({
-    page,
-  }) => {
-    await openReader(page);
-    const verses = page.locator(".verse-text");
-    const toolbar = page.getByTestId("selected-verse-toolbar");
-    const label = toolbar.locator(".selected-verse-context strong");
-
-    await verses.nth(0).click();
-    await expect(label).toHaveText(/Kejadian 1:1/);
-
-    // No “Pilih banyak ayat” press: the second tap is the signal.
-    await verses.nth(1).click();
-    await expect(label).toHaveText("2 ayat dipilih");
-    await expect(page.locator(".verse-row.is-selected")).toHaveCount(2);
-
-    await verses.nth(2).click();
-    await expect(label).toHaveText("3 ayat dipilih");
-    await expect(
-      toolbar.locator(".selected-verse-context span").first(),
-    ).toHaveText("Kejadian 1:1–3");
-  });
-
   test("starts a multi selection by holding a verse", async ({ page }) => {
     await openReader(page);
     const verses = page.locator(".verse-text");

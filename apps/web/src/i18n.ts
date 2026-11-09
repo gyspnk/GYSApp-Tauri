@@ -238,6 +238,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.quickContinue": "lepas ke ayat 1 · diam 1 detik untuk lanjut",
     "bible.previous": "← Sebelumnya",
     "bible.next": "Berikutnya →",
+    "bible.multiHint": "Tahan ayat lain untuk memilih beberapa",
     "bible.selectedVerseActions": "Aksi ayat terpilih",
     "bible.selectMore": "Pilih banyak ayat",
     "bible.doneSelecting": "Selesai memilih",
