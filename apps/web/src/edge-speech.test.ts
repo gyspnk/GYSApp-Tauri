@@ -26,6 +26,35 @@ describe("Edge speech retry availability", () => {
     await expect(provider.status()).resolves.toMatchObject({ available: true });
   });
 
+  it("stops paying for an unconfigured Edge gateway", async () => {
+    vi.stubEnv("VITE_EDGE_TTS_URL", "https://speech.example.test/edge");
+    vi.stubGlobal("window", {});
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "UPSTREAM_UNAVAILABLE",
+              message: "Edge compatibility speech is not configured",
+            },
+          }),
+          { status: 503, headers: { "content-type": "application/json" } },
+        ),
+      ),
+    );
+    const { EdgeSpeechProvider } = await import("./edge-speech.js");
+    const provider = new EdgeSpeechProvider();
+
+    await expect(provider.speak("Uji", {})).rejects.toThrow(
+      "Edge speech failed (503)",
+    );
+    await expect(provider.status()).resolves.toMatchObject({
+      available: false,
+      reason: expect.stringContaining("not configured"),
+    });
+  });
+
   it("treats native Tauri as keyless Edge-capable without a gateway", async () => {
     vi.stubEnv("VITE_EDGE_TTS_URL", "");
     vi.stubEnv("VITE_BFF_BASE_URL", "");

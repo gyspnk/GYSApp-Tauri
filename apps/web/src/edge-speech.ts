@@ -131,6 +131,9 @@ export class EdgeSpeechProvider implements SpeechProvider {
   private advertisedVoices: SpeechVoice[] = [];
   private voicesExpiresAt = 0;
   private voicesRequest: Promise<SpeechVoice[]> | undefined;
+  /** Set when the gateway says no Edge relay is configured, so the reader
+   *  stops paying a failed request before every sentence. */
+  private capabilityReason: string | undefined;
 
   public async status(): Promise<{
     available: boolean;
@@ -142,6 +145,12 @@ export class EdgeSpeechProvider implements SpeechProvider {
         available: false,
         offline: false,
         reason: "Speech UI is unavailable",
+      };
+    if (this.capabilityReason)
+      return {
+        available: false,
+        offline: false,
+        reason: this.capabilityReason,
       };
     if (getEdgeEndpoint() || canUseNativeEdgeTransport())
       return { available: true, offline: false };
@@ -276,8 +285,26 @@ export class EdgeSpeechProvider implements SpeechProvider {
     if (!response.ok) {
       const failure = new Error(`Edge speech failed (${response.status})`);
       recordDiagnostic("error", "tts.edge.response", failure);
+      if (response.status === 503) {
+        const body = (await response
+          .clone()
+          .json()
+          .catch(() => undefined)) as
+          { error?: { message?: string } } | undefined;
+        const message = body?.error?.message ?? "";
+        if (/not configured/i.test(message)) {
+          this.capabilityReason =
+            "Edge cloud speech is not configured; using on-device voices";
+          recordDiagnostic(
+            "warn",
+            "tts.edge.capability",
+            this.capabilityReason,
+          );
+        }
+      }
       throw failure;
     }
+    this.capabilityReason = undefined;
     const contentType = response.headers.get("content-type") ?? "";
     if (!contentType.startsWith("audio/")) {
       const failure = new Error("Edge speech returned a non-audio response");
