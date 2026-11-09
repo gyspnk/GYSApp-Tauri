@@ -103,6 +103,10 @@ export const HymnCatalogEntrySchema = z.object({
     "anak",
     "mandarin",
     "english",
+    // Installed Aku Senang Menyanyi volumes keep their own book code.
+    "ASM-I",
+    "ASM-M",
+    "ASM-P",
   ]),
   number: z.number().int().positive(),
   title: z.string().min(1),
