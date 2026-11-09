@@ -68,7 +68,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "home.illustrationAlt": "Ilustrasi {title}",
     "home.coverAlt": "Sampul {title}",
     "suara.backHome": "← Beranda",
-    "suara.eyebrow": "Cerita dan kesaksian",
     "suara.title": "Suara Sejati",
     "suara.loading": "Mengambil Suara Sejati…",
     "suara.errorTitle": "Suara Sejati belum tersedia.",

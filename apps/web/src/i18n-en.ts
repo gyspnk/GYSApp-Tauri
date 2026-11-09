@@ -52,7 +52,6 @@ export const enMessages: Record<string, string> = {
   "home.illustrationAlt": "Illustration of {title}",
   "home.coverAlt": "Cover of {title}",
   "suara.backHome": "← Home",
-  "suara.eyebrow": "Stories and testimonies",
   "suara.title": "True Voice",
   "suara.loading": "Loading True Voice…",
   "suara.errorTitle": "True Voice is unavailable.",

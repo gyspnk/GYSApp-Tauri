@@ -326,10 +326,8 @@ export function SuaraPage({ locale }: { locale: Locale }) {
         </Link>
       </div>
       <section className="page-intro">
-        <div>
-          <p className="date-line">{translate(locale, "suara.eyebrow")}</p>
-          <h1>{translate(locale, "suara.title")}</h1>
-        </div>
+        {/* The navigation already says Suara; the eyebrow only repeated it. */}
+        <h1>{translate(locale, "suara.title")}</h1>
       </section>
       {state.status === "ready" && state.posts.length > 0 && (
         <section

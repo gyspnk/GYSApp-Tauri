@@ -50,7 +50,6 @@ export const zhMessages: Record<string, string> = {
   "home.illustrationAlt": "{title} 的插图",
   "home.coverAlt": "{title} 的封面",
   "suara.backHome": "← 主页",
-  "suara.eyebrow": "故事与见证",
   "suara.title": "真实声音",
   "suara.loading": "正在加载真实声音…",
   "suara.errorTitle": "真实声音暂不可用。",
