@@ -836,10 +836,12 @@ const THEME_ROUTES = [
   "/kidung/hymn-001",
   "/kidung?section=playlist",
   "/suara",
+  "/suara/147-menapaki-tiga-iman",
   "/iman",
   "/literatur",
   "/sauh",
   "/lainnya?section=appearance",
+  "/lainnya?section=audio",
 ];
 
 for (const theme of ["light", "dark", "sepia", "amoled"]) {
