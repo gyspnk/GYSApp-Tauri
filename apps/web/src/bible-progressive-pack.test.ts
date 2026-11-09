@@ -89,10 +89,10 @@ describe("ProgressiveBiblePack", () => {
     });
 
     await pack.ensure("19");
-    expect(Object.keys(pack.snapshot()?.crossRefs ?? {}).sort()).toEqual([
-      "1:1:1",
-      "19:1:1",
-    ]);
+    const refs = pack.snapshot()?.crossRefs ?? {};
+    expect(Object.keys(refs)).toHaveLength(2);
+    expect(refs).toHaveProperty("1:1:1");
+    expect(refs).toHaveProperty("19:1:1");
   });
 
   it("loads one book at a time and grows the reader pack", async () => {
