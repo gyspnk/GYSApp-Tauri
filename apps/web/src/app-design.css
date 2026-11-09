@@ -3040,6 +3040,14 @@ body:has(.hymn-detail-page.is-text-viewer)
   font-weight: 650;
   letter-spacing: -0.02em;
 }
+/* At 320 px the Aa tile has ~44 px for "Aa" plus a caption; the caption was
+   clipped to "T…", so keep the glyph and the accessible name only. */
+@media (max-width: 420px) {
+  .hymn-reader-settings-summary .hymn-action-caption {
+    display: none;
+  }
+}
+
 .hymn-page .kidung-index-toolbar {
   padding-top: 12px;
 }
