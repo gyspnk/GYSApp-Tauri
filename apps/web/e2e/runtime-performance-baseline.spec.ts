@@ -371,7 +371,29 @@ test("primary routes runtime performance baseline", async ({
     body: Buffer.from(JSON.stringify({ results, details }, null, 2)),
     contentType: "application/json",
   });
-  console.log(`[runtime-performance] ${JSON.stringify(results)}`);
+  // GitHub truncates very long log lines, which silently cut the JSON and
+  // broke the summary step. One short line per row survives intact.
+  for (const row of results) {
+    console.log(
+      `[perf-row] ${JSON.stringify({
+        id: row.id,
+        viewport: row.viewport,
+        readyMs: row.readyMs,
+        domContentLoadedMs: row.domContentLoadedMs,
+        layoutShift: row.layoutShift,
+        longTaskDuration: row.longTaskDuration,
+      })}`,
+    );
+    if (row.layoutTimeline) {
+      console.log(
+        `[perf-geometry] ${JSON.stringify({
+          id: row.id,
+          viewport: row.viewport,
+          timeline: row.layoutTimeline,
+        })}`,
+      );
+    }
+  }
   expect(results).toHaveLength(routes.length * viewports.length);
   // Wall-clock budgets only hold on a dedicated runner: this container is a
   // shared 8-core ARM host with swap pressure where the same pages measure

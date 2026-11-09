@@ -6,7 +6,7 @@
 // the rows.
 import { readFileSync } from "node:fs";
 
-const MARK_PERF = /\[runtime-performance\] (\[.*\])$/;
+const MARK_ROW = /\[perf-row\] (\{.*\})$/;
 const MARK_NAV = /\[runtime-navigation\] (\[.*\])$/;
 
 function lastMatch(raw, pattern) {
@@ -23,12 +23,27 @@ function lastMatch(raw, pattern) {
   return payload;
 }
 
+function collect(raw, pattern) {
+  const rows = [];
+  for (const line of raw.split("\n")) {
+    const match = pattern.exec(line);
+    if (!match) continue;
+    try {
+      rows.push(JSON.parse(match[1]));
+    } catch {
+      // A torn line is not a row; the next one still counts.
+    }
+  }
+  return rows;
+}
+
 export function summarise(raw) {
-  const rows = lastMatch(raw, MARK_PERF);
+  const rows = collect(raw, MARK_ROW);
   const navigation = lastMatch(raw, MARK_NAV);
   const out = [];
-  if (!rows && !navigation) return "No measurement rows were printed.\n";
-  if (rows) {
+  if (rows.length === 0 && !navigation)
+    return "No measurement rows were printed.\n";
+  if (rows.length > 0) {
     out.push(
       "| route | viewport | ready ms | DOMContentLoaded ms | CLS | long tasks ms |",
       "| --- | --- | --- | --- | --- | --- |",
