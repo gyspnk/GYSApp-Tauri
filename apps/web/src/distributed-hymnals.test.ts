@@ -28,6 +28,23 @@ describe("distributed hymnal catalog", () => {
     ]);
   });
 
+  it("keeps each Aku Senang Menyanyi volume a separate book", () => {
+    const entry = {
+      number: "007",
+      title: "Tuhan Yesus Sahabatku",
+      verses: ["Tuhan Yesus sahabatku"],
+      pdfFile: "pdf/asm_i/007.pdf",
+    } as const;
+    for (const code of ["ASM-I", "ASM-P", "ASM-M"] as const) {
+      const [item] = normalizeDistributedHymnIndex(code, [entry]);
+      expect(item).toMatchObject({
+        assetCode: code,
+        book: code,
+        midiPath: expect.stringContaining("asm_"),
+      });
+    }
+  });
+
   it("rejects malformed optional hymn metadata before activation", () => {
     expect(() =>
       normalizeDistributedHymnIndex("HYMNE", [
