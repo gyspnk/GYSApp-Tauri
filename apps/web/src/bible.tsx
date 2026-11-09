@@ -1167,11 +1167,30 @@ export function BiblePage({ locale }: { locale: Locale }) {
         return;
       }
       multiAnchorRef.current = verse.id;
-      setMultiVerseIds((current) =>
-        current.includes(verse.id)
+      setMultiVerseIds((current) => {
+        const next = current.includes(verse.id)
           ? current.filter((id) => id !== verse.id)
-          : [...current, verse.id],
-      );
+          : [...current, verse.id];
+        // Dropping verses one by one should end in a normal single selection,
+        // not in an empty multi mode with nothing to do.
+        if (next.length === 1) {
+          setSelectedVerseId(next[0]);
+          multiAnchorRef.current = next[0];
+          return [];
+        }
+        return next;
+      });
+      return;
+    }
+    // A second tap is itself the signal: with one verse selected, tapping a
+    // different verse selects both instead of replacing the first one. There is
+    // no mode button to press first.
+    if (selectedVerseId && selectedVerseId !== verse.id) {
+      multiAnchorRef.current = verse.id;
+      setMultiVerseIds([selectedVerseId, verse.id]);
+      setSelectedVerseId(undefined);
+      setExitingVerse(false);
+      hapticTick("light");
       return;
     }
     // Adaptive entry: a long press, ⌘/Ctrl click or shift click is itself the
@@ -1202,14 +1221,6 @@ export function BiblePage({ locale }: { locale: Locale }) {
     setSelectedVerseId((current) =>
       current === verse.id ? undefined : verse.id,
     );
-  };
-
-  const startMultiSelect = () => {
-    if (!selectedVerseId) return;
-    multiAnchorRef.current = selectedVerseId;
-    setMultiVerseIds([selectedVerseId]);
-    setSelectedVerseId(undefined);
-    setExitingVerse(false);
   };
 
   const clearMultiSelect = () => {
@@ -2091,16 +2102,15 @@ export function BiblePage({ locale }: { locale: Locale }) {
               >
                 {translate(locale, "bible.notes")}
               </button>
-              <button
-                className="quiet-button"
-                type="button"
-                aria-pressed={multiMode}
-                onClick={multiMode ? clearMultiSelect : startMultiSelect}
-              >
-                {multiMode
-                  ? translate(locale, "bible.doneSelecting")
-                  : translate(locale, "bible.selectMore")}
-              </button>
+              {multiMode && (
+                <button
+                  className="quiet-button"
+                  type="button"
+                  onClick={clearMultiSelect}
+                >
+                  {translate(locale, "bible.doneSelecting")}
+                </button>
+              )}
               <button
                 className="selected-verse-close"
                 type="button"

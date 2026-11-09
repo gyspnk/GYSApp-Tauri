@@ -59,6 +59,10 @@ test("migrates legacy notes and keeps multiple notes scoped to the selected vers
   );
 
   await dialog.getByRole("button", { name: "Tutup catatan ayat" }).click();
+  // A second tap now starts a multi selection, so leave it and select verse 2
+  // alone before inspecting its own note.
+  await page.locator(".verse-text").nth(1).click();
+  await page.getByRole("button", { name: "Selesai memilih" }).click();
   await page.locator(".verse-text").nth(1).click();
   toolbar = page.getByRole("toolbar", { name: "Aksi ayat terpilih" });
   await toolbar.getByRole("button", { name: "Catatan ayat" }).click();

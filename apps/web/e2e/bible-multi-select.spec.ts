@@ -27,7 +27,6 @@ test.describe("Bible multi-verse selection", () => {
     await expect(toolbar).toBeVisible();
     await expect(label).toHaveText(/Kejadian 1:1/);
 
-    await toolbar.getByRole("button", { name: "Pilih banyak ayat" }).click();
     await verses.nth(1).click();
     await expect(label).toHaveText("2 ayat dipilih");
     await verses.nth(2).click();
@@ -75,7 +74,6 @@ test.describe("Bible multi-verse selection", () => {
     const toolbar = page.getByTestId("selected-verse-toolbar");
 
     await verses.nth(0).click();
-    await toolbar.getByRole("button", { name: "Pilih banyak ayat" }).click();
     await verses.nth(1).click();
     await toolbar.getByRole("button", { name: "Catatan" }).click();
     const dialog = page.getByRole("dialog");
@@ -116,7 +114,6 @@ test.describe("Bible multi-verse selection", () => {
     const verses = page.locator(".verse-text");
     const toolbar = page.getByTestId("selected-verse-toolbar");
     await verses.nth(0).click();
-    await toolbar.getByRole("button", { name: "Pilih banyak ayat" }).click();
     await verses.nth(1).click();
     await expect(toolbar.locator(".selected-verse-context strong")).toHaveText(
       "2 ayat dipilih",
@@ -135,7 +132,6 @@ test.describe("Bible multi-verse selection", () => {
     const verses = page.locator(".verse-text");
     const toolbar = page.getByTestId("selected-verse-toolbar");
     await verses.nth(0).click();
-    await toolbar.getByRole("button", { name: "Pilih banyak ayat" }).click();
     await verses.nth(4).click({ modifiers: ["Shift"] });
     await expect(toolbar.locator(".selected-verse-context strong")).toHaveText(
       "5 ayat dipilih",
@@ -186,7 +182,6 @@ test.describe("Bible multi-verse selection", () => {
     const verses = page.locator(".verse-text");
     const toolbar = page.getByTestId("selected-verse-toolbar");
     await verses.nth(0).click();
-    await toolbar.getByRole("button", { name: "Pilih banyak ayat" }).click();
     await verses.nth(1).click();
     await expect(page.locator(".verse-row.is-selected")).toHaveCount(2);
     await page.keyboard.press("Escape");

@@ -221,9 +221,8 @@ export const enMessages: Record<string, string> = {
   "bible.quickContinue": "release at verse 1 · hold 1 second to continue",
   "bible.previous": "← Previous",
   "bible.next": "Next →",
-  "bible.multiHint": "Hold another verse to add it to the selection",
+  "bible.multiHint": "Tap another verse to add it to the selection",
   "bible.selectedVerseActions": "Selected verse actions",
-  "bible.selectMore": "Select multiple verses",
   "bible.doneSelecting": "Done selecting",
   "bible.selectedCount": "{count} verses selected",
   "bible.combinedNoteHint":
