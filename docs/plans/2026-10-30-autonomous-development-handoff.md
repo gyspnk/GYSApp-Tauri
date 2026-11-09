@@ -7092,3 +7092,18 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
 - Bukti: unit + pemetaan hijau `42576200401`; full sweep `42576222764`
   (4/4 shard) hijau, termasuk dua uji baru (“starts a multi selection by
   holding a verse”, “shift-click from one verse chooses the whole range”).
+
+## Antrean Kidung ikut diaudit, dan spec yang disunting tidak lagi hilang (9 Nov, putaran 241)
+
+- `/kidung?section=playlist` (permukaan gabungan antrean + playlist) masuk
+  `THEME_ROUTES` di `apps/web/e2e/accessibility.spec.ts` dan daftar rute
+  `apps/web/scripts/ui-screenshots.mjs` sebagai `kidung-antrean`, karena
+  sebelumnya halaman itu tidak punya bukti axe maupun screenshot sama sekali.
+- Bug pemetaan CI: spec yang disunting bisa dipangkas oleh aturan “sweep hanya
+  bila ada file layout”, sehingga suntingan `accessibility.spec.ts` justru
+  menjalankan `smoke`. Sekarang spec yang ada di push selalu dijalankan
+  (`scripts/test-e2e-selective-core.mjs`, diuji di
+  `scripts/test-e2e-selective-core.test.mjs`).
+- Bukti: axe empat tema hijau pada full sweep `42578279371` (4/4 shard), unit +
+  pemetaan hijau `42577979339`; QA screenshot menyusul lewat dispatch
+  `42579280691`.
