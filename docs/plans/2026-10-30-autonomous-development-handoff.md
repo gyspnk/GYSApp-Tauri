@@ -6900,3 +6900,27 @@ Bible turun ~1,0 dtk (2,7×) dan home ~40 ms; angka kidung naik-turun di rentang
 500–1 700 ms pada kedua sisi (variasi runner, bukan efek perubahan ini), sesuai
 catatan sebelumnya bahwa variasi antar-run ±30 %. Verifikasi selektif
 `42546295853` **success** (unit + e2e selektif, termasuk kontrak pack Alkitab).
+
+## CLS beranda hosted turun ke pita “baik” (9 Nov, putaran 192)
+
+Perf hosted melaporkan `layoutShift` beranda **0,140 / 0,126 / 0,069**
+(phone/tablet/desktop) dengan sumber `article.continue-panel` dan
+`section.home-suara-section` bergeser 297–844 px. Penyebabnya reservasi
+skeleton verse 290 px sementara kartu yang terlukis hanya **179 / 181 / 131 px**,
+jadi semua section di bawahnya melompat naik saat data tiba.
+
+`apps/web/src/app-design.css` sekarang menyamakan reservasi itu dengan tinggi
+kartu yang benar-benar terlukis (180 / 182 / 132 px per breakpoint, commit
+`ee138b3`); kartu yang sudah termuat tetap `min-height: 0`.
+
+Hasil `perf.yml` (run `42547287864`):
+
+| metrik             | sebelum (`42546451795`) | sesudah             |
+| ------------------ | ----------------------- | ------------------- |
+| home-phone shift   | 0,140                   | **0,003**           |
+| home-tablet shift  | 0,126                   | **0,002**           |
+| home-desktop shift | 0,069                   | **0,022**           |
+| home ready (p/t/d) | 539 / 569 / 577         | **532 / 509 / 517** |
+
+Rute lain tidak berubah material (bible 0,013–0,025, literatur 0,006–0,016,
+sisanya 0,000); semua `errors: []`, `duplicateAssets: []`.
