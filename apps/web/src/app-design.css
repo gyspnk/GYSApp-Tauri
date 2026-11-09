@@ -5753,3 +5753,28 @@ body:has(.hymn-detail-page.is-text-viewer)
     justify-self: start;
   }
 }
+
+/*
+ * Home skeleton height follows the card it replaces. The old 290 px
+ * reservation was 111–159 px taller than the loaded card on every breakpoint,
+ * so the sections below jumped up as the verse arrived (CLS 0.13–0.14 in the
+ * hosted perf run). Keeping the reservation equal to the painted height
+ * removes the jump without reserving space the page never uses.
+ */
+@media (max-width: 599px) {
+  .home-grid .verse-panel:has(.sauh-skeleton) {
+    min-height: 180px;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+  .home-grid .verse-panel:has(.sauh-skeleton) {
+    min-height: 182px;
+  }
+}
+
+@media (min-width: 900px) {
+  .home-grid .verse-panel:has(.sauh-skeleton) {
+    min-height: 132px;
+  }
+}
