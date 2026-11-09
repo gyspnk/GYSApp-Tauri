@@ -459,6 +459,9 @@
   opacity: 0.45;
 }
 .kidung-tool-page .kidung-empty-state {
+  /* An empty queue has one sentence of content; a full-bleed card would be a
+     wide frame with nothing in it at 1440. */
+  max-width: 640px;
   padding: 28px 20px;
   text-align: center;
   border: 1px dashed var(--line-strong);
