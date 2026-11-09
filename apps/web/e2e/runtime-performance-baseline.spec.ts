@@ -482,6 +482,9 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     });
     const ms = Date.now() - started;
     results.push({ id: step.id, ms });
+    // Mount marks are written in effects, which can land a frame after the
+    // ready selector; give them one beat so the detail names the slow part.
+    await page.waitForTimeout(250);
     // The number alone never says which part was slow; record what the step
     // actually fetched and which warm marks exist.
     details.push({
