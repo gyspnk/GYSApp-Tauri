@@ -2874,6 +2874,12 @@ Satu run `perf.yml` `42657705173` (21 baris, 0 error, 0 duplicate asset, 0 panel
 - Baseline: hanya `kidung-1440x900-linux.png` berbeda pada artefak `visual-baselines-42685345381`, dan karena tes visualnya lulus terhadap PNG yang tersimpan, selisih itu noise anti-alias (ukuran byte sama) — **tidak** diadopsi agar tidak menambah churn.
 - Catatan platform: satu run docs (`42673891107`) berakhir `failure` meski semua job sukses/`skipped` dengan `changes` “abandoned”, dan satu dispatch soak melaporkan “workflow file issue”; keduanya tidak berulang pada dispatch berikutnya, jadi dicatat sebagai gangguan layanan, bukan cacat repo.
 
+### Daftar Literatur memakai lebar bidang di layar lebar (9 Nov, putaran 205)
+
+- Keluhan pemilik tentang kolom yang menyisakan pita kosong terlihat di `/literatur`: pada 1440 baris “Koleksi resmi” hanya memakai ~300 px judul lalu kosong sampai chevron.
+- Perbaikan CSS-only (`e06cc88`, `apps/web/src/app-design.css`): pada `min-width: 1100px` daftar menjadi dua kolom (`grid-template-columns: repeat(2, minmax(0, 1fr))`, jarak 28 px), urutan baca kiri→kanan lalu bawah. Tidak ada snapshot visual `/literatur` di suite, jadi tidak ada baseline yang bergeser.
+- Bukti: selective `42690398273` hijau; tangkapan QA `42691869243` (`literatur-1440-light.png`) menunjukkan dua kolom terisi penuh dan sejajar, tanpa teks terpotong.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
