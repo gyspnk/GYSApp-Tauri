@@ -923,7 +923,7 @@ describe("BFF public boundary", () => {
     }
   });
 
-  it("returns an empty optional Edge voice catalog when not configured", async () => {
+  it("ships a built-in Edge voice catalog when no relay is configured", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],
       chordManifest: manifest,
@@ -933,7 +933,66 @@ describe("BFF public boundary", () => {
       headers: { Origin: "http://localhost:5173" },
     });
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ voices: [] });
+    const body = (await response.json()) as {
+      voices: { id: string; language: string }[];
+    };
+    expect(body.voices.length).toBeGreaterThanOrEqual(3);
+    expect(body.voices.map((voice) => voice.language)).toEqual(
+      expect.arrayContaining(["id-ID", "en-US", "zh-CN"]),
+    );
+  });
+
+  it("speaks through the keyless Edge socket when no relay is configured", async () => {
+    const originalFetch = globalThis.fetch;
+    const audio = new Uint8Array([73, 68, 51, 4]);
+    const header = new TextEncoder().encode("Path:audio\r\n");
+    const frame = new Uint8Array(2 + header.byteLength + audio.byteLength);
+    new DataView(frame.buffer).setUint16(0, header.byteLength);
+    frame.set(header, 2);
+    frame.set(audio, 2 + header.byteLength);
+    type Listener = (event: { data: unknown }) => void;
+    const listeners: Record<string, Listener[]> = {};
+    const socket = {
+      accept() {},
+      close() {},
+      addEventListener(type: string, listener: Listener) {
+        (listeners[type] ??= []).push(listener);
+      },
+      send(payload: string) {
+        if (!/Path:ssml/.test(payload)) return;
+        setTimeout(() => {
+          for (const listener of listeners.message ?? [])
+            listener({ data: frame.buffer });
+          for (const listener of listeners.message ?? [])
+            listener({ data: "X-RequestId:1\r\nPath:turn.end\r\n\r\n" });
+        }, 0);
+      },
+    };
+    globalThis.fetch = (async () => {
+      const response = new Response(null, { status: 101 });
+      Object.defineProperty(response, "webSocket", { value: socket });
+      return response;
+    }) as unknown as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const response = await app.request("/api/v1/tts/edge", {
+        method: "POST",
+        headers: {
+          Origin: "http://localhost:5173",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ text: "Bacaan hari ini" }),
+      });
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("audio/mpeg");
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(audio);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
   it("isolates bounded official PDF ranges from ordinary API quotas", async () => {
