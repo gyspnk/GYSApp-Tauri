@@ -6924,3 +6924,39 @@ Hasil `perf.yml` (run `42547287864`):
 
 Rute lain tidak berubah material (bible 0,013–0,025, literatur 0,006–0,016,
 sisanya 0,000); semua `errors: []`, `duplicateAssets: []`.
+
+## Rujukan silang menempel sejak paint pertama, dan typecheck ikut hosted (9 Nov, putaran 233)
+
+Menunda pack penuh Alkitab sesudah paint (`32b6d95`) memunculkan regresi halus
+yang tertangkap full sweep `42547642911`: penanda rujukan silang (`*`) baru
+disisipkan ketika shelf 1,7 MB tiba, sehingga teks ayat bertambah setelah
+terbaca. Dua kontrak yang membandingkan teks (`.verse-reader`/`.verse-row`)
+gagal, dan gestur geser bab bisa batal karena chapter di-mount ulang saat pack
+penuh menggantikan snapshot.
+
+Perbaikan:
+
+- `apps/web/scripts/split-bible-pack.mjs` menyalin `crossRefs` milik tiap kitab
+  ke dalam berkas kitab itu (Genesis +637 B gzip; total 1 912 entri / 25 KiB
+  gzip di seluruh Alkitab), sehingga penanda ada di paint pertama.
+- `apps/web/src/bible-progressive-pack.ts` menggabungkan `crossRefs` tiap kitab
+  ke `snapshot()`.
+- `apps/web/src/bible.tsx`: setelah snapshot tampil, pack penuh **tidak** lagi
+  menggantikan `packState` — snapshot tetap sumber render, jadi tidak ada
+  mount ulang di tengah gestur; pack penuh hanya dipakai untuk pencarian.
+- Kontrak `apps/web/e2e/bible-zoom.spec.ts` dan `gesture-regressions.spec.ts`
+  membandingkan `.verse-text`, bukan seluruh blob reader, supaya penanda tidak
+  dianggap perubahan teks.
+
+Dua hal lain yang ikut ditemukan pada putaran ini:
+
+- `apps/web/src/soundfont.ts` membandingkan `Promise<boolean>` sebagai kondisi
+  (`hasCachedPayload` async), sehingga nama soundfont aktif selalu jatuh ke
+  `GeneralUser-GS`. Diperbaiki dengan `await`; `pnpm --filter @gys/web typecheck`
+  sekarang bersih.
+- `pnpm build` hanya menjalankan `vite build` (transpile, tanpa cek tipe), jadi
+  kesalahan di atas lolos dari CI. `.github/workflows/ci.yml` kini menjalankan
+  `pnpm --filter @gys/web typecheck` pada job build.
+
+Verifikasi: push `69a86e1` → run `42551201925` **success** (verify, unit,
+e2e selektif).
