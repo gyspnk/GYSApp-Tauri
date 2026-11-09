@@ -417,7 +417,7 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     marks: performance
       .getEntriesByType("mark")
       .map((entry) => entry.name)
-      .filter((name) => name.includes("gys-route-preloaded")),
+      .filter((name) => name.includes("gys-")),
     bible: performance
       .getEntriesByType("resource")
       .filter((entry) => entry.name.includes("offline/bible"))
