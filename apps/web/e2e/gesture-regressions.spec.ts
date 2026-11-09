@@ -166,6 +166,10 @@ for (const gesture of [
     await expect(pane.locator(".verse-text").first()).toBeVisible({
       timeout: 20_000,
     });
+    // The per-book pack paints first and the full pack swaps in behind it; a
+    // swipe started during that swap lands on a chapter that is about to be
+    // replaced, so wait until the request graph is quiet.
+    await page.waitForLoadState("networkidle");
     const box = (await pane.locator(".verse-list").boundingBox())!;
     const cdp = await context.newCDPSession(page);
     const point = (x: number, y: number, id = 1) => ({
