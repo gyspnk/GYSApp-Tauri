@@ -2888,6 +2888,14 @@ Satu run `perf.yml` `42657705173` (21 baris, 0 error, 0 duplicate asset, 0 panel
 - Full sweep `42699185232` **hijau**: `verify`, `web-build`, `perf-budget`, `e2e`, `update-visual-baselines`; selective/unit n/a karena dispatch penuh.
 - Catatan navigasi: satu run `perf.yml` (`42695044125`) mengukur beranda→Alkitab 303 ms, Alkitab→Kidung **287 ms**, Kidung→pembaca 659 ms, tetapi run lain 866–1 257 ms; variasi ±30 % tetap, jadi angka median (~880 ms) dipakai dan target < 300 ms belum diklaim tercapai.
 
+### Audit aksesibilitas diperluas dan tiga cacat kecil di layar sempit (9 Nov, putaran 206–207)
+
+- `apps/web/e2e/accessibility.spec.ts` sekarang menjalankan axe di `/suara/147-menapaki-tiga-iman`, `/lainnya?section=audio`, dan `/kidung?section=playlist` untuk keempat tema; push CI `42703441582` dan `42708767355` hijau, jadi halaman detail Suara, pengaturan suara, dan antrean Kidung tidak punya pelanggaran axe.
+- Eyebrow “CERITA DAN KESAKSIAN” di `/suara` dihapus (`e032dd3`) agar kepala halaman sama ringkasnya dengan Kidung, Iman, dan Literatur; kuncinya ikut dihapus dari tiga locale.
+- Tanggal di rak “Pilihan terbaru” sekarang sebaris: `.literature-shelf-item strong` memesan tiga baris judul (`min-height: calc(3 * 1.35em)`), dibuktikan QA `42705711837` pada 1440 dan 390.
+- Keterangan “T…” pada tile Aa di 320 px hilang dengan menyembunyikan caption di bawah 420 px; glyph dan `aria-label` tetap, dibuktikan QA `42708370436`.
+- Angka: QA 4 tema × 320–1440 = **241 tangkapan** (`42703451959`, 0 overflow/0 box/0 konsistensi), regenerasi baseline penuh `42699185232` hijau dengan **9 PNG** diadopsi (8 `literature-catalog-*`, 1 `kidung-1440x900`).
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
