@@ -179,6 +179,13 @@ export function HymnCatalog({
     // interrupt each batch if the reader starts typing or taps elsewhere.
     const batch = (current: number) => {
       if (cancelled) return;
+      // A reader who is already pointing at a row is about to leave this page;
+      // committing more batches in the same frames makes that click pay for
+      // rows nobody will look at (measured 590 ms for the first reader click).
+      if (pauseBatchesRef.current) {
+        batchHandle = window.setTimeout(() => batch(current), 80);
+        return;
+      }
       const next = Math.min(current + ROW_BATCH, filtered.length);
       startTransition(() => setVisibleRows(next));
       if (next < filtered.length)
@@ -205,6 +212,7 @@ export function HymnCatalog({
     return () => window.cancelAnimationFrame(frame);
   }, []);
   const listRef = useRef<HTMLOListElement>(null);
+  const pauseBatchesRef = useRef(false);
   const queue = useSyncExternalStore(
     subscribeMidiPlaylist,
     getMidiPlaylist,
@@ -218,9 +226,13 @@ export function HymnCatalog({
   // arrives, and it turns the first row click into a paint instead of a chunk
   // cascade (measured 1 591 ms cold on the hosted runner).
   const warmRow = (songId: string) => {
+    pauseBatchesRef.current = true;
     void import("./route-preload.js")
       .then((module) => module.preloadRoute(`/kidung/${songId}`))
       .catch(() => undefined);
+  };
+  const resumeBatches = () => {
+    pauseBatchesRef.current = false;
   };
   const onRowClick = (
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -418,7 +430,9 @@ export function HymnCatalog({
                     aria-label={item.title}
                     onClick={(event) => onRowClick(event, item.id)}
                     onPointerEnter={() => warmRow(item.id)}
+                    onPointerLeave={resumeBatches}
                     onFocus={() => warmRow(item.id)}
+                    onBlur={resumeBatches}
                   >
                     <span className="pujian-title-label">{item.title}</span>
                   </button>
