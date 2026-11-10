@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -67,6 +68,13 @@ export function HymnCatalog({
     );
   });
   const [query, setQuery] = useState("");
+  // Rows arrive once, with a short stagger; afterwards the list keeps still.
+  const [staggering, setStaggering] = useState(true);
+  useEffect(() => {
+    if (!staggering) return;
+    const timer = window.setTimeout(() => setStaggering(false), 760);
+    return () => window.clearTimeout(timer);
+  }, [staggering]);
   // The reader picks a collection once; reopening the catalogue should land on
   // the same book instead of jumping back to the first one.
   const [book, setBookState] = useState(readStoredCollection);
@@ -398,8 +406,11 @@ export function HymnCatalog({
                 )}
               </div>
             )}
-          <ol className="pujian-list" ref={listRef}>
-            {filtered.slice(0, visibleRows).map((item) => {
+          <ol
+            className={`pujian-list${staggering ? " is-staggering" : ""}`}
+            ref={listRef}
+          >
+            {filtered.slice(0, visibleRows).map((item, index) => {
               const inQueue = queueIds.has(item.id);
               return (
                 <li
@@ -408,6 +419,9 @@ export function HymnCatalog({
                   data-id={item.id}
                   data-nomor={String(item.number).toLowerCase()}
                   data-judul={item.title.toLowerCase()}
+                  style={
+                    { "--row-index": Math.min(index, 11) } as CSSProperties
+                  }
                 >
                   <span className="pujian-nomor" aria-hidden="true">
                     {numberLabel(item.number, item.id)}

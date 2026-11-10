@@ -5863,3 +5863,21 @@ body:has(.hymn-detail-page.is-text-viewer)
 .quiet-button:active:not(:disabled) {
   transform: scale(0.975);
 }
+
+/* Rows that arrive with a small, capped stagger read as one surface settling
+   instead of a jump. Only the first twelve animate; the rest are already
+   there when the reader scrolls to them. */
+@keyframes catalogue-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-distance));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pujian-list.is-staggering .pujian-item:nth-child(-n + 12) {
+    animation: catalogue-row-in var(--motion-entrance)
+      var(--motion-ease-entrance) backwards;
+    animation-delay: calc(var(--row-index, 0) * var(--motion-stagger));
+  }
+}

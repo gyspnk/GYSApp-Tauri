@@ -109,6 +109,8 @@
   --motion-distance: 8px;
   --motion-lift: -2px;
   --motion-press: 0.96;
+  /* Slower, decelerating curve for elements that arrive rather than move. */
+  --motion-ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
