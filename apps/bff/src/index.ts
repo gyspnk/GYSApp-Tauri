@@ -35,6 +35,7 @@ import { egysOpenApiContract } from "./egys-contract.js";
 import { forkPdfSource } from "./fork-pdf-source.js";
 import { normalizeEgysV1Profile } from "./egys-v1.js";
 import { synthesizeAzureSpeech } from "./azure-speech.js";
+import { synthesizeEdgeSpeech } from "./edge-relay.js";
 
 const ContentKindSchema = z.enum([
   "literature",
@@ -142,6 +143,8 @@ export type BffBindings = {
   EDGE_TTS_VOICES_URL?: string;
   AZURE_SPEECH_KEY?: string;
   AZURE_SPEECH_REGION?: string;
+  /** Set to "off" to stop the Worker synthesising Edge speech itself. */
+  EDGE_RELAY?: string;
   LITERATURE_SOURCE_URL?: string;
   EGYS_UPSTREAM_COMMIT?: string;
 };
@@ -1344,11 +1347,38 @@ export function createApp(
           );
         }
       }
-      return errorResponse(
-        c,
-        "UPSTREAM_UNAVAILABLE",
-        "Edge compatibility speech is not configured",
+      // No relay binding and no Azure keys: synthesize here. A Worker can open
+      // the socket the browser cannot, so the same voice set works on the web
+      // without extra infrastructure. EDGE_RELAY=off keeps an escape hatch.
+      if (c.env?.EDGE_RELAY?.trim().toLowerCase() === "off")
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          "Edge compatibility speech is not configured",
+        );
+      const relayRequest = EdgeTtsRequestSchema.safeParse(
+        await c.req.json().catch(() => undefined),
       );
+      if (!relayRequest.success)
+        return errorResponse(
+          c,
+          "VALIDATION_ERROR",
+          "Edge speech request is invalid",
+        );
+      try {
+        const audio = await synthesizeEdgeSpeech(relayRequest.data);
+        c.header("content-type", "audio/mpeg");
+        c.header("content-length", String(audio.byteLength));
+        return new Response(audio, { status: 200, headers: c.res.headers });
+      } catch (error) {
+        return errorResponse(
+          c,
+          "UPSTREAM_UNAVAILABLE",
+          `Edge speech is unavailable (${
+            error instanceof Error ? error.message : "unknown error"
+          })`,
+        );
+      }
     }
     let endpoint: URL;
     try {
