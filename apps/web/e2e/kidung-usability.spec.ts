@@ -1372,6 +1372,17 @@ test("catalog branding and title metrics stay stable through font readiness", as
   await expect(page.locator(".brand-mark")).toBeVisible();
   await expect(page.locator(".reader-context-title")).toHaveCount(0);
 
+  // Wait for the reading font before the first sample. The earlier variant
+  // sampled while the swap could still be in flight, so a visible change in
+  // first-paint timing (a search row that pushes rows below the fold) made the
+  // comparison fail without any typography regression. The contract kept here
+  // is that once fonts are ready the catalogue titles do not move again.
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve()),
+    );
+  });
   const before = await page.locator(".pujian-title").evaluateAll((elements) =>
     elements.slice(0, 8).map((element) => {
       const style = getComputedStyle(element);
