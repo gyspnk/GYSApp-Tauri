@@ -121,11 +121,13 @@ export function EgysGoogleButton({
         inert={status !== "ready"}
       />
       {status !== "ready" && (
+        // Never inert: a press while the script is still loading restarts the
+        // attempt instead of doing nothing at all.
         <button
           type="button"
           className="egys-google-fallback"
           aria-label={label}
-          disabled={status === "loading"}
+          aria-busy={status === "loading"}
           title={
             status === "error"
               ? translate(locale, "more.googleButtonFailed")
