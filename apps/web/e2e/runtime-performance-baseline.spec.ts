@@ -75,6 +75,7 @@ type RuntimeCase = {
   // names the element that grows or shrinks instead of only the score.
   layoutTimeline?: {
     atDomContentLoaded: Record<string, { top: number; height: number } | null>;
+    atVisible: Record<string, { top: number; height: number } | null>;
     atReady: Record<string, { top: number; height: number } | null>;
   };
   scrollWidth: number;
@@ -294,6 +295,12 @@ async function runRoute(
     .first()
     .waitFor({ state: "visible", timeout: 15_000 });
   const readyMs = Date.now() - started;
+  // Taken before the webfonts settle: the difference against atReady is the
+  // font swap, which is invisible in a single post-settle snapshot.
+  const atVisible =
+    route.id === "home" || route.id === "literatur"
+      ? await layoutSnapshot(page)
+      : null;
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(100);
   const atReady =
@@ -348,8 +355,8 @@ async function runRoute(
     viewport: viewport.name,
     readyMs,
     ...metrics,
-    ...(atDomContentLoaded && atReady
-      ? { layoutTimeline: { atDomContentLoaded, atReady } }
+    ...(atDomContentLoaded && atReady && atVisible
+      ? { layoutTimeline: { atDomContentLoaded, atVisible, atReady } }
       : {}),
     imageRequests: requests.filter(({ type }) => type === "image").length,
     pdfRequests: requests.filter(({ url }) => isPdfDocumentUrl(url)).length,
