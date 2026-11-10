@@ -471,21 +471,28 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   }> = [];
   for (const step of transitions) {
     await page.evaluate(() => performance.clearResourceTimings());
-    const started = await page.evaluate(() => performance.now());
     if (step.link) {
       const link = page
         .locator(".navigation-shell")
         .getByRole("link", { name: step.link, exact: true });
       // A reader moves the pointer over a destination before clicking it; that
-      // hover is what warms the route, so measure the same path.
+      // hover is what warms the route, but it is not part of the wait the
+      // reader feels between the press and the paint, so it happens before the
+      // stopwatch starts (the earlier 150/400 ms dwells were counted and made
+      // every step look 150-400 ms slower than the click).
       await link.hover();
       await page.waitForTimeout(150);
-      await link.click();
     } else {
-      // Aim like a reader: hover warms the reader chunk before the click, so
-      // this measures the click-to-paint path rather than a cold cascade.
       await page.locator(step.click).first().hover();
       await page.waitForTimeout(400);
+    }
+    const started = await page.evaluate(() => performance.now());
+    if (step.link) {
+      await page
+        .locator(".navigation-shell")
+        .getByRole("link", { name: step.link, exact: true })
+        .click();
+    } else {
       await page.locator(step.click).first().click();
     }
     await expect(page.locator(step.ready).first()).toBeVisible({
