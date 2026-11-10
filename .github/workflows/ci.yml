@@ -385,11 +385,12 @@ jobs:
 
   e2e-shard:
     # The whole 856-test suite belongs to the nightly schedule, a `full-ci`
-    # labelled pull request, or a manual dispatch (the QA-only dispatch has its
-    # own job). Ordinary pushes use the selective path.
-    # A full dispatch already runs the whole suite in the `e2e` job; sharding it
-    # again duplicated work and doubled the flake surface.
-    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.qa != true && inputs.full != true) || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
+    # labelled pull request, or `-f full=true`. Ordinary pushes use the
+    # selective path, and a plain dispatch regenerates the baselines instead.
+    # `full=true` deliberately ignores the verified-tree marker: asking for the
+    # whole suite on a tree that already passed is the only way to prove a
+    # change that the selective path cannot reach.
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.full == true) || (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.qa != true && inputs.full != true) || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -458,8 +459,15 @@ jobs:
             echo "QA-only dispatch: screenshots and audits, no browser suite."
             exit 0
           fi
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.qa }}" != "true" ] && [ "${{ needs.update-visual-baselines.result }}" = "success" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.qa }}" != "true" ] && [ "${{ inputs.full }}" != "true" ] && [ "${{ needs.update-visual-baselines.result }}" = "success" ]; then
             echo "Baseline regeneration dispatch: the visual job is this run's verification."
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.full }}" = "true" ]; then
+            if [ "${{ needs.e2e-shard.result }}" != "success" ]; then
+              echo "A full dispatch must run the whole suite; shards reported ${{ needs.e2e-shard.result }}."
+              exit 1
+            fi
             exit 0
           fi
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ needs.changes.outputs.web }}" != "true" ]; then
@@ -541,8 +549,9 @@ jobs:
   # committed baselines and silently hid the update.
   update-visual-baselines:
     # A plain dispatch regenerates the baselines; `-f qa=true` only asks for
-    # screenshots and audits, so it must not pay for a second build.
-    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.qa }}
+    # screenshots and audits, so it must not pay for a second build. `-f full=true`
+    # verifies an unchanged tree, so it must not rewrite the baselines it checks.
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.qa && inputs.full != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
