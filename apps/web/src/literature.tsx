@@ -131,7 +131,7 @@ function LiteratureFeaturedSkeleton() {
       <div className="literature-shelf">
         {Array.from({ length: 6 }, (_, index) => (
           <div className="literature-shelf-item is-skeleton" key={index}>
-            <div className="literature-cover" data-skeleton="true" />
+            <div className="literature-cover is-compact" data-skeleton="true" />
             <span>
               <strong className="skeleton-line" />
               <small className="skeleton-line is-meta" />
