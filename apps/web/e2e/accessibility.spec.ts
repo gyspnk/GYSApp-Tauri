@@ -223,6 +223,23 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expectNoAxeViolations(page);
   });
 
+  test("Kidung desktop rail and the offline settings stay free of axe violations", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+    const rail = page.locator(".kidung-reader-rail");
+    await expect(rail).toBeVisible({ timeout: 20_000 });
+    await expectNoAxeViolations(page);
+
+    await page.goto("/GYSApp-Tauri/lainnya?section=offline");
+    await page.locator('[data-setting="offline"] > summary').click();
+    await expect(page.locator(".more-storage-note")).toBeVisible();
+    await expectNoAxeViolations(page);
+  });
+
   test("Kidung settings keeps localized controls and accessible names", async ({
     page,
   }) => {
