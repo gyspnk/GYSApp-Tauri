@@ -317,15 +317,29 @@ for (const viewport of viewports) {
           "a, button, summary, [role='button']",
         )) {
           if (!visibleBox(el)) continue;
-          // innerText, not textContent: a label hidden by CSS still exists in
-          // the DOM, and that is exactly how the queue tabs went blank.
-          const text = (el.innerText ?? "").trim();
           // A swatch's background IS its content (colour picker), so it is not
           // a blank control.
           if (
             /swatch/.test(typeof el.className === "string" ? el.className : "")
           )
             continue;
+          // Text counts only when a Range over its characters reports pixels:
+          // a label hidden by CSS (the queue tabs) and text skipped by
+          // content-visibility both produce empty rects, while painted text
+          // always reports some. innerText and textContent both lie here.
+          const text = (() => {
+            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+            for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+              if (!(node.textContent ?? "").trim().length) continue;
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              const painted = [...range.getClientRects()].some(
+                (box) => box.width > 1 && box.height > 1,
+              );
+              if (painted) return "painted";
+            }
+            return "";
+          })();
           const media =
             [...el.querySelectorAll("svg, img, picture, canvas")].some(
               visibleBox,
