@@ -555,9 +555,9 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   console.log(
     `[runtime-reader] ${JSON.stringify({
       ms: readerDetail?.ms,
-      render: readerDetail?.marks.find((mark) =>
-        mark.name.startsWith("gys-reader-render:"),
-      )?.name,
+      readerMarks: readerDetail?.marks
+        .filter((mark) => mark.name.startsWith("gys-reader"))
+        .map((mark) => `${mark.name}@${mark.at}`),
       mounted: readerDetail?.marks.find(
         (mark) => mark.name === "gys-reader-mounted",
       )?.at,
