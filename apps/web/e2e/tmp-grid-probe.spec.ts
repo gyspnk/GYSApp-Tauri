@@ -5,7 +5,7 @@ test("temporary probe: how the Lainnya collection grid resolves at 768", async (
 }) => {
   await page.setViewportSize({ width: 768, height: 1024 });
   await page.goto("/lainnya");
-  await page.getByRole("heading", { name: "Lainnya", exact: true }).waitFor();
+  await page.locator(".more-library-grid").waitFor();
   const data = await page.evaluate(() => {
     const grid = document.querySelector(".more-library-grid");
     if (!(grid instanceof HTMLElement)) return { grid: null };
