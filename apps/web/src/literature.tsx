@@ -366,28 +366,30 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         />
       </section>
 
-      {status === "ready" && (
-        <div className="catalog-filter-status">
-          <span role="status">
-            {translate(locale, "catalog.resultCount", {
-              count: filtered.length,
-            })}
-          </span>
-          {(query || category !== "all") && (
-            <button
-              className="quiet-button"
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setCategory("all");
-                searchRef.current?.focus();
-              }}
-            >
-              {translate(locale, "catalog.reset")}
-            </button>
-          )}
-        </div>
-      )}
+      <div className="catalog-filter-status">
+        {status === "ready" && (
+          <>
+            <span role="status">
+              {translate(locale, "catalog.resultCount", {
+                count: filtered.length,
+              })}
+            </span>
+            {(query || category !== "all") && (
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setCategory("all");
+                  searchRef.current?.focus();
+                }}
+              >
+                {translate(locale, "catalog.reset")}
+              </button>
+            )}
+          </>
+        )}
+      </div>
       {status === "ready" &&
         featured.length > 0 &&
         !query &&
@@ -549,10 +551,11 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
           </section>
         )}
 
-      {status === "loading" && (
+      {status !== "ready" && (
         <>
           {/* Reserve the shelf so the sections below it do not jump when the
-              catalogue lands: the same rows, the same cover box, no data. */}
+              catalogue lands. It usually resolves after the first paint, so
+              this covers every pre-ready status, not only "loading". */}
           <section
             className="literature-featured is-loading"
             aria-hidden="true"

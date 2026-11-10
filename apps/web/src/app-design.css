@@ -1344,6 +1344,9 @@
   box-shadow: none;
 }
 .literature-page > .catalog-filter-status {
+  /* The row exists before the catalogue does, so its line does not push the
+     shelf down when the count arrives. */
+  min-height: 20px;
   margin-bottom: 12px;
 }
 .suara-page > .detail-back {

@@ -394,7 +394,7 @@ jobs:
     # `full=true` deliberately ignores the verified-tree marker: asking for the
     # whole suite on a tree that already passed is the only way to prove a
     # change that the selective path cannot reach.
-    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.full == true) || (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.qa != true && inputs.full != true) || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.full == true) || (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.qa != true && inputs.full != true && inputs.perf != true) || contains(github.event.pull_request.labels.*.name, 'full-ci')) && needs.changes.outputs.verified != 'true' }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
