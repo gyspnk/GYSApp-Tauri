@@ -729,14 +729,11 @@ export function MorePage({
   const reportGoogleStatus = useCallback(
     (status: "ready" | "error", reason?: GoogleFailure) =>
       setEgysGoogleError(
-        status === "error"
-          ? translate(
-              locale,
-              reason === "silent"
-                ? "more.googlePressSilent"
-                : "more.googleButtonFailed",
-            )
-          : "",
+        status !== "error"
+          ? ""
+          : reason === "silent"
+            ? translate(locale, "more.googlePressSilent")
+            : translate(locale, "more.googleButtonFailed"),
       ),
     [locale],
   );
