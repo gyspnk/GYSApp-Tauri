@@ -104,6 +104,11 @@
   --motion-fast: 120ms;
   --motion-normal: 180ms;
   --motion-slow: 260ms;
+  --motion-entrance: 220ms;
+  --motion-stagger: 40ms;
+  --motion-distance: 8px;
+  --motion-lift: -2px;
+  --motion-press: 0.96;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
