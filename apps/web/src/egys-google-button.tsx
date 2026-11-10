@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { renderEgysGoogleButton } from "./egys-google.js";
+import { watchGooglePopup } from "./google-popup-watch.js";
 import { GoogleMark } from "./egys-login-methods.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { translate, type Locale } from "./i18n.js";
@@ -17,6 +18,30 @@ export function EgysGoogleButton({
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
+  const [popupBlocked, setPopupBlocked] = useState(false);
+  useEffect(() => {
+    // The consent window never opens when the browser blocks popups, and Google
+    // gives us no error. Watch our own click and say what happened.
+    const watch = watchGooglePopup();
+    const control = host.current;
+    let timer: number | undefined;
+    const onClick = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (!watch.blocked) return;
+        setPopupBlocked(true);
+        recordDiagnostic("warn", "egys.google-popup-blocked", {
+          attempted: watch.attempted,
+        });
+      }, 1200);
+    };
+    control?.addEventListener("click", onClick, true);
+    return () => {
+      window.clearTimeout(timer);
+      control?.removeEventListener("click", onClick, true);
+      watch.restore();
+    };
+  }, []);
   useEffect(() => {
     const controller = new AbortController();
     let cleanup: (() => void) | undefined;
@@ -82,6 +107,11 @@ export function EgysGoogleButton({
         <span className="sr-only" role="alert">
           {translate(locale, "more.googleButtonFailed")}
         </span>
+      )}
+      {popupBlocked && status !== "loading" && (
+        <p className="egys-google-error" role="alert">
+          {translate(locale, "more.googlePopupBlocked")}
+        </p>
       )}
     </div>
   );
