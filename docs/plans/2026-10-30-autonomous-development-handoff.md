@@ -2918,6 +2918,11 @@ Pemisahan titik ukur pembaca (`42714237203`): shell `.hymn-detail-page` **639 ms
 Di 320 px tab “Kidung / Antrean MIDI” pada `/kidung?section=playlist` tampil sebagai dua pil **kosong**: label disembunyikan oleh aturan ≤600 px, dan ikonnya disembunyikan oleh aturan ≤340 px, sehingga tidak ada isi yang tersisa. Perbaikan `06ffaf9` mengembalikan label untuk halaman antrean saja (katalog tetap ikon-saja karena pemilih koleksi butuh ruang) dan ikon tetap tampil; `@container` tidak dipakai lagi karena pada 320 px ia tidak pernah cocok.
 Bukti hosted: QA `42727774114` (61 tangkapan, 320/390, light+dark) menangkap pil kosong, lalu QA `42728665381` menunjukkan “Kidung” dan “Antrean MIDI” lengkap tanpa terpotong; push CI `42727727942` hijau.
 
+### Audit menolak kontrol yang menyembunyikan label dan ikonnya (10 Nov, putaran 211)
+
+Cacat pil kosong di 320 px lolos dari axe karena elemennya tetap punya `aria-label`; yang hilang hanya isi yang terlihat. `apps/web/scripts/ui-consistency-audit.mjs` sekarang memeriksa setiap `a`, `button`, `summary`, dan `[role="button"]` yang terlihat: teks dihitung hanya bila `Range.getClientRects()` menghasilkan piksel (label `display:none` dan teks di dalam `content-visibility: auto` tidak dihitung), ikon dihitung lewat `svg/img/picture/canvas` yang terlihat atau anak berwarna setipis 2 px (bar hamburger), dan swatch warna dikecualikan karena latarnya adalah isinya.
+Iterasi hosted: `42731590842` menandai swatch dan hamburger (aturan terlalu kasar), `42732195810` menyisakan hamburger (bar 2 px), dan `42734229055` bersih: **44 muatan, 0 temuan** untuk 320/390/1440 × light/dark. Aturan ini yang akan menahan kelas cacat pil kosong agar tidak kembali.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
