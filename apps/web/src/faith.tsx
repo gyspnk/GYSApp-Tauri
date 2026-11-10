@@ -364,7 +364,11 @@ export function FaithPage({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="page faith-page" ref={pageRef}>
+    <div
+      className="page faith-page"
+      ref={pageRef}
+      inert={notePopupOpen ? true : undefined}
+    >
       <section className="page-intro faith-intro">
         <h1 className="sr-only">
           {group?.title ?? translate(locale, "nav.iman")}
@@ -592,7 +596,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
         createPortal(
           <div
             ref={noteDialogRef}
-            className={`bible-notes-backdrop${isNoteClosing ? " is-closing" : ""}`}
+            className={`bible-notes-backdrop faith-notes${isNoteClosing ? " is-closing" : ""}`}
             role="dialog"
             aria-modal="true"
             aria-label={translate(locale, "faith.notesDialog")}
