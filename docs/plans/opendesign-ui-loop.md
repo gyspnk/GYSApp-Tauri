@@ -27,3 +27,25 @@ Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus
 
 - Sistem gerak: `gysapp-motion-system-f189` (artefak `index.html`, pratinjau `http://127.0.0.1:7456/api/projects/gysapp-motion-system-f189/raw/index.html`), sudah diterapkan sebagian (token, baris katalog, rak Suara, umpan balik tekan, menu).
 - Putaran 224: menunggu run desain Beranda.
+
+## Beranda — hasil desain putaran 224
+
+Pratinjau: `http://127.0.0.1:7456/api/projects/gysapp-ui-loop/raw/index.html` (dua bingkai 390 px dan dua bingkai 1440 px: “Saat ini” vs “Usulan”, empat tema, saklar kurangi gerak, anotasi gerak, panel 12 perubahan).
+
+Dua belas usulan yang akan diterapkan bertahap:
+
+1. Hierarki tiga lapis: sapaan kecil, judul serif besar, baru isi.
+2. Ritme jarak 32–40 px antar bagian, 10–18 px dalam kartu; bingkai hanya saat memisahkan.
+3. Sauh menjadi satu-satunya hero (bayangan + media lebar), bagian lain turun satu tingkat.
+4. Tiga aksi cepat tanpa bingkai: ikon dalam lingkaran tipis + label + kata kerja kecil.
+5. Panel ayat dibalik menjadi permukaan gelap untuk jeda visual (kontras tetap ≥4,5:1).
+6. Rak literatur tanpa panel berbingkai; sampul 2:3 dengan intipan tepi mengundang geser.
+7. Sampul punya wajah: judul dan penulis di bawah sampul.
+8. Suara Sejati 16:9 dengan tombol putar dan durasi menempel di media.
+9. Serif untuk judul/ayat, sans untuk navigasi/tombol/meta.
+10. Topbar ponsel dua baris: merek + alat, lalu pencarian penuh; target ≥44 px.
+11. Navigasi mengikuti lebar: bottom-nav lima item di ponsel, sidebar lega di desktop.
+12. Gerak hanya untuk menjelaskan: hover/tekan 120 ms, fokus/tema 180 ms, kartu masuk 260 ms dengan stagger 40 ms.
+
+Yang sengaja tidak diubah: lima tujuan navigasi dan urutannya, empat tema dan token, struktur konten, bahasa, target 44 px, tanpa fitur baru.
+Risiko: metrik serif berbeda per perangkat (uji fallback), bingkai desktop berskala, dan penerapan bertahap harus menjaga baseline CI tetap stabil.
