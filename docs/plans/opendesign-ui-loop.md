@@ -49,3 +49,11 @@ Dua belas usulan yang akan diterapkan bertahap:
 
 Yang sengaja tidak diubah: lima tujuan navigasi dan urutannya, empat tema dan token, struktur konten, bahasa, target 44 px, tanpa fitur baru.
 Risiko: metrik serif berbeda per perangkat (uji fallback), bingkai desktop berskala, dan penerapan bertahap harus menjaga baseline CI tetap stabil.
+
+### Implementasi batch 1 (putaran 225)
+
+- **Aksi cepat jadi “pintu” tenang** (`6fb4c9e`): tiga kartu berbingkai diganti ikon dalam lingkaran tipis + label di bawahnya; target tetap ≥44 px (lingkaran 44 px), fokus/tekan memakai `--motion-fast`, dan tidak ada kotak yang bersaing dengan konten. Di 1440 pintu-pintu diletakkan di bawah judul (`68cf4be`), bukan di pojok kanan atas.
+- **Hierarki judul dan ritme** (`8154186`): `h1` beranda memakai `clamp(1.75rem, 5.4vw, 2.25rem)` dengan line-height 1.05 dan tracking −0,02em; jarak antar bagian 32 px di desktop (22 px di ponsel) dan padding atas 26 px, sesuai ritme 32–40 px pada desain.
+- **Baseline** `home-390`, `home-768`, `home-1440` diperbarui dari artefak full sweep `42775595640` (semua job hijau) — bukan dari mesin lokal.
+- Bukti QA: `42772803521`, `42773760076`, `42774784985` (390/1440, terang/gelap).
+- Sisa batch: panel ayat dibalik jadi permukaan gelap, rak literatur tanpa wadah dengan sampul 2:3, dan kartu Suara 16:9 dengan tombol putar di media.
