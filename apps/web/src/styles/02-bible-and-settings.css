@@ -2693,6 +2693,12 @@
 .more-page .more-setting-section:first-child {
   border-top: 0;
 }
+.more-page .more-storage-note {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 .more-page .more-settings-group {
   grid-column: 1 / -1;
   margin: 22px 0 0;

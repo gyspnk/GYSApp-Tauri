@@ -795,6 +795,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.categoryHymns": "Kidung",
     "more.hymnsHint": "Nada dasar, transpose, MIDI",
     "more.categoryOffline": "Data Offline",
+    "more.storageUsed":
+      "Dipakai {used} dari {quota} yang tersedia untuk aplikasi ini.",
+    "more.storageUnknown":
+      "Sisa penyimpanan belum bisa dibaca di perangkat ini.",
     "more.offlineHint": "Paket tersimpan di perangkat",
     "more.categoryBackup": "Backup",
     "more.backupHint": "Ekspor dan pulihkan data",

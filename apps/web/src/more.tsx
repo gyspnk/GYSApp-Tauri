@@ -53,6 +53,7 @@ import { loadEgysApple, signInEgysApple } from "./egys-apple.js";
 import { EgysLoginMethods } from "./egys-login-methods.js";
 import { AudioSettingsInline } from "./audio-settings-inline.js";
 import { Select } from "./select.js";
+import { readStorageUsage, type StorageUsage } from "./storage-usage.js";
 import { UiPreferencesPanel } from "./ui-preferences-panel.js";
 import { REMINDER_CHANGE_EVENT } from "./daily-reminder.js";
 import { Icon, type IconName } from "./icons.js";
@@ -166,6 +167,7 @@ function DistributedAssetPanel({
     ...group,
     items: assets.filter((asset) => asset.kind === group.key),
   })).filter((group) => group.items.length > 0);
+
   return (
     <article className="more-card more-card-wide distributed-assets-card">
       <div className="more-card-heading">
@@ -396,6 +398,17 @@ export function MorePage({
   });
   const [packBusy, setPackBusy] = useState(false);
   const [packProgress, setPackProgress] = useState(0);
+  const [storageUsage, setStorageUsage] = useState<StorageUsage | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void readStorageUsage().then((usage) => {
+      if (alive) setStorageUsage(usage);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const [report, setReport] = useState(
     () => localStorage.getItem("gys-report-draft") ?? "",
   );
@@ -1542,6 +1555,14 @@ export function MorePage({
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
+            <p className="more-storage-note" role="status">
+              {storageUsage
+                ? translate(locale, "more.storageUsed", {
+                    used: formatBytes(storageUsage.used, locale),
+                    quota: formatBytes(storageUsage.quota, locale),
+                  })
+                : translate(locale, "more.storageUnknown")}
+            </p>
             <div
               className="more-resource-group"
               data-testid="more-resource-group"

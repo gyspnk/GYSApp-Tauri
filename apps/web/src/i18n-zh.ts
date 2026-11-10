@@ -748,6 +748,8 @@ export const zhFeatureMessages: Record<string, string> = {
   "more.categoryHymns": "圣诗",
   "more.hymnsHint": "调性、变调与 MIDI",
   "more.categoryOffline": "离线数据",
+  "more.storageUsed": "本应用已使用 {used}，可用 {quota}。",
+  "more.storageUnknown": "此设备无法报告剩余存储空间。",
   "more.offlineHint": "本机已存数据包",
   "more.categoryBackup": "备份",
   "more.backupHint": "导出与恢复数据",

@@ -767,6 +767,8 @@ export const enFeatureMessages: Record<string, string> = {
   "more.categoryHymns": "Hymns",
   "more.hymnsHint": "Key, transpose and MIDI",
   "more.categoryOffline": "Offline data",
+  "more.storageUsed": "Using {used} of {quota} available to this app.",
+  "more.storageUnknown": "This device does not report its remaining storage.",
   "more.offlineHint": "Packs stored on this device",
   "more.categoryBackup": "Backup",
   "more.backupHint": "Export and restore data",
