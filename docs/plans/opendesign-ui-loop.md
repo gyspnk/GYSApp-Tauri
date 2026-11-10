@@ -12,16 +12,16 @@ Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus
 
 ## Rotasi dan status
 
-| #   | Permukaan                                                   | Status                | Run OpenDesign        | Bukti                                      |
-| --- | ----------------------------------------------------------- | --------------------- | --------------------- | ------------------------------------------ |
-| 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan              | `ui-loop` run beranda | —                                          |
-| 2   | Kidung (katalog + pembaca + dock MIDI)                      | sebagian              | —                     | —                                          |
-| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                          |
-| 4   | Iman (teks, PDF, tindakan)                                  | artefak tidak cocok   | —                     | lihat catatan “Iman — artefak tidak cocok” |
-| 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                          |
-| 6   | Suara (hero, rak kartu, pembaca)                            | belum                 | —                     | —                                          |
-| 7   | Lainnya/pengaturan (kategori, baris, dialog)                | belum                 | —                     | —                                          |
-| 8   | Dialog/sheet bersama (pemilih, popover, panel)              | belum                 | —                     | —                                          |
+| #   | Permukaan                                                   | Status                | Run OpenDesign        | Bukti                                       |
+| --- | ----------------------------------------------------------- | --------------------- | --------------------- | ------------------------------------------- |
+| 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan              | `ui-loop` run beranda | —                                           |
+| 2   | Kidung (katalog + pembaca + dock MIDI)                      | sebagian              | —                     | —                                           |
+| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                           |
+| 4   | Iman (teks, PDF, tindakan)                                  | artefak tidak cocok   | —                     | lihat catatan “Iman — artefak tidak cocok”  |
+| 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                           |
+| 6   | Suara (hero, rak kartu, pembaca)                            | belum                 | —                     | —                                           |
+| 7   | Lainnya/pengaturan (kategori, baris, dialog)                | sebagian (02, 06, 08) | `60a5d60`             | `apps/web/e2e/more-settings-groups.spec.ts` |
+| 8   | Dialog/sheet bersama (pemilih, popover, panel)              | belum                 | —                     | —                                           |
 
 ## Catatan
 
@@ -87,6 +87,29 @@ tiga kolom terukur pada 1440 px). Bukti hosted: `42848919162` (verify, unit,
 e2e-selective hijau) dan Pages `42848919268`. Gerbang `accessibility.spec.ts`
 ikut diperbarui: dulu ia menuntut `combobox` bernama “Category”/“分类”, kini
 grup chip dengan status `aria-pressed`. Butir 02/03/04/06 menunggu data, bukan CSS.
+
+## Lainnya (rotasi berikutnya)
+
+Artefak: `docs/design/gysapp-ui-system/index.html` bagian "Lainnya & pengaturan"
+dan "Lainnya · usulan perubahan" (8 butir).
+
+| Butir                                                      | Status                                                                        |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 01 Profil dipisah dari daftar pengaturan                   | cocok — kartu akun adalah baris pertama, terpisah dari preferensi             |
+| 02 Pengaturan dikelompokkan (Tampilan, Konten, Tentang)    | diterapkan — tiga judul grup di `more-settings-list`                          |
+| 03 Setiap baris memuat judul, hint, dan nilai              | sebagian — judul + hint ada; nilai baru muncul setelah baris dibuka           |
+| 04 Nilai rata kanan, chevron hanya bila ada layar lanjutan | sebagian — chevron benar (semua baris membuka isi); kolom nilai belum ada     |
+| 05 "Keluar" diberi warna danger                            | cocok — `danger-button`                                                       |
+| 06 Tinggi baris minimum 64 px                              | diterapkan — `.more-setting-section > .more-setting-row { min-height: 64px }` |
+| 07 Versi aplikasi tampil sebagai nilai                     | terbuka — versi belum jadi nilai baris                                        |
+| 08 Desktop dua kolom pengaturan                            | diterapkan — `min-width: 1200px` → dua kolom, judul grup merentang            |
+
+Kontrak: `apps/web/e2e/more-settings-groups.spec.ts` (tiga judul grup, baris ≥64 px
+di 390 px, dua kolom di 1440 px).
+
+Butir 03/04/07 butuh satu sumber nilai per baris (tema, ukuran teks, gerak, bahasa,
+jumlah unduhan, versi) supaya nilai tidak ditebak; itu pekerjaan terpisah agar
+tidak menambah state baru tanpa pemilik.
 
 ## Iman — artefak tidak cocok dengan permukaan yang ada
 
