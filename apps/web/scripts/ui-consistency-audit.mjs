@@ -317,7 +317,9 @@ for (const viewport of viewports) {
           "a, button, summary, [role='button']",
         )) {
           if (!visibleBox(el)) continue;
-          const text = (el.textContent ?? "").trim();
+          // innerText, not textContent: a label hidden by CSS still exists in
+          // the DOM, and that is exactly how the queue tabs went blank.
+          const text = (el.innerText ?? "").trim();
           // A swatch's background IS its content (colour picker), so it is not
           // a blank control.
           if (
