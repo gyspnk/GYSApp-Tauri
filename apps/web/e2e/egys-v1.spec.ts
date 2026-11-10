@@ -1008,6 +1008,56 @@ test("Google retries a failed SDK within the same provider row", async ({
   expect(attempts).toBe(2);
 });
 
+test("an origin Google refuses never leaves a dead provider row", async ({
+  page,
+}) => {
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: `window.google = { accounts: { id: {
+        initialize() {}, cancel() {},
+        // An unregistered origin: Google answers with nothing at all.
+        renderButton() {
+          window.__googleRenderAttempts = (window.__googleRenderAttempts || 0) + 1;
+        }
+      } } };`,
+    }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const account = page.locator('[data-setting="account"]');
+  const row = account.locator(".egys-google-control");
+  await expect(row).toBeVisible();
+  // The reader must be told, not left with a button that silently does nothing.
+  await expect(account.getByRole("alert")).toContainText(
+    "Gagal memuat tombol Google",
+  );
+  await row.scrollIntoViewIfNeeded();
+  const press = await row.evaluate((control) => {
+    const box = control.getBoundingClientRect();
+    const hit = document.elementFromPoint(
+      box.left + box.width / 2,
+      box.top + box.height / 2,
+    );
+    return {
+      retry: Boolean(hit?.closest(".egys-google-fallback")),
+      emptyHost: Boolean(hit?.closest(".egys-google-button")),
+    };
+  });
+  expect(press).toEqual({ retry: true, emptyHost: false });
+  await row.getByRole("button", { name: "Login dengan Google" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as unknown as { __googleRenderAttempts?: number })
+            .__googleRenderAttempts ?? 0,
+      ),
+    )
+    .toBe(2);
+  await expect(account.getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
 test("active e-GYS session displays the member profile badge", async ({
   page,
 }) => {

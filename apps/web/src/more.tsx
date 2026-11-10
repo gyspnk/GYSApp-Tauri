@@ -726,6 +726,14 @@ export function MorePage({
     [locale],
   );
 
+  const reportGoogleStatus = useCallback(
+    (status: "ready" | "error") =>
+      setEgysGoogleError(
+        status === "error" ? translate(locale, "more.googleButtonFailed") : "",
+      ),
+    [locale],
+  );
+
   const noticeTimer = useRef<number | undefined>(undefined);
   const show = (message: string) => {
     setNotice(message);
@@ -1238,6 +1246,7 @@ export function MorePage({
                           <EgysGoogleButton
                             locale={locale}
                             onCredential={completeGoogleLogin}
+                            onStatus={reportGoogleStatus}
                           />
                         ),
                       })}

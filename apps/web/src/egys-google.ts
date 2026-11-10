@@ -46,6 +46,12 @@ declare global {
   }
 }
 
+/** Dispatched on the Identity host when Google refuses to render a control.
+ * Google fails silently for an origin or client it does not know, and the
+ * transparent host then sits on top of the provider row, so without this signal
+ * every press on the row would land on an empty div. */
+export const GOOGLE_UNAVAILABLE_EVENT = "gys-google-unavailable";
+
 let googleScriptPromise: Promise<void> | undefined;
 
 function loadGoogleIdentityScript(locale: string): Promise<void> {
@@ -118,12 +124,13 @@ export async function renderEgysGoogleButton(
     auto_select: false,
   });
   let lastWidth = 0;
-  const render = () => {
+  const render = (): boolean => {
     const width = Math.min(
       400,
       Math.floor(element.getBoundingClientRect().width),
     );
-    if (!active || signal?.aborted || width <= 0 || width === lastWidth) return;
+    if (!active || signal?.aborted || width <= 0 || width === lastWidth)
+      return true;
     lastWidth = width;
     element.replaceChildren();
     google.accounts.id.renderButton(element, {
@@ -135,10 +142,20 @@ export async function renderEgysGoogleButton(
       width,
       locale: locale === "zh" ? "zh_CN" : locale,
     });
+    // Google answers an unknown origin or client by rendering nothing and
+    // logging only in its own console. Report that instead of leaving an empty
+    // host on top of the row.
+    if (element.childElementCount > 0) return true;
+    lastWidth = 0;
+    element.dispatchEvent(new Event(GOOGLE_UNAVAILABLE_EVENT));
+    return false;
   };
-  const observer = new ResizeObserver(render);
+  if (!render())
+    throw new Error("Google Identity Services rendered no sign-in control");
+  const observer = new ResizeObserver(() => {
+    render();
+  });
   observer.observe(element);
-  render();
   return () => {
     active = false;
     observer.disconnect();

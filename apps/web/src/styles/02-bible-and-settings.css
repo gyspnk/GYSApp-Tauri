@@ -1689,6 +1689,13 @@
   min-height: 0;
   align-items: center;
   justify-content: center;
+  /* Google fails silently for an unregistered origin: the host stays empty and
+     would still cover the row, swallowing every press. Only a host that really
+     holds Google's control may take the pointer. */
+  pointer-events: none;
+}
+.egys-google-control .egys-google-button:has(> *) {
+  pointer-events: auto;
 }
 /* The Google control is transparent once ready; the shared face underneath
    supplies the identical icon + label of the other providers. */
@@ -1715,7 +1722,16 @@
 .egys-google-button > div {
   max-width: 100%;
 }
+.egys-google-control {
+  /* Positions the fallback and the Identity host over the shared frame. */
+  position: relative;
+}
 .egys-google-control .egys-google-fallback {
+  /* The retry pill owns the frame while the Identity host has nothing to show,
+     so the press always lands on it instead of an empty transparent div. */
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;

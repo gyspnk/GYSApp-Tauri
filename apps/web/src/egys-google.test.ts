@@ -1,14 +1,27 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 let scripts: EventTarget[];
+let rendered: Element[] = [];
 const host = {
   getBoundingClientRect: () => ({ width: 320 }),
-  replaceChildren: vi.fn(),
+  replaceChildren: vi.fn(() => {
+    rendered = [];
+  }),
+  get childElementCount() {
+    return rendered.length;
+  },
+  dispatchEvent: vi.fn((event: Event) => {
+    events.push(event.type);
+    return true;
+  }),
 };
+const events: string[] = [];
 beforeEach(() => {
   vi.resetModules();
   vi.useFakeTimers();
   scripts = [];
+  rendered = [];
+  events.length = 0;
   vi.stubGlobal("window", {});
   vi.stubGlobal("document", {
     querySelector: () => null,
@@ -30,7 +43,13 @@ afterEach(() => {
 });
 
 function installSdk() {
-  const sdk = { initialize: vi.fn(), renderButton: vi.fn(), cancel: vi.fn() };
+  const sdk = {
+    initialize: vi.fn(),
+    renderButton: vi.fn(() => {
+      rendered = [{} as Element];
+    }),
+    cancel: vi.fn(),
+  };
   window.google = { accounts: { id: sdk } };
   return sdk;
 }
@@ -70,6 +89,19 @@ it("a late SDK cannot initialize a provider control after its route unmounts", a
   await render;
   expect(sdk.initialize).not.toHaveBeenCalled();
   expect(sdk.renderButton).not.toHaveBeenCalled();
+});
+
+it("refuses to leave an empty host when Google renders no control", async () => {
+  const { GOOGLE_UNAVAILABLE_EVENT, renderEgysGoogleButton } =
+    await import("./egys-google.js");
+  const sdk = installSdk();
+  // An origin or client Google does not know: renderButton returns quietly.
+  sdk.renderButton.mockImplementation(() => {});
+  await expect(
+    renderEgysGoogleButton(host as unknown as HTMLElement, vi.fn()),
+  ).rejects.toThrow("rendered no sign-in control");
+  expect(events).toEqual([GOOGLE_UNAVAILABLE_EVENT]);
+  expect(host.replaceChildren).toHaveBeenCalled();
 });
 
 it("an old provider callback cannot sign in after the inline control is disposed", async () => {

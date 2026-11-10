@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { renderEgysGoogleButton } from "./egys-google.js";
+import {
+  GOOGLE_UNAVAILABLE_EVENT,
+  renderEgysGoogleButton,
+} from "./egys-google.js";
 import { watchGooglePopup } from "./google-popup-watch.js";
 import { GoogleMark } from "./egys-login-methods.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -9,9 +12,11 @@ import { translate, type Locale } from "./i18n.js";
 export function EgysGoogleButton({
   locale,
   onCredential,
+  onStatus,
 }: {
   locale: Locale;
   onCredential: (credential: string) => void | Promise<void>;
+  onStatus?: ((status: "ready" | "error") => void) | undefined;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [attempt, retry] = useState(0);
@@ -44,9 +49,17 @@ export function EgysGoogleButton({
   }, []);
   useEffect(() => {
     const controller = new AbortController();
+    const control = host.current!;
+    // A re-render Google refuses (a resize into an unsupported width) must not
+    // leave an empty host on top of the row either.
+    const unavailable = () => {
+      recordDiagnostic("warn", "egys.google-unavailable", {});
+      setStatus("error");
+    };
+    control.addEventListener(GOOGLE_UNAVAILABLE_EVENT, unavailable);
     let cleanup: (() => void) | undefined;
     setStatus("loading");
-    void renderEgysGoogleButton(host.current!, onCredential, undefined, {
+    void renderEgysGoogleButton(control, onCredential, undefined, {
       locale,
       signal: controller.signal,
     })
@@ -63,10 +76,14 @@ export function EgysGoogleButton({
         setStatus("error");
       });
     return () => {
+      control.removeEventListener(GOOGLE_UNAVAILABLE_EVENT, unavailable);
       controller.abort();
       cleanup?.();
     };
   }, [locale, onCredential, attempt]);
+  useEffect(() => {
+    if (status !== "loading") onStatus?.(status);
+  }, [status, onStatus]);
   const label = translate(locale, "more.googleLogin");
   return (
     <div
@@ -103,7 +120,9 @@ export function EgysGoogleButton({
           <span>Google</span>
         </button>
       )}
-      {status === "error" && (
+      {status === "error" && !onStatus && (
+        // The account card renders the same sentence itself, visibly; a second
+        // alert there would only duplicate it.
         <span className="sr-only" role="alert">
           {translate(locale, "more.googleButtonFailed")}
         </span>
