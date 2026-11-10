@@ -163,14 +163,18 @@ test("missing daily artwork stays compact while keeping the reading action", asy
     await expect(
       page.locator('.sauh-image-wrap[data-image-state="missing"]'),
     ).toBeVisible();
-    // Missing artwork keeps a thin band so the card stays compact, but the
-    // panel still grows with its title, verse and reading action. The old
-    // assertion asked for a full-bleed layer and contradicted the shipped
-    // 72 px band (`app-design.css`, `.verse-panel:has([data-image-state="missing"])`).
+    // Two shipped states, two contracts: below 720 px the missing artwork is a
+    // thin band (72 px) above the copy, and from 720 px the media layer goes
+    // absolute and covers the whole panel. The old equality assertion only
+    // described the wide state and failed on phones.
     const media = (await page.locator(".sauh-card-media").boundingBox())!;
     const panel = (await page.locator(".verse-panel").boundingBox())!;
-    expect(media.height).toBeLessThanOrEqual(96);
-    expect(panel.height).toBeGreaterThan(media.height + 24);
+    if (width < 720) {
+      expect(media.height).toBeLessThanOrEqual(96);
+      expect(panel.height).toBeGreaterThan(media.height + 24);
+    } else {
+      expect(Math.abs(media.height - panel.height)).toBeLessThan(1);
+    }
     await expect(
       page.getByRole("link", { name: "Baca Lebih Lanjut →" }),
     ).toBeVisible();

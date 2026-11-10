@@ -322,8 +322,11 @@
   position: relative;
   inset: auto;
   width: 100%;
-  height: auto;
-  aspect-ratio: 2 / 3;
+  /* The ratio box is the padding trick, not aspect-ratio: the card is a
+     stretched flex item, so a percentage height would win over the ratio. */
+  height: 0;
+  padding-bottom: 150%;
+  overflow: hidden;
   border-radius: 6px;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
   -webkit-mask-image: none;
