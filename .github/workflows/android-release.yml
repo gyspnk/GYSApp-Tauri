@@ -55,30 +55,25 @@ jobs:
             from=$(gh release list --limit 1 --exclude-drafts --json tagName --jq '.[0].tagName // empty')
           fi
           existing=$(git tag --list 'v0.1.0-preview.*' | paste -sd, -)
-          node scripts/release-notes.mjs \
-            --from "${from}" \
-            --date "$(date -u +%Y-%m-%d)" \
-            --existing "${existing}" \
-            ${{ inputs.tag != '' && format('--tag {0}', inputs.tag) || '' }} \
-            > release.json
+          args=(--from "$from" --date "$(date -u +%Y-%m-%d)" --existing "$existing")
+          if [ -n "${{ inputs.tag }}" ]; then args+=(--tag "${{ inputs.tag }}"); fi
+          node scripts/release-notes.mjs "${args[@]}" > release.json
+          tag=$(node -p "require('./release.json').tag")
+          test -n "$tag"
+          echo "GYS_RELEASE_TAG=$tag" >> "$GITHUB_ENV"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
           node - <<'NODE'
-          const { readFileSync, appendFileSync, writeFileSync } = require('node:fs');
+          const { readFileSync } = require('node:fs');
           const release = JSON.parse(readFileSync('release.json', 'utf8'));
           if (!/^v[0-9][A-Za-z0-9.-]+$/.test(release.tag)) throw new Error('Invalid tag');
-          appendFileSync(process.env.GITHUB_ENV, `GYS_RELEASE_TAG=${release.tag}\n`);
-          appendFileSync(process.env.GITHUB_ENV, `GYS_RELEASE_FROM=${release.from ?? ''}\n`);
-          writeFileSync('release-notes.md', `${release.notes}\n`);
-          writeFileSync(`CHANGELOG-${release.tag}.md`, `${release.notes}\n`);
-          const summary = [
-            `## ${release.tag}`,
-            '',
-            `Base: ${release.from ?? 'initial commit'}…${process.env.GITHUB_SHA}`,
-            '',
-            Object.entries(release.counts).map(([type, count]) => `- ${type}: ${count}`).join('\n'),
-          ].join('\n');
-          writeFileSync('release-summary.md', summary);
+          require('node:fs').writeFileSync('release-notes.md', `${release.notes}\n`);
+          require('node:fs').writeFileSync(`CHANGELOG-${release.tag}.md`, `${release.notes}\n`);
+          const counts = Object.entries(release.counts).map(([type, count]) => `- ${type}: ${count}`).join('\n');
+          require('node:fs').writeFileSync(
+            'release-summary.md',
+            [`## ${release.tag}`, '', `Base: ${release.from ?? 'initial commit'}`, '', counts].join('\n'),
+          );
           NODE
-          echo "tag=$GYS_RELEASE_TAG" >> "$GITHUB_OUTPUT"
           cat release-summary.md >> "$GITHUB_STEP_SUMMARY"
       - name: Create the draft release for this commit
         run: |
