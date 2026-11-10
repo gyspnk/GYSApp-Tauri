@@ -1028,22 +1028,19 @@ test("an origin Google refuses never leaves a dead provider row", async ({
   const row = account.locator(".egys-google-control");
   await expect(row).toBeVisible();
   // The reader must be told, not left with a button that silently does nothing.
-  await expect(account.getByRole("alert")).toContainText(
-    "Gagal memuat tombol Google",
-  );
-  await row.scrollIntoViewIfNeeded();
-  const press = await row.evaluate((control) => {
-    const box = control.getBoundingClientRect();
-    const hit = document.elementFromPoint(
-      box.left + box.width / 2,
-      box.top + box.height / 2,
-    );
-    return {
-      retry: Boolean(hit?.closest(".egys-google-fallback")),
-      emptyHost: Boolean(hit?.closest(".egys-google-button")),
-    };
-  });
-  expect(press).toEqual({ retry: true, emptyHost: false });
+  // Match the noun, not the whole sentence, so a copy edit cannot break it.
+  await expect(account.getByRole("alert")).toContainText(/tombol google/i);
+  // The press must reach the retry control, not an empty transparent host: a
+  // host without Google's control may not take the pointer at all.
+  const gate = await row.evaluate((control) => ({
+    host: getComputedStyle(control.querySelector(".egys-google-button")!)
+      .pointerEvents,
+    retry: getComputedStyle(control.querySelector(".egys-google-fallback")!)
+      .pointerEvents,
+  }));
+  expect(gate).toEqual({ host: "none", retry: "auto" });
+  // Playwright hit-tests its own click, so this only passes when the press
+  // really lands on the retry pill.
   await row.getByRole("button", { name: "Login dengan Google" }).click();
   await expect
     .poll(() =>
