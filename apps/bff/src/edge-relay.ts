@@ -84,6 +84,8 @@ export async function collectEdgeAudio(
   const timestamp = new Date(nowMs).toISOString().replace(/\.\d{3}Z$/, "Z");
   const chunks: Uint8Array[] = [];
   let total = 0;
+  // Counted so a refusal can say what the upstream actually sent.
+  const seen = { text: 0, binary: 0, first: "" };
   return await new Promise<ArrayBuffer>((resolve, reject) => {
     const timer = setTimeout(
       () => reject(new Error("Edge speech timed out")),
@@ -97,7 +99,11 @@ export async function collectEdgeAudio(
         return;
       }
       if (!total) {
-        reject(new Error("Edge speech returned no audio"));
+        reject(
+          new Error(
+            `Edge speech returned no audio (text ${seen.text}, binary ${seen.binary}, first ${seen.first.slice(0, 120)})`,
+          ),
+        );
         return;
       }
       const audio = new Uint8Array(total);
@@ -113,9 +119,12 @@ export async function collectEdgeAudio(
     );
     socket.onMessage((data) => {
       if (typeof data === "string") {
+        seen.text += 1;
+        if (!seen.first) seen.first = data.replace(/\r\n/g, " ");
         if (data.includes("Path:turn.end")) settle();
         return;
       }
+      seen.binary += 1;
       const chunk = edgeAudioChunk(data);
       if (!chunk?.length) return;
       chunks.push(chunk);
