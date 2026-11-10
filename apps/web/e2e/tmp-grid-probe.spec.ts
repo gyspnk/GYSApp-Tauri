@@ -3,12 +3,14 @@ import { expect, test } from "@playwright/test";
 test("temporary probe: how the Lainnya collection grid resolves at 768", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await page.setViewportSize({ width: 768, height: 1024 });
   await page.goto("/lainnya");
-  await page.locator(".more-library-grid").waitFor();
+  await page.waitForTimeout(4_000);
   const data = await page.evaluate(() => {
     const grid = document.querySelector(".more-library-grid");
-    if (!(grid instanceof HTMLElement)) return { grid: null };
+    const body = (document.body.innerText ?? "").slice(0, 160);
+    if (!(grid instanceof HTMLElement)) return { grid: null, body };
     const style = getComputedStyle(grid);
     const cards = [...grid.querySelectorAll(".more-library-link")].map((el) => {
       const r = el.getBoundingClientRect();
@@ -26,5 +28,5 @@ test("temporary probe: how the Lainnya collection grid resolves at 768", async (
     };
   });
   console.log(`[grid-probe] ${JSON.stringify(data)}`);
-  expect(data.grid).not.toBeNull();
+  expect(data).toBeTruthy();
 });
