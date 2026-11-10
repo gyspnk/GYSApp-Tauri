@@ -20,6 +20,14 @@ import { pathToFileURL } from "node:url";
 const FORMATTED = /\.(?:[cm]?[jt]sx?|json|css|scss|html|md|ya?ml)$/;
 const SOURCE = /\.(?:[cm]?[jt]sx?)$/;
 
+/** Which workspace package owns a path, so the check runs in the right one. */
+export function ownerOf(file) {
+  if (file.startsWith("apps/bff/")) return "@gys/bff";
+  if (file.startsWith("apps/web/")) return "@gys/web";
+  const workspace = /^packages\/([^/]+)\//.exec(file);
+  return workspace ? `@gys/${workspace[1]}` : undefined;
+}
+
 export function collectChecks(files) {
   const changed = [...new Set(files)].filter(
     (file) => file && existsSync(file),
@@ -36,7 +44,10 @@ export function collectChecks(files) {
       if (candidate !== source && existsSync(candidate)) tests.push(candidate);
     }
   }
-  return { formatted, sources, tests: [...new Set(tests)] };
+  const typechecks = [...new Set([...sources, ...tests].map(ownerOf))].filter(
+    Boolean,
+  );
+  return { formatted, sources, tests: [...new Set(tests)], typechecks };
 }
 
 function baseName(file) {
@@ -70,29 +81,37 @@ function run(label, command, args) {
 
 export function main(argv = process.argv.slice(2)) {
   const files = argv.length ? argv : changedSince("origin/main");
-  const { formatted, sources, tests } = collectChecks(files);
+  const { formatted, sources, tests, typechecks } = collectChecks(files);
   if (!formatted.length && !sources.length && !tests.length) {
     process.stdout.write("Nothing changed against origin/main.\n");
     return;
   }
   if (formatted.length)
     run("format", "pnpm", ["exec", "prettier", "--check", ...formatted]);
-  if (sources.length)
-    run("typecheck (web)", "pnpm", [
+  for (const workspace of typechecks)
+    run(`typecheck (${workspace})`, "pnpm", [
       "--filter",
-      "@gys/web",
+      workspace,
       "exec",
       "tsc",
       "--noEmit",
     ]);
-  if (tests.length)
-    run("unit (touched)", "pnpm", [
+  const unowned = tests.filter((file) => !ownerOf(file));
+  const byOwner = new Map();
+  for (const file of tests) {
+    const workspace = ownerOf(file);
+    if (workspace)
+      byOwner.set(workspace, [...(byOwner.get(workspace) ?? []), file]);
+  }
+  if (unowned.length) run("unit (scripts)", "node", ["--test", ...unowned]);
+  for (const [workspace, files] of byOwner)
+    run(`unit (${workspace})`, "pnpm", [
       "--filter",
-      "@gys/web",
+      workspace,
       "exec",
       "vitest",
       "run",
-      ...tests,
+      ...files,
     ]);
   process.stdout.write(
     process.exitCode ? "\nLocal check failed.\n" : "\nLocal check clean.\n",
