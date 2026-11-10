@@ -2,13 +2,17 @@ import { describe, expect, it } from "vitest";
 // @ts-expect-error Vitest uses Node file IO; application types target the browser.
 import { readFileSync } from "node:fs";
 
-const css = readFileSync(new URL("styles/00-tokens.css", import.meta.url), "utf8");
+const css = readFileSync(
+  new URL("styles/00-tokens.css", import.meta.url),
+  "utf8",
+);
 
 function colors(block: string): Record<string, string> {
   return Object.fromEntries(
-    [...block.matchAll(/(--[a-z-]+):\s*(#[a-f\d]{6})\s*;/gi)].map(
-      (match) => [match[1], match[2]],
-    ),
+    [...block.matchAll(/(--[a-z-]+):\s*(#[a-f\d]{6})\s*;/gi)].map((match) => [
+      match[1],
+      match[2],
+    ]),
   );
 }
 
