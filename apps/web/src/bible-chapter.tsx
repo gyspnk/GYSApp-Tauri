@@ -31,6 +31,8 @@ export function ChapterPane({
   scrollRef,
   onScroll,
   onSelect,
+  onChapterStep,
+  chapterStep,
   onBookmark,
   onTouchStart,
   onTouchEnd,
@@ -63,6 +65,9 @@ export function ChapterPane({
     verse: BibleVerse,
     modifiers?: { shiftKey?: boolean; additive?: boolean; longPress?: boolean },
   ) => void;
+  /** Reading continues at the foot of the text: one tap moves one chapter. */
+  onChapterStep?: ((delta: -1 | 1) => void) | undefined;
+  chapterStep?: { back: boolean; forward: boolean } | undefined;
   onBookmark: (id: string) => void;
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchMove?: (event: TouchEvent<HTMLDivElement>) => void;
@@ -370,6 +375,31 @@ export function ChapterPane({
             </div>
           );
         })}
+        {onChapterStep && (
+          <nav
+            className="bible-chapter-nav"
+            aria-label={translate(locale, "bible.chapterNav")}
+          >
+            <button
+              type="button"
+              className="bible-chapter-step"
+              onClick={() => onChapterStep(-1)}
+              disabled={chapterStep ? !chapterStep.back : false}
+            >
+              <span aria-hidden="true">←</span>
+              {translate(locale, "bible.chapterPrevious")}
+            </button>
+            <button
+              type="button"
+              className="bible-chapter-step"
+              onClick={() => onChapterStep(1)}
+              disabled={chapterStep ? !chapterStep.forward : false}
+            >
+              {translate(locale, "bible.chapterNext")}
+              <span aria-hidden="true">→</span>
+            </button>
+          </nav>
+        )}
       </div>
     </section>
   );

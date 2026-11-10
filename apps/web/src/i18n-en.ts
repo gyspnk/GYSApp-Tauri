@@ -134,6 +134,12 @@ export const enMessages: Record<string, string> = {
   "bible.loading": "Opening the offline TB pack…",
   "bible.offlineError": "Bible pack is unavailable",
   "bible.retry": "Try again",
+
+  "bible.chapterPrevious": "Previous chapter",
+
+  "bible.chapterNext": "Next chapter",
+
+  "bible.chapterNav": "Chapter navigation",
   "bible.book": "Book",
   "bible.chapter": "Chapter",
   "bible.readAloud": "Read aloud",

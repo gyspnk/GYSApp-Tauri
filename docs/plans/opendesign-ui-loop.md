@@ -16,7 +16,7 @@ Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus
 | --- | ----------------------------------------------------------- | -------- | --------------------- | ----- |
 | 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan | `ui-loop` run beranda | —     |
 | 2   | Kidung (katalog + pembaca + dock MIDI)                      | belum    | —                     | —     |
-| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | belum    | —                     | —     |
+| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | berjalan | —                     | —     |
 | 4   | Iman (teks, PDF, tindakan)                                  | belum    | —                     | —     |
 | 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum    | —                     | —     |
 | 6   | Suara (hero, rak kartu, pembaca)                            | belum    | —                     | —     |
@@ -66,6 +66,28 @@ Risiko: metrik serif berbeda per perangkat (uji fallback), bingkai desktop bersk
   - **Tombol putar + durasi di kartu Suara** — ditolak: `packages/contracts/src/index.ts:312-321` (`SuaraSejatiPostSchema`) hanya punya id/title/excerpt/url/imageUrl/publishedAt/source. Tidak ada audio maupun durasi, jadi tombol putar akan berbohong. Butuh data baru dulu, bukan CSS.
   - **Kartu Suara 16:9** — belum: tanpa media yang bisa diputar, memotong foto kesaksian ke 16:9 hanya memperkecil gambarnya. Tunggu data audio.
   - **“Sampul punya wajah: judul dan penulis”** — sebagian: judul sudah di bawah sampul sejak batch 1; tidak ada bidang penulis di `apps/web/public/offline/literature.json` (hanya category/title/publishedAt/source), jadi yang ditampilkan tetap kategori + tanggal.
+
+## Alkitab (rotasi berikutnya)
+
+Sistem UI (`gysapp-ui-system`, bagian “Alkitab · usulan perubahan”, 10 butir).
+Status per 10 Nov:
+
+| #   | Usulan                                                     | Status                                                                                         |
+| --- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 01  | Versi tampil sebagai badge, bukan dropdown di tengah teks  | belum — menyentuh header pembaca dan memori versi                                              |
+| 02  | Pemilih kitab dan pasal dibuka dari satu tombol yang jelas | sudah ada tombol `.picker-book-title`; grid baru menyusul                                      |
+| 03  | Nomor ayat 12 px tabular, muted                            | **diterapkan** — `font-variant-numeric: tabular-nums` (ukuran 0,66 em dan `--muted` sudah ada) |
+| 04  | Teks ayat serif 17–18 px, tinggi baris 1,72–1,75           | sudah sesuai (`--font-reading`, 1.125rem, 1,72)                                                |
+| 05  | Lebar baca 60–68 karakter                                  | **diterapkan** — `max-width: 64ch` pada `.verse-content`                                       |
+| 06  | Navigasi pasal di kaki teks, 44 px, dua arah               | **diterapkan** — `.bible-chapter-nav`, dua tombol 44 px, nonaktif di ujung kitab               |
+| 07  | Pemilih grid kitab 3 kolom, pasal 6 kolom                  | belum — butuh rework `bible-picker.tsx` (814 baris) + kontraknya                               |
+| 08  | Pencarian kitab di atas grid                               | belum — ikut rework pemilih                                                                    |
+| 09  | Panel pemilih berdampingan di desktop                      | belum — ikut rework pemilih                                                                    |
+| 10  | Keadaan aktif biru penuh + teks on-accent                  | perlu ukur kontras per tema sebelum menyentuh `is-selected`                                    |
+
+Kontrak baru: `apps/web/e2e/bible-chapter-nav.spec.ts` — dua pintu 44 px, bolak-balik
+antar pasal (judul berubah lalu kembali), tumpuk vertikal di 390 px, angka tabular,
+dan lebar baris ≤ 66 `ch` di 1440 px.
 
 ## Indeks proyek OpenDesign (sumber desain resmi)
 

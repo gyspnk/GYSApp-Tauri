@@ -127,6 +127,12 @@ export const zhMessages: Record<string, string> = {
   "bible.loading": "正在打开离线 TB 圣经…",
   "bible.offlineError": "圣经包不可用",
   "bible.retry": "重试",
+
+  "bible.chapterPrevious": "上一章",
+
+  "bible.chapterNext": "下一章",
+
+  "bible.chapterNav": "章节导航",
   "bible.book": "书卷",
   "bible.chapter": "章节",
   "bible.readAloud": "朗读",

@@ -714,6 +714,9 @@
 }
 .verse-content {
   min-width: 0;
+  /* 60-68 characters is the readable measure; wider lines lose the start of
+     the next line on a desktop page. */
+  max-width: 64ch;
   font-family: var(--font-reading);
   font-size: var(--bible-font-size, 1.125rem);
   line-height: var(--bible-line-height, 1.72);
@@ -990,6 +993,7 @@
   white-space: nowrap;
 }
 .verse-number {
+  font-variant-numeric: tabular-nums;
   align-self: start;
   width: calc(var(--bible-font-size, 18px) * 1.55);
   height: calc(var(--bible-font-size, 18px) * 1.55);

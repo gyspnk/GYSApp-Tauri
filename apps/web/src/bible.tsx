@@ -1773,6 +1773,11 @@ export function BiblePage({ locale }: { locale: Locale }) {
               scrollRef={primaryScrollRef}
               onScroll={onPrimaryScroll}
               onSelect={selectVerse}
+              onChapterStep={navigateBy}
+              chapterStep={{
+                back: Boolean(findNextTarget(books, book, chapter, -1)),
+                forward: Boolean(findNextTarget(books, book, chapter, 1)),
+              }}
               onBookmark={toggleBookmark}
             />
             {splitView && (

@@ -150,6 +150,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.loading": "Membuka paket TB offline…",
     "bible.offlineError": "Paket Alkitab belum tersedia",
     "bible.retry": "Coba lagi",
+
+    "bible.chapterPrevious": "Pasal sebelumnya",
+
+    "bible.chapterNext": "Pasal berikutnya",
+
+    "bible.chapterNav": "Navigasi pasal",
     "bible.book": "Kitab",
     "bible.chapter": "Pasal",
     "bible.readAloud": "Bacakan",

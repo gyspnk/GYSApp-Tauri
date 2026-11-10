@@ -1796,6 +1796,54 @@
     box-shadow: none;
   }
 }
+/* Reading continues at the foot of the text: two 44 px doors, both directions. */
+.bible-chapter-nav {
+  display: flex;
+  gap: 10px;
+  padding: 18px 0 6px;
+}
+.bible-chapter-step {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease;
+}
+.bible-chapter-step:hover:not(:disabled) {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.bible-chapter-step:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.bible-chapter-step:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bible-chapter-step {
+    transition: none;
+  }
+}
+@media (max-width: 519px) {
+  .bible-chapter-nav {
+    flex-direction: column;
+  }
+}
 /* Verse numbers occupy the left gutter; the text uses all remaining width. */
 .app-frame.is-reader-route .bible-reader .verse-row {
   grid-template-columns: 24px minmax(0, 1fr);
