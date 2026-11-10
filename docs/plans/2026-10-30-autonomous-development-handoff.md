@@ -7318,3 +7318,10 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
 2. **Mount panel “Aksi lain” hanya saat disclosure terbuka** (state `moreActionsOpen` + `onToggle`, 1 file, +569/−527 karena reindent): `perf.yml` `42742333630` memberi **631 ms** (dari 590), juga di-revert (`42742599309` hijau).
    Kesimpulan jujur: mount pembaca ~561 ms pada klik pertama bukan disebabkan batch katalog maupun markup panel tertutup; biayanya ada di render/pemasangan komponen inti (lirik+chord+efek), dan butuh pemecahan komponen nyata, bukan gerbang kondisional. Dua revert ini menyimpan angkanya agar tidak diulang.
    **Konfirmasi visual:** artefak QA `42728665381` (`/tmp/qa16`) menunjukkan tab `/kidung?section=playlist` di 320 px kembali berlabel “Kidung” dan “Antrean MIDI” dengan ikon, kartu kosong 640 px di tengah; artefak 4-tema lama (`42703451959`) masih memperlihatkan pil kosong, jadi perbaikannya memang sesudah artefak itu.
+
+### Coba-coba jazad: preload Literatur tidak menolong, sepia/AMOLED bersih (10 Nov, putaran 216)
+
+- **Preload katalog Literatur dari stub** (`3b48352`, `injectLiteraturePreload` + 5 tes) diukur `perf.yml` `42743728140`: literatur **700/742/773 ms** vs 705/717/775 sebelumnya — tidak ada perubahan, karena `/literatur` mengambil katalog lewat BFF/proksi lebih dulu dan snapshot bundled hanya cadangan. Di-revert.
+- **Tabel perf penuh run yang sama:** home 503/524/492, bible 523/511/567, kidung **490/492/494**, iman 445/485/473, literatur 700/742/773, suara 571/619/670, lainnya 491/508/523; CLS home 0,003/0,002/0,0166; long task ≤56 ms hanya di literatur-desktop.
+- **Sapuan sepia/AMOLED 320/390** (`42743979602`, 61 tangkapan): tab antrean berlabel, kartu kosong 640 px, teks Iman/Alkitab terbaca, pil navigasi aktif memakai cokelat tua `#8b5a2b` di atas `#f0e2cc` (kontras ≈5,5:1, sampel piksel) — tidak ada cacat yang perlu diubah. Satu-satunya “temuan” adalah teks tipis yang tampak pucat di pratinjau 320 karena antialias, bukan kontras.
+- Sisa: pemecahan komponen pembaca (561 ms mount), CLS Literatur 0,016–0,017, item owner-side.
