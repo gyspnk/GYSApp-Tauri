@@ -38,7 +38,7 @@ test("Google signs in from the inline provider row without an application dialog
       contentType: "application/javascript",
       body: `window.google = { accounts: { id: {
       initialize(options) { this.callback = options.callback; },
-      renderButton(host) { host.replaceChildren(document.createElement("span")); },
+      renderButton(host) { const box = document.createElement("div"); box.style.width = "200px"; box.style.height = "44px"; host.replaceChildren(box); },
       prompt(listener) {
         listener({ isDisplayed: () => true });
         this.callback({ credential: "gis-credential" });
@@ -989,7 +989,7 @@ test("Google retries a failed SDK within the same provider row", async ({
       contentType: "application/javascript",
       body: `window.google = { accounts: { id: {
         initialize() {}, cancel() {},
-        renderButton(host) { const button = document.createElement("button"); button.textContent = "Login dengan Google"; host.replaceChildren(button); }
+        renderButton(host) { const box = document.createElement("div"); box.style.width = "200px"; box.style.height = "44px"; host.replaceChildren(box); }
       } } };`,
     });
   });
