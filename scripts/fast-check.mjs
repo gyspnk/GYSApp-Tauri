@@ -44,6 +44,24 @@ export function collectChecks(files) {
       if (candidate !== source && existsSync(candidate)) tests.push(candidate);
     }
   }
+  // Four policy suites read every stylesheet rather than one module, so a plain
+  // CSS edit has no sibling test to find. Run them whenever web CSS moves,
+  // otherwise an off-scale radius only surfaces in CI (round 24 did exactly
+  // that with a 20px panel corner).
+  if (
+    changed.some(
+      (file) => file.startsWith("apps/web/src/") && file.endsWith(".css"),
+    )
+  ) {
+    for (const policy of [
+      "apps/web/src/radius-scale.test.ts",
+      "apps/web/src/spacing-scale.test.ts",
+      "apps/web/src/css-tokens.test.ts",
+      "apps/web/src/editorial-palette.test.ts",
+    ]) {
+      if (existsSync(policy)) tests.push(policy);
+    }
+  }
   const typechecks = [...new Set([...sources, ...tests].map(ownerOf))].filter(
     Boolean,
   );

@@ -17,7 +17,10 @@ test("picks formatting, typecheck and the covering unit file", () => {
     "apps/web/src/egys-google.ts",
   ]);
   assert.deepEqual(sources, ["apps/web/src/egys-google.ts"]);
-  assert.deepEqual(tests, ["apps/web/src/egys-google.test.ts"]);
+  // A stylesheet is in this change, so the stylesheet-wide policy suites ride
+  // along; the sibling unit file still has to be first.
+  assert.equal(tests[0], "apps/web/src/egys-google.test.ts");
+  assert.ok(tests.includes("apps/web/src/radius-scale.test.ts"));
   assert.deepEqual(typechecks, ["@gys/web"]);
 });
 
@@ -44,4 +47,16 @@ test("splits the checks by the package that owns the file", () => {
     "apps/bff/src/index.test.ts",
     "apps/web/src/egys-google.test.ts",
   ]);
+});
+
+test("a stylesheet edit pulls in the stylesheet-wide policy suites", () => {
+  const { tests } = collectChecks([
+    "apps/web/src/styles/02-bible-and-settings.css",
+  ]);
+  for (const policy of ["radius-scale", "spacing-scale", "css-tokens"]) {
+    assert.ok(
+      tests.some((file) => file.includes(policy)),
+      `${policy} should run for a stylesheet edit`,
+    );
+  }
 });
