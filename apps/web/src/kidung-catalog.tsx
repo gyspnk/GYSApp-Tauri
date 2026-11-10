@@ -29,6 +29,7 @@ import {
   hymnCollectionLabel,
   uniqueItems,
 } from "./kidung-shared.js";
+import { KidungCollectionChips } from "./kidung-collection-chips.js";
 import {
   readStoredCollection,
   resolveCollection,
@@ -260,23 +261,12 @@ export function HymnCatalog({
           <KidungLocalNav active="songs" locale={locale} />
           {state.status === "ready" && (
             <div className="kidung-header-filter">
-              <div
-                role="group"
-                aria-label={translate(locale, "kidung.collection")}
-                className="kidung-collection-chips"
-              >
-                {books.map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className="kidung-collection-chip"
-                    aria-pressed={value === activeBook}
-                    onClick={() => setBook(value)}
-                  >
-                    {hymnCollectionLabel(value)}
-                  </button>
-                ))}
-              </div>
+              <KidungCollectionChips
+                books={books}
+                active={activeBook}
+                label={translate(locale, "kidung.collection")}
+                onSelect={setBook}
+              />
             </div>
           )}
           <div
