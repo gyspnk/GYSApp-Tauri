@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import {
   GOOGLE_UNAVAILABLE_EVENT,
-  pressEgysGoogle,
   renderEgysGoogleButton,
 } from "./egys-google.js";
-import { watchGooglePopup } from "./google-popup-watch.js";
 import { GoogleMark } from "./egys-login-methods.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { translate, type Locale } from "./i18n.js";
 
-/** Why Google could not hand a credential over. The card says which one. */
-export type GoogleFailure = "unavailable" | "silent";
+/** Why Google could not place a control in the row. */
+export type GoogleFailure = "unavailable";
 
-/** Google's own personalized button opens authorization directly from this row. */
+/**
+ * Google's own button, visible and pressable, so a press opens Google's real
+ * sign-in window. One Tap's minimal card is deliberately not used: once it is
+ * dismissed it is hard to bring back, which readers read as a dead button.
+ */
 export function EgysGoogleButton({
   locale,
   onCredential,
@@ -20,47 +22,13 @@ export function EgysGoogleButton({
 }: {
   locale: Locale;
   onCredential: (credential: string) => void | Promise<void>;
-  onStatus?:
-    ((status: "ready" | "error", reason?: GoogleFailure) => void) | undefined;
+  onStatus?: ((status: "ready" | "error") => void) | undefined;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [attempt, retry] = useState(0);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
-  const [popupBlocked, setPopupBlocked] = useState(false);
-  const [failure, setFailure] = useState<GoogleFailure>("unavailable");
-  const [pressing, setPressing] = useState(false);
-  /**
-   * Every press lands here, never inside Google's iframe: a click in a
-   * cross-origin frame is invisible to this page, and that invisibility is
-   * exactly what readers described as "the Google button does nothing".
-   */
-  const press = async () => {
-    if (pressing) return;
-    setPressing(true);
-    const watch = watchGooglePopup();
-    try {
-      const outcome = await pressEgysGoogle();
-      if (watch.blocked) {
-        setPopupBlocked(true);
-        recordDiagnostic("warn", "egys.google-popup-blocked", {
-          attempted: watch.attempted,
-        });
-      } else if (outcome === "silent" && !watch.opened) {
-        // Google accepted the press and showed nothing: the origin or the
-        // client is not allowed. Silence is the bug, so say what happened.
-        recordDiagnostic("warn", "egys.google-silent-press", {
-          attempted: watch.attempted,
-        });
-        setFailure("silent");
-        setStatus("error");
-      }
-    } finally {
-      watch.restore();
-      setPressing(false);
-    }
-  };
   useEffect(() => {
     const controller = new AbortController();
     const control = host.current!;
@@ -96,41 +64,25 @@ export function EgysGoogleButton({
     };
   }, [locale, onCredential, attempt]);
   useEffect(() => {
-    if (status === "error") onStatus?.("error", failure);
-    else if (status === "ready") onStatus?.("ready");
-  }, [status, failure, onStatus]);
+    if (status !== "loading") onStatus?.(status);
+  }, [status, onStatus]);
   const label = translate(locale, "more.googleLogin");
   return (
     <div
       className="egys-provider egys-provider-google egys-google-control"
       aria-busy={status === "loading"}
     >
-      {/* One visual face for every provider. The Google Identity control stays
-          on top (transparent) so its own click flow keeps working while the row
-          reads as three identical buttons. */}
+      {/* The shared face only paints while Google has nothing to show; once its
+          control exists it takes the whole frame and keeps its own name. */}
       <span className="egys-google-face" aria-hidden="true">
         <GoogleMark />
         <span>Google</span>
       </span>
-      {/* Hidden from the accessibility tree and the pointer: this page owns the
-          press now, and a second "Login dengan Google" control would only make
-          the name ambiguous for readers and tests alike. */}
       <div
         ref={host}
         className="egys-google-button"
-        aria-hidden="true"
-        inert={true}
+        inert={status !== "ready"}
       />
-      {status === "ready" && (
-        // The press surface sits above Google's iframe so the click is ours.
-        <button
-          type="button"
-          className="egys-google-press"
-          aria-label={label}
-          aria-busy={pressing}
-          onClick={press}
-        />
-      )}
       {status !== "ready" && (
         // Never inert: a press while the script is still loading restarts the
         // attempt instead of doing nothing at all.
@@ -156,11 +108,6 @@ export function EgysGoogleButton({
         <span className="sr-only" role="alert">
           {translate(locale, "more.googleButtonFailed")}
         </span>
-      )}
-      {popupBlocked && status !== "loading" && (
-        <p className="egys-google-error" role="alert">
-          {translate(locale, "more.googlePopupBlocked")}
-        </p>
       )}
     </div>
   );

@@ -79,7 +79,7 @@ test("header Google signs in directly and refreshes its account information", as
   await page.route("https://accounts.google.com/gsi/client*", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: `window.google = { accounts: { id: { initialize(o) { this.callback=o.callback; }, renderButton(host) { const box=document.createElement('div'); box.style.width='200px'; box.style.height='44px'; host.replaceChildren(box); }, prompt(listener) { listener({ isDisplayed: () => true }); this.callback({ credential: 'menu-google' }); }, cancel() {} } } };`,
+      body: `window.google = { accounts: { id: { initialize(o) { this.callback=o.callback; }, renderButton(host) { const button=document.createElement('button'); button.type='button'; button.textContent='Sign in with Google'; button.style.width='200px'; button.style.height='44px'; button.addEventListener('click', () => this.callback({ credential: 'menu-google' })); host.replaceChildren(button); }, prompt(listener) { listener({ isDisplayed: () => true }); this.callback({ credential: 'menu-google' }); }, cancel() {} } } };`,
     }),
   );
   await page.route("**/api/v1/auth/egys/google", (route) => {
@@ -103,7 +103,7 @@ test("header Google signs in directly and refreshes its account information", as
   await page.locator(".account-button").click();
   await page
     .locator(".account-popover")
-    .getByRole("button", { name: "Login dengan Google", exact: true })
+    .getByRole("button", { name: "Sign in with Google", exact: true })
     .click();
   await expect(
     page.locator(".account-popover").getByText("Jemaat Google"),

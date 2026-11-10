@@ -46,7 +46,7 @@ import {
   trackEgysProfileSeen,
   type EgysSessionTrace,
 } from "./egys.js";
-import { EgysGoogleButton, type GoogleFailure } from "./egys-google-button.js";
+import { EgysGoogleButton } from "./egys-google-button.js";
 import { useCallback } from "react";
 import { EgysWhatsApp } from "./egys-whatsapp.js";
 import { loadEgysApple, signInEgysApple } from "./egys-apple.js";
@@ -727,13 +727,9 @@ export function MorePage({
   );
 
   const reportGoogleStatus = useCallback(
-    (status: "ready" | "error", reason?: GoogleFailure) =>
+    (status: "ready" | "error") =>
       setEgysGoogleError(
-        status !== "error"
-          ? ""
-          : reason === "silent"
-            ? translate(locale, "more.googlePressSilent")
-            : translate(locale, "more.googleButtonFailed"),
+        status === "error" ? translate(locale, "more.googleButtonFailed") : "",
       ),
     [locale],
   );

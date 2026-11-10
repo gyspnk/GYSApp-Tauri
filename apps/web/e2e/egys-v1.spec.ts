@@ -38,10 +38,14 @@ test("Google signs in from the inline provider row without an application dialog
       contentType: "application/javascript",
       body: `window.google = { accounts: { id: {
       initialize(options) { this.callback = options.callback; },
-      renderButton(host) { const box = document.createElement("div"); box.style.width = "200px"; box.style.height = "44px"; host.replaceChildren(box); },
-      prompt(listener) {
-        listener({ isDisplayed: () => true });
-        this.callback({ credential: "gis-credential" });
+      renderButton(host) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "Sign in with Google";
+        button.style.width = "200px";
+        button.style.height = "44px";
+        button.addEventListener("click", () => this.callback({ credential: "gis-credential" }));
+        host.replaceChildren(button);
       }, cancel() {}
     } } };`,
     }),
@@ -64,7 +68,7 @@ test("Google signs in from the inline provider row without an application dialog
   });
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   const account = page.locator('[data-setting="account"]');
-  const google = account.locator(".egys-google-press");
+  const google = account.getByRole("button", { name: "Sign in with Google" });
   await expect(google).toBeVisible();
   await google.click();
   await expect(
@@ -989,7 +993,14 @@ test("Google retries a failed SDK within the same provider row", async ({
       contentType: "application/javascript",
       body: `window.google = { accounts: { id: {
         initialize() {}, cancel() {},
-        renderButton(host) { const box = document.createElement("div"); box.style.width = "200px"; box.style.height = "44px"; host.replaceChildren(box); }
+        renderButton(host) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Sign in with Google";
+          button.style.width = "200px";
+          button.style.height = "44px";
+          host.replaceChildren(button);
+        }
       } } };`,
     });
   });
@@ -999,7 +1010,7 @@ test("Google retries a failed SDK within the same provider row", async ({
   await account
     .getByRole("button", { name: "Login dengan Google", exact: true })
     .click();
-  await expect(account.locator(".egys-google-press")).toBeVisible();
+  await expect(account.locator(".egys-google-button button")).toBeVisible();
   await expect(account.getByRole("alert")).toHaveCount(0);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   expect(attempts).toBe(2);
@@ -1050,43 +1061,6 @@ test("an origin Google refuses never leaves a dead provider row", async ({
     .toBe(2);
   await expect(account.getByRole("alert")).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-});
-
-test("a Google control that answers a press with silence says so", async ({
-  page,
-}) => {
-  await page.route("https://accounts.google.com/gsi/client*", (route) =>
-    route.fulfill({
-      contentType: "application/javascript",
-      body: `window.google = { accounts: { id: {
-        initialize() {}, cancel() {},
-        // Google renders a box, so the row looks alive; the press itself
-        // goes nowhere because the origin is not allowed.
-        renderButton(element) {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.textContent = "Sign in with Google";
-          button.style.width = "200px";
-          button.style.height = "44px";
-          element.replaceChildren(button);
-        },
-        prompt() {}
-      } } };`,
-    }),
-  );
-  await page.goto("/GYSApp-Tauri/lainnya?section=account");
-  const account = page.locator('[data-setting="account"]');
-  const control = account.locator(".egys-google-control");
-  const press = control.locator(".egys-google-press");
-  await expect(press).toBeVisible();
-  await expect(account.getByRole("alert")).toHaveCount(0);
-
-  // A press that produces neither a consent window nor a credential must turn
-  // into a message instead of silence.
-  await press.click();
-  await expect(account.getByRole("alert")).toContainText(/terdaftar/i, {
-    timeout: 10_000,
-  });
 });
 
 test("active e-GYS session displays the member profile badge", async ({

@@ -1608,15 +1608,21 @@
   inset: 0;
   width: auto;
   min-height: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
   /* Google fails silently for an unregistered origin: the host stays empty and
      would still cover the row, swallowing every press. Only a host that really
      holds Google's control may take the pointer. */
   pointer-events: none;
-  /* Transparent at every stage: the shared face underneath supplies the icon
-     and label, and this host only keeps Google's initialization alive. */
-  opacity: 0;
+}
+.egys-google-control .egys-google-button:has(> *) {
+  pointer-events: auto;
+}
+/* Google's button replaces the shared face: two "Google" labels would read as
+   two different buttons. */
+.egys-google-control:has(.egys-google-button > *) .egys-google-face {
+  display: none;
 }
 .egys-google-control:focus-within {
   outline: 2px solid var(--blue);
@@ -1634,27 +1640,6 @@
 }
 .egys-google-face > svg {
   flex: 0 0 auto;
-}
-.egys-google-control .egys-google-press {
-  /* The press belongs to this page, not to Google's iframe: a click inside a
-     cross-origin frame cannot be observed, so it can never be answered. This
-     button sits above the Identity host and reports what Google showed. */
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-  cursor: pointer;
-}
-.egys-google-control .egys-google-press:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: -3px;
-}
-.egys-google-control .egys-google-press[aria-busy="true"] {
-  cursor: progress;
 }
 .egys-google-button > div {
   max-width: 100%;
