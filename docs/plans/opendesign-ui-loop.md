@@ -12,16 +12,16 @@ Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus
 
 ## Rotasi dan status
 
-| #   | Permukaan                                                   | Status   | Run OpenDesign        | Bukti |
-| --- | ----------------------------------------------------------- | -------- | --------------------- | ----- |
-| 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan | `ui-loop` run beranda | —     |
-| 2   | Kidung (katalog + pembaca + dock MIDI)                      | belum    | —                     | —     |
-| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | berjalan | —                     | —     |
-| 4   | Iman (teks, PDF, tindakan)                                  | belum    | —                     | —     |
-| 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum    | —                     | —     |
-| 6   | Suara (hero, rak kartu, pembaca)                            | belum    | —                     | —     |
-| 7   | Lainnya/pengaturan (kategori, baris, dialog)                | belum    | —                     | —     |
-| 8   | Dialog/sheet bersama (pemilih, popover, panel)              | belum    | —                     | —     |
+| #   | Permukaan                                                   | Status                | Run OpenDesign        | Bukti                                      |
+| --- | ----------------------------------------------------------- | --------------------- | --------------------- | ------------------------------------------ |
+| 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan              | `ui-loop` run beranda | —                                          |
+| 2   | Kidung (katalog + pembaca + dock MIDI)                      | sebagian              | —                     | —                                          |
+| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                          |
+| 4   | Iman (teks, PDF, tindakan)                                  | artefak tidak cocok   | —                     | lihat catatan “Iman — artefak tidak cocok” |
+| 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                          |
+| 6   | Suara (hero, rak kartu, pembaca)                            | belum                 | —                     | —                                          |
+| 7   | Lainnya/pengaturan (kategori, baris, dialog)                | belum                 | —                     | —                                          |
+| 8   | Dialog/sheet bersama (pemilih, popover, panel)              | belum                 | —                     | —                                          |
 
 ## Catatan
 
@@ -66,6 +66,21 @@ Risiko: metrik serif berbeda per perangkat (uji fallback), bingkai desktop bersk
   - **Tombol putar + durasi di kartu Suara** — ditolak: `packages/contracts/src/index.ts:312-321` (`SuaraSejatiPostSchema`) hanya punya id/title/excerpt/url/imageUrl/publishedAt/source. Tidak ada audio maupun durasi, jadi tombol putar akan berbohong. Butuh data baru dulu, bukan CSS.
   - **Kartu Suara 16:9** — belum: tanpa media yang bisa diputar, memotong foto kesaksian ke 16:9 hanya memperkecil gambarnya. Tunggu data audio.
   - **“Sampul punya wajah: judul dan penulis”** — sebagian: judul sudah di bawah sampul sejak batch 1; tidak ada bidang penulis di `apps/web/public/offline/literature.json` (hanya category/title/publishedAt/source), jadi yang ditampilkan tetap kategori + tanggal.
+
+## Iman — artefak tidak cocok dengan permukaan yang ada
+
+`docs/design/gysapp-ui-system` bagian “Iman · usulan perubahan” menggambarkan
+**renungan harian**: satu renungan utama bertanggal, daftar renungan dengan
+durasi baca, ayat penutup, dan tautan arsip. Permukaan yang benar-benar dikirim
+(`apps/web/src/faith.tsx`) adalah **Dasar Kepercayaan**: sepuluh pokok ajaran
+bernomor, pencarian, catatan pribadi, aksi bagikan/salin, dan tombol PDF resmi
+tjc.org per pokok.
+
+Tujuh butir artefak itu karena itu tidak bisa diterapkan tanpa mengarang isi
+renungan yang tidak ada di data. Keputusan putaran 3: **tidak diubah**; yang
+dibutuhkan adalah run OpenDesign baru untuk permukaan Dasar Kepercayaan
+(daftar pokok + pembaca PDF), bukan penerapan paksa artefak renungan. Sampai
+run itu ada, rotasi lanjut supaya tidak memblokir pekerjaan lain.
 
 ## Alkitab (rotasi berikutnya)
 
