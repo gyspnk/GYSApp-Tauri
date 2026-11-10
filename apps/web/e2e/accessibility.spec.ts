@@ -491,19 +491,24 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await expect(
       page.getByRole("searchbox", { name: "Search literature" }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("combobox", { name: "Category", exact: true }),
-    ).toBeVisible();
+    // The type filter is a chip row now, so the gate looks for the group and
+    // its pressed state instead of a combobox and a listbox.
+    const categories = page.getByRole("group", {
+      name: "Category",
+      exact: true,
+    });
+    await expect(categories).toBeVisible();
     await expect(
       page.getByRole("combobox", { name: "Sort", exact: true }),
     ).toBeVisible();
 
-    await page.getByRole("combobox", { name: "Category", exact: true }).click();
-    await expect(page.getByRole("listbox", { name: "Category" })).toBeVisible();
     await expect(
-      page.getByRole("option", { name: "All collections", exact: true }),
-    ).toBeVisible();
-    await page.getByRole("option", { name: /Testimonies/ }).click();
+      categories.getByRole("button", { name: "All collections", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await categories.getByRole("button", { name: /Testimonies/ }).click();
+    await expect(
+      categories.getByRole("button", { name: /Testimonies/ }),
+    ).toHaveAttribute("aria-pressed", "true");
     await page.getByRole("combobox", { name: "Sort", exact: true }).click();
     await expect(
       page.getByRole("option", { name: "Newest", exact: true }),
