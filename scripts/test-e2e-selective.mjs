@@ -2,8 +2,10 @@ import { spawnSync } from "node:child_process";
 import { pnpmInvocation, processExitCode } from "./process-result.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
 import {
   collectChangedFiles,
+  keepExistingSpecArgs,
   resolveSelectiveTestArgs,
 } from "./test-e2e-selective-core.mjs";
 
@@ -13,6 +15,17 @@ const webDir = path.resolve(rootDir, "apps", "web");
 const userArgs = process.argv.slice(2);
 const changedFiles = collectChangedFiles({ rootDir });
 const plan = resolveSelectiveTestArgs(changedFiles, userArgs);
+const specArgs = plan.args.filter((arg) => /^e2e\/.*\.spec\.ts$/.test(arg));
+if (specArgs.length) {
+  const kept = keepExistingSpecArgs(plan.args, { webDir, existsSync });
+  if (!kept.some((arg) => /^e2e\/.*\.spec\.ts$/.test(arg))) {
+    console.log(
+      "\n✅ [Selective E2E] every selected spec was deleted by this change; nothing to run.",
+    );
+    process.exit(0);
+  }
+  plan.args = kept;
+}
 // Each contract uses an isolated browser context. Distribute tests across the
 // existing bounded worker pool instead of serializing large spec files.
 if (!userArgs.some((arg) => arg.startsWith("--fully-parallel")))

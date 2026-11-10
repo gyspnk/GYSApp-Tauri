@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveSelectiveTestArgs } from "./test-e2e-selective-core.mjs";
+import {
+  keepExistingSpecArgs,
+  resolveSelectiveTestArgs,
+} from "./test-e2e-selective-core.mjs";
 
 test("appearance preference changes select the dedicated visual/usability contracts", () => {
   const plan = resolveSelectiveTestArgs(
@@ -98,4 +101,17 @@ test("shared composition changes retain shell, gesture and responsive coverage",
   assert.ok(!plan.args.includes("e2e/visual.spec.ts"));
   assert.ok(!plan.args.includes("e2e/visual-reading.spec.ts"));
   assert.ok(!plan.description.startsWith("Full browser coverage"));
+});
+
+test("a deleted spec is dropped instead of failing the browser job", () => {
+  const args = [
+    "e2e/smoke.spec.ts",
+    "e2e/tmp-grid-probe.spec.ts",
+    "--fully-parallel",
+  ];
+  const kept = keepExistingSpecArgs(args, {
+    webDir: "/repo/apps/web",
+    existsSync: (file) => file.endsWith("smoke.spec.ts"),
+  });
+  assert.deepEqual(kept, ["e2e/smoke.spec.ts", "--fully-parallel"]);
 });

@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import path from "node:path";
 
 function normalizeLines(output) {
   return output
@@ -73,6 +74,17 @@ const CORE_SPECS = [
   "e2e/egys-v1.spec.ts",
   "e2e/route-announcement.spec.ts",
 ];
+
+// A push can delete a spec it also touched (for example removing a temporary
+// probe): Playwright then answers "No tests found" and the job fails even
+// though there is nothing left to run. Drop spec arguments that no longer
+// exist on disk.
+export function keepExistingSpecArgs(args, { webDir, existsSync }) {
+  return args.filter((arg) => {
+    if (!/^e2e\/.*\.spec\.ts$/.test(arg)) return true;
+    return existsSync(path.join(webDir, arg));
+  });
+}
 
 export function resolveSelectiveTestArgs(changedFiles, userArgs) {
   if (userArgs.includes("--all") || userArgs.includes("-a")) {
