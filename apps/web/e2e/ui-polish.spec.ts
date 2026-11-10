@@ -163,11 +163,14 @@ test("missing daily artwork stays compact while keeping the reading action", asy
     await expect(
       page.locator('.sauh-image-wrap[data-image-state="missing"]'),
     ).toBeVisible();
-    // The merged card keeps the artwork layer full-bleed even without an
-    // image, so the missing state must not collapse the card.
+    // Missing artwork keeps a thin band so the card stays compact, but the
+    // panel still grows with its title, verse and reading action. The old
+    // assertion asked for a full-bleed layer and contradicted the shipped
+    // 72 px band (`app-design.css`, `.verse-panel:has([data-image-state="missing"])`).
     const media = (await page.locator(".sauh-card-media").boundingBox())!;
     const panel = (await page.locator(".verse-panel").boundingBox())!;
-    expect(Math.abs(media.height - panel.height)).toBeLessThan(1);
+    expect(media.height).toBeLessThanOrEqual(96);
+    expect(panel.height).toBeGreaterThan(media.height + 24);
     await expect(
       page.getByRole("link", { name: "Baca Lebih Lanjut →" }),
     ).toBeVisible();
