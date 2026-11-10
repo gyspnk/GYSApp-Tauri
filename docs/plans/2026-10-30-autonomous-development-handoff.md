@@ -7343,3 +7343,16 @@ Tiga run berturut-turut sesudah perbaikan (`42746286574`, `42746486595`, `427466
 
 Semua langkah **< 300 ms**, termasuk pembaca, dan angka “590–681 ms” sebelumnya adalah artefak dwell 400 ms. Mark pembaca merinci: `gys-reader-render-11` (render 11 ms), `gys-reader-mounted` ≈ 50 ms sebelum sampel, `gys-reader-painted` 16 ms kemudian — jadi pemecahan komponen pembaca **tidak diperlukan** untuk target ini; percobaan batch/gerbang panel di putaran 214–215 memang tidak bisa menolong.
 Catatan: suite primer (`readyMs`) tetap memakai jam beku untuk label tanggal, dan angka route-nya tidak berubah.
+
+### CLS Literatur: hipotesis slot shelf gugur (10 Nov, putaran 218)
+
+Penyebab geser `div.literature-sections moved 106px` dicoba ditekan tiga cara, semuanya **tidak mengubah angka sama sekali**:
+
+1. skeleton shelf dengan struktur kartu yang sama (`7be8d55`),
+2. cover skeleton `aspect-ratio: 16/9` (`cb212d0`),
+3. matikan `content-visibility`/`contain-intrinsic-size` pada kartu skeleton (`38b69ef`),
+4. tinggi teks skeleton 4 baris + meta 2 baris (`8d2775b`).
+
+Keempat run `perf.yml` (`42747517399`, `42747875593`, `42748121838`, `42748336565`, `42748597238`) melaporkan **0,017316460857711054** identik sampai 15 desimal untuk `literatur-phone` — mustahil kalau geometri shelf berubah. Artinya sumber geser bukan penyisipan shelf, melainkan sesuatu di atasnya (kandidat: pertukaran metrik font judul/hero). Placeholder dihapus lagi (`ef30b58`) supaya tidak ada markup tanpa manfaat terukur; catatan ini menggantikan klaim “slot cadangan” sebelumnya.
+
+Sekalian dibersihkan: `box-shadow` pada `.literature-cover.is-compact` dihapus karena kartu shelf sudah punya bingkai sendiri dan bayangan kedua terbaca sebagai garis ganda (QA `42748976028`, 1440).
