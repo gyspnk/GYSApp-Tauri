@@ -1447,6 +1447,13 @@
   pointer-events: none;
 }
 
+.literature-shelf-item.is-skeleton .literature-cover.is-compact {
+  /* Real covers are 16:9 at their card width; a fixed 116px made the
+     placeholder 53px shorter and the page still jumped. */
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
 .literature-shelf-item.is-skeleton .literature-cover[data-skeleton] {
   background: var(--surface-soft);
   box-shadow: none;
