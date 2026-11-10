@@ -149,6 +149,31 @@ export type BffBindings = {
   EGYS_UPSTREAM_COMMIT?: string;
 };
 
+/**
+ * The voices the built-in relay is known to serve. Kept in step with the
+ * defaults in apps/web/src/edge-speech.ts.
+ */
+const BUILT_IN_EDGE_VOICES = [
+  {
+    id: "id-ID-GadisNeural",
+    name: "Gadis (Indonesia)",
+    language: "id-ID",
+    local: false,
+  },
+  {
+    id: "id-ID-ArdiNeural",
+    name: "Ardi (Indonesia)",
+    language: "id-ID",
+    local: false,
+  },
+  {
+    id: "en-US-AriaNeural",
+    name: "Aria (English)",
+    language: "en-US",
+    local: false,
+  },
+] as const;
+
 type BffVariables = {
   requestId: string;
 };
@@ -1261,7 +1286,9 @@ export function createApp(
       "public, max-age=300, stale-while-revalidate=900",
     );
     const configured = c.env?.EDGE_TTS_VOICES_URL?.trim();
-    if (!configured) return c.json({ voices: [] });
+    // Without a voice gateway the relay still speaks these three, so the web
+    // can offer a cloud voice instead of an empty catalog.
+    if (!configured) return c.json({ voices: BUILT_IN_EDGE_VOICES });
     let endpoint: URL;
     try {
       endpoint = new URL(configured);

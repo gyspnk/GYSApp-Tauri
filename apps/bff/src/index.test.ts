@@ -1018,7 +1018,7 @@ describe("BFF public boundary", () => {
     }
   });
 
-  it("returns an empty optional Edge voice catalog when not configured", async () => {
+  it("offers the relay's built-in voices when no gateway is configured", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:5173"],
       chordManifest: manifest,
@@ -1028,7 +1028,11 @@ describe("BFF public boundary", () => {
       headers: { Origin: "http://localhost:5173" },
     });
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ voices: [] });
+    expect(
+      ((await response.json()) as { voices: { id: string }[] }).voices.map(
+        (voice) => voice.id,
+      ),
+    ).toEqual(["id-ID-GadisNeural", "id-ID-ArdiNeural", "en-US-AriaNeural"]);
   });
 
   it("isolates bounded official PDF ranges from ordinary API quotas", async () => {
