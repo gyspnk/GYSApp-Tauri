@@ -817,9 +817,9 @@ fn open_external(app: AppHandle, url: String) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        atomic_write, egys_login_url, egys_popup_action, enforce_cap, is_allowed_egys_external_link,
-        safe_key, validate_egys_login_message, EgysPopup, BLOB_PAYLOAD_MAX_BYTES,
-        DATABASE_VALUE_MAX_BYTES, KV_VALUE_MAX_BYTES,
+        atomic_write, egys_login_url, egys_popup_action, enforce_cap,
+        is_allowed_egys_external_link, safe_key, validate_egys_login_message, EgysPopup,
+        BLOB_PAYLOAD_MAX_BYTES, DATABASE_VALUE_MAX_BYTES, KV_VALUE_MAX_BYTES,
     };
     use serde_json::json;
     use std::fs;
