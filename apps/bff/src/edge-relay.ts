@@ -18,8 +18,10 @@ export const EDGE_RELAY_MAX_BYTES = 10 * 1024 * 1024;
 // https://edgeupdates.microsoft.com/api/products?view=enterprise when the
 // handshake starts answering 403 again.
 const SEC_MS_GEC_VERSION = `${SEC_MS_GEC_VERSION_PREFIX}-158.0.4357.0`;
+// A Worker opens the socket through fetch with the Upgrade header; a wss:
+// URL is rejected by the Worker runtime, so this stays https:.
 const ENDPOINT =
-  "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1";
+  "https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1";
 const ORIGIN = "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36 Edg/158.0.0.0";
@@ -167,7 +169,6 @@ export async function connectEdgeSocket(
     "ConnectionId",
     edgeRequestId(crypto.getRandomValues(new Uint8Array(16))),
   );
-  url.protocol = "wss:";
   const response = await (options.fetchImpl ?? fetch)(url.toString(), {
     headers: {
       Upgrade: "websocket",
