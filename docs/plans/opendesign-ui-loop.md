@@ -56,6 +56,10 @@ Risiko: metrik serif berbeda per perangkat (uji fallback), bingkai desktop bersk
 - **Hierarki judul dan ritme** (`8154186`, koreksi `dc09c7a`): `h1` beranda memakai `clamp(1.75rem, 5.4vw, 2.25rem)` dengan line-height 1.05 dan tracking −0,02em; jarak antar bagian 32 px di desktop (22 px di ponsel) dan padding atas **28 px** — percobaan 26 px ditolak `spacing-scale.test.ts` karena nilai di atas 24 px harus kelipatan 4.
 - **Baseline** `home-390`, `home-768`, `home-1440` diperbarui dari artefak full sweep `42775595640` (semua job hijau) — bukan dari mesin lokal.
 - Bukti QA: `42772803521`, `42773760076`, `42774784985` (390/1440, terang/gelap).
+- **Kontrak Sauh diperbaiki** (`26fb347`): `ui-polish.spec.ts` menuntut media
+  setinggi panel di semua lebar, padahal dari 720 px media memang absolut dan
+  di bawahnya pita tipis; sekarang diukur per breakpoint. Seleksi e2e untuk
+  `app-design.css` juga ikut memilih `ui-polish` dan `home-resilience`.
 - **Rak literatur jadi baris sampul** (`cc721f9`): kartu literatur berhenti jadi kartu berbingkai 190 px; sampul 2:3 di alur normal, judul tiga baris di bawahnya, sampul berikutnya mengintip di tepi kanan, dan tidak ada scrim/blur karena teks tidak lagi menumpuk di atas gambar. Kontraknya di `apps/web/e2e/ui-polish.spec.ts` "home literature covers stand at 2:3 with the title underneath" (rasio ±4%, tanpa border, judul di bawah sampul, sampul kedua di dalam 390 px).
 - Sisa batch dan alasannya:
   - **Panel ayat jadi permukaan gelap** — belum: panel itu butuh empat token per tema (`--verse-bg`, `--verse-ink`, `--verse-line`, `--verse-accent`) supaya tema gelap/amoled tidak jatuh di bawah 4,5:1. Token hidup di `apps/web/src/styles/00-tokens.css`, berkas yang sedang dipindahkan sesi editorial (`f1ed51e`, `docs/plans/2026-11-10-editorial-redesign.md`); menambah token di sana sekarang akan bertabrakan. Dikerjakan setelah palet editorial mendarat.

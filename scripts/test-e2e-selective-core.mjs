@@ -293,6 +293,12 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       specFiles.add("e2e/universal-usability.spec.ts");
       specFiles.add("e2e/responsive-layout-matrix.spec.ts");
       specFiles.add("e2e/roadmap-ui-matrix.spec.ts");
+      // Home composition contracts: the shared design sheets own the Sauh card,
+      // the shelves and the verse band, and those files were never selected by
+      // a design-sheet change. `ui-polish` sat red for days without a run
+      // touching it, so a shared sheet now pays for them.
+      specFiles.add("e2e/ui-polish.spec.ts");
+      specFiles.add("e2e/home-resilience.spec.ts");
       runSmokeAll = true;
     }
   }

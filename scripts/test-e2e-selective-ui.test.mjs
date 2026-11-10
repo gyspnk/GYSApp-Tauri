@@ -96,6 +96,8 @@ test("shared composition changes retain shell, gesture and responsive coverage",
     "faith-zoom",
     "accessibility",
     "roadmap-ui-matrix",
+    "ui-polish",
+    "home-resilience",
   ])
     assert.ok(plan.args.includes(`e2e/${spec}.spec.ts`), spec);
   assert.ok(!plan.args.includes("e2e/visual.spec.ts"));
