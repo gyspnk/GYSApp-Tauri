@@ -88,6 +88,14 @@ e2e-selective hijau) dan Pages `42848919268`. Gerbang `accessibility.spec.ts`
 ikut diperbarui: dulu ia menuntut `combobox` bernama “Category”/“分类”, kini
 grup chip dengan status `aria-pressed`. Butir 02/03/04/06 menunggu data, bukan CSS.
 
+Catatan “Baru” (10 Nov): data belum memberi sinyal yang jujur. Snapshot
+`apps/web/public/offline/literature.json` punya `generatedAt` 2026-09-27, tetapi
+`publishedAt` terbaru adalah 2025-03, jadi badge "baru 30 hari" tidak akan pernah
+muncul di produksi; badge "belum dibaca" akan menandai seluruh 300 tulisan pada
+kunjungan pertama. Keduanya bukan badge, melainkan kebisingan. Tunggu sumber data
+yang benar-benar diperbarui (atau konsep "baru sejak kunjungan terakhir" yang
+disepakati), jangan mengarang sinyal.
+
 ## Lainnya (rotasi berikutnya)
 
 Artefak: `docs/design/gysapp-ui-system/index.html` bagian "Lainnya & pengaturan"
