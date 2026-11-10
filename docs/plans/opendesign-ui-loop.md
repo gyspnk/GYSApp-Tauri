@@ -57,3 +57,13 @@ Risiko: metrik serif berbeda per perangkat (uji fallback), bingkai desktop bersk
 - **Baseline** `home-390`, `home-768`, `home-1440` diperbarui dari artefak full sweep `42775595640` (semua job hijau) — bukan dari mesin lokal.
 - Bukti QA: `42772803521`, `42773760076`, `42774784985` (390/1440, terang/gelap).
 - Sisa batch: panel ayat dibalik jadi permukaan gelap, rak literatur tanpa wadah dengan sampul 2:3, dan kartu Suara 16:9 dengan tombol putar di media.
+
+## Indeks proyek OpenDesign (sumber desain resmi)
+
+| Proyek                      | Isi                                                                                                                                                                                                                                        | Status                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `gysapp-motion-system-f189` | Sistem gerak: token 120/180/260, entrance 220, stagger 40, enam demo, resep CSS, daftar “jangan dianimasikan”                                                                                                                              | selesai, dipakai bertahap                           |
+| `gysapp-ui-loop`            | Desain Beranda (“Saat ini” vs “Usulan”, 390 + 1440, empat tema) dengan 12 usulan                                                                                                                                                           | batch 1 diterapkan                                  |
+| `gysapp-ui-system`          | **Sistem UI lengkap**: fondasi (tema, tipe, spacing, radius, elevasi, ikon, gerak), komponen + semua keadaan, dan seluruh permukaan (Beranda, Kidung katalog & pembaca, Alkitab, Iman, Literatur, Suara, Lainnya, dialog/sheet) 390 + 1440 | run produksi `3c4a1565-3be9-42e6-9b49-1dbfc3a75359` |
+
+Aturan baru (goal revisi 66): permukaan yang belum punya artefak di `gysapp-ui-system` (atau proyek turunannya) **belum boleh diimplementasikan**; desain dulu, baru kode.
