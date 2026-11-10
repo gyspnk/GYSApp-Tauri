@@ -212,7 +212,10 @@ export type GooglePressOutcome = "displayed" | "silent";
  * anything?" `prompt` reports through its listener whether a window appeared.
  */
 export function pressEgysGoogle(timeoutMs = 2000): Promise<GooglePressOutcome> {
-  const askGoogle = window.google?.accounts?.id.prompt;
+  const identity = window.google?.accounts?.id;
+  const askGoogle = identity?.prompt;
+  // Call it on its owner: Google's client (and the test doubles) use `this`,
+  // and a detached reference would throw instead of showing anything.
   if (typeof askGoogle !== "function") return Promise.resolve("silent");
   return new Promise((resolve) => {
     let settled = false;
@@ -224,7 +227,7 @@ export function pressEgysGoogle(timeoutMs = 2000): Promise<GooglePressOutcome> {
     };
     const timer = window.setTimeout(() => settle("silent"), timeoutMs);
     try {
-      askGoogle((notification) => {
+      askGoogle.call(identity, (notification) => {
         if (notification.isDisplayed?.() || notification.isDismissedMoment?.())
           settle("displayed");
         else if (

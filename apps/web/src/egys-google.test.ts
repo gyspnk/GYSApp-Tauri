@@ -214,3 +214,18 @@ it("gives up on a prompt that never answers", async () => {
   await vi.advanceTimersByTimeAsync(1500);
   await expect(outcome).resolves.toBe("silent");
 });
+
+it("calls prompt on Google's own client, not as a detached function", async () => {
+  withTimers();
+  const id = sdkStub();
+  (id as unknown as { prompt: unknown }).prompt = function (
+    this: unknown,
+    listener: (n: unknown) => void,
+  ) {
+    // Google's client reads its state from `this`; a detached call throws.
+    if (!this) throw new Error("detached prompt");
+    listener({ isDisplayed: () => true });
+  };
+  const { pressEgysGoogle } = await import("./egys-google.js");
+  await expect(pressEgysGoogle()).resolves.toBe("displayed");
+});
