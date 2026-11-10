@@ -7311,3 +7311,10 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
 - Bukti: `42591016976` (verify + selektif) hijau.
 
 **Dicoba dan ditolak (putaran 214):** menghentikan batch katalog saat pointer menyentuh baris (`pauseBatchesRef`, `bb8be74`) supaya klik pembaca tidak bersaing dengan baris yang belum terpakai. Hasil `perf.yml` `42741011079`: pembaca **696 ms** (lirik 713) versus 590 ms sebelumnya — lebih buruk, karena daftar yang terhenti justru menunda pekerjaan yang sama ke frame klik berikutnya. Di-revert (`revert: stop growing the list while a row is targeted`, verify `42741299621` hijau). Hiptesis “mount bersaing dengan batch” tidak terbukti; mount 561 ms tetap menjadi biaya utama dan butuh pemisahan komponen, bukan penjadwalan.
+
+### Dua percobaan mount pembaca, keduanya ditolak angka (10 Nov, putaran 215)
+
+1. **Hentikan batch katalog saat baris ditunjuk** (`bb8be74`): `perf.yml` `42741011079` memberi pembaca **696 ms** (dari 590), lalu di-revert (`42741299621` hijau).
+2. **Mount panel “Aksi lain” hanya saat disclosure terbuka** (state `moreActionsOpen` + `onToggle`, 1 file, +569/−527 karena reindent): `perf.yml` `42742333630` memberi **631 ms** (dari 590), juga di-revert (`42742599309` hijau).
+   Kesimpulan jujur: mount pembaca ~561 ms pada klik pertama bukan disebabkan batch katalog maupun markup panel tertutup; biayanya ada di render/pemasangan komponen inti (lirik+chord+efek), dan butuh pemecahan komponen nyata, bukan gerbang kondisional. Dua revert ini menyimpan angkanya agar tidak diulang.
+   **Konfirmasi visual:** artefak QA `42728665381` (`/tmp/qa16`) menunjukkan tab `/kidung?section=playlist` di 320 px kembali berlabel “Kidung” dan “Antrean MIDI” dengan ikon, kartu kosong 640 px di tengah; artefak 4-tema lama (`42703451959`) masih memperlihatkan pil kosong, jadi perbaikannya memang sesudah artefak itu.
