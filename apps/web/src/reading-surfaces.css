@@ -34,11 +34,6 @@
   width: 100%;
 }
 
-.faith-page-title {
-  margin: 0 0 18px;
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
-}
-
 .faith-search-bar {
   display: flex;
   align-items: center;
@@ -124,20 +119,6 @@
   animation: verse-in var(--motion-normal) var(--ease-out);
 }
 
-.faith-selection-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.faith-selection-header > div {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
 .faith-selection-number {
   flex: 0 0 auto;
   min-width: 34px;
@@ -150,12 +131,6 @@
   color: var(--blue);
   font-size: 0.875rem;
   font-weight: 800;
-}
-
-.faith-selection-header strong {
-  color: var(--ink);
-  font-size: 1.125rem;
-  letter-spacing: -0.015em;
 }
 
 .faith-selection-close {
@@ -178,15 +153,6 @@
   border-color: var(--blue);
   background: var(--blue-soft);
   color: var(--blue);
-}
-
-.faith-selection-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  color: var(--muted);
-  font-size: 0.75rem;
 }
 
 .faith-selection-toolbar .quiet-button.has-note {
@@ -255,11 +221,6 @@
   letter-spacing: 0.04em;
   flex-shrink: 0;
   justify-self: center;
-}
-
-.faith-row-note-dot {
-  color: var(--blue);
-  font-size: 0.8125rem;
 }
 
 .faith-row-actions {
@@ -548,36 +509,6 @@
 .faith-pdf-body .pdf-toolbar {
   position: static;
   flex-shrink: 0;
-}
-
-.faith-copy-wrap {
-  display: grid;
-  gap: 1rem;
-  color: var(--ink);
-  font-size: 1rem;
-  line-height: 1.9;
-}
-
-.faith-copy-wrap p {
-  margin: 0;
-  white-space: normal;
-  overflow-wrap: break-word;
-  hyphens: auto;
-  text-wrap: pretty;
-}
-
-.faith-reader-modal {
-  width: min(680px, 96vw);
-}
-
-.faith-reader-copy {
-  padding-right: 4px;
-}
-
-.faith-reader-source {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 6px;
 }
 
 .literature-sections {
@@ -872,34 +803,6 @@
   letter-spacing: 0.04em;
 }
 
-.literature-cover-kesaksian {
-  background: #213b68;
-}
-
-.literature-cover-warta {
-  background: #315c85;
-}
-
-.literature-cover-pelita-kecil {
-  background: #6b5134;
-}
-
-.literature-cover-panduan {
-  background: #384c74;
-}
-
-.literature-cover-renungan {
-  background: #4c596e;
-}
-
-.literature-cover-buku {
-  background: #274f55;
-}
-
-.literature-cover-pujian {
-  background: #54426f;
-}
-
 .literature-more {
   display: block;
   margin: 18px auto 0;
@@ -1128,11 +1031,6 @@
   }
 }
 
-.error-copy {
-  color: var(--danger);
-  font-size: 0.8125rem;
-}
-
 .literature-reader-error {
   display: flex;
   align-items: center;
@@ -1183,10 +1081,6 @@
 
   .faith-search-bar input {
     min-height: 44px;
-  }
-
-  .faith-row-body {
-    padding-left: 6px;
   }
 
   .literature-row {
@@ -1272,16 +1166,8 @@
   padding-block: 14px;
 }
 
-.literature-direct-loading {
-  min-height: 180px;
-}
-
 .faith-row-heading strong {
   min-width: 0;
-}
-
-.faith-row-note-dot {
-  margin-inline-start: 8px;
 }
 
 .faith-row-summary {
