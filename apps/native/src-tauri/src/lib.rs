@@ -315,6 +315,30 @@ fn is_allowed_egys_navigation(url: &url::Url) -> bool {
     )
 }
 
+/// Where a popup raised by the e-GYS login page belongs.
+///
+/// Google's sign-in button opens `accounts.google.com` in a popup on some
+/// Android WebViews. Letting Tauri create a second webview there can hand the
+/// flow to the system browser, which is exactly what the in-app overlay is
+/// meant to avoid, so an allowed host is loaded in the window that already
+/// exists.
+#[derive(Debug, PartialEq, Eq)]
+enum EgysPopup {
+    SameWindow,
+    External,
+    Deny,
+}
+
+fn egys_popup_action(url: &url::Url) -> EgysPopup {
+    if is_allowed_egys_external_link(url) {
+        EgysPopup::External
+    } else if is_allowed_egys_navigation(url) {
+        EgysPopup::SameWindow
+    } else {
+        EgysPopup::Deny
+    }
+}
+
 fn is_allowed_egys_external_link(url: &url::Url) -> bool {
     url.scheme() == "https"
         && matches!(
@@ -360,8 +384,16 @@ async fn open_egys_login(app: AppHandle, theme: Option<String>) -> Result<(), St
         .min_inner_size(360.0, 560.0)
         .initialization_script(EGYS_LOGIN_BRIDGE_SCRIPT)
         .on_navigation(is_allowed_egys_navigation)
-        .on_new_window(move |url, _| {
-            if is_allowed_egys_external_link(&url) {
+        .on_new_window(move |url, _| match egys_popup_action(&url) {
+            EgysPopup::SameWindow => {
+                // Keep the Google step inside the overlay the user opened.
+                if let Some(login) = app_for_links.get_webview_window(EGYS_LOGIN_WINDOW_LABEL) {
+                    let _ = login.navigate(url.clone());
+                }
+                NewWindowResponse::Deny
+            }
+            EgysPopup::Deny => NewWindowResponse::Deny,
+            EgysPopup::External => {
                 #[allow(deprecated)]
                 let result = app_for_links.shell().open(url.as_str(), None);
                 if let Some(login) = app_for_links.get_webview_window(EGYS_LOGIN_WINDOW_LABEL) {
@@ -374,10 +406,6 @@ async fn open_egys_login(app: AppHandle, theme: Option<String>) -> Result<(), St
                         let _ = login.eval(format!("window.__gysEgysSetStatus?.({status_json})"));
                     }
                 }
-                NewWindowResponse::Deny
-            } else if is_allowed_egys_navigation(&url) {
-                NewWindowResponse::Allow
-            } else {
                 NewWindowResponse::Deny
             }
         })
@@ -789,13 +817,31 @@ fn open_external(app: AppHandle, url: String) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        atomic_write, egys_login_url, enforce_cap, is_allowed_egys_external_link, safe_key,
-        validate_egys_login_message, BLOB_PAYLOAD_MAX_BYTES, DATABASE_VALUE_MAX_BYTES,
-        KV_VALUE_MAX_BYTES,
+        atomic_write, egys_login_url, egys_popup_action, enforce_cap, is_allowed_egys_external_link,
+        safe_key, validate_egys_login_message, EgysPopup, BLOB_PAYLOAD_MAX_BYTES,
+        DATABASE_VALUE_MAX_BYTES, KV_VALUE_MAX_BYTES,
     };
     use serde_json::json;
     use std::fs;
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn the_google_step_stays_inside_the_overlay_window() {
+        let google: url::Url = "https://accounts.google.com/o/oauth2/auth?client_id=x"
+            .parse()
+            .expect("google url");
+        assert_eq!(egys_popup_action(&google), EgysPopup::SameWindow);
+        let login: url::Url = "https://e.gys.or.id/login?theme=light"
+            .parse()
+            .expect("login url");
+        assert_eq!(egys_popup_action(&login), EgysPopup::SameWindow);
+        let whatsapp: url::Url = "https://wa.me/628123".parse().expect("whatsapp url");
+        assert_eq!(egys_popup_action(&whatsapp), EgysPopup::External);
+        let hostile: url::Url = "https://evil.example/harvest".parse().expect("hostile url");
+        assert_eq!(egys_popup_action(&hostile), EgysPopup::Deny);
+        let insecure: url::Url = "http://accounts.google.com/".parse().expect("http url");
+        assert_eq!(egys_popup_action(&insecure), EgysPopup::Deny);
+    }
 
     #[test]
     fn payload_caps_reject_oversized_values_and_accept_boundaries() {
