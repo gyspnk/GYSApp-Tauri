@@ -101,3 +101,20 @@ Sistem UI (`gysapp-ui-system`, bagian “Kidung · usulan perubahan”, 12 butir
 | 8   | Pemutar audio turun ke dock                                       | sudah: dock bawaan                                                                        |
 | 9   | Katalog dan pembaca berdampingan di desktop                       | belum — perubahan struktur besar                                                          |
 | 10  | Penanda “Baru” sebagai badge                                      | belum ada konsep “baru” di data                                                           |
+
+### Kidung — status penerapan (10 Nov, putaran 228)
+
+| #   | Usulan                                                       | Status                                                                                                                          |
+| --- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Pencarian selalu terlihat di ponsel                          | **diterapkan** `33e15aa` — baris pencarian 48 px di bawah kontrol                                                               |
+| 2   | Kategori sebagai chip 44 px                                  | belum — mengganti select yang jadi kontrak tes                                                                                  |
+| 3   | Nomor lagu angka tabular                                     | diterapkan `6436e25`                                                                                                            |
+| 4   | Baris ≥64 px                                                 | diterapkan `6436e25`                                                                                                            |
+| 5   | Pembaca 17 px serif, line-height 1.75, ukuran 34–40 karakter | **sebagian** `9ec2139` — line-height 1.75; ukuran 17 px sudah ada, takaran 34–40 karakter sudah terpenuhi di 390 (≈35 karakter) |
+| 6   | Bait dipisah 20 px tanpa garis                               | diterapkan `9ec2139`                                                                                                            |
+| 7   | Tombol sebelumnya/berikutnya 44 px di kedua ujung            | sudah ada                                                                                                                       |
+| 8   | Audio di dock                                                | sudah ada                                                                                                                       |
+| 9   | Katalog + pembaca berdampingan di desktop                    | belum — perubahan struktur besar                                                                                                |
+| 10  | “Baru” sebagai badge                                         | belum ada datanya                                                                                                               |
+
+Catatan: kontrak `kidung-usability` yang membandingkan metrik judul sebelum/sesudah `document.fonts.ready` disesuaikan (`b28287e`) — baris pencarian baru membuat baris katalog pertama jatuh di bawah lipatan, sehingga sampel “sebelum” bisa terambil saat font masih bertukar. Kontrak yang dijaga sekarang: setelah font siap, judul tidak bergeser lagi.
