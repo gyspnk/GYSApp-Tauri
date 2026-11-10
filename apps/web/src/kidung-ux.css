@@ -614,86 +614,25 @@
     transform: none;
   }
 }
-
-/* Compact Kidung navigation pass: keep the primary surface calm and move
-   low-frequency controls into contextual menus without removing capability. */
-.kidung-mobile-filter {
-  display: none;
-  position: relative;
-}
-
 .kidung-desktop-filter {
   min-width: 0;
 }
 
-.kidung-filter-summary,
 .kidung-row-menu > summary,
 .pdf-music-menu > summary {
   list-style: none;
   cursor: pointer;
 }
 
-.kidung-filter-summary::-webkit-details-marker,
 .kidung-row-menu > summary::-webkit-details-marker,
 .pdf-music-menu > summary::-webkit-details-marker {
   display: none;
 }
-
-.kidung-filter-summary {
-  min-height: var(--control-hit, 44px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--muted);
-  transition:
-    border-color var(--motion-fast) var(--ease-out),
-    background-color var(--motion-fast) var(--ease-out),
-    color var(--motion-fast) var(--ease-out),
-    transform var(--motion-fast) var(--ease-out);
-}
-
-.kidung-filter-summary strong {
-  max-width: 180px;
-  overflow: hidden;
-  color: var(--ink);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.kidung-mobile-filter[open] > .kidung-filter-summary,
-.kidung-filter-summary:hover,
-.kidung-filter-summary:focus-visible {
-  border-color: color-mix(in srgb, var(--blue) 40%, var(--line));
-  background: var(--blue-soft);
-  color: var(--blue);
-}
-
-.kidung-filter-summary:focus-visible,
-.kidung-row-menu > summary:focus-visible,
+kidung-row-menu > summary:focus-visible,
 .pdf-music-menu > summary:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
-
-.kidung-mobile-filter-panel {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: var(--z-popover);
-  width: min(320px, calc(100vw - 32px));
-  padding: 10px;
-  border: 1px solid var(--line-strong);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: var(--shadow-lift);
-  animation: kidung-sheet-in var(--motion-fast) var(--ease-out) both;
-}
-
 .kidung-playlist-list > li,
 .kidung-saved-playlist-row {
   position: relative;
@@ -885,21 +824,10 @@
   grid-column: 1 / -1;
   justify-self: stretch;
 }
-
-.pdf-midi-dock-context {
-  grid-column: 1 / -1;
-}
-
 @media (max-width: 767px) {
   .kidung-desktop-filter {
     display: none;
   }
-
-  .kidung-mobile-filter {
-    display: block;
-    justify-self: end;
-  }
-
   .hymn-page-header .hymn-catalog-controls {
     grid-template-columns: minmax(0, 1fr) auto;
   }
@@ -951,8 +879,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kidung-filter-summary,
-  .kidung-mobile-filter-panel,
   .kidung-row-menu > summary,
   .kidung-row-menu-panel,
   .pdf-music-menu-panel {
@@ -981,22 +907,6 @@
   border-radius: 12px;
   background: var(--surface-soft);
 }
-
-/* Reader groups are labelled content inside the single settings disclosure,
-   not a second accordion level. */
-.reader-settings-group-title {
-  display: flex;
-  min-height: var(--control-hit, 44px);
-  align-items: center;
-  margin: 0;
-  padding: 0 12px;
-  color: var(--blue);
-  font-size: 0.75rem;
-  font-weight: 720;
-  background: color-mix(in srgb, var(--blue-soft) 44%, transparent);
-  border-radius: 12px 12px 0 0;
-}
-
 .reader-settings-group-body {
   display: grid;
   gap: 12px;
