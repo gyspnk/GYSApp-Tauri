@@ -10,9 +10,14 @@
  *   pnpm e2e:one e2e/kidung-confirm-delete.spec.ts
  *   pnpm e2e:one e2e/ui-polish.spec.ts -g "missing daily artwork"
  *
+ * The rebuild is skipped when `dist` is already newer than every source file,
+ * which keeps a second run of the same contract at ~3 s instead of ~6 s. Pass
+ * GYS_E2E_FORCE_BUILD=1 to rebuild anyway.
+ *
  * Hosted CI stays the source of truth; this is the ~10 s loop for one contract.
  */
 import { execFileSync } from "node:child_process";
+import { readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -31,6 +36,33 @@ export function playwrightArgs(argv) {
   ];
 }
 
+/** `dist` may skip the rebuild only when it is not older than any source. */
+export function isFresh(distMtimeMs, newestSourceMs) {
+  return Number.isFinite(distMtimeMs) && distMtimeMs >= newestSourceMs;
+}
+
+const SKIP_DIRS = new Set([
+  "node_modules",
+  "dist",
+  "test-results",
+  "playwright-report",
+  ".turbo",
+]);
+
+/** Newest modification time under `dir`, ignoring build output and caches. */
+export function newestSource(dir, read = readdirSync, stat = statSync) {
+  let newest = 0;
+  for (const entry of read(dir, { withFileTypes: true })) {
+    if (entry.isDirectory() && SKIP_DIRS.has(entry.name)) continue;
+    const path = join(dir, entry.name);
+    const time = entry.isDirectory()
+      ? newestSource(path, read, stat)
+      : stat(path).mtimeMs;
+    if (time > newest) newest = time;
+  }
+  return newest;
+}
+
 export function buildCommand(env) {
   return {
     command: "pnpm",
@@ -44,14 +76,28 @@ function main() {
   if (argv.length === 0)
     throw new Error("usage: pnpm e2e:one <spec…> [-g <title>]");
 
-  const build = buildCommand(process.env);
-  execFileSync(build.command, build.args, {
-    cwd: root,
-    stdio: "inherit",
-    env: build.env,
-  });
+  const web = join(root, "apps", "web");
+  const distIndex = join(web, "dist", "index.html");
+  let fresh = false;
+  try {
+    fresh =
+      process.env.GYS_E2E_FORCE_BUILD !== "1" &&
+      isFresh(statSync(distIndex).mtimeMs, newestSource(web));
+  } catch {
+    fresh = false;
+  }
+  if (fresh) {
+    console.log("e2e:one: dist is newer than src, skipping the rebuild");
+  } else {
+    const build = buildCommand(process.env);
+    execFileSync(build.command, build.args, {
+      cwd: root,
+      stdio: "inherit",
+      env: build.env,
+    });
+  }
   execFileSync("pnpm", playwrightArgs(argv), {
-    cwd: join(root, "apps", "web"),
+    cwd: web,
     stdio: "inherit",
     env: { ...process.env, GYS_E2E_PREBUILT: "1" },
   });
