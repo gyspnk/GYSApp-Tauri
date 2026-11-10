@@ -67,3 +67,20 @@ Risiko: metrik serif berbeda per perangkat (uji fallback), bingkai desktop bersk
 | `gysapp-ui-system`          | **Sistem UI lengkap**: fondasi (tema, tipe, spacing, radius, elevasi, ikon, gerak), komponen + semua keadaan, dan seluruh permukaan (Beranda, Kidung katalog & pembaca, Alkitab, Iman, Literatur, Suara, Lainnya, dialog/sheet) 390 + 1440 | run produksi `3c4a1565-3be9-42e6-9b49-1dbfc3a75359` |
 
 Aturan baru (goal revisi 66): permukaan yang belum punya artefak di `gysapp-ui-system` (atau proyek turunannya) **belum boleh diimplementasikan**; desain dulu, baru kode.
+
+## Penerapan dari sistem UI
+
+Sistem UI (`gysapp-ui-system`) memberi 8 usulan untuk Beranda. Status:
+
+| #   | Usulan                                         | Status                                                                                         |
+| --- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 01  | Satu kartu renungan, satu aksi “Baca renungan” | belum — perubahan struktur                                                                     |
+| 02  | Judul layar pindah ke baris kedua top bar      | belum — menyentuh shell + kontrak topbar                                                       |
+| 03  | Ayat harian jadi blok sendiri                  | belum — perubahan struktur                                                                     |
+| 04  | “Lihat semua” jadi tombol quiet 44 px          | **diterapkan** `24b410d` (QA `42796811391`)                                                    |
+| 05  | Metadata 12–13 px muted                        | sudah sesuai (`.date-line` 12 px, `--muted`)                                                   |
+| 06  | Satu keluarga ikon 18/16                       | sudah sesuai (token `--icon-*`)                                                                |
+| 07  | Jarak antarbagian 24 px                        | sebagian: beranda memakai 32 px dari desain `gysapp-ui-loop`; perlu keputusan mana yang menang |
+| 08  | Kartu hairline + shadow-xs                     | belum — perlu ukur dampak visual                                                               |
+
+Catatan: dua dokumen OpenDesign sempat berbeda soal ritme (32 px vs 24 px). Keputusan sementara: pertahankan 32 px di beranda sampai sistem UI dipakai untuk mengukur ulang, karena baseline sudah memakai 32 px dan mengganti angka hanya menambah churn tanpa bukti lebih baik.
