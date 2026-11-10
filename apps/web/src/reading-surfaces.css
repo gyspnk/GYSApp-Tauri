@@ -1429,3 +1429,34 @@
   justify-content: center;
   padding: 0;
 }
+
+/* The shelf placeholder keeps the same geometry as the six real cards, so the
+   rest of the page does not jump when the catalogue lands. */
+.literature-featured .skeleton-line {
+  display: block;
+  background: var(--surface-soft);
+  border-radius: var(--radius-sm);
+}
+
+.literature-featured .section-title-row .skeleton-line.is-title {
+  width: 160px;
+  height: 1.5rem;
+}
+
+.literature-shelf-item.is-skeleton {
+  pointer-events: none;
+}
+
+.literature-shelf-item.is-skeleton .literature-cover[data-skeleton] {
+  background: var(--surface-soft);
+  box-shadow: none;
+}
+
+.literature-shelf-item.is-skeleton .skeleton-line {
+  width: 100%;
+  min-height: 0.9em;
+}
+
+.literature-shelf-item.is-skeleton .skeleton-line.is-meta {
+  width: 60%;
+}
