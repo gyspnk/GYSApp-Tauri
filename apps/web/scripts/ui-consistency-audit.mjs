@@ -312,10 +312,20 @@ for (const viewport of viewports) {
               checkOpacity: true,
               checkVisibilityCSS: true,
             }));
+        // Text inside a content-visibility:auto subtree is not painted until
+        // it scrolls in, so it cannot be judged blank here.
+        const skippedContent = (node) => {
+          for (let current = node; current; current = current.parentElement) {
+            const visibility = getComputedStyle(current).contentVisibility;
+            if (visibility && visibility !== "visible") return true;
+          }
+          return false;
+        };
         const out = [];
         for (const el of document.querySelectorAll(
           "a, button, summary, [role='button']",
         )) {
+          if (skippedContent(el)) continue;
           if (!visibleBox(el)) continue;
           // A swatch's background IS its content (colour picker), so it is not
           // a blank control.
