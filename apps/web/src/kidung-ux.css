@@ -1374,8 +1374,24 @@
   padding: 0;
 }
 @media (max-width: 1100px) {
+  /* UI system: the search box stays visible on phones instead of hiding behind
+     a trigger; the toolbar becomes one column and the search takes row two. */
   .hymn-page .kidung-index-toolbar {
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+  .hymn-page .kidung-index-toolbar .kidung-catalog-topbar {
+    display: contents;
+  }
+  .hymn-page .kidung-index-toolbar .hymn-page-header {
+    grid-row: 2;
+    padding: 0;
+    border: 0;
+  }
+  .hymn-page .kidung-index-toolbar .kidung-controls-field {
+    grid-row: 1;
   }
   .kidung-controls-field {
     width: 100%;
