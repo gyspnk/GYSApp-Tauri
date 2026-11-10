@@ -61,8 +61,8 @@ describe("Edge relay", () => {
     frame.set([(header.length >> 8) & 0xff, header.length & 0xff]);
     frame.set(header, 2);
     frame.set(payload, 2 + header.length);
-    expect(Array.from(edgeAudioChunk(frame.buffer)!)).toEqual([1, 2, 3, 4]);
-    expect(edgeAudioChunk(new Uint8Array([1]).buffer)).toBeUndefined();
+    expect(Array.from(edgeAudioChunk(frame)!)).toEqual([1, 2, 3, 4]);
+    expect(edgeAudioChunk(new Uint8Array([1]))).toBeUndefined();
   });
 
   it("sends the config and ssml frames, then joins the audio", async () => {

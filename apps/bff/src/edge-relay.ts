@@ -55,13 +55,12 @@ export function buildEdgeSsml(request: EdgeTtsRequest): string {
 export interface EdgeSocket {
   send(data: string): void;
   close(): void;
-  onMessage(listener: (data: string | ArrayBuffer) => void): void;
+  onMessage(listener: (data: string | ArrayBuffer | Blob) => void): void;
   onClose(listener: (reason?: string) => void): void;
 }
 
 /** Reads the `<n>` framed binary packets: 2-byte header length, JSON, audio. */
-export function edgeAudioChunk(data: ArrayBuffer): Uint8Array | undefined {
-  const bytes = new Uint8Array(data);
+export function edgeAudioChunk(bytes: Uint8Array): Uint8Array | undefined {
   if (bytes.length < 2) return undefined;
   const headerLength = ((bytes[0] ?? 0) << 8) | (bytes[1] ?? 0);
   if (bytes.length < 2 + headerLength) return undefined;
@@ -117,7 +116,7 @@ export async function collectEdgeAudio(
     socket.onClose((reason) =>
       settle(new Error(reason || "Edge speech closed")),
     );
-    socket.onMessage((data) => {
+    socket.onMessage(async (data) => {
       if (typeof data === "string") {
         seen.text += 1;
         if (!seen.first) seen.first = data.replace(/\r\n/g, " ");
@@ -125,7 +124,22 @@ export async function collectEdgeAudio(
         return;
       }
       seen.binary += 1;
-      const chunk = edgeAudioChunk(data);
+      // The runtime hands binary frames over as Blob or ArrayBuffer depending
+      // on the platform build; normalise before reading the 2-byte header.
+      const bytes =
+        data instanceof ArrayBuffer
+          ? new Uint8Array(data)
+          : data instanceof Blob
+            ? new Uint8Array(await data.arrayBuffer())
+            : ArrayBuffer.isView(data as ArrayBufferView)
+              ? new Uint8Array(
+                  (data as ArrayBufferView).buffer,
+                  (data as ArrayBufferView).byteOffset,
+                  (data as ArrayBufferView).byteLength,
+                )
+              : undefined;
+      if (!bytes?.length) return;
+      const chunk = edgeAudioChunk(bytes);
       if (!chunk?.length) return;
       chunks.push(chunk);
       total += chunk.byteLength;
@@ -193,7 +207,7 @@ export async function connectEdgeSocket(
   const socket = response.webSocket;
   if (!socket) throw new Error(`Edge handshake failed with ${response.status}`);
   socket.accept();
-  const listeners: ((data: string | ArrayBuffer) => void)[] = [];
+  const listeners: ((data: string | ArrayBuffer | Blob) => void)[] = [];
   const closes: ((reason?: string) => void)[] = [];
   socket.addEventListener("message", (event) => {
     for (const listener of listeners)
