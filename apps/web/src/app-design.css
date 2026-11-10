@@ -114,9 +114,17 @@
 /* Three direct actions form a compact toolbar, rather than explanatory cards. */
 .home-welcome {
   display: grid;
-  gap: 18px;
-  padding-bottom: 18px;
+  gap: 22px;
+  padding-bottom: 22px;
   border-bottom: 1px solid var(--line);
+}
+
+/* The Beranda pass asks for one clear headline: the date stays a small
+   greeting and the title carries the page on its own. */
+.home-welcome h1 {
+  font-size: clamp(1.75rem, 5.4vw, 2.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
 .home-welcome .page-intro {
   padding: 0;
@@ -176,8 +184,10 @@
 .home-grid {
   grid-template-areas: "verse continue" "suara suara" "literature literature";
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 24px;
-  padding-top: 20px;
+  /* Sections breathe at 32 px on desktop (the Beranda pass's 32-40 px rhythm);
+     phones keep a tighter 22 px so the first screen still holds a section. */
+  gap: 32px;
+  padding-top: 26px;
 }
 .home-grid .verse-panel {
   min-height: 260px;
@@ -721,7 +731,7 @@
   .home-grid {
     grid-template-areas: "verse" "continue" "suara" "literature";
     grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
+    gap: 22px;
   }
 }
 .home-grid .verse-panel {
