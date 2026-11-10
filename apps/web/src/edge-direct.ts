@@ -1,3 +1,8 @@
+import {
+  EDGE_TRUSTED_CLIENT_TOKEN,
+  SEC_MS_GEC_VERSION_PREFIX,
+  generateSecMsGecV2,
+} from "./edge-ms-gec.js";
 import type TauriWebSocket from "@tauri-apps/plugin-websocket";
 import type { Message as TauriWebSocketMessage } from "@tauri-apps/plugin-websocket";
 
@@ -110,17 +115,14 @@ export class TauriEdgeSocketAdapter implements EdgeSocket {
   }
 }
 
-const TRUSTED_CLIENT_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
 // Microsoft validates this against a recent Edge build. 158.0.4357.0 is the
 // stable version published on 2026-10-27; bump it from
 // https://edgeupdates.microsoft.com/api/products?view=enterprise when the
-// handshake starts returning 403 again.
-const SEC_MS_GEC_VERSION = "1-158.0.4357.0";
+// handshake starts returning 403 again. The "2-" prefix is required since the
+// October 2026 handshake change (see edge-ms-gec.ts).
+const SEC_MS_GEC_VERSION = `${SEC_MS_GEC_VERSION_PREFIX}-158.0.4357.0`;
 const EDGE_WSS =
   "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1";
-const WINDOWS_EPOCH_OFFSET_SECONDS = 11_644_473_600n;
-const FIVE_MINUTES_SECONDS = 300n;
-const HUNDRED_NS_PER_SECOND = 10_000_000n;
 const DEFAULT_TIMEOUT_MS = 25_000;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -176,29 +178,18 @@ function volumePercent(volume: number): string {
   return `${Math.round(Math.max(0, Math.min(1, volume)) * 100)}%`;
 }
 
-function upperHex(bytes: ArrayBuffer): string {
-  return Array.from(new Uint8Array(bytes), (byte) =>
-    byte.toString(16).padStart(2, "0"),
-  )
-    .join("")
-    .toUpperCase();
-}
-
 function edgeTimestamp(nowMs: number): string {
   const date = new Date(nowMs);
   return `${WEEKDAYS[date.getUTCDay()]} ${MONTHS[date.getUTCMonth()]} ${String(date.getUTCDate()).padStart(2, "0")} ${date.getUTCFullYear()} ${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}:${String(date.getUTCSeconds()).padStart(2, "0")} GMT+0000 (Coordinated Universal Time)`;
 }
 
-export async function generateSecMsGec(nowMs = Date.now()): Promise<string> {
-  const unixSeconds = BigInt(Math.floor(nowMs / 1_000));
-  let fileTimeSeconds = unixSeconds + WINDOWS_EPOCH_OFFSET_SECONDS;
-  fileTimeSeconds -= fileTimeSeconds % FIVE_MINUTES_SECONDS;
-  const ticks = fileTimeSeconds * HUNDRED_NS_PER_SECOND;
-  const payload = new TextEncoder().encode(
-    `${ticks.toString()}${TRUSTED_CLIENT_TOKEN}`,
-  );
-  const digest = await crypto.subtle.digest("SHA-256", payload);
-  return upperHex(digest);
+/**
+ * Version-2 token: a stock SHA-256 digest is no longer accepted, so the salt
+ * goes through the patched digest in edge-ms-gec.ts. Kept async because the
+ * synthesis path and its callers already await it.
+ */
+export function generateSecMsGec(nowMs = Date.now()): Promise<string> {
+  return Promise.resolve(generateSecMsGecV2(nowMs));
 }
 
 export function buildEdgeSpeechConfig(timestamp: string): string {
@@ -313,7 +304,7 @@ export async function synthesizeEdgeDirect(
   const secMsGec = await generateSecMsGec(now());
   if (signal?.aborted) throw abortError();
   const url = new URL(EDGE_WSS);
-  url.searchParams.set("TrustedClientToken", TRUSTED_CLIENT_TOKEN);
+  url.searchParams.set("TrustedClientToken", EDGE_TRUSTED_CLIENT_TOKEN);
   url.searchParams.set("Sec-MS-GEC", secMsGec);
   url.searchParams.set("Sec-MS-GEC-Version", SEC_MS_GEC_VERSION);
   url.searchParams.set("ConnectionId", connectionId);

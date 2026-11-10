@@ -59,8 +59,9 @@ describe("direct Edge-compatible TTS protocol", () => {
   });
 
   it("generates the current Sec-MS-GEC token deterministically", async () => {
+    // v2 token: <cs64>-<sha256>, cross-checked against edge-tts 7.3.1.
     await expect(generateSecMsGec(1_789_084_800_000)).resolves.toBe(
-      "2ADBFD1C94E1128BE5862C357DB61D730535143AE72A42D52313FB30EB038DB5",
+      "B341E370FC044396-8688807F6B373C6B6AC1AD8D43D37675FA5D5C0478D5C39095D7BCEBA098B24F",
     );
   });
 
