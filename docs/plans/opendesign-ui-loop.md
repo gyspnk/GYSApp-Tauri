@@ -143,7 +143,7 @@ menutup; masuk lapisan 220 ms.
 | Fokus masuk ke dialog, Esc menutup, klik latar menutup | sudah — `apps/web/src/dialog-focus.ts` `useDialogFocus` dipakai semua dialog                                |
 | Satu aksi destruktif, di kanan, label menyebut akibat  | diterapkan lewat `apps/web/src/confirm-dialog.tsx`; dipakai `kidung-playlist-page.tsx` untuk hapus playlist |
 | Masuk 220 ms                                           | sudah — `--motion-entrance: 220ms`                                                                          |
-| Latar belakang tetap terlihat di belakang sheet        | belum relevan: aplikasi tidak punya bottom sheet; pilihan cepat memakai popover/menu                        |
+| Latar belakang tetap terlihat di belakang sheet        | sudah — catatan ayat (`bible-notes`) dan pengaturan pembaca kidung adalah sheet dengan latar terlihat       |
 
 Kontrak: `apps/web/e2e/kidung-confirm-delete.spec.ts` — dialog muncul, fokus
 jatuh di "Batal", tombol hapus memakai `--danger` dan tinggi >= 43,5 px, Esc
