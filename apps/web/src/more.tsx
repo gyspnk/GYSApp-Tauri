@@ -1289,6 +1289,10 @@ export function MorePage({
           </article>
         </details>
 
+        <h3 className="more-settings-group">
+          {translate(locale, "more.categoryAppearance")}
+        </h3>
+
         <details className="more-setting-section" data-setting="appearance">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
@@ -1422,6 +1426,10 @@ export function MorePage({
             <UiPreferencesPanel locale={locale} />
           </article>
         </details>
+
+        <h3 className="more-settings-group">
+          {translate(locale, "more.groupContent")}
+        </h3>
 
         <details className="more-setting-section" data-setting="audio">
           <summary className="more-setting-row">
@@ -1745,6 +1753,10 @@ export function MorePage({
             </section>
           </div>
         </details>
+
+        <h3 className="more-settings-group">
+          {translate(locale, "more.categoryAbout")}
+        </h3>
 
         <details className="more-setting-section" data-setting="about">
           <summary className="more-setting-row">

@@ -2860,8 +2860,28 @@
 .more-page .more-setting-section:first-child {
   border-top: 0;
 }
+.more-page .more-settings-group {
+  grid-column: 1 / -1;
+  margin: 22px 0 0;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.more-page .more-settings-group:first-child {
+  margin-top: 0;
+}
 .more-page .more-setting-section > .more-setting-row {
-  min-height: 52px;
+  /* Two lines of copy stay comfortable to touch. */
+  min-height: 64px;
+}
+@media (min-width: 1200px) {
+  /* Two columns keep the settings page short without widening the text. */
+  .more-page .more-settings-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 28px;
+  }
 }
 .more-page .more-settings-content {
   padding: 0 0 14px;

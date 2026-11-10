@@ -750,6 +750,7 @@ export const enFeatureMessages: Record<string, string> = {
   "more.categoryAppearance": "Appearance",
   "more.appearanceHint": "Theme, language and text size",
   "more.categoryAudio": "Audio & voice",
+  "more.groupContent": "Content & downloads",
   "more.audioHint": "Voice, speed and pitch",
   "more.categoryHymns": "Hymns",
   "more.hymnsHint": "Key, transpose and MIDI",

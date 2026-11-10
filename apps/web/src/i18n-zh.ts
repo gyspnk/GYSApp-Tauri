@@ -731,6 +731,7 @@ export const zhFeatureMessages: Record<string, string> = {
   "more.categoryAppearance": "外观",
   "more.appearanceHint": "主题、语言与文字大小",
   "more.categoryAudio": "音频与语音",
+  "more.groupContent": "内容与下载",
   "more.audioHint": "语音、速度与音高",
   "more.categoryHymns": "圣诗",
   "more.hymnsHint": "调性、变调与 MIDI",

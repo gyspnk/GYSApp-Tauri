@@ -14,7 +14,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const FORMATTED = /\.(?:[cm]?[jt]sx?|json|css|scss|html|md|ya?ml)$/;
@@ -105,13 +105,16 @@ export function main(argv = process.argv.slice(2)) {
   }
   if (unowned.length) run("unit (scripts)", "node", ["--test", ...unowned]);
   for (const [workspace, files] of byOwner)
+    // vitest runs inside the package, so hand it package-relative paths.
     run(`unit (${workspace})`, "pnpm", [
       "--filter",
       workspace,
       "exec",
       "vitest",
       "run",
-      ...files,
+      ...files.map((file) =>
+        relative(files[0].split("/").slice(0, 2).join("/"), file),
+      ),
     ]);
   process.stdout.write(
     process.exitCode ? "\nLocal check failed.\n" : "\nLocal check clean.\n",

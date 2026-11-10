@@ -778,6 +778,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.categoryAppearance": "Tampilan",
     "more.appearanceHint": "Tema, bahasa, dan ukuran teks",
     "more.categoryAudio": "Audio & Suara",
+    "more.groupContent": "Konten & unduhan",
     "more.audioHint": "Suara, kecepatan, dan nada",
     "more.categoryHymns": "Kidung",
     "more.hymnsHint": "Nada dasar, transpose, MIDI",
