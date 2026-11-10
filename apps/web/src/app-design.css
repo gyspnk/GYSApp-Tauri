@@ -5599,6 +5599,11 @@ body:has(.hymn-detail-page.is-text-viewer)
     display: none;
   }
   .home-page .sauh-card-content {
+    /* The shared grid layout gives this block height:100%, which made it
+       overlap the photo band it was meant to sit under. */
+    height: auto;
+    min-height: 0;
+    inset: auto;
     margin-top: 0;
     flex: 0 0 auto;
     background: var(--surface);
