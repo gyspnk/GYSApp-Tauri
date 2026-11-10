@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  injectLiteraturePreload,
+  literatureSnapshotUrl,
   biblePackUrl,
   hymnMetadataUrl,
   injectBiblePackFetch,
@@ -50,4 +52,19 @@ test("hymn metadata preload is emitted once for the catalogue shell", () => {
     "<p>no head</p>",
   );
   assert.equal(hymnMetadataUrl("/x"), "/x/offline/hymn-metadata.json");
+});
+
+test("literature preloads the catalogue the page paints", () => {
+  const html = "<html><head><title>t</title></head><body></body></html>";
+  const once = injectLiteraturePreload(html, "/GYSApp-Tauri/");
+  assert.match(
+    once,
+    /rel="preload" as="fetch" href="\/GYSApp-Tauri\/offline\/literature\.json" crossorigin="anonymous"/,
+  );
+  assert.equal(injectLiteraturePreload(once, "/GYSApp-Tauri/"), once);
+  assert.equal(
+    injectLiteraturePreload("<p>no head</p>", "/x/"),
+    "<p>no head</p>",
+  );
+  assert.equal(literatureSnapshotUrl("/x"), "/x/offline/literature.json");
 });
