@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { classifyChanges } from "./test-loop-core.mjs";
+import {
+  classifyChanges,
+  formatFailure,
+  summarizeFailure,
+} from "./test-loop-core.mjs";
 
 test("documentation-only changes stay out of the test tiers", () => {
   const result = classifyChanges([
@@ -75,4 +79,80 @@ test("mixed changes combine the flags", () => {
   assert.equal(result.hasWebSource, true);
   assert.equal(result.hasE2E, true);
   assert.equal(result.hasBuildConfig, true);
+});
+
+const failedJobs = [
+  {
+    name: "verify",
+    conclusion: "failure",
+    steps: [
+      { name: "Check formatting with actionable diffs", conclusion: "failure" },
+      { name: "pnpm audit --prod", conclusion: "skipped" },
+    ],
+  },
+  { name: "unit", conclusion: "success", steps: [] },
+  { name: "secret-scan", conclusion: "cancelled", steps: [] },
+];
+// `gh run view --log-failed` rows are job, step, then "timestamp text".
+const logLine = (job, text) => `${job}\tStep\t2026-11-10T13:13:15Z ${text}`;
+
+test("a hosted failure names the job, the failed step and the reason", () => {
+  const rows = summarizeFailure(
+    failedJobs,
+    [
+      logLine("unit", "1 passed"),
+      logLine("verify", "Checking formatting..."),
+      logLine("verify", "[warn] Code style issues found in the above file."),
+      logLine("secret-scan", "cancelled by user"),
+    ].join("\n"),
+  );
+  assert.deepEqual(rows, [
+    {
+      job: "verify",
+      steps: ["Check formatting with actionable diffs"],
+      lines: ["[warn] Code style issues found in the above file."],
+    },
+  ]);
+});
+
+test("CI colours are stripped so the reason reads plainly", () => {
+  const [row] = summarizeFailure(
+    failedJobs,
+    logLine("verify", "\u001b[33mwarn\u001b[39m Code style issues found"),
+  );
+  assert.deepEqual(row.lines, ["warn Code style issues found"]);
+});
+
+test("a failure with no recognisable line still shows where it died", () => {
+  const [row] = summarizeFailure(
+    failedJobs,
+    [
+      logLine("verify", "Checking formatting..."),
+      logLine("verify", "done"),
+    ].join("\n"),
+  );
+  assert.deepEqual(row.lines, ["Checking formatting...", "done"]);
+});
+
+test("the digest stays short enough to read in a terminal", () => {
+  const jobs = [
+    {
+      name: "e2e-shard",
+      conclusion: "failure",
+      steps: [{ name: "shard 2", conclusion: "failure" }],
+    },
+  ];
+  const log = Array.from({ length: 9 }, (_, index) =>
+    logLine("e2e-shard", `Error: spec ${index} failed`),
+  ).join("\n");
+  const rows = summarizeFailure(jobs, log);
+  assert.equal(rows[0].lines.length, 5);
+  const long = summarizeFailure(
+    [{ name: "verify", conclusion: "failure", steps: [] }],
+    logLine("verify", `Error: ${"x".repeat(400)}`),
+  );
+  const [heading, line] = formatFailure(long, { width: 20 });
+  assert.equal(heading, "✗ verify");
+  assert.ok(line.endsWith("…"));
+  assert.ok(line.length < 40, line);
 });

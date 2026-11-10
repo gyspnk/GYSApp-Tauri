@@ -10,13 +10,18 @@
  *   pnpm verify            map the pending changes, show the run for HEAD
  *   pnpm verify --wait     same, then wait for it and exit with its verdict
  *   pnpm verify:qa         request the screenshot + audit matrix and wait
+ *   pnpm verify --explain <runId>   replay why a past run failed
  *
 https://github.com/features/actions
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { classifyChanges } from "./test-loop-core.mjs";
+import {
+  classifyChanges,
+  formatFailure,
+  summarizeFailure,
+} from "./test-loop-core.mjs";
 import { collectPushFiles } from "./changed-files.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,6 +29,8 @@ const rootDir = path.resolve(__dirname, "..");
 const args = process.argv.slice(2);
 const wait = args.includes("--wait");
 const qa = args.includes("--qa");
+// `--explain <runId>` replays a past failure without changing anything.
+const explainAt = args.indexOf("--explain");
 
 const sleepSync = (ms) =>
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
@@ -152,6 +159,34 @@ function readVerdict(runId) {
   }
 }
 
+/**
+ * Say which hosted job broke and why, so the next step needs no `gh` archeology.
+ * `--log-failed` is only readable once the run is complete, which it is here.
+ */
+function explainFailure(runId) {
+  const jobs = gh(
+    "api",
+    `repos/{owner}/{repo}/actions/runs/${runId}/jobs`,
+    "--jq",
+    ".jobs",
+  );
+  if (jobs.code !== 0) {
+    console.log("  ! could not read the jobs; open the run URL above");
+    return;
+  }
+  const log = gh("run", "view", String(runId), "--log-failed");
+  let rows;
+  try {
+    rows = summarizeFailure(JSON.parse(jobs.out || "[]"), log.out);
+  } catch {
+    console.log("  ! could not parse the job list; open the run URL above");
+    return;
+  }
+  for (const line of formatFailure(rows)) console.log(`  ${line}`);
+  if (rows.length > 4)
+    console.log(`  … ${rows.length - 4} more failing job(s) in the run URL`);
+}
+
 function waitFor(runId) {
   console.log(
     `▶ watching run ${runId} — hosted, nothing heavy runs on this device`,
@@ -176,7 +211,18 @@ function waitFor(runId) {
   console.log(
     `\n${passed ? "✅" : "❌"} run ${runId}: ${verdict.conclusion ?? "verdict unavailable"} — ${verdict.url ?? ""}`,
   );
+  if (!passed) explainFailure(runId);
   process.exit(passed ? 0 : 1);
+}
+
+if (explainAt !== -1) {
+  const runId = args[explainAt + 1];
+  if (!runId) {
+    console.error("usage: pnpm verify --explain <runId>");
+    process.exit(1);
+  }
+  explainFailure(runId);
+  process.exit(0);
 }
 
 const changed = collectPushFiles({ rootDir });
@@ -236,8 +282,7 @@ console.log(`  ${run.url}`);
 
 if (wait && run.status !== "completed") waitFor(run.databaseId);
 if (run.conclusion && run.conclusion !== "success") {
-  console.log(
-    "  ! latest run for this commit did not succeed; inspect the failing jobs above",
-  );
+  console.log("  ! latest run for this commit did not succeed");
+  explainFailure(run.databaseId);
   process.exit(1);
 }
