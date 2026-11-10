@@ -7309,3 +7309,5 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
   klaim “lebih cepat karena warm” **tidak** dibuat; angka di atas murni
   pengukuran.
 - Bukti: `42591016976` (verify + selektif) hijau.
+
+**Dicoba dan ditolak (putaran 214):** menghentikan batch katalog saat pointer menyentuh baris (`pauseBatchesRef`, `bb8be74`) supaya klik pembaca tidak bersaing dengan baris yang belum terpakai. Hasil `perf.yml` `42741011079`: pembaca **696 ms** (lirik 713) versus 590 ms sebelumnya — lebih buruk, karena daftar yang terhenti justru menunda pekerjaan yang sama ke frame klik berikutnya. Di-revert (`revert: stop growing the list while a row is targeted`, verify `42741299621` hijau). Hiptesis “mount bersaing dengan batch” tidak terbukti; mount 561 ms tetap menjadi biaya utama dan butuh pemisahan komponen, bukan penjadwalan.
