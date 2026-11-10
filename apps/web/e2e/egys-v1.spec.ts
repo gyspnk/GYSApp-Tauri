@@ -38,11 +38,10 @@ test("Google signs in from the inline provider row without an application dialog
       contentType: "application/javascript",
       body: `window.google = { accounts: { id: {
       initialize(options) { this.callback = options.callback; },
-      renderButton(host) {
-        const button = document.createElement("button");
-        button.textContent = "Login dengan Google";
-        button.onclick = () => this.callback({ credential: "gis-credential" });
-        host.replaceChildren(button);
+      renderButton(host) { host.replaceChildren(document.createElement("span")); },
+      prompt(listener) {
+        listener({ isDisplayed: () => true });
+        this.callback({ credential: "gis-credential" });
       }, cancel() {}
     } } };`,
     }),
@@ -65,9 +64,7 @@ test("Google signs in from the inline provider row without an application dialog
   });
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   const account = page.locator('[data-setting="account"]');
-  const google = account
-    .locator(".egys-google-button")
-    .getByRole("button", { name: "Login dengan Google" });
+  const google = account.locator(".egys-google-press");
   await expect(google).toBeVisible();
   await google.click();
   await expect(
@@ -1002,7 +999,7 @@ test("Google retries a failed SDK within the same provider row", async ({
   await account
     .getByRole("button", { name: "Login dengan Google", exact: true })
     .click();
-  await expect(account.locator(".egys-google-button button")).toBeVisible();
+  await expect(account.locator(".egys-google-press")).toBeVisible();
   await expect(account.getByRole("alert")).toHaveCount(0);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   expect(attempts).toBe(2);
@@ -1063,8 +1060,8 @@ test("a Google control that answers a press with silence says so", async ({
       contentType: "application/javascript",
       body: `window.google = { accounts: { id: {
         initialize() {}, cancel() {},
-        // Google does render a box here, so the row looks alive; the press
-        // itself goes nowhere because the origin is not allowed.
+        // Google renders a box, so the row looks alive; the press itself
+        // goes nowhere because the origin is not allowed.
         renderButton(element) {
           const button = document.createElement("button");
           button.type = "button";
@@ -1072,20 +1069,21 @@ test("a Google control that answers a press with silence says so", async ({
           button.style.width = "200px";
           button.style.height = "44px";
           element.replaceChildren(button);
-        }
+        },
+        prompt() {}
       } } };`,
     }),
   );
   await page.goto("/GYSApp-Tauri/lainnya?section=account");
   const account = page.locator('[data-setting="account"]');
   const control = account.locator(".egys-google-control");
-  const rendered = control.locator(".egys-google-button button");
-  await expect(rendered).toBeVisible();
+  const press = control.locator(".egys-google-press");
+  await expect(press).toBeVisible();
   await expect(account.getByRole("alert")).toHaveCount(0);
 
   // A press that produces neither a consent window nor a credential must turn
   // into a message instead of silence.
-  await rendered.click();
+  await press.click();
   await expect(account.getByRole("alert")).toContainText(/terdaftar/i, {
     timeout: 10_000,
   });

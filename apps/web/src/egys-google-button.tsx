@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   GOOGLE_UNAVAILABLE_EVENT,
+  pressEgysGoogle,
   renderEgysGoogleButton,
 } from "./egys-google.js";
 import { watchGooglePopup } from "./google-popup-watch.js";
@@ -29,40 +30,37 @@ export function EgysGoogleButton({
   );
   const [popupBlocked, setPopupBlocked] = useState(false);
   const [failure, setFailure] = useState<GoogleFailure>("unavailable");
-  useEffect(() => {
-    // The consent window never opens when the browser blocks popups, and Google
-    // gives us no error. Watch our own click and say what happened.
+  const [pressing, setPressing] = useState(false);
+  /**
+   * Every press lands here, never inside Google's iframe: a click in a
+   * cross-origin frame is invisible to this page, and that invisibility is
+   * exactly what readers described as "the Google button does nothing".
+   */
+  const press = async () => {
+    if (pressing) return;
+    setPressing(true);
     const watch = watchGooglePopup();
-    const control = host.current;
-    let timer: number | undefined;
-    const onClick = () => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        if (watch.opened) return;
-        if (watch.blocked) {
-          setPopupBlocked(true);
-          recordDiagnostic("warn", "egys.google-popup-blocked", {
-            attempted: watch.attempted,
-          });
-          return;
-        }
-        // Google accepted the press and nothing happened: the origin or the
-        // client is not allowed. A pressure that ends in silence is the exact
-        // bug readers report as "tombol Google tidak merespons", so say it.
+    try {
+      const outcome = await pressEgysGoogle();
+      if (watch.blocked) {
+        setPopupBlocked(true);
+        recordDiagnostic("warn", "egys.google-popup-blocked", {
+          attempted: watch.attempted,
+        });
+      } else if (outcome === "silent" && !watch.opened) {
+        // Google accepted the press and showed nothing: the origin or the
+        // client is not allowed. Silence is the bug, so say what happened.
         recordDiagnostic("warn", "egys.google-silent-press", {
           attempted: watch.attempted,
         });
         setFailure("silent");
         setStatus("error");
-      }, 1500);
-    };
-    control?.addEventListener("click", onClick, true);
-    return () => {
-      window.clearTimeout(timer);
-      control?.removeEventListener("click", onClick, true);
+      }
+    } finally {
       watch.restore();
-    };
-  }, []);
+      setPressing(false);
+    }
+  };
   useEffect(() => {
     const controller = new AbortController();
     const control = host.current!;
@@ -114,12 +112,25 @@ export function EgysGoogleButton({
         <GoogleMark />
         <span>Google</span>
       </span>
+      {/* Hidden from the accessibility tree and the pointer: this page owns the
+          press now, and a second "Login dengan Google" control would only make
+          the name ambiguous for readers and tests alike. */}
       <div
         ref={host}
         className="egys-google-button"
-        aria-hidden={status !== "ready"}
-        inert={status !== "ready"}
+        aria-hidden="true"
+        inert={true}
       />
+      {status === "ready" && (
+        // The press surface sits above Google's iframe so the click is ours.
+        <button
+          type="button"
+          className="egys-google-press"
+          aria-label={label}
+          aria-busy={pressing}
+          onClick={press}
+        />
+      )}
       {status !== "ready" && (
         // Never inert: a press while the script is still loading restarts the
         // attempt instead of doing nothing at all.

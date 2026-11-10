@@ -36,6 +36,15 @@ type GoogleIdentity = {
         },
       ): void;
       cancel(): void;
+      /** One Tap: the only Google entry point whose outcome this page can read. */
+      prompt?(
+        listener?: (notification: {
+          isDisplayed?: () => boolean;
+          isNotDisplayed?: () => boolean;
+          isSkippedMoment?: () => boolean;
+          isDismissedMoment?: () => boolean;
+        }) => void,
+      ): void;
     };
   };
 };
@@ -189,4 +198,43 @@ export const EGYS_GOOGLE_ORIGINS = [
 
 export function googleOriginRegistered(origin: string): boolean {
   return (EGYS_GOOGLE_ORIGINS as readonly string[]).includes(origin);
+}
+
+/** Whether Google actually showed something after a press. */
+export type GooglePressOutcome = "displayed" | "silent";
+
+/**
+ * Ask Google to show its account chooser for the press that just happened.
+ *
+ * The row hands its presses to this instead of to Google's own iframe: a click
+ * inside a cross-origin frame never reaches this page, so the iframe flow
+ * cannot answer the one question readers actually ask — "did the button do
+ * anything?" `prompt` reports through its listener whether a window appeared.
+ */
+export function pressEgysGoogle(timeoutMs = 2000): Promise<GooglePressOutcome> {
+  const askGoogle = window.google?.accounts?.id.prompt;
+  if (typeof askGoogle !== "function") return Promise.resolve("silent");
+  return new Promise((resolve) => {
+    let settled = false;
+    const settle = (outcome: GooglePressOutcome) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      resolve(outcome);
+    };
+    const timer = window.setTimeout(() => settle("silent"), timeoutMs);
+    try {
+      askGoogle((notification) => {
+        if (notification.isDisplayed?.() || notification.isDismissedMoment?.())
+          settle("displayed");
+        else if (
+          notification.isNotDisplayed?.() ||
+          notification.isSkippedMoment?.()
+        )
+          settle("silent");
+      });
+    } catch {
+      settle("silent");
+    }
+  });
 }

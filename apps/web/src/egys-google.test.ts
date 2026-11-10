@@ -155,3 +155,62 @@ it("guides every origin whose registration it cannot confirm", async () => {
   expect(googleOriginNeedsGuidance("http://192.168.1.4:5173")).toBe(true);
   expect(EGYS_GOOGLE_ORIGINS).toContain("http://127.0.0.1:4173");
 });
+
+function withTimers() {
+  // The stubbed window is a bare object; the press helper needs timers on it.
+  const win = window as unknown as {
+    setTimeout: typeof setTimeout;
+    clearTimeout: typeof clearTimeout;
+  };
+  win.setTimeout = setTimeout;
+  win.clearTimeout = clearTimeout;
+  return win;
+}
+
+function sdkStub(extra: Record<string, unknown> = {}) {
+  const id = {
+    initialize: vi.fn(),
+    renderButton: vi.fn(),
+    cancel: vi.fn(),
+    ...extra,
+  };
+  (window as unknown as { google: unknown }).google = { accounts: { id } };
+  return id;
+}
+
+it("reports a displayed Google prompt as an answer to the press", async () => {
+  withTimers();
+  const prompt = vi.fn((listener: (n: unknown) => void) =>
+    listener({ isDisplayed: () => true }),
+  );
+  sdkStub({ prompt });
+  const { pressEgysGoogle } = await import("./egys-google.js");
+  await expect(pressEgysGoogle()).resolves.toBe("displayed");
+  expect(prompt).toHaveBeenCalledTimes(1);
+});
+
+it("reports a prompt Google refuses to show as silence", async () => {
+  withTimers();
+  sdkStub({
+    prompt: (listener: (n: unknown) => void) =>
+      listener({ isNotDisplayed: () => true }),
+  });
+  const { pressEgysGoogle } = await import("./egys-google.js");
+  await expect(pressEgysGoogle()).resolves.toBe("silent");
+});
+
+it("calls a missing prompt API silence instead of hanging", async () => {
+  withTimers();
+  sdkStub();
+  const { pressEgysGoogle } = await import("./egys-google.js");
+  await expect(pressEgysGoogle()).resolves.toBe("silent");
+});
+
+it("gives up on a prompt that never answers", async () => {
+  withTimers();
+  sdkStub({ prompt: vi.fn() });
+  const { pressEgysGoogle } = await import("./egys-google.js");
+  const outcome = pressEgysGoogle(1500);
+  await vi.advanceTimersByTimeAsync(1500);
+  await expect(outcome).resolves.toBe("silent");
+});

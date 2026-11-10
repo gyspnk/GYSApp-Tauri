@@ -79,7 +79,7 @@ test("header Google signs in directly and refreshes its account information", as
   await page.route("https://accounts.google.com/gsi/client*", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: `window.google = { accounts: { id: { initialize(o) { this.callback=o.callback; }, renderButton(host) { const b=document.createElement('button'); b.textContent='Login dengan Google'; b.onclick=()=>this.callback({credential:'menu-google'}); host.replaceChildren(b); }, cancel() {} } } };`,
+      body: `window.google = { accounts: { id: { initialize(o) { this.callback=o.callback; }, renderButton(host) { host.replaceChildren(document.createElement('span')); }, prompt(listener) { listener({ isDisplayed: () => true }); this.callback({ credential: 'menu-google' }); }, cancel() {} } } };`,
     }),
   );
   await page.route("**/api/v1/auth/egys/google", (route) => {
