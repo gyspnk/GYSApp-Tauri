@@ -5854,3 +5854,12 @@ body:has(.hymn-detail-page.is-text-viewer)
     column-gap: 28px;
   }
 }
+
+/* Press feedback: buttons used to change colour only, with no acknowledgement
+   that the press landed. A 2.5% scale is enough to feel it without moving the
+   layout. */
+.primary-button:active:not(:disabled),
+.secondary-button:active:not(:disabled),
+.quiet-button:active:not(:disabled) {
+  transform: scale(0.975);
+}
