@@ -32,14 +32,20 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Synthesize Indonesian speech without an API key
         id: smoke
-        run: node scripts/edge-tts-live-smoke.mjs
+        run: pnpm tts:live
       - name: Synthesize through the deployed Worker relay
         id: relay
+        if: always()
         run: |
           body='{"text":"Pujilah Allah yang Maha Esa","voice":"id-ID-GadisNeural"}'
           code=$(curl -sS -o relay.mp3 -w '%{http_code}' -X POST \

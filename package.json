@@ -40,6 +40,7 @@
     "lint": "node scripts/local-heavy-guard.mjs \"lint\" && pnpm --filter @gys/contracts lint && pnpm --filter @gys/domain lint && pnpm --filter @gys/testkit lint && pnpm --filter @gys/bff lint && pnpm --filter @gys/web lint",
     "format:check": "node scripts/local-heavy-guard.mjs \"format check\" && pnpm exec prettier --check .",
     "check:fast": "node scripts/fast-check.mjs",
+    "tts:live": "node --experimental-strip-types --import ./scripts/ts-resolve-hook.mjs scripts/edge-tts-live-smoke.mjs",
     "format": "pnpm exec prettier --write .",
     "css:dead": "node scripts/dead-css.mjs",
     "generate:music-lock": "node scripts/generate-music-lock.mjs",
