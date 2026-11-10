@@ -921,6 +921,8 @@ export const enFeatureMessages: Record<string, string> = {
   "more.googleDetectFailed":
     "Google sign-in was not detected. Finish choosing your Google account, then try again.",
   "more.loginFailed": "e-GYS sign-in was not successful. Try again.",
+  "more.googlePopupBlocked":
+    "The Google sign-in popup was blocked. Allow popups for this site, then try again.",
   "more.googleButtonFailed":
     "The Google button could not be loaded. Check your connection and try again.",
   "more.readabilityTitle": "Appearance & readability",
