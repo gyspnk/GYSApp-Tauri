@@ -413,32 +413,12 @@
 .verse-enter.is-previous {
   animation-name: verse-in-previous;
 }
-.account-profile-details {
-  display: grid;
-  gap: 8px;
-  margin: 12px 0 4px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-}
+
 .account-sync-note {
   color: var(--blue) !important;
   font-size: 0.625rem !important;
 }
-.account-profile-details > div {
-  display: grid;
-  grid-template-columns: 72px 1fr;
-  gap: 8px;
-  align-items: baseline;
-}
-.account-profile-details dt {
-  color: var(--muted);
-  font-size: 0.6875rem;
-}
-.account-profile-details dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-  font-size: 0.75rem;
-}
+
 .utility-panel {
   display: grid;
   gap: 14px;
@@ -455,29 +435,7 @@
   font-size: 0.8125rem;
   line-height: 1.6;
 }
-.playlist-settings {
-  display: flex;
-  align-items: end;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-.control-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 42px;
-  color: var(--ink);
-  font-size: 0.75rem;
-  cursor: pointer;
-}
-.control-check input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--blue);
-}
+
 .playlist-list {
   display: grid;
   gap: 6px;
@@ -502,35 +460,7 @@
   border-color: var(--blue);
   background: var(--blue-soft);
 }
-.playlist-item-main {
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 8px;
-  align-items: center;
-  min-width: 0;
-  min-height: 40px;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  text-align: left;
-  cursor: pointer;
-}
-.playlist-item-main > span {
-  color: var(--muted);
-  font-size: 0.6875rem;
-  font-variant-numeric: tabular-nums;
-}
-.playlist-item-main strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.8125rem;
-}
-.playlist-item-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
+
 .playlist-item-actions .text-button {
   min-height: 36px;
   padding: 6px 8px;
@@ -541,18 +471,7 @@
   flex-wrap: wrap;
   align-items: center;
 }
-.file-button {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-.file-button input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
+
 @keyframes selector-in {
   from {
     opacity: 0;
@@ -622,9 +541,7 @@
     display: grid;
     align-items: start;
   }
-  .detail-neighbors {
-    width: 100%;
-  }
+
   .hymn-mode-toggle {
     justify-self: start;
     max-width: 100%;
@@ -756,12 +673,7 @@
     width: 100%;
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
-  .split-ratio-control {
-    justify-content: stretch;
-  }
-  .split-ratio-control input {
-    flex: 1;
-  }
+
   .reader-pagination {
     padding-inline: 14px;
   }
@@ -829,15 +741,6 @@
   .media-secondary-control {
     display: grid;
   }
-  .speech-controls {
-    width: 100%;
-    margin-left: 0;
-    align-items: stretch;
-  }
-  .speech-controls select {
-    max-width: none;
-    width: 100%;
-  }
 }
 
 /* Responsive reader/navigation polish: preserve the existing token system
@@ -846,76 +749,23 @@
   position: relative;
 }
 
-.reader-navigation-group,
-.reader-action-group {
-  display: flex;
-  align-items: end;
-  gap: 12px;
-  min-width: 0;
-}
-.reader-navigation-group {
-  flex: 1 1 auto;
-  flex-wrap: wrap;
-}
-.reader-selectors {
-  display: flex;
-  align-items: end;
-  gap: 12px;
-  min-width: 0;
-  flex: 0 1 auto;
-}
 .reader-selectors .control-select {
   min-width: 104px;
 }
 .reader-navigation-group .chapter-scrubber {
   min-width: 150px;
 }
-.reader-action-group {
-  flex: 0 0 auto;
-  flex-wrap: wrap;
-  margin-left: auto;
-}
+
 .reader-action-group .quiet-button {
   flex: 0 0 auto;
 }
-.reader-overflow-toggle {
-  display: none;
-}
-.reader-control-sync svg {
-  transform: rotate(90deg);
-}
+
 .speech-settings-toggle {
   display: inline-flex;
 }
-.speech-controls {
-  display: none;
-  flex: 1 1 100%;
-  justify-content: flex-end;
-  width: 100%;
-  margin-left: 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-}
+
 .speech-controls.is-open {
   display: flex;
-}
-.reader-action-group .reader-control-icon {
-  width: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  justify-content: center;
-  padding: 0;
-}
-.reader-action-group .reader-control-icon .control-copy {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 .pujian-list {
@@ -1104,24 +954,7 @@
     gap: 8px;
     padding: 8px 10px;
   }
-  .reader-navigation-group {
-    display: contents;
-  }
-  .reader-navigation-group .reader-toolbar-title {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-height: 44px;
-  }
-  .reader-selectors {
-    display: grid;
-    grid-column: 1 / -1;
-    width: 100%;
-    grid-template-columns: minmax(92px, 0.9fr) minmax(0, 1.2fr) minmax(
-        68px,
-        0.55fr
-      );
-    gap: 6px;
-  }
+
   .reader-selectors .control-select {
     min-width: 0;
   }
@@ -1144,14 +977,7 @@
   .reader-navigation-group .bible-typography-controls output {
     min-width: 28px;
   }
-  .reader-action-group {
-    display: flex;
-    grid-column: 2;
-    width: auto;
-    align-self: center;
-    gap: 6px;
-    margin-left: auto;
-  }
+
   .reader-action-group .quiet-button {
     min-width: 0;
     min-height: 44px;
@@ -1170,39 +996,15 @@
     flex-wrap: wrap;
     justify-content: center;
   }
-  .reader-overflow-toggle {
-    display: inline-flex;
-  }
+
   .speech-settings-toggle {
     display: inline-flex;
   }
-  .speech-controls {
-    display: none;
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    align-items: end;
-    padding: 12px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--surface-soft);
-  }
+
   .speech-controls.is-open {
     display: grid;
   }
-  .speech-controls label {
-    min-width: 0;
-  }
-  .speech-controls label:first-child,
-  .speech-controls label:nth-child(2) {
-    grid-column: 1 / -1;
-  }
-  .speech-controls select,
-  .speech-controls input {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-  }
+
   .hymn-detail-page .detail-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1321,11 +1123,7 @@ body.gys-viewer-active {
 /* The chord toggle is a secondary viewer action: keep it off the main
    five-slot chrome row (Lirik/prev/title/next/MIDI) and place it on its own
    right-aligned row so the title never gets squeezed by a 6th track. */
-.viewer-chrome-chord {
-  grid-column: 1 / -1;
-  justify-self: end;
-  margin-inline-end: 14px;
-}
+
 /* gyschordweb parity: transpose/key/accidental controls inside the PDF
    overlay so chords can be transposed while reading the sheet. */
 .pdf-transpose-inline {
@@ -1443,11 +1241,7 @@ body.gys-viewer-active {
   font-size: 1.125rem;
   line-height: 1;
 }
-.viewer-chrome-midi {
-  border-color: color-mix(in srgb, var(--blue) 36%, var(--line));
-  background: var(--blue-soft);
-  color: var(--blue);
-}
+
 .hymn-pdf-viewer-title {
   display: grid;
   min-width: 0;
@@ -2063,30 +1857,7 @@ body.gys-viewer-active {
   padding: 0 14px max(12px, env(safe-area-inset-bottom));
   border-radius: 16px;
 }
-.media-collapse-toggle {
-  display: flex;
-  grid-column: 1 / -1;
-  grid-row: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 30px;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-}
-.media-collapse-toggle:hover {
-  color: var(--blue);
-}
-.media-collapse-grip {
-  width: 34px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--line-strong);
-}
+
 .media-surface.is-kidung-media:not(.is-minimized) > .media-art {
   grid-column: 1;
   grid-row: 2;
@@ -2795,16 +2566,7 @@ body.gys-viewer-active {
   .more-page > .page-intro {
     border-bottom: 0;
   }
-  .more-category-bar {
-    position: sticky;
-    top: 56px;
-    z-index: var(--z-nav);
-    margin: 0 -12px 12px;
-    padding: 6px 12px;
-    overflow-x: auto;
-    background: color-mix(in srgb, var(--canvas) 94%, transparent);
-    scrollbar-width: none;
-  }
+
   .more-settings-list {
     gap: 0;
   }
