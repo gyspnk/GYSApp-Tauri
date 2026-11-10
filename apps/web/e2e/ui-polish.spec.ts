@@ -162,15 +162,22 @@ test("missing daily artwork stays compact while keeping the reading action", asy
     await page.goto("/GYSApp-Tauri/");
     await expect(
       page.locator('.sauh-image-wrap[data-image-state="missing"]'),
-    ).toBeVisible();
-    // Two shipped states: below 720 px the missing artwork is a minority band
-    // above the copy, and from 720 px the media layer goes absolute and covers
-    // the whole panel. The old equality assertion only described the wide state.
-    const media = (await page.locator(".sauh-card-media").boundingBox())!;
+    ).toBeAttached();
+    // A missing image now removes the media layer entirely at every width, so
+    // the verse reads on the page surface instead of a tinted void.
+    // The media layer keeps no box at all now, so no tinted void is left above
+    // the copy. Below 900 px the panel still stretches to the shared grid row,
+    // which is why only the wide layout asserts a content-height panel.
+    await expect(page.locator(".sauh-card-media")).toBeHidden();
+    const mediaHeight = await page
+      .locator(".sauh-card-media")
+      .evaluate((el) => el.getBoundingClientRect().height);
+    expect(mediaHeight).toBe(0);
     const panel = (await page.locator(".verse-panel").boundingBox())!;
-    expect(media.height).toBeLessThanOrEqual(panel.height + 1);
+    const content = (await page.locator(".sauh-card-content").boundingBox())!;
     expect(panel.height).toBeGreaterThan(120);
-    if (width < 720) expect(media.height).toBeLessThan(panel.height * 0.6);
+    if (width >= 900)
+      expect(panel.height - content.height).toBeLessThanOrEqual(8);
     await expect(
       page.getByRole("link", { name: "Baca Lebih Lanjut →" }),
     ).toBeVisible();

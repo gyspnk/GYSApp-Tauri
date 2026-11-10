@@ -3946,6 +3946,24 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: 72px;
   min-height: 0;
 }
+
+/* No artwork is better than a tinted void: when the daily image is absent the
+   media layer disappears and the verse sits on the page surface. */
+.home-grid
+  .verse-panel:has(.sauh-image-wrap[data-image-state="missing"])
+  .sauh-card-media,
+.home-grid
+  .verse-panel:has(.sauh-image-wrap[data-image-state="error"])
+  .sauh-card-media {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .home-page .verse-panel:has(.sauh-image-wrap[data-image-state="missing"]),
+  .home-page .verse-panel:has(.sauh-image-wrap[data-image-state="error"]) {
+    min-height: 0;
+  }
+}
 .home-grid .sauh-card-content {
   padding: 18px 0 8px;
 }
