@@ -358,21 +358,10 @@
 /* Mobile keeps the action targets touchable while removing repeated labels
    from controls whose accessible names already describe the action. */
 @media (max-width: 599px) {
-  .reader-action-group {
-    gap: 6px;
-  }
   .hymn-detail-page .hymn-action {
     min-height: 44px;
   }
-  .reader-action-group .reader-control-icon {
-    flex: 0 0 44px;
-    width: 44px;
-    min-width: 44px;
-    min-height: 44px;
-    padding-inline: 0;
-    gap: 0;
-    justify-content: center;
-  }
+
   .reader-action-group .reader-control-icon .control-copy,
   .hymn-detail-page .detail-neighbors .control-copy,
   .asset-action-button .asset-action-copy,
@@ -400,10 +389,7 @@
     gap: 0;
     justify-content: center;
   }
-  .more-category-bar {
-    gap: 6px;
-    padding-inline: 0;
-  }
+
   .more-category-bar,
   .bible-page-header,
   .bible-reader,
@@ -673,17 +659,7 @@
   .reader-context-button {
     flex: 0 0 var(--control-hit, 44px);
   }
-  .reader-typography-wrapper {
-    position: static;
-  }
-  .reader-typography-popover {
-    position: fixed;
-    top: 58px;
-    right: 8px;
-    left: 8px;
-    max-width: none;
-    z-index: 1200;
-  }
+
   /* Bible page header: grouping collapsible lebih pas */
   .bible-page-header {
     padding: 12px;
@@ -863,31 +839,7 @@ body:has(.home-page)::-webkit-scrollbar {
 /* ==========================================================================
    Accent Palette Swatches & Custom Picker
    ========================================================================== */
-.accent-palette-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 4px 0;
-}
-.accent-dot {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 0 1px var(--line);
-  cursor: pointer;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    transform var(--motion-fast) var(--ease-out),
-    box-shadow var(--motion-fast) var(--ease-out);
-}
-.accent-dot:hover {
-  transform: scale(1.15);
-}
+
 .accent-dot.is-active {
   box-shadow: 0 0 0 2.5px var(--ink);
   transform: scale(1.1);
@@ -1399,35 +1351,7 @@ body:has(.home-page)::-webkit-scrollbar {
   font-size: 0.6875rem;
   font-weight: 700;
 }
-.media-key-dropdown {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
-  z-index: 60;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(44px, 1fr));
-  gap: 2px;
-  padding: 6px;
-  min-width: 160px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
-}
-.media-key-dropdown button {
-  height: 30px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.media-key-dropdown button:hover {
-  background: var(--surface-soft);
-}
+
 .media-key-dropdown button.is-selected {
   background: color-mix(in srgb, var(--blue) 18%, transparent);
   color: var(--blue);
@@ -1643,90 +1567,12 @@ body:has(.home-page)::-webkit-scrollbar {
   row-gap: 8px;
   flex-wrap: wrap;
 }
-.lyrics-midi-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-}
-.lyrics-instrument-select {
-  max-width: 180px;
-  min-height: 44px;
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.6875rem;
-}
-.lyrics-tempo-input {
-  width: 52px;
-  min-width: 52px;
-  min-height: 44px;
-  padding: 0 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.75rem;
-  text-align: center;
-}
-.lyrics-key-group {
-  position: relative;
-}
-.lyrics-key-btn {
-  min-width: 44px;
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-.lyrics-key-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 60;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(44px, 1fr));
-  gap: 2px;
-  padding: 6px;
-  min-width: 160px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
-}
-.lyrics-key-dropdown button {
-  min-width: 44px;
-  height: 44px;
-  min-height: 44px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.lyrics-key-dropdown button:hover {
-  background: var(--surface-soft);
-}
+
 .lyrics-key-dropdown button.is-selected {
   background: color-mix(in srgb, var(--blue) 18%, transparent);
   color: var(--blue);
 }
-.lyrics-transpose-label {
-  min-width: 24px;
-  text-align: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
+
 .lyrics-verse-indicator {
   margin-left: auto;
   font-size: 0.6875rem;
@@ -1777,13 +1623,6 @@ body:has(.home-page)::-webkit-scrollbar {
 .hymn-loop-label {
   font-size: 0.625rem;
   font-weight: 700;
-}
-.kidung-settings-note {
-  display: block;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 0.6875rem;
-  line-height: 1.5;
 }
 
 @media (max-width: 599px) {
