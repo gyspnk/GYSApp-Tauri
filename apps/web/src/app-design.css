@@ -5881,3 +5881,26 @@ body:has(.hymn-detail-page.is-text-viewer)
     animation-delay: calc(var(--row-index, 0) * var(--motion-stagger));
   }
 }
+
+/* Press feedback for the rows and header controls: a short scale that answers
+   the touch without moving the layout. */
+@media (prefers-reduced-motion: no-preference) {
+  .pujian-item,
+  .literature-row {
+    transition:
+      background-color var(--motion-fast) var(--ease-out),
+      transform var(--motion-fast) var(--ease-standard);
+  }
+
+  .pujian-item:active,
+  .literature-row:active {
+    transform: scale(0.995);
+  }
+
+  .topbar .icon-button:active:not(:disabled),
+  .topbar .search-trigger:active,
+  .topbar .topbar-appearance-button:active,
+  .topbar .account-button:active {
+    transform: scale(var(--motion-press));
+  }
+}
