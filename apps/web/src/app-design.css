@@ -322,6 +322,7 @@
   position: relative;
   inset: auto;
   width: 100%;
+  height: auto;
   aspect-ratio: 2 / 3;
   border-radius: 6px;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
