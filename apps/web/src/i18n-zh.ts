@@ -421,6 +421,10 @@ export const zhFeatureMessages: Record<string, string> = {
   "kidung.managePlaylistContents": "管理内容 · {count}",
   "kidung.removeSongFromPlaylist": "从播放列表移除 {title}",
   "kidung.deletePlaylist": "删除播放列表",
+  "kidung.deletePlaylistTitle": "删除播放列表？",
+  "kidung.deletePlaylistBody":
+    "播放列表及其歌曲将从此设备移除。此操作无法撤销。",
+  "common.cancel": "取消",
   "kidung.emptyPlaylistTitle": "播放列表为空。",
   "kidung.emptyPlaylistBody": "从圣诗页面添加歌曲。",
   "kidung.backToCatalog": "返回诗歌列表 →",

@@ -31,6 +31,7 @@ import {
   type SavedPlaylist,
 } from "./kidung-playlists.js";
 import { applyAutoNextMode, getAutoNextMode } from "./midi-playlist.js";
+import { ConfirmDialog } from "./confirm-dialog.js";
 import type { HymnMetadata } from "@gys/contracts";
 import {
   type CatalogState,
@@ -133,6 +134,9 @@ export function HymnPlaylistPage({
     );
   };
   const [noticeLocal, setNoticeLocal] = useState("");
+  const [pendingPlaylistDelete, setPendingPlaylistDelete] = useState<
+    string | null
+  >(null);
   const loadSavedPlaylist = (saved: SavedPlaylist) => {
     if (catalog.status !== "ready") return;
     clearMidiPlaylist();
@@ -426,12 +430,7 @@ export function HymnPlaylistPage({
                         <button
                           type="button"
                           className="text-button kidung-danger-action"
-                          onClick={(event) => {
-                            deleteSavedPlaylist(saved.id);
-                            event.currentTarget
-                              .closest("details")
-                              ?.removeAttribute("open");
-                          }}
+                          onClick={() => setPendingPlaylistDelete(saved.id)}
                         >
                           {translate(locale, "kidung.deletePlaylist")}
                         </button>
@@ -448,6 +447,19 @@ export function HymnPlaylistPage({
             {importError}
           </p>
         )}
+        <ConfirmDialog
+          open={pendingPlaylistDelete !== null}
+          title={translate(locale, "kidung.deletePlaylistTitle")}
+          body={translate(locale, "kidung.deletePlaylistBody")}
+          confirmLabel={translate(locale, "kidung.deletePlaylist")}
+          cancelLabel={translate(locale, "common.cancel")}
+          onCancel={() => setPendingPlaylistDelete(null)}
+          onConfirm={() => {
+            if (pendingPlaylistDelete)
+              deleteSavedPlaylist(pendingPlaylistDelete);
+            setPendingPlaylistDelete(null);
+          }}
+        />
         {playlist.items.length === 0 ? (
           <div className="kidung-empty-state">
             <strong>{translate(locale, "kidung.emptyPlaylistTitle")}</strong>

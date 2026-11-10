@@ -460,6 +460,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.managePlaylistContents": "Kelola isi · {count}",
     "kidung.removeSongFromPlaylist": "Hapus {title} dari playlist",
     "kidung.deletePlaylist": "Hapus playlist",
+    "kidung.deletePlaylistTitle": "Hapus playlist?",
+    "kidung.deletePlaylistBody":
+      "Playlist dan isinya dihapus dari perangkat ini. Tindakan ini tidak bisa dibatalkan.",
+    "common.cancel": "Batal",
     "kidung.emptyPlaylistTitle": "Playlist masih kosong.",
     "kidung.emptyPlaylistBody": "Tambahkan lagu dari halaman Kidung.",
     "kidung.backToCatalog": "Kembali ke daftar Kidung →",

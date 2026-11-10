@@ -433,6 +433,10 @@ export const enFeatureMessages: Record<string, string> = {
   "kidung.managePlaylistContents": "Manage contents · {count}",
   "kidung.removeSongFromPlaylist": "Remove {title} from playlist",
   "kidung.deletePlaylist": "Delete playlist",
+  "kidung.deletePlaylistTitle": "Delete playlist?",
+  "kidung.deletePlaylistBody":
+    "The playlist and its songs are removed from this device. This cannot be undone.",
+  "common.cancel": "Cancel",
   "kidung.emptyPlaylistTitle": "The playlist is empty.",
   "kidung.emptyPlaylistBody": "Add songs from a hymn page.",
   "kidung.backToCatalog": "Back to hymn list →",
