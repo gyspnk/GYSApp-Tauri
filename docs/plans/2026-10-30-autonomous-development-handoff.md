@@ -7396,3 +7396,11 @@ Bukti hosted: CI selektif `42765631815` **hijau** untuk stagger, `42766664608` *
 Menu pilihan (`.control-select-menu`: koleksi Kidung, urutan Literatur, tema, ukuran teks) sebelumnya hanya `fade-in` 120 ms, jadi terbaca seperti kilatan. Resep OpenDesign diterapkan (`fd926f9`): `@keyframes menu-rise` — `opacity 0 → 1`, `translateY(6px) → 0`, `scale(.98) → 1`, durasi `--motion-normal` 180 ms, easing `--motion-ease-entrance`, `transform-origin: top center` supaya tumbuh dari pemicunya. Hanya `opacity`/`transform`, jadi tidak ada layout shift, dan seluruhnya di dalam guard `prefers-reduced-motion: no-preference`.
 
 Bukti: CI selektif `42769330591` **hijau** (sweep desain mencakup `menu-motion`, kontrol select, dan baseline visual). Baseline tidak berubah karena screenshot Playwright mematikan animasi (`animations: "disabled"`).
+
+### Rilis APK pertama + usulan sistem UI pertama (10 Nov, putaran 226–227)
+
+- **Kadensi rilis 25 putaran tercatat:** `.github/release-cadence.json` menyimpan `lastTurn 226`, tag `v0.1.0-preview.20261110.1`, `nextDueTurn 251`, ukuran APK `36 118 859` B, dan run `42782473369`; riwayat dan cara verifikasi ada di `docs/plans/release-cadence.md`.
+- **Rilis pertama sudah terbit** sebagai pre-release: https://github.com/gyspnk/GYSApp-Tauri/releases/tag/v0.1.0-preview.20261110.1 (commit `c69796687aab`, signing debug, target `aarch64-linux-android`, empat aset: APK, changelog, SHA256SUMS, provenance).
+- **Usulan sistem UI #04 diterapkan** (`24b410d`): “Lihat semua” di kepala bagian beranda kini tombol quiet 44 px dengan garis rambut, radius kontrol, dan transisi `--motion-fast`; QA `42796811391` menunjukkan tombol itu di 1440 dan hero bertumpuk tetap utuh di 390.
+- **Baseline beranda** dari sweep `42797947356` diadopsi (`b798592`), lalu sweep `42798999704` hijau dengan **0 selisih**.
+- **Kegagalan determinisme ditemukan:** lima snapshot `literature-direct-reader-*` sempat berubah karena cincin fokus 3 px tertinggal di tombol tutup saat halaman dibuka lewat tautan langsung. `apps/web/e2e/visual-reading.spec.ts` sekarang memblur elemen aktif sebelum `toHaveScreenshot`, jadi snapshot tidak lagi bergantung pada cara halaman dibuka.
