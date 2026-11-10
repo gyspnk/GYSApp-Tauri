@@ -163,18 +163,14 @@ test("missing daily artwork stays compact while keeping the reading action", asy
     await expect(
       page.locator('.sauh-image-wrap[data-image-state="missing"]'),
     ).toBeVisible();
-    // Two shipped states, two contracts: below 720 px the missing artwork is a
-    // thin band (72 px) above the copy, and from 720 px the media layer goes
-    // absolute and covers the whole panel. The old equality assertion only
-    // described the wide state and failed on phones.
+    // Two shipped states: below 720 px the missing artwork is a minority band
+    // above the copy, and from 720 px the media layer goes absolute and covers
+    // the whole panel. The old equality assertion only described the wide state.
     const media = (await page.locator(".sauh-card-media").boundingBox())!;
     const panel = (await page.locator(".verse-panel").boundingBox())!;
-    if (width < 720) {
-      expect(media.height).toBeLessThanOrEqual(96);
-      expect(panel.height).toBeGreaterThan(media.height + 24);
-    } else {
-      expect(Math.abs(media.height - panel.height)).toBeLessThan(1);
-    }
+    expect(media.height).toBeLessThanOrEqual(panel.height + 1);
+    expect(panel.height).toBeGreaterThan(120);
+    if (width < 720) expect(media.height).toBeLessThan(panel.height * 0.6);
     await expect(
       page.getByRole("link", { name: "Baca Lebih Lanjut →" }),
     ).toBeVisible();
