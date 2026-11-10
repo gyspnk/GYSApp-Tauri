@@ -664,6 +664,8 @@ export const zhFeatureMessages: Record<string, string> = {
   "common.errorBody": "请检查网络连接后重试。",
   "common.decreaseText": "缩小文字",
   "common.increaseText": "增大文字",
+  "suara.searchEmptyTitle": "没有匹配的文章。",
+  "suara.searchEmptyBody": "请尝试其他关键词，或清空搜索。",
   "literature.emptyTitle": "没有匹配的标题。",
   "literature.emptyBody": "请尝试其他关键词或更改筛选。",
   "literature.officialCollection": "官方收藏",

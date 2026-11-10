@@ -678,6 +678,8 @@ export const enFeatureMessages: Record<string, string> = {
   "common.errorBody": "Check your connection and try again.",
   "common.decreaseText": "Decrease text size",
   "common.increaseText": "Increase text size",
+  "suara.searchEmptyTitle": "No matching stories.",
+  "suara.searchEmptyBody": "Try another keyword, or clear the search.",
   "literature.emptyTitle": "No matching titles.",
   "literature.emptyBody": "Try another keyword or change the filter.",
   "literature.officialCollection": "Official collection",

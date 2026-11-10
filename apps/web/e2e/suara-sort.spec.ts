@@ -55,3 +55,21 @@ test("the Suara order control reorders the archive without refetching", async ({
 
   await expect(page.getByRole("status").first()).toContainText("3");
 });
+
+test("a Suara search with no match speaks about stories, not titles", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.route("**/offline/suara-sejati.json", (route) =>
+    route.fulfill({
+      json: { source: "tjc.org", generatedAt: "2025-04-01T00:00:00Z", items },
+    }),
+  );
+  await page.goto("/GYSApp-Tauri/suara");
+  const search = page.getByRole("searchbox");
+  await search.fill("zzz-tidak-ada");
+  const empty = page.locator(".empty-state");
+  await expect(empty).toBeVisible();
+  await expect(empty).toContainText("Tidak ada tulisan yang cocok.");
+  await expect(empty).not.toContainText("Tidak ada judul yang cocok.");
+});

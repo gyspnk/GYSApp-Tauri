@@ -394,8 +394,8 @@ export function SuaraPage({ locale }: { locale: Locale }) {
           </div>
           {visiblePosts.length === 0 && (
             <div className="empty-state">
-              <strong>{translate(locale, "literature.emptyTitle")}</strong>
-              <span>{translate(locale, "literature.emptyBody")}</span>
+              <strong>{translate(locale, "suara.searchEmptyTitle")}</strong>
+              <span>{translate(locale, "suara.searchEmptyBody")}</span>
             </div>
           )}
         </section>

@@ -706,6 +706,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "common.errorBody": "Periksa koneksi lalu coba lagi.",
     "common.decreaseText": "Perkecil teks",
     "common.increaseText": "Perbesar teks",
+    "suara.searchEmptyTitle": "Tidak ada tulisan yang cocok.",
+    "suara.searchEmptyBody": "Coba kata kunci lain, atau kosongkan pencarian.",
     "literature.emptyTitle": "Tidak ada judul yang cocok.",
     "literature.emptyBody": "Coba kata kunci lain atau ubah filter.",
     "literature.officialCollection": "Koleksi resmi",
