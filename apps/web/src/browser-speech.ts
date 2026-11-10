@@ -1,3 +1,4 @@
+import { localVoiceText } from "./speech-pronunciation.js";
 import type { SpeechProvider, SpeechVoice } from "@gys/contracts";
 
 /**
@@ -126,10 +127,6 @@ export class BrowserSpeechProvider implements SpeechProvider {
     await this.stop();
     if (signal?.aborted)
       throw new DOMException("Speech cancelled", "AbortError");
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = options.rate ?? 1;
-    utterance.pitch = options.pitch ?? 1;
-    utterance.volume = options.volume ?? 1;
     const voices = await this.voices();
     if (signal?.aborted)
       throw new DOMException("Speech cancelled", "AbortError");
@@ -139,6 +136,13 @@ export class BrowserSpeechProvider implements SpeechProvider {
       : undefined;
     const voice =
       requestedVoice ?? selectNaturalPreferredVoice(voices, language);
+    // Device voices say "Allah" with an Arabic stress; cloud voices do not need
+    // the overlay and should keep the author's spelling.
+    const spoken = voice?.local === false ? text : localVoiceText(text);
+    const utterance = new SpeechSynthesisUtterance(spoken);
+    utterance.rate = options.rate ?? 1;
+    utterance.pitch = options.pitch ?? 1;
+    utterance.volume = options.volume ?? 1;
     utterance.lang = voice?.language ?? language;
     if (voice)
       utterance.voice =
