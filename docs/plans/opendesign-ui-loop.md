@@ -84,3 +84,20 @@ Sistem UI (`gysapp-ui-system`) memberi 8 usulan untuk Beranda. Status:
 | 08  | Kartu hairline + shadow-xs                     | belum — perlu ukur dampak visual                                                               |
 
 Catatan: dua dokumen OpenDesign sempat berbeda soal ritme (32 px vs 24 px). Keputusan sementara: pertahankan 32 px di beranda sampai sistem UI dipakai untuk mengukur ulang, karena baseline sudah memakai 32 px dan mengganti angka hanya menambah churn tanpa bukti lebih baik.
+
+## Kidung (rotasi berikutnya)
+
+Sistem UI (`gysapp-ui-system`, bagian “Kidung · usulan perubahan”, 12 butir). Status:
+
+| #   | Usulan                                                            | Status                                                                                    |
+| --- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| 3   | Nomor kidung memakai angka tabular berlebar tetap                 | **diterapkan** `6436e25` — `font-variant-numeric: tabular-nums`                           |
+| 4   | Tinggi baris minimum 64 px, enam baris per layar                  | **diterapkan** `6436e25` — baris 60 → 64 px; QA `42800227937` menampilkan 10 baris di 390 |
+| 1   | Pencarian selalu terlihat, bukan di balik ikon                    | belum — perlu baris pencarian penuh di ponsel                                             |
+| 2   | Kategori jadi chip 44 px, bukan dropdown                          | belum — menyentuh toolbar yang baru dirapikan                                             |
+| 5   | Teks kidung 17 px serif, tinggi baris 1,75, ukuran 34–40 karakter | perlu ukur dulu di pembaca (autofit)                                                      |
+| 6   | Bait dipisah ruang 20 px tanpa garis                              | perlu cek markup bait                                                                     |
+| 7   | Tombol sebelumnya/berikutnya 44 px di kedua ujung                 | sudah 44 px, perlu verifikasi posisi                                                      |
+| 8   | Pemutar audio turun ke dock                                       | sudah: dock bawaan                                                                        |
+| 9   | Katalog dan pembaca berdampingan di desktop                       | belum — perubahan struktur besar                                                          |
+| 10  | Penanda “Baru” sebagai badge                                      | belum ada konsep “baru” di data                                                           |
