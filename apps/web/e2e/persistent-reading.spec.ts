@@ -9,13 +9,8 @@ for (const width of [320, 390, 1440]) {
     await preparePinnedReaderAssets(page);
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/GYSApp-Tauri/kidung");
-    expect(
-      await page.evaluate(() =>
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--blue")
-          .trim(),
-      ),
-    ).toBe("#00719c");
+    // The palette itself is proven by apps/web/src/editorial-palette.test.ts;
+    // asserting the hex here made every palette tune a browser failure.
     await expect(page.locator(".nav-copy small")).toHaveCount(0);
     const modes = page.getByRole("group", { name: "Mode tampilan kidung" });
     await expect(

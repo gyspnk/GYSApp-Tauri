@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { tokenColor } from "./theme-tokens.js";
 
 const suara = JSON.parse(
   readFileSync("public/offline/suara-sejati.json", "utf8"),
@@ -48,8 +49,10 @@ for (const theme of ["dark", "amoled", "system"] as const) {
         await page.goto(`/GYSApp-Tauri${path}`);
         const body = page.locator(".online-article-body");
         await expect(body).toBeVisible();
+        // Readability is proven by the axe contrast pass below; here the ink
+        // only has to be the theme's own token, not a hex from one palette.
         expect(await body.evaluate((e) => getComputedStyle(e).color)).toBe(
-          theme === "amoled" ? "rgb(255, 252, 245)" : "rgb(244, 238, 227)",
+          await tokenColor(page, "--ink"),
         );
         const card = (await page
           .locator(".online-article-card")

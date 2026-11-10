@@ -3,6 +3,7 @@ import {
   preparePinnedReaderAssets,
   preparePinnedMidiAsset,
 } from "./pinned-reader-fixtures.js";
+import { tokenColor } from "./theme-tokens.js";
 
 const CANONICAL_LABELS = [
   "Instrumen MIDI",
@@ -395,7 +396,7 @@ for (const { width, touch } of [
         expected === 32 ? 32 : 44,
       );
       expect(dock.play!.background, "dock play colour").toBe(
-        "rgb(0, 113, 156)",
+        await tokenColor(page, "--blue"),
       );
       if (!full.play!.disabled) {
         expect(full.play!.background, "fullscreen play colour").toBe(
