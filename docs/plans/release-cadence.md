@@ -24,6 +24,17 @@ Aturan pemilik (10 Nov 2026): **setiap 25 putaran goal, build APK Android dan ch
 4. Setelah hijau, catat di `history` (`turn`, `tag`, `run`, `url`), set `lastTurn`, `lastTag`, dan `nextDueTurn = turn + 25`; commit + push.
 5. Laporkan ke pemilik: tag, tautan release, ukuran APK, dan catatan bahwa APK bertanda tangan debug (hanya untuk pemasangan manual).
 
+## Riwayat rilis
+
+| Putaran | Tag                         | Run           | APK (byte) | Commit     | Catatan                               |
+| ------- | --------------------------- | ------------- | ---------- | ---------- | ------------------------------------- |
+| 226     | `v0.1.0-preview.20261110.1` | `42782473369` | 36 118 859 | `c6979668` | rilis pertama, signing debug          |
+| 251     | `v0.1.0-preview.20261110.2` | `42910081054` | 36 120 363 | `5e5ebdfc` | 104 commit sejak rilis pertama, arm64 |
+
+Putaran 251 juga membuktikan jalur build native (`42910123438` "Native Android APK") hijau
+sebelum rilis diterbitkan, dan APK hanya berbeda 1 504 byte dari rilis sebelumnya meski
+104 commit masuk — tanda tidak ada aset besar yang tidak sengaja ikut terpaket.
+
 ## Isi release
 
 - `GYSApp-0.1.0-android-arm64-preview.apk` — APK arm64, profil release, signing debug.
