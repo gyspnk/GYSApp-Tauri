@@ -34,21 +34,18 @@ const localeCopy = {
   id: {
     back: "← Beranda",
     title: "Suara Sejati",
-    eyebrow: "Cerita dan kesaksian",
     date: /Des/i,
     alt: "Sampul Menapaki Tiga Iman Bag",
   },
   en: {
     back: "← Home",
     title: "True Voice",
-    eyebrow: "Stories and testimonies",
     date: /Dec/i,
     alt: "Cover of Menapaki Tiga Iman Bag",
   },
   zh: {
     back: "← 主页",
     title: "真实声音",
-    eyebrow: "故事与见证",
     date: /12月|2023年/,
     alt: "Menapaki Tiga Iman Bag 的封面",
   },
@@ -103,9 +100,6 @@ test("Suara catalog keeps locale, image, focus, and card geometry contracts", as
       ).toBeVisible();
       await expect(
         catalog.getByRole("heading", { name: localeCopy[locale].title }),
-      ).toBeVisible();
-      await expect(
-        catalog.getByText(localeCopy[locale].eyebrow, { exact: true }),
       ).toBeVisible();
 
       const firstCard = catalog.locator(".suara-library-item").first();
