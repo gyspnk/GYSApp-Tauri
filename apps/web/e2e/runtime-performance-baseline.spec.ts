@@ -75,6 +75,7 @@ type RuntimeCase = {
   // names the element that grows or shrinks instead of only the score.
   layoutTimeline?: {
     atDomContentLoaded: Record<string, { top: number; height: number } | null>;
+    atSkeleton?: Record<string, { top: number; height: number } | null> | null;
     atVisible: Record<string, { top: number; height: number } | null>;
     atReady: Record<string, { top: number; height: number } | null>;
   };
@@ -223,6 +224,14 @@ const LAYOUT_PROBES = {
   literature: ".home-literature-section",
   literatureFeatured: ".literature-featured",
   literatureSections: ".literature-sections",
+  // CLS 0,018 on /literatur moves `.literature-sections` down by 53 px between
+  // the first paint and the catalogue. These boxes split that 53 px into the
+  // intro, the toolbar, the reserved shelf and the shelf row itself.
+  literatureIntro: ".literature-intro",
+  literatureToolbar: ".literature-toolbar",
+  literatureStatus: ".literature-page .catalog-filter-status",
+  literatureShelf: ".literature-featured .literature-shelf",
+  literatureFirstItem: ".literature-featured .literature-shelf-item",
 } as const;
 
 async function layoutSnapshot(page: Page) {
@@ -286,6 +295,17 @@ async function runRoute(
     route.id === "home" || route.id === "literatur"
       ? await layoutSnapshot(page)
       : null;
+  // Anything that reserves space before the data lands must be measured while
+  // it is still reserving it.
+  const skeletonSnapshot =
+    route.id === "literatur"
+      ? await page
+          .locator(".literature-featured.is-loading")
+          .first()
+          .waitFor({ state: "attached", timeout: 3_000 })
+          .then(() => layoutSnapshot(page))
+          .catch(() => null)
+      : null;
   await page
     .locator(route.ready)
     .first()
@@ -301,6 +321,10 @@ async function runRoute(
     route.id === "home" || route.id === "literatur"
       ? await layoutSnapshot(page)
       : null;
+  // The skeleton is only on screen for the first frames, so it has to be
+  // sampled before the catalogue lands; without this box the shift source is
+  // guesswork.
+  const atSkeleton = atVisible ? skeletonSnapshot : null;
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(100);
   const atReady =
@@ -356,7 +380,14 @@ async function runRoute(
     readyMs,
     ...metrics,
     ...(atDomContentLoaded && atReady && atVisible
-      ? { layoutTimeline: { atDomContentLoaded, atVisible, atReady } }
+      ? {
+          layoutTimeline: {
+            atDomContentLoaded,
+            atSkeleton,
+            atVisible,
+            atReady,
+          },
+        }
       : {}),
     imageRequests: requests.filter(({ type }) => type === "image").length,
     pdfRequests: requests.filter(({ url }) => isPdfDocumentUrl(url)).length,
