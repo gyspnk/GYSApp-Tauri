@@ -147,15 +147,15 @@
   .hymn-page.kidung-tool-page .kidung-local-nav a > span {
     display: none;
   }
-  /* The queue tabs have the full field; their labels fit at 320 px. */
-  @container kidung-nav (min-width: 17em) {
-    .hymn-page.kidung-tool-page .kidung-local-nav a > span {
-      display: block;
-      min-width: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  /* The queue tabs own the full field here, so both labels fit even at
+     320 px; the catalogue keeps the icon-only tabs because the collection
+     select needs the room. */
+  .hymn-page.kidung-tool-page .kidung-local-nav a > span {
+    display: block;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 @media (min-width: 1101px) {
