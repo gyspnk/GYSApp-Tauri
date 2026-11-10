@@ -129,31 +129,45 @@
   gap: 8px;
   margin: 0;
 }
+/* The three entry points used to be full cards, which competed with the
+   content below them. The OpenDesign Beranda pass makes them quiet doors: a
+   thin circle around the glyph, the destination under it, no frame of its own. */
 .home-portal {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px;
-  min-height: 56px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 4px 0 2px;
+  min-height: 44px;
   min-width: 0;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  transition:
-    border-color 180ms ease,
-    background 180ms ease;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--ink);
+  transition: color var(--motion-fast) var(--ease-out);
 }
 .home-portal:hover {
-  border-color: var(--blue);
-  background: var(--blue-soft);
+  color: var(--blue);
 }
 .home-portal > svg {
-  color: var(--blue);
-  margin: 0;
+  box-sizing: content-box;
+  padding: 10px;
   width: 22px;
   height: 22px;
   flex: none;
+  color: var(--blue);
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
+}
+.home-portal:hover > svg,
+.home-portal:focus-visible > svg {
+  border-color: var(--blue);
+  background: var(--blue-soft);
 }
 .portal-copy strong {
   font-size: 0.9375rem;
