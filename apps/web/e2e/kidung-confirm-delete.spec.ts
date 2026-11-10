@@ -59,9 +59,13 @@ test("deleting a saved playlist asks first and Esc keeps it", async ({
   });
   await expect(cancel).toBeFocused();
   await expect(confirm).toHaveCSS("background-color", "rgb(179, 38, 30)");
+  // The dialog rises with an entrance animation; a box sampled mid-way reports
+  // 43.995 px. Measure the settled layout, then hold the 44 px target strictly.
+  await dialog.evaluate((element) =>
+    Promise.all(element.getAnimations().map((animation) => animation.finished)),
+  );
   const box = (await confirm.boundingBox())!;
-  // Fractional layout: the button's 44 px min-height lands at 43.995 px.
-  expect(box.height).toBeGreaterThanOrEqual(43.5);
+  expect(box.height).toBeGreaterThanOrEqual(44);
 
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
