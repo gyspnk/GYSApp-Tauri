@@ -83,7 +83,10 @@ Status per 10 Nov:
 | 07  | Katalog desktop jadi grid tiga kolom            | **diterapkan** `c1b044d` — 3 kolom di ≥1200 px, 2 kolom di 1100–1199 px      |
 
 Kontrak: `apps/web/e2e/literature-catalog.spec.ts` (chip 44 px + `aria-pressed`,
-tiga kolom terukur pada 1440 px). Butir 02/03/04/06 menunggu data, bukan CSS.
+tiga kolom terukur pada 1440 px). Bukti hosted: `42848919162` (verify, unit,
+e2e-selective hijau) dan Pages `42848919268`. Gerbang `accessibility.spec.ts`
+ikut diperbarui: dulu ia menuntut `combobox` bernama “Category”/“分类”, kini
+grup chip dengan status `aria-pressed`. Butir 02/03/04/06 menunggu data, bukan CSS.
 
 ## Iman — artefak tidak cocok dengan permukaan yang ada
 
