@@ -780,6 +780,7 @@ export const zhFeatureMessages: Record<string, string> = {
   "more.accent": "强调色",
   "more.chooseAccent": "选择强调色",
   "more.accentLabel": "{name}强调色",
+  "more.accent.forest": "森林綠",
   "more.accent.church-blue": "真耶穌教會藍",
   "more.accent.ink": "暖墨色",
   "more.accent.sapphire": "蓝宝石",

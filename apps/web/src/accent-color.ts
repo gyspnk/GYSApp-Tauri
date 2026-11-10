@@ -5,6 +5,7 @@ export type AccentPreset = {
 };
 
 export const ACCENT_PRESETS: readonly AccentPreset[] = [
+  { id: "forest", name: "Hijau hutan", color: "#0d4326" },
   { id: "church-blue", name: "Biru GYS", color: "#0079a8" },
   { id: "ink", name: "Tinta hangat", color: "#874536" },
   { id: "sapphire", name: "Biru Safir", color: "#2a65c7" },

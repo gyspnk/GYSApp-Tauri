@@ -828,6 +828,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.accent": "Warna Aksen",
     "more.chooseAccent": "Pilih Warna Aksen",
     "more.accentLabel": "Warna aksen {name}",
+    "more.accent.forest": "Hijau hutan",
     "more.accent.church-blue": "Biru GYS",
     "more.accent.ink": "Tinta hangat",
     "more.accent.sapphire": "Biru Safir",

@@ -801,6 +801,7 @@ export const enFeatureMessages: Record<string, string> = {
   "more.accent": "Accent color",
   "more.chooseAccent": "Choose accent color",
   "more.accentLabel": "{name} accent",
+  "more.accent.forest": "Forest green",
   "more.accent.church-blue": "GYS blue",
   "more.accent.ink": "Warm ink",
   "more.accent.sapphire": "Sapphire",

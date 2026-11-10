@@ -66,6 +66,7 @@ const DYNAMIC_KEYS = [
   "more.assetSoundfont",
   "more.assetUpdateAction",
   "more.assetRedownloadAction",
+  "more.accent.forest",
   "more.accent.church-blue",
   "more.accent.ink",
   "image.previewError",
