@@ -5584,11 +5584,14 @@ body:has(.hymn-detail-page.is-text-viewer)
    this file loads after styles/05 and wins source order. */
 @media (max-width: 959px) {
   .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-media {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
+    /* Older layout files force the absolute full-bleed media with !important;
+       phones stack the photo above the copy, so these few properties must
+       outrank that rule. */
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
     flex: 0 0 auto;
   }
   .home-page .sauh-card-media .sauh-image {
@@ -5601,12 +5604,12 @@ body:has(.hymn-detail-page.is-text-viewer)
   .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-content {
     /* The shared grid layout gives this block height:100%, which made it
        overlap the photo band it was meant to sit under. */
-    height: auto;
-    min-height: 0;
-    inset: auto;
-    margin-top: 0;
+    height: auto !important;
+    min-height: 0 !important;
+    inset: auto !important;
+    margin-top: 0 !important;
     flex: 0 0 auto;
-    background: var(--surface);
+    background: var(--surface) !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
