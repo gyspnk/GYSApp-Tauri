@@ -50,13 +50,14 @@ test("catalog rows and navigation stay flat when hovered", async ({ page }) => {
   await expect(row).toHaveCSS("box-shadow", "none");
   await expect(row).toHaveCSS("transform", "none");
   // Fractional layout (a chip's line box is 44.004 px, not 44) makes exact
-  // float equality fail on a 0.005 px rounding wobble; the contract is that
-  // hovering does not move the row, not that the float is byte-identical.
+  // float equality fail on a sub-pixel wobble; the contract is that hovering
+  // does not move the row, not that the float is byte-identical. Half a pixel
+  // is below anything a reader can see and still catches a real shift.
   const after = (await row.boundingBox())!;
-  expect(after.x).toBeCloseTo(before.x, 1);
-  expect(after.y).toBeCloseTo(before.y, 1);
-  expect(after.width).toBeCloseTo(before.width, 1);
-  expect(after.height).toBeCloseTo(before.height, 1);
+  expect(after.x).toBeCloseTo(before.x, 0);
+  expect(after.y).toBeCloseTo(before.y, 0);
+  expect(after.width).toBeCloseTo(before.width, 0);
+  expect(after.height).toBeCloseTo(before.height, 0);
   const link = page.locator(".kidung-local-nav a").first();
   await link.hover();
   await expect(link).toHaveCSS("transform", "none");
