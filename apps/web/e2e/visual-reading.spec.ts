@@ -429,6 +429,12 @@ for (const viewport of readerViewports) {
       page.locator('.pdf-pages canvas[data-pdf-rendered="true"]').first(),
     ).toBeVisible({ timeout: 20_000 });
     await assertViewportIntegrity(page);
+    // Direct links can leave focus on the reader's close button, which paints a
+    // 3 px focus ring; the ring is correct behaviour but makes the snapshot
+    // depend on how the page was opened, so drop focus before capturing.
+    await page.evaluate(() =>
+      (document.activeElement as HTMLElement | null)?.blur(),
+    );
 
     await expect(page).toHaveScreenshot(
       `literature-direct-reader-${viewport.name}.png`,
