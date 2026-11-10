@@ -527,7 +527,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("searchbox", { name: "搜索文献" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("combobox", { name: "分类", exact: true }),
+      page.getByRole("group", { name: "分类", exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("combobox", { name: "排序", exact: true }),
