@@ -19,7 +19,7 @@ Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus
 | 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                                                              |
 | 4   | Iman (teks, PDF, tindakan)                                  | artefak baru siap     | —                     | `docs/design/gysapp-dasar-kepercayaan` (run `e01f9b3b`), implementasi menyusul |
 | 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                                                              |
-| 6   | Suara (hero, rak kartu, pembaca)                            | artefak tidak cocok   | —                     | lihat catatan “Suara — artefak tidak cocok”                                    |
+| 6   | Suara (hero, rak kartu, pembaca)                            | artefak baru siap     | —                     | `docs/design/gysapp-suara` (run `e8b65e3d`), desain permukaan teks             |
 | 7   | Lainnya/pengaturan (kategori, baris, dialog)                | sebagian (02, 06, 08) | `60a5d60`             | `apps/web/e2e/more-settings-groups.spec.ts`                                    |
 | 8   | Dialog/sheet bersama (pemilih, popover, panel)              | sebagian              | `ee267866`            | `apps/web/e2e/kidung-confirm-delete.spec.ts`                                   |
 
@@ -271,3 +271,14 @@ fokus 3 px, reduced-motion mati. Token light: `--brand #00719c`, `--ink #132018`
 `--surface #ffffff`, `--line #dce5ee`; palet hangat hanya di sepia.
 
 Implementasi di `apps/web/src/faith.tsx` belum dikerjakan; catatan keputusan ada di README artefak.
+
+## Suara — artefak baru untuk permukaan teks
+
+`docs/design/gysapp-suara/index.html` (run OpenDesign `e8b65e3d-c580-4765-82ef-c2562bbe1da3`)
+menggantikan artefak lama yang menggambarkan dock audio. Permintaannya eksplisit: tidak
+mengarang audio, durasi, status putar, atau penulis — hanya permukaan yang benar-benar
+dikirim (daftar teks dengan cari, chip kategori, sort, jumlah hasil, keadaan kosong,
+kerangka muat, dan galat offline). Artefak menyajikan dua bingkai 390×844 dan 1440×900,
+empat tema lewat `data-theme`, target 44 px, fokus 3 px, dan reduced-motion mati.
+
+Implementasi di `apps/web/src/online-content.tsx` belum dikerjakan.
