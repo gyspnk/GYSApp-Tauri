@@ -12,16 +12,16 @@ Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus
 
 ## Rotasi dan status
 
-| #   | Permukaan                                                   | Status                | Run OpenDesign        | Bukti                                        |
-| --- | ----------------------------------------------------------- | --------------------- | --------------------- | -------------------------------------------- |
-| 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan              | `ui-loop` run beranda | —                                            |
-| 2   | Kidung (katalog + pembaca + dock MIDI)                      | sebagian              | —                     | —                                            |
-| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                            |
-| 4   | Iman (teks, PDF, tindakan)                                  | artefak tidak cocok   | —                     | lihat catatan “Iman — artefak tidak cocok”   |
-| 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                            |
-| 6   | Suara (hero, rak kartu, pembaca)                            | artefak tidak cocok   | —                     | lihat catatan “Suara — artefak tidak cocok”  |
-| 7   | Lainnya/pengaturan (kategori, baris, dialog)                | sebagian (02, 06, 08) | `60a5d60`             | `apps/web/e2e/more-settings-groups.spec.ts`  |
-| 8   | Dialog/sheet bersama (pemilih, popover, panel)              | sebagian              | `ee267866`            | `apps/web/e2e/kidung-confirm-delete.spec.ts` |
+| #   | Permukaan                                                   | Status                | Run OpenDesign        | Bukti                                                                          |
+| --- | ----------------------------------------------------------- | --------------------- | --------------------- | ------------------------------------------------------------------------------ |
+| 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan              | `ui-loop` run beranda | —                                                                              |
+| 2   | Kidung (katalog + pembaca + dock MIDI)                      | sebagian              | —                     | —                                                                              |
+| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                                                              |
+| 4   | Iman (teks, PDF, tindakan)                                  | artefak baru siap     | —                     | `docs/design/gysapp-dasar-kepercayaan` (run `e01f9b3b`), implementasi menyusul |
+| 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                                                              |
+| 6   | Suara (hero, rak kartu, pembaca)                            | artefak tidak cocok   | —                     | lihat catatan “Suara — artefak tidak cocok”                                    |
+| 7   | Lainnya/pengaturan (kategori, baris, dialog)                | sebagian (02, 06, 08) | `60a5d60`             | `apps/web/e2e/more-settings-groups.spec.ts`                                    |
+| 8   | Dialog/sheet bersama (pemilih, popover, panel)              | sebagian              | `ee267866`            | `apps/web/e2e/kidung-confirm-delete.spec.ts`                                   |
 
 ## Catatan
 
@@ -259,3 +259,15 @@ Sistem UI (`gysapp-ui-system`, bagian “Kidung · usulan perubahan”, 12 butir
 | 10  | “Baru” sebagai badge                                         | belum ada datanya                                                                                                               |
 
 Catatan: kontrak `kidung-usability` yang membandingkan metrik judul sebelum/sesudah `document.fonts.ready` disesuaikan (`b28287e`) — baris pencarian baru membuat baris katalog pertama jatuh di bawah lipatan, sehingga sampel “sebelum” bisa terambil saat font masih bertukar. Kontrak yang dijaga sekarang: setelah font siap, judul tidak bergeser lagi.
+
+## Iman — artefak baru untuk Dasar Kepercayaan
+
+`docs/design/gysapp-dasar-kepercayaan/index.html` (run OpenDesign `e01f9b3b-3df5-481b-9523-3aeb620daad1`)
+menggantikan artefak lama yang menggambarkan permukaan renungan harian. Isi artefak: satu `h1`,
+daftar bernomor 01–10 dengan angka tabular, bilah cari dengan jumlah hasil dan keadaan kosong,
+aksi PDF/catat/bagikan yang ruangnya tetap, catatan sebagai sheet di ponsel dan panel samping di
+desktop (jebakan fokus, Escape, kembalikan fokus), empat tema lewat `data-theme`, target 44 px,
+fokus 3 px, reduced-motion mati. Token light: `--brand #00719c`, `--ink #132018`,
+`--surface #ffffff`, `--line #dce5ee`; palet hangat hanya di sepia.
+
+Implementasi di `apps/web/src/faith.tsx` belum dikerjakan; catatan keputusan ada di README artefak.

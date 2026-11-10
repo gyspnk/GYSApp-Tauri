@@ -1,0 +1,288 @@
+<!doctype html><html lang="id" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GYSApp — Iman · Dasar Kepercayaan</title><style>/* OD-LAYOUT-PRIMITIVES v1 — structure only: display, flex/grid, overflow, wrapping, ratio, geometry.
+   Put this @layer first; product CSS outside the layer wins ordinary layout rules.
+   Native hidden and closed-dialog states take precedence over component display rules. */
+@layer od-layout {
+  [hidden]:not([hidden="until-found" i]) { display: none !important; }
+  dialog:not([open]) { display: none !important; }
+
+  :where(.od-stack,.od-row,.od-row-top,.od-cluster,.od-grid,.od-field,.od-stat,.od-cell,.od-tile) > :where(*) { min-width: 0; }
+
+  /* containers */
+  .od-stack   { display: flex; flex-direction: column; gap: var(--od-gap, 8px); }
+  .od-row     { display: flex; align-items: center; gap: var(--od-gap, 8px); }
+  .od-row-top { display: flex; align-items: flex-start; gap: var(--od-gap, 8px); }
+  .od-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--od-gap, 8px); }
+  .od-fill    { flex: 1 1 0; min-width: 0; }
+  .od-fixed   { flex: none; }
+  .od-grid    { display: grid; gap: var(--od-gap, 12px); grid-template-columns: repeat(var(--od-cols, 3), minmax(0, 1fr)); }
+
+  /* stacked information: each piece is its own line — never sibling inline spans */
+  .od-stat, .od-field, .od-cell { display: grid; gap: var(--od-gap, 2px); }
+  :where(.od-stat,.od-field,.od-cell) > :where(*) { display: block; }
+  .od-tile { display: grid; grid-template-rows: auto 1fr; }
+  :where(.od-tile) > :where(*) { display: block; }
+
+  /* media keeps its intrinsic ratio by default; never a distorted or cropped
+     cover by accident. height:auto lets the ratio win over an <img height="…">
+     attribute. Cropping to a uniform box is an explicit opt-in: set --od-ratio
+     AND add .od-media-cover together (per the core rule, only where a crop is
+     deliberate — tile thumbs, decorative fills — never on full-frame content). */
+  .od-media { display: block; width: 100%; height: auto; aspect-ratio: var(--od-ratio, auto); }
+  .od-media-cover { object-fit: cover; }
+
+  /* functional inline SVG icons opt into bounded geometry; content SVGs keep their own */
+  .od-icon { display: inline-block; inline-size: var(--od-icon-size, 1em); block-size: var(--od-icon-size, 1em); flex: none; }
+
+  /* data text only — authored copy is rewritten to its budget instead */
+  .od-truncate { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .od-clamp-2, .od-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .od-clamp-2 { -webkit-line-clamp: 2; }
+  .od-clamp-3 { -webkit-line-clamp: 3; }
+  .od-lines-2 { min-height: calc(2 * 1.4em); }   /* block-level reservation for a shared baseline */
+  .od-nowrap  { white-space: nowrap; }           /* 数字+单位 · 价格+起 · 日期+星期 */
+  .od-keep    { word-break: keep-all; overflow-wrap: anywhere; } /* CJK labels break at spaces / <wbr> first */
+
+  /* screen skeleton (optional): bars take their own space, the middle scrolls — no padding guessed for chrome */
+  .od-screen { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }
+  .od-scroll { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+
+  /* horizontal rail: the next item peeks at the edge; trailing room survives overflow */
+  .od-rail { display: flex; gap: var(--od-gap, 8px); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+             padding-inline: var(--od-rail-pad, 16px); scroll-padding-inline: var(--od-rail-pad, 16px); }
+  .od-rail::-webkit-scrollbar { display: none; }
+  :where(.od-rail) > :where(*) { flex: none; scroll-snap-align: start; }
+  :where(.od-rail) > :where(:last-child) { margin-inline-end: var(--od-rail-pad, 16px); }
+
+  .od-spacer { flex: none; visibility: hidden; pointer-events: none; }
+  .od-touch  { min-width: 44px; min-height: 44px; }
+}
+:root [hidden]:where(:not([hidden="until-found" i])) { display: none; }
+/* /OD-LAYOUT-PRIMITIVES v1 */
+
+    /* Native hidden remains authoritative over component flex/grid styles. */
+    [hidden]:not([hidden="until-found" i]) { display: none !important; }
+
+    :root {
+      --phone-screen-width: 390px;
+      --phone-screen-height: 844px;
+      --phone-bezel: 10px;
+      --phone-outer-radius: 52px;
+      --phone-screen-radius: 42px;
+      --phone-safe-top: 50px;
+      --phone-safe-bottom: 29px;
+      --phone-system-fg: #17181a;
+      --phone-screen-bg: #f8f8f9;
+      --phone-stage-bg: #eaebee;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(255,255,255,.94), transparent 35%),
+        var(--phone-stage-bg, #eaebee);
+      color: #191a1d;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .phone-frame {
+      position: relative;
+      width: calc(var(--phone-screen-width, 390px) + var(--phone-bezel, 10px) * 2);
+      height: calc(var(--phone-screen-height, 844px) + var(--phone-bezel, 10px) * 2);
+      padding: var(--phone-bezel, 10px);
+      border-radius: var(--phone-outer-radius, 52px);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.2), transparent 17%),
+        linear-gradient(160deg, #3f4146 0%, #202227 48%, #0b0c0f 100%);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.13),
+        inset 0 0 0 2px rgba(0,0,0,.85),
+        0 32px 68px -20px rgba(10,12,16,.52),
+        0 10px 24px -10px rgba(10,12,16,.32);
+      isolation: isolate;
+    }
+
+    .phone-frame::before,
+    .phone-frame::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      top: 96px;
+      bottom: 96px;
+      width: 2px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,.13) 16%, transparent 30%, transparent 72%, rgba(255,255,255,.07) 88%, transparent);
+    }
+    .phone-frame::before { left: 0; }
+    .phone-frame::after { right: 0; }
+
+    .hardware-button {
+      position: absolute;
+      width: 4px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #08090b, #2a2d33 60%, #08090b);
+      box-shadow: inset 0 1px rgba(255,255,255,.08);
+    }
+    .hardware-button.volume { left: -3px; top: 222px; height: 86px; }
+    .hardware-button.power { right: -3px; top: 270px; height: 82px; }
+
+    .phone-screen {
+      position: relative;
+      width: var(--phone-screen-width, 390px);
+      height: var(--phone-screen-height, 844px);
+      overflow: hidden;
+      border-radius: var(--phone-screen-radius, 42px);
+      background: var(--phone-screen-bg, #f8f8f9);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+
+    .phone-content {
+      position: absolute;
+      inset: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-top: var(--phone-safe-top, 50px);
+      padding-bottom: var(--phone-safe-bottom, 29px);
+      background: var(--phone-screen-bg, #f8f8f9);
+    }
+    .phone-content::-webkit-scrollbar { display: none; }
+
+    .camera-dot {
+      position: absolute;
+      z-index: 20;
+      top: 13px;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 35%, #344154 0 12%, #0a0c10 34%, #000 76%);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.06);
+      pointer-events: none;
+    }
+
+    .status-bar {
+      position: absolute;
+      z-index: 15;
+      inset: 0 0 auto;
+      height: var(--phone-safe-top, 50px);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
+      align-items: start;
+      padding: 14px 20px 0;
+      color: var(--phone-system-fg, #17181a);
+      opacity: .8;
+      pointer-events: none;
+    }
+    .status-time {
+      justify-self: start;
+      display: flex;
+      align-items: center;
+      height: 15px;
+      font-size: 14px;
+      font-weight: 560;
+      line-height: 1;
+      letter-spacing: .01em;
+    }
+    .status-cutout-zone { width: 56px; }
+    .status-icons {
+      justify-self: end;
+      display: inline-flex;
+      align-items: center;
+      height: 15px;
+      gap: 6px;
+    }
+    .status-icons svg {
+      display: block;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.35;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .status-icons .connectivity { width: 15px; height: 12px; }
+    .status-icons .wifi { width: 15px; height: 12px; }
+    .status-icons .battery { width: 19px; height: 11px; }
+
+    .gesture-indicator {
+      position: absolute;
+      z-index: 20;
+      left: 50%;
+      bottom: 8px;
+      width: 96px;
+      height: 4px;
+      transform: translateX(-50%);
+      border-radius: 99px;
+      background: var(--phone-system-fg, #17181a);
+      opacity: .86;
+      pointer-events: none;
+    }
+
+    /* Preview-only content. Replace it without inheriting the style. */
+    .sample-app { min-height: 100%; padding: 18px 20px 34px; background: #f8f8f9; }
+    .sample-app .eyebrow { margin: 0 0 6px; color: #6b6e75; font-size: 12px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; }
+    .sample-app h1 { margin: 0; font-size: 29px; line-height: 1.14; letter-spacing: -.025em; }
+    .sample-app p { margin: 10px 0 25px; color: #666a72; line-height: 1.5; }
+    .sample-card { padding: 18px; border: 1px solid #e2e3e6; border-radius: 18px; background: #fff; box-shadow: 0 7px 20px rgba(20,22,28,.05); }
+    .sample-card + .sample-card { margin-top: 12px; }
+
+    /* Presentation scaling: keep the whole handset visible on short viewports. */
+    @media (max-height: 927px) { .phone-frame { zoom: 0.9; } }
+    @media (max-height: 840px) { .phone-frame { zoom: 0.82; } }
+    @media (max-height: 771px) { .phone-frame { zoom: 0.74; } }
+    @media (max-height: 702px) { .phone-frame { zoom: 0.66; } }
+    /* Narrow viewports: the handset chrome collapses and the screen fills the
+       viewport, so the app behaves like a real phone page instead of
+       scrolling sideways. */
+    @media (max-width: 480px) {
+      body { padding: 0; display: block; }
+      .phone-frame { width: 100%; height: 100dvh; padding: 0; border-radius: 0; background: none; box-shadow: none; zoom: 1; }
+      .phone-frame::before, .phone-frame::after, .hardware-button { display: none; }
+      .phone-screen { width: 100%; height: 100%; border-radius: 0; }
+    }
+  
+:root {--phone-screen-bg:#ffffff;--phone-stage-bg:#e9eef2;--phone-system-fg:#132018;--board-ink:#263b47;--board-muted:#526575;--board-line:#c6d3dd;--board-gap:48px;--scale:1}
+body {display:block;background:#e9eef2;padding:32px 40px 40px;font-family:system-ui,-apple-system,sans-serif;color:var(--board-ink);min-height:100dvh} .board-head {display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;gap:24px}.board-brand {display:flex;align-items:center;gap:16px;font-size:14px}.board-brand strong {font-size:18px;color:#00719c;letter-spacing:-.5px}.board-divider {height:20px;width:1px;background:var(--board-line)} .board-caption {color:var(--board-muted);font-size:12px;letter-spacing:.08em}.examples {display:grid;grid-template-columns:410fr 1440fr;gap:var(--board-gap);align-items:start}.example {min-width:0;margin:0}.frame-label {display:flex;justify-content:space-between;color:var(--board-muted);font-size:12px;letter-spacing:.04em;margin-bottom:16px;gap:8px}.frame-label strong {font-size:11px;letter-spacing:.12em;font-weight:600}.phone-frame {zoom:var(--scale);margin:auto}.phone-content {padding:var(--phone-safe-top,50px) 0 var(--phone-safe-bottom,29px);overflow:hidden}.phone-content iframe {display:block;width:100%;height:100%;border:0;background:white}.desktop-wrap {zoom:var(--scale);width:1440px;border:1px solid #c5cfd7;border-radius:12px;overflow:hidden;background:white;box-shadow:0 16px 48px #243c4c12}.browser-bar {display:flex;align-items:center;justify-content:space-between;background:#f6f8fa;border-bottom:1px solid #dce5ee;padding:8px 16px;min-height:44px;font-size:12px;color:#526575}.browser-dots {display:flex;gap:8px;width:64px}.browser-dots i {display:block;width:8px;height:8px;border:1px solid #aab8c3;border-radius:50%}.browser-url {display:flex;align-items:center;gap:8px;border-radius:4px;background:#eaf0f4;padding:4px 48px}.desktop-wrap iframe {display:block;border:0;width:1440px;height:900px}.board-foot {font-size:12px;color:var(--board-muted);display:flex;justify-content:space-between;gap:16px;border-top:1px solid var(--board-line);margin-top:32px;padding-top:16px}
+@media(max-width:767px) {body {padding:24px 16px}.board-head {align-items:flex-start}.board-caption {display:none}.examples {gap:16px}.frame-label {display:block;font-size:10px}.frame-label strong {display:block;margin-bottom:4px}.board-foot {font-size:11px;display:block}.board-foot span {display:block;margin-bottom:8px}}
+/* The requested comparison board keeps both examples side by side, including narrow windows. */
+@media(max-width:480px) {.phone-frame {width:calc(var(--phone-screen-width,390px) + var(--phone-bezel,10px)*2);height:calc(var(--phone-screen-height,844px) + var(--phone-bezel,10px)*2);padding:var(--phone-bezel,10px);border-radius:var(--phone-outer-radius,52px);background:#202227;zoom:var(--scale)}.phone-screen {width:var(--phone-screen-width,390px);height:var(--phone-screen-height,844px);border-radius:var(--phone-screen-radius,42px)}.hardware-button {display:block}.phone-frame::before,.phone-frame::after {display:block}}
+</style></head><body><header class="board-head"><div class="board-brand"><strong>GYSApp.</strong><span class="board-divider"></span><span>Iman — Dasar Kepercayaan</span></div><span class="board-caption">SATU IMAN, DI SETIAP LAYAR</span></header><div class="examples"><figure class="example mobile-example"><figcaption class="frame-label"><strong>PONSEL</strong><span>390 × 844</span></figcaption>
+  <div class="phone-frame" data-phone-shell data-platform="neutral">
+    <span class="hardware-button volume" aria-hidden="true"></span>
+    <span class="hardware-button power" aria-hidden="true"></span>
+
+    <section class="phone-screen" data-phone-screen>
+      <main class="phone-content" data-phone-content><iframe id="mobile" title="GYSApp — contoh ponsel 390 × 844"></iframe></main>
+
+      <div class="status-bar" aria-hidden="true">
+        <span class="status-time">9:41</span>
+        <span class="status-cutout-zone"></span>
+        <span class="status-icons">
+          <svg class="connectivity" viewBox="0 0 15 12"><path d="M1.5 10.5v-2m4 2v-4.5m4 4.5v-7m4 7v-9"/></svg>
+          <svg class="wifi" viewBox="0 0 16 12"><path d="M1.5 4.7a9.2 9.2 0 0 1 13 0M4.2 7.3a5.4 5.4 0 0 1 7.6 0M6.9 10a1.55 1.55 0 0 1 2.2 0"/></svg>
+          <svg class="battery" viewBox="0 0 20 11"><rect x=".75" y="1.25" width="16.5" height="8.5" rx="2"/><path d="M18.5 4v3M3.2 3.4h10.4v4.2H3.2z" fill="currentColor" stroke="none"/></svg>
+        </span>
+      </div>
+      <div class="camera-dot" aria-hidden="true"></div>
+      <div class="gesture-indicator" aria-hidden="true"></div>
+    </section>
+  </div>
+</figure><figure class="example desktop-example"><figcaption class="frame-label"><strong>DESKTOP</strong><span>1440 × 900</span></figcaption><div class="desktop-wrap"><div class="browser-bar" aria-hidden="true"><span class="browser-dots"><i></i><i></i><i></i></span><span class="browser-url">GYSApp / Iman</span><span>•••</span></div><iframe id="desktop" title="GYSApp — contoh desktop 1440 × 900"></iframe></div></figure></div><footer class="board-foot"><span>Sepuluh pokok iman. Ruang untuk memahami dan mencatat.</span><span>Terang · Gelap · Sepia · AMOLED</span></footer><script>
+const frames=[document.getElementById('mobile'),document.getElementById('desktop')];
+let memory={};try {const stored=JSON.parse(localStorage.getItem('gysapp.faith.notes.v1')||'{}');if(stored&&typeof stored==='object'&&!Array.isArray(stored))for(const [id,value] of Object.entries(stored))if(typeof value==='string')memory[id]=value}catch(e){}
+window.GYSStore={notes:()=>({...memory}),save:(id,text)=>{memory[id]=text;let persistent=true;try{localStorage.setItem('gysapp.faith.notes.v1',JSON.stringify(memory))}catch(e){persistent=false}for(const frame of frames)frame.contentWindow?.postMessage({type:'notes-changed'},'*');return persistent}};
+window.addEventListener('storage',e=>{if(e.key==='gysapp.faith.notes.v1'){try{const value=JSON.parse(e.newValue||'{}');memory={};if(value&&typeof value==='object')for(const [id,text]of Object.entries(value))if(typeof text==='string')memory[id]=text;for(const f of frames)f.contentWindow?.postMessage({type:'notes-changed'},'*')}catch(err){}}});
+const source="<!doctype html><html lang=\"id\" data-theme=\"light\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Iman — Dasar Kepercayaan<\/title><style>/* OD-LAYOUT-PRIMITIVES v1 — structure only: display, flex/grid, overflow, wrapping, ratio, geometry.\n   Put this @layer first; product CSS outside the layer wins ordinary layout rules.\n   Native hidden and closed-dialog states take precedence over component display rules. */\n@layer od-layout {\n  [hidden]:not([hidden=\"until-found\" i]) { display: none !important; }\n  dialog:not([open]) { display: none !important; }\n\n  :where(.od-stack,.od-row,.od-row-top,.od-cluster,.od-grid,.od-field,.od-stat,.od-cell,.od-tile) > :where(*) { min-width: 0; }\n\n  /* containers */\n  .od-stack   { display: flex; flex-direction: column; gap: var(--od-gap, 8px); }\n  .od-row     { display: flex; align-items: center; gap: var(--od-gap, 8px); }\n  .od-row-top { display: flex; align-items: flex-start; gap: var(--od-gap, 8px); }\n  .od-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--od-gap, 8px); }\n  .od-fill    { flex: 1 1 0; min-width: 0; }\n  .od-fixed   { flex: none; }\n  .od-grid    { display: grid; gap: var(--od-gap, 12px); grid-template-columns: repeat(var(--od-cols, 3), minmax(0, 1fr)); }\n\n  /* stacked information: each piece is its own line — never sibling inline spans */\n  .od-stat, .od-field, .od-cell { display: grid; gap: var(--od-gap, 2px); }\n  :where(.od-stat,.od-field,.od-cell) > :where(*) { display: block; }\n  .od-tile { display: grid; grid-template-rows: auto 1fr; }\n  :where(.od-tile) > :where(*) { display: block; }\n\n  /* media keeps its intrinsic ratio by default; never a distorted or cropped\n     cover by accident. height:auto lets the ratio win over an <img height=\"…\">\n     attribute. Cropping to a uniform box is an explicit opt-in: set --od-ratio\n     AND add .od-media-cover together (per the core rule, only where a crop is\n     deliberate — tile thumbs, decorative fills — never on full-frame content). */\n  .od-media { display: block; width: 100%; height: auto; aspect-ratio: var(--od-ratio, auto); }\n  .od-media-cover { object-fit: cover; }\n\n  /* functional inline SVG icons opt into bounded geometry; content SVGs keep their own */\n  .od-icon { display: inline-block; inline-size: var(--od-icon-size, 1em); block-size: var(--od-icon-size, 1em); flex: none; }\n\n  /* data text only — authored copy is rewritten to its budget instead */\n  .od-truncate { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }\n  .od-clamp-2, .od-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }\n  .od-clamp-2 { -webkit-line-clamp: 2; }\n  .od-clamp-3 { -webkit-line-clamp: 3; }\n  .od-lines-2 { min-height: calc(2 * 1.4em); }   /* block-level reservation for a shared baseline */\n  .od-nowrap  { white-space: nowrap; }           /* 数字+单位 · 价格+起 · 日期+星期 */\n  .od-keep    { word-break: keep-all; overflow-wrap: anywhere; } /* CJK labels break at spaces / <wbr> first */\n\n  /* screen skeleton (optional): bars take their own space, the middle scrolls — no padding guessed for chrome */\n  .od-screen { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }\n  .od-scroll { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }\n\n  /* horizontal rail: the next item peeks at the edge; trailing room survives overflow */\n  .od-rail { display: flex; gap: var(--od-gap, 8px); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;\n             padding-inline: var(--od-rail-pad, 16px); scroll-padding-inline: var(--od-rail-pad, 16px); }\n  .od-rail::-webkit-scrollbar { display: none; }\n  :where(.od-rail) > :where(*) { flex: none; scroll-snap-align: start; }\n  :where(.od-rail) > :where(:last-child) { margin-inline-end: var(--od-rail-pad, 16px); }\n\n  .od-spacer { flex: none; visibility: hidden; pointer-events: none; }\n  .od-touch  { min-width: 44px; min-height: 44px; }\n}\n:root [hidden]:where(:not([hidden=\"until-found\" i])) { display: none; }\n/* /OD-LAYOUT-PRIMITIVES v1 */\n\n:root { color-scheme:light; --brand:#00719c; --ink:#132018; --surface:#ffffff; --line:#dce5ee; --muted:#52616b; --ground:#f5f8fa; --tint:#eaf4f8; --focus:#00719c; --inverse:#ffffff; --heading:Georgia,'Times New Roman',serif; --body:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px; --s12:48px; --radius:8px; --motion:180ms; }\nhtml[data-theme=\"dark\"] {color-scheme:dark;--brand:#83d4f5;--ink:#edf3f5;--surface:#172127;--line:#3b4c55;--muted:#b4c3cc;--ground:#10191e;--tint:#223740;--focus:#83d4f5;--inverse:#10232b}\nhtml[data-theme=\"sepia\"] {color-scheme:light;--brand:#70502b;--ink:#30281f;--surface:#faf3e6;--line:#d6c8b2;--muted:#6b5945;--ground:#f0e7d6;--tint:#eee1ca;--focus:#70502b;--inverse:#ffffff}\nhtml[data-theme=\"amoled\"] {color-scheme:dark;--brand:#8bdaf8;--ink:#f1f5f7;--surface:#000000;--line:#343d43;--muted:#b8c3ca;--ground:#000000;--tint:#13272f;--focus:#8bdaf8;--inverse:#07191f}\n* {box-sizing:border-box} html,body {margin:0;height:100%;} body {font:16px/1.65 var(--body);color:var(--ink);background:var(--surface)} button,input,select,textarea {font:inherit} button,a,input,select,textarea {-webkit-tap-highlight-color:transparent} button,a,select {touch-action:manipulation} button,select {cursor:pointer} button,a {color:var(--brand)} button {background:transparent;border:0} button,a,select,input {min-height:44px} :focus-visible {outline:3px solid var(--focus);outline-offset:3px} button:disabled {cursor:default} a {text-decoration:none} button {border-radius:var(--radius)} .od-icon {--od-icon-size:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}\n.app {height:100%;display:flex;flex-direction:column}.topbar {flex:none;border-bottom:1px solid var(--line);padding:var(--s4) var(--s8);display:flex;justify-content:space-between;align-items:center;gap:var(--s4)} .wordmark {font-weight:750;font-size:24px;letter-spacing:-1px;color:var(--brand);line-height:1.2}.church {font-size:12px;color:var(--muted);letter-spacing:.02em;display:block;margin-top:var(--s1)} .theme-wrap {display:flex;align-items:center;gap:var(--s2);color:var(--muted);font-size:14px}.theme-wrap select {background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);padding:0 var(--s3);font-size:14px;min-width:104px}.reading {overflow:auto;flex:1;min-height:0;scrollbar-color:var(--line) var(--surface)} .content {max-width:1192px;margin:auto;padding:var(--s12) var(--s8) var(--s8)} .eyebrow {color:var(--brand);text-transform:uppercase;letter-spacing:.16em;font-weight:650;font-size:12px;margin:0 0 var(--s3)}h1 {font:normal 52px/1.16 var(--heading);letter-spacing:-1.5px;margin:0 0 var(--s4)} .subtitle {color:var(--muted);margin:0;max-width:65ch;font-size:16px}.intro {padding-bottom:var(--s8)} .toolbar {display:flex;align-items:end;gap:var(--s6);padding-bottom:var(--s6)} .search-wrap {max-width:520px;flex:1}.field-label {display:block;font-size:13px;font-weight:600;margin-bottom:var(--s2)} .searchbox {display:flex;align-items:center;gap:var(--s3);background:var(--ground);border:1px solid var(--line);border-radius:var(--radius);padding:0 var(--s4)} .searchbox:focus-within {outline:3px solid var(--focus);outline-offset:3px}.searchbox input {width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);padding:var(--s3) 0;font-size:16px}.searchbox input::placeholder {color:var(--muted);opacity:1}.searchbox button {min-width:44px;display:grid;place-items:center;margin-right:-8px} .onlynotes {display:flex;align-items:center;gap:var(--s2);padding:var(--s2) var(--s3);border:1px solid var(--line);color:var(--muted);font-size:14px;white-space:nowrap}.onlynotes[aria-pressed=true] {background:var(--tint);color:var(--brand);border-color:var(--brand)} .list-meta {display:flex;justify-content:space-between;align-items:center;gap:var(--s4);padding:var(--s4) 0;border-top:1px solid var(--line);font-size:12px;letter-spacing:.06em;color:var(--muted)} .count {letter-spacing:0;font-variant-numeric:tabular-nums} ol {list-style:none;padding:0;margin:0}.belief {display:grid;grid-template-columns:48px minmax(0,1fr) 192px;gap:var(--s6);padding:var(--s6) 0;border-top:1px solid var(--line);align-items:start}.number {font:normal 28px/1.25 var(--heading);font-variant-numeric:tabular-nums;color:var(--brand);padding-top:var(--s1)} h2 {font-size:17px;font-weight:650;line-height:1.5;margin:0 0 var(--s2)}.statement {font-size:16px;line-height:1.7;margin:0;max-width:73ch;overflow-wrap:break-word}.actions {display:flex;gap:var(--s2);justify-content:flex-end}.action {display:inline-flex;align-items:center;justify-content:center;min-width:56px;min-height:44px;gap:var(--s2);padding:var(--s2);font-size:12px;border-radius:var(--radius)}.action-label {display:none}.action.pdf .action-label {display:block}.action.pdf .od-icon {--od-icon-size:16px}.note-dot {font-size:12px;color:var(--brand);margin:var(--s2) 0 0;display:flex;gap:var(--s2);align-items:center}.endnote {border-top:1px solid var(--line);padding-top:var(--s6);margin-top:0;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:var(--s4)}.empty {text-align:center;padding:var(--s12) var(--s6);border-top:1px solid var(--line)} .empty h2 {font:28px/1.3 var(--heading)} .empty p {color:var(--muted)} .text-button {padding:var(--s2) var(--s4);border:1px solid var(--line);font-weight:600}.solid {background:var(--brand);color:var(--inverse);padding:var(--s3) var(--s6);font-weight:600}\n.overlay {position:fixed;inset:0;z-index:50;background:#0007;display:flex;justify-content:flex-end}.panel {background:var(--surface);color:var(--ink);width:440px;max-width:100%;height:100%;padding:var(--s8);display:flex;flex-direction:column;gap:var(--s6);overflow:auto;box-shadow:-16px 0 48px #0002}.panel-top {display:flex;align-items:center;justify-content:space-between;gap:var(--s4)}.panel-top p {margin:0}.close {display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--line)} .panel h2 {font:32px/1.25 var(--heading);margin:0}.panel .excerpt {font-size:14px;color:var(--muted);margin:0;max-height:180px;overflow:auto}.note-label {margin-top:0}.panel textarea {display:block;resize:vertical;width:100%;min-height:224px;border:1px solid var(--line);background:var(--ground);color:var(--ink);border-radius:var(--radius);padding:var(--s4);font-size:16px;line-height:1.65}.hint {font-size:13px;color:var(--muted);margin:var(--s2) 0 0}.panel-bottom {margin-top:auto;display:flex;gap:var(--s3);justify-content:flex-end}.toast {position:fixed;z-index:80;bottom:24px;left:24px;right:24px;max-width:520px;margin:auto;background:var(--ink);color:var(--surface);padding:var(--s4) var(--s6);border-radius:var(--radius);font-size:14px;box-shadow:0 4px 24px #0002}.copy-area {min-height:160px!important}.sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}\n@media(hover:hover) {.action:hover,.text-button:hover,.close:hover,.onlynotes:hover {background:var(--tint);color:var(--brand)} .solid:hover {filter:brightness(.9)} .belief:hover {background:var(--ground)}}\n@media(min-width:768px) {.action {transition:background var(--motion) ease-out}.panel {animation:panel-in var(--motion) ease-out}@keyframes panel-in {from {opacity:0;transform:translateX(16px)}to {opacity:1;transform:translateX(0)}}}\n@media(max-width:767px) {.topbar {padding:var(--s3) var(--s6)}.wordmark {font-size:22px}.church {font-size:11px}.theme-text {display:none}.theme-wrap select {min-width:92px}.content {padding:var(--s8) var(--s6) var(--s6)} h1 {font-size:36px;letter-spacing:-1px}.intro {padding-bottom:var(--s6)}.eyebrow {font-size:11px}.toolbar {flex-wrap:wrap;gap:var(--s3)}.search-wrap {flex-basis:100%;max-width:none}.onlynotes {margin-left:auto;min-height:44px}.list-meta {font-size:11px;padding:var(--s3) 0}.belief {grid-template-columns:32px minmax(0,1fr);gap:var(--s3);padding:var(--s6) 0}.number {font-size:24px}.statement {line-height:1.7}.actions {grid-column:2;justify-content:flex-start;gap:var(--s2);margin-top:var(--s1)}.action {padding:var(--s2);min-width:72px}.action-label {display:block}.action .od-icon {--od-icon-size:16px}.action {font-size:12px}.endnote {display:block;font-size:12px}.endnote span {display:block;margin-bottom:var(--s2)}.overlay {align-items:flex-end}.panel {width:100%;height:auto;max-height:calc(100% - 24px);padding:var(--s6);border-radius:16px 16px 0 0;gap:var(--s4)}.panel textarea {min-height:160px}.panel h2 {font-size:28px}.panel .excerpt {max-height:112px}.panel-bottom {margin-top:var(--s2)}.toast {left:16px;right:16px;bottom:16px}.panel {animation:sheet-in var(--motion) ease-out}@keyframes sheet-in {from {opacity:0;transform:translateY(16px)}to {opacity:1;transform:translateY(0)}}}\n@media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation:none!important;transition:none!important;scroll-behavior:auto!important}}\n<\/style><\/head><body><div class=\"app\"><header class=\"topbar\"><div><div class=\"wordmark\">GYSApp<span style=\"color:var(--ink)\">.<\/span><\/div><span class=\"church\">Gereja Yesus Sejati<\/span><\/div><label class=\"theme-wrap\"><span class=\"theme-text\">Tampilan<\/span><select aria-label=\"Tema tampilan\"><option value=\"light\">Terang<\/option><option value=\"dark\">Gelap<\/option><option value=\"sepia\">Sepia<\/option><option value=\"amoled\">AMOLED<\/option><\/select><\/label><\/header><main class=\"reading\"><div class=\"content\"><div class=\"intro\"><p class=\"eyebrow\">IMAN / GEREJA YESUS SEJATI<\/p><h1>Dasar Kepercayaan<\/h1><p class=\"subtitle\">Sepuluh pokok iman yang menjadi dasar kehidupan kita.<\/p><\/div><div class=\"toolbar\"><div class=\"search-wrap\"><label class=\"field-label\" for=\"search\">Temukan pokok iman<\/label><div class=\"searchbox\"><span id=\"search-icon\"><\/span><input id=\"search\" type=\"search\" placeholder=\"Cari pokok iman…\" autocomplete=\"off\"><button type=\"button\" id=\"clear\" aria-label=\"Hapus pencarian\" hidden><\/button><\/div><\/div><button type=\"button\" class=\"onlynotes\" aria-pressed=\"false\" id=\"onlynotes\"><\/button><\/div><div class=\"list-meta\"><span>RINGKASAN POKOK IMAN<\/span><span class=\"count\" role=\"status\" aria-live=\"polite\" id=\"count\"><\/span><\/div><ol id=\"list\" aria-label=\"Sepuluh dasar kepercayaan\"><\/ol><div class=\"empty\" id=\"empty\" hidden><h2>Tidak ada pokok yang cocok<\/h2><p>Coba kata lain atau tampilkan semua pokok iman.<\/p><button type=\"button\" class=\"text-button\" id=\"reset\">Tampilkan semua pokok<\/button><\/div><footer class=\"endnote\"><span>PDF memuat penjelasan resmi Gereja Yesus Sejati.<\/span><span>Catatan Anda bersifat pribadi.<\/span><\/footer><\/div><\/main><\/div><div class=\"overlay\" id=\"overlay\" hidden><section class=\"panel\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"panel-title\"><div class=\"panel-top\"><p class=\"eyebrow\" id=\"panel-kicker\">CATATAN PRIBADI<\/p><button type=\"button\" class=\"close\" id=\"close\" aria-label=\"Tutup panel\"><\/button><\/div><h2 id=\"panel-title\"><\/h2><p id=\"excerpt\" class=\"excerpt\"><\/p><div class=\"note-field\"><label for=\"note\" class=\"field-label note-label\" id=\"note-label\">Catatan Anda<\/label><textarea id=\"note\" placeholder=\"Tulis hal yang ingin Anda ingat…\"><\/textarea><p class=\"hint\" id=\"storage-hint\">Disimpan hanya di perangkat ini, tanpa akun.<\/p><\/div><div class=\"panel-bottom\"><button type=\"button\" class=\"text-button\" id=\"cancel\">Batal<\/button><button type=\"button\" class=\"solid\" id=\"save\">Simpan catatan<\/button><\/div><\/section><\/div><div class=\"toast\" id=\"toast\" role=\"status\" aria-live=\"polite\" hidden><\/div><script>\nconst items=[{\"id\": 1, \"title\": \"Yesus Kristus\", \"text\": \"Yesus adalah Allah yang menjadi manusia, wafat di salib demi menebus dosa, bangkit pada hari ketiga, lalu naik ke surga; Dialah satu-satunya Juruselamat dan Tuhan atas seluruh ciptaan.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Yesus-Kristus.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-yesus-kristus/\"}, {\"id\": 2, \"title\": \"Alkitab\", \"text\": \"Kitab-kitab Perjanjian Lama dan Perjanjian Baru berasal dari ilham Allah dan menjadi satu-satunya landasan kebenaran serta pedoman bagi kehidupan orang percaya.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Alkitab.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-alkitab/\"}, {\"id\": 3, \"title\": \"Gereja\", \"text\": \"Gereja Yesus Sejati dibangun oleh Roh Kudus pada masa hujan akhir untuk memulihkan gereja yang sesuai dengan iman dan pengajaran para rasul.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Gereja.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-gereja/\"}, {\"id\": 4, \"title\": \"Baptisan air\", \"text\": \"Melalui baptisan, dosa dihapuskan dan manusia dilahirkan kembali: baptisan dilakukan dalam nama Yesus, di air yang hidup, dengan kepala tertunduk dan seluruh tubuh terbenam, oleh pembaptis yang telah menerima baptisan air serta Roh Kudus.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Baptisan.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-baptisan/\"}, {\"id\": 5, \"title\": \"Roh Kudus\", \"text\": \"Penerimaan Roh Kudus menjamin warisan dalam Kerajaan Allah, dan tanda yang menyertainya adalah kemampuan berbicara dalam bahasa roh.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Roh-Kudus.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-rohkudus/\"}, {\"id\": 6, \"title\": \"Basuh kaki\", \"text\": \"Sakramen basuh kaki memberi bagian bersama Kristus dan mengajarkan kasih, kekudusan, kerendahan hati, pelayanan, serta pengampunan; setiap orang yang sudah dibaptis menerimanya sekali dalam nama Yesus, sementara saling membasuh kaki dapat dilakukan sesuai kebutuhan.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Basuh-Kaki.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-basuhkaki/\"}, {\"id\": 7, \"title\": \"Perjamuan Kudus\", \"text\": \"Perjamuan Kudus mengenangkan pengorbanan Kristus dan mempersatukan orang percaya dengan tubuh serta darah-Nya untuk kehidupan kekal dan kebangkitan; sakramen ini diadakan secara berkala dengan satu roti tanpa ragi dan sari buah anggur.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Perjamuan-Kudus.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-pk/\"}, {\"id\": 8, \"title\": \"Hari Sabat\", \"text\": \"Sabtu merupakan hari yang dikuduskan dan diberkati Allah, dipelihara dalam kasih karunia sebagai peringatan atas penciptaan dan keselamatan serta pengharapan akan perhentian kekal.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Hari-Sabat.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-sabat/\"}, {\"id\": 9, \"title\": \"Keselamatan\", \"text\": \"Keselamatan diterima oleh iman melalui anugerah Allah, dan orang percaya dipanggil menjalani hidup kudus dengan pertolongan Roh Kudus, menaati Alkitab, serta mengasihi Allah dan sesama.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Keselamatan.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-keselamatan/\"}, {\"id\": 10, \"title\": \"Kedatangan Kristus\", \"text\": \"Pada akhir zaman Yesus akan kembali dari surga untuk mengadili semua manusia, memberikan kehidupan kekal kepada orang benar dan hukuman yang kekal kepada orang jahat.\", \"pdf\": \"https://tjcorguploads.s3.amazonaws.com/tjcorg/wp-content/uploads/sites/43/2019/10/Kedatangan-Kristus.pdf\", \"source\": \"https://tjc.org/id/dasar-kepercayaan/dk-kedatangan-kristus/\"}];\nconst paths={search:'<circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"m16 16 4 4\"/>',note:'<path d=\"M13 5H5v15h14v-8M10 14l1-4 8-8 3 3-8 8-4 1Z\"/>',share:'<path d=\"M12 16V3m-5 5 5-5 5 5M5 13v8h14v-8\"/>',pdf:'<path d=\"M6 3h8l4 4v14H6V3Zm8 0v5h4M9 13h6m-6 4h4\"/>',close:'<path d=\"m6 6 12 12M6 18 18 6\"/>',check:'<path d=\"m5 12 4 4 10-10\"/>'};\nconst icon=n=>`<svg class=\"od-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\">${paths[n]}<\/svg>`;\nconst $=s=>document.querySelector(s);let notes={},only=false,active=null,mode='note',returnButton=null,timer;\nfunction load(){notes=parent.GYSStore.notes();}load();\nfunction notify(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(timer);timer=setTimeout(()=>$('#toast').hidden=true,4500)}\n$('#search-icon').innerHTML=icon('search');$('#clear').innerHTML=icon('close');$('#close').innerHTML=icon('close');\nfunction render(){\n const q=$('#search').value.trim().toLocaleLowerCase('id');\n const visible=items.filter(i=>(!only||notes[i.id]?.trim())&&(`${i.id.toString().padStart(2,'0')} ${i.title} ${i.text}`.toLocaleLowerCase('id').includes(q)));\n const list=$('#list');list.replaceChildren();\n visible.forEach(i=>{const li=document.createElement('li');li.className='belief';li.value=i.id;\n const num=document.createElement('span');num.className='number';num.textContent=String(i.id).padStart(2,'0');\n const text=document.createElement('div');const title=document.createElement('h2');title.textContent=i.title;const p=document.createElement('p');p.className='statement';p.textContent=i.text;text.append(title,p);\n if(notes[i.id]?.trim()){const mark=document.createElement('p');mark.className='note-dot';mark.innerHTML=icon('check');mark.append(document.createTextNode('Ada catatan pribadi'));text.append(mark)}\n const actions=document.createElement('div');actions.className='actions';\n const pdf=document.createElement('a');pdf.className='action pdf';pdf.href=i.pdf;pdf.target='_blank';pdf.rel='noopener noreferrer';pdf.setAttribute('aria-label','Buka PDF resmi: '+i.title+' (tab baru)');pdf.innerHTML=icon('pdf')+'<span class=\"action-label\">PDF<\/span>';\n const note=document.createElement('button');note.type='button';note.className='action';note.dataset.id=i.id;note.dataset.action='note';note.setAttribute('aria-label','Catat: '+i.title);note.innerHTML=icon('note')+'<span class=\"action-label\">Catat<\/span>';\n const share=document.createElement('button');share.type='button';share.className='action';share.dataset.id=i.id;share.dataset.action='share';share.setAttribute('aria-label','Bagikan atau salin: '+i.title);share.innerHTML=icon('share')+'<span class=\"action-label\">Bagikan<\/span>';\n actions.append(pdf,note,share);li.append(num,text,actions);list.append(li)});\n $('#count').textContent=visible.length+' dari 10 pokok';$('#empty').hidden=visible.length!==0;$('#list').hidden=visible.length===0;$('#clear').hidden=!$('#search').value;$('#onlynotes').innerHTML=icon('note')+'<span>Catatan saya'+(Object.values(notes).filter(v=>v.trim()).length?' · '+Object.values(notes).filter(v=>v.trim()).length:'')+'<\/span>';$('#onlynotes').setAttribute('aria-pressed',String(only));\n}\nfunction sync(){load();render()}window.addEventListener('message',e=>{if(e.source===parent&&e.data?.type==='notes-changed')sync()});\nfunction closePanel(){const id=active?.id,kind=mode;$('#overlay').hidden=true;active=null;document.querySelector('.reading').inert=false;document.querySelector('.topbar').inert=false;const target=kind==='note'?document.querySelector(`[data-action=\"note\"][data-id=\"${id}\"]`):returnButton;(target?.isConnected?target:$('#search')).focus()}\nfunction openPanel(item,kind,trigger){active=item;mode=kind;returnButton=trigger;$('#panel-kicker').textContent=kind==='note'?'CATATAN PRIBADI · '+String(item.id).padStart(2,'0'):'BAGIKAN POKOK IMAN';$('#panel-title').textContent=item.title;$('#excerpt').textContent=item.text;$('#note-label').textContent=kind==='note'?'Catatan Anda':'Teks untuk dibagikan';$('#note').value=kind==='note'?(notes[item.id]||''):`${String(item.id).padStart(2,'0')} — ${item.title}\\n${item.text}\\n\\nPDF resmi: ${item.pdf}`.replaceAll('\\\\n','\\n');$('#note').readOnly=kind!=='note';$('#storage-hint').textContent=kind==='note'?'Disimpan hanya di perangkat ini, tanpa akun.':'Pilih dan salin teks ini, atau gunakan tombol Salin teks.';$('#save').textContent=kind==='note'?'Simpan catatan':'Salin teks';$('#cancel').textContent=kind==='note'?'Batal':'Selesai';$('#overlay').hidden=false;document.querySelector('.reading').inert=true;document.querySelector('.topbar').inert=true;$('#note').focus();if(kind==='share')$('#note').select()}\nasync function copyText(text){try{await navigator.clipboard.writeText(text);return true}catch(e){$('#note').focus();$('#note').select();try{return document.execCommand('copy')}catch(e){return false}}}\n$('#save').addEventListener('click',async()=>{if(mode==='note'){const result=parent.GYSStore.save(active.id,$('#note').value);sync();closePanel();notify(result?'Catatan tersimpan di perangkat ini.':'Catatan tersimpan sementara. Penyimpanan perangkat tidak tersedia.')}else {const ok=await copyText($('#note').value);if(ok){closePanel();notify('Teks pokok iman berhasil disalin.')}else notify('Penyalinan otomatis tidak tersedia. Pilih teks lalu salin secara manual.')}});\n$('#list').addEventListener('click',async e=>{const b=e.target.closest('button[data-action]');if(!b)return;const item=items.find(i=>i.id===Number(b.dataset.id));if(b.dataset.action==='note')openPanel(item,'note',b);else {if(navigator.share){try{await navigator.share({title:item.title+' — Dasar Kepercayaan',text:item.text,url:item.source});return}catch(err){if(err.name==='AbortError')return}}openPanel(item,'share',b)}});\n$('#close').addEventListener('click',closePanel);$('#cancel').addEventListener('click',closePanel);$('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closePanel()});document.addEventListener('keydown',e=>{if($('#overlay').hidden)return;if(e.key==='Escape'){e.preventDefault();closePanel()}if(e.key==='Tab'){const els=[...$('#overlay').querySelectorAll('button,textarea')].filter(el=>!el.disabled);const first=els[0],last=els.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});\n$('#search').addEventListener('input',render);$('#clear').addEventListener('click',()=>{$('#search').value='';render();$('#search').focus()});$('#onlynotes').addEventListener('click',()=>{only=!only;render()});$('#reset').addEventListener('click',()=>{only=false;$('#search').value='';render();$('#search').focus()});\n$('.theme-wrap select').addEventListener('change',e=>document.documentElement.dataset.theme=e.target.value);\nrender();\n<\/script><\/body><\/html>";
+for(const frame of frames) frame.srcdoc=source;
+function resize(){const area=document.querySelector('.mobile-example');document.documentElement.style.setProperty('--scale',Math.max(.08,Math.min(1,area.clientWidth/410)))}new ResizeObserver(resize).observe(document.querySelector('.examples'));resize();
+// Set data-theme on this outer html to apply one theme to both examples.
+new MutationObserver(()=>{for(const frame of frames){const doc=frame.contentDocument;if(doc){doc.documentElement.dataset.theme=document.documentElement.dataset.theme;const select=doc.querySelector('select');if(select)select.value=document.documentElement.dataset.theme}}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+for(const frame of frames)frame.addEventListener('load',()=>{const theme=document.documentElement.dataset.theme;frame.contentDocument.documentElement.dataset.theme=theme;frame.contentDocument.querySelector('select').value=theme});
+</script></body></html>
