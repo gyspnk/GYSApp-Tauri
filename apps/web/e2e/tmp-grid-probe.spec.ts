@@ -5,7 +5,7 @@ test("temporary probe: how the Lainnya collection grid resolves at 768", async (
 }) => {
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 768, height: 1024 });
-  await page.goto("lainnya");
+  await page.goto("/GYSApp-Tauri/lainnya");
   await page.waitForTimeout(4_000);
   const data = await page.evaluate(() => {
     const grid = document.querySelector(".more-library-grid");
