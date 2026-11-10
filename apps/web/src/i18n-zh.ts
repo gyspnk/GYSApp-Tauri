@@ -899,6 +899,8 @@ export const zhFeatureMessages: Record<string, string> = {
   "more.loginFailed": "e-GYS 登录未成功。请重试。",
   "more.googlePopupBlocked": "Google 登录弹窗被拦截。请允许本站点弹窗后重试。",
   "more.googleButtonFailed": "无法加载 Google 按钮。请检查网络后重试。",
+  "more.googlePressSilent":
+    "Google 未为此地址打开登录窗口。该地址可能未在 Google 控制台登记。",
   "more.readabilityTitle": "外观与可读性",
   "more.closeAppearance": "关闭外观设置",
   "more.densityTitle": "界面密度",

@@ -960,6 +960,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
       "Popup login Google diblokir. Izinkan popup untuk situs ini, lalu coba lagi.",
     "more.googleButtonFailed":
       "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
+    "more.googlePressSilent":
+      "Google belum membuka jendela login untuk alamat ini. Alamat ini mungkin belum terdaftar di Google Console.",
     "more.readabilityTitle": "Tampilan & keterbacaan",
     "more.closeAppearance": "Tutup pengaturan tampilan",
     "more.densityTitle": "Kepadatan antarmuka",

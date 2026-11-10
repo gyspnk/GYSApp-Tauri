@@ -52,6 +52,17 @@ declare global {
  * every press on the row would land on an empty div. */
 export const GOOGLE_UNAVAILABLE_EVENT = "gys-google-unavailable";
 
+/** Google renders nothing, or a zero-height iframe, for an origin it refuses;
+ * either way the row looks pressable while nothing sits under the pointer. A
+ * control only counts when it occupies space. */
+function paintedControl(element: HTMLElement): boolean {
+  const child = element.firstElementChild as HTMLElement | null;
+  if (!child) return false;
+  if (typeof child.getBoundingClientRect !== "function") return true;
+  const box = child.getBoundingClientRect();
+  return box.width >= 24 && box.height >= 24;
+}
+
 let googleScriptPromise: Promise<void> | undefined;
 
 function loadGoogleIdentityScript(locale: string): Promise<void> {
@@ -145,7 +156,7 @@ export async function renderEgysGoogleButton(
     // Google answers an unknown origin or client by rendering nothing and
     // logging only in its own console. Report that instead of leaving an empty
     // host on top of the row.
-    if (element.childElementCount > 0) return true;
+    if (paintedControl(element)) return true;
     lastWidth = 0;
     element.dispatchEvent(new Event(GOOGLE_UNAVAILABLE_EVENT));
     return false;

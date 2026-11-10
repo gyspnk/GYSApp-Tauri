@@ -8,6 +8,9 @@ import { GoogleMark } from "./egys-login-methods.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { translate, type Locale } from "./i18n.js";
 
+/** Why Google could not hand a credential over. The card says which one. */
+export type GoogleFailure = "unavailable" | "silent";
+
 /** Google's own personalized button opens authorization directly from this row. */
 export function EgysGoogleButton({
   locale,
@@ -16,7 +19,8 @@ export function EgysGoogleButton({
 }: {
   locale: Locale;
   onCredential: (credential: string) => void | Promise<void>;
-  onStatus?: ((status: "ready" | "error") => void) | undefined;
+  onStatus?:
+    ((status: "ready" | "error", reason?: GoogleFailure) => void) | undefined;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [attempt, retry] = useState(0);
@@ -24,6 +28,7 @@ export function EgysGoogleButton({
     "loading",
   );
   const [popupBlocked, setPopupBlocked] = useState(false);
+  const [failure, setFailure] = useState<GoogleFailure>("unavailable");
   useEffect(() => {
     // The consent window never opens when the browser blocks popups, and Google
     // gives us no error. Watch our own click and say what happened.
@@ -33,12 +38,23 @@ export function EgysGoogleButton({
     const onClick = () => {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
-        if (!watch.blocked) return;
-        setPopupBlocked(true);
-        recordDiagnostic("warn", "egys.google-popup-blocked", {
+        if (watch.opened) return;
+        if (watch.blocked) {
+          setPopupBlocked(true);
+          recordDiagnostic("warn", "egys.google-popup-blocked", {
+            attempted: watch.attempted,
+          });
+          return;
+        }
+        // Google accepted the press and nothing happened: the origin or the
+        // client is not allowed. A pressure that ends in silence is the exact
+        // bug readers report as "tombol Google tidak merespons", so say it.
+        recordDiagnostic("warn", "egys.google-silent-press", {
           attempted: watch.attempted,
         });
-      }, 1200);
+        setFailure("silent");
+        setStatus("error");
+      }, 1500);
     };
     control?.addEventListener("click", onClick, true);
     return () => {
@@ -82,8 +98,9 @@ export function EgysGoogleButton({
     };
   }, [locale, onCredential, attempt]);
   useEffect(() => {
-    if (status !== "loading") onStatus?.(status);
-  }, [status, onStatus]);
+    if (status === "error") onStatus?.("error", failure);
+    else if (status === "ready") onStatus?.("ready");
+  }, [status, failure, onStatus]);
   const label = translate(locale, "more.googleLogin");
   return (
     <div

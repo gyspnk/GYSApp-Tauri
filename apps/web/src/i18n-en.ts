@@ -932,6 +932,8 @@ export const enFeatureMessages: Record<string, string> = {
     "The Google sign-in popup was blocked. Allow popups for this site, then try again.",
   "more.googleButtonFailed":
     "The Google button could not be loaded. Check your connection and try again.",
+  "more.googlePressSilent":
+    "Google did not open a sign-in window for this address. The address may not be registered in the Google console.",
   "more.readabilityTitle": "Appearance & readability",
   "more.closeAppearance": "Close appearance settings",
   "more.densityTitle": "Interface density",

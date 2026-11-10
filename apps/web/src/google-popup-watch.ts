@@ -5,6 +5,8 @@
 export type GooglePopupWatch = {
   readonly attempted: boolean;
   readonly blocked: boolean;
+  /** The consent window really opened, so the press did reach Google. */
+  readonly opened: boolean;
   restore: () => void;
 };
 
@@ -14,13 +16,15 @@ export function watchGooglePopup(target: Window = window): GooglePopupWatch {
   const original: OpenWindow = target.open;
   let attempted = false;
   let blocked = false;
+  let opened = false;
   const patched = function patchedOpen(
     this: Window,
     ...args: Parameters<OpenWindow>
   ) {
     attempted = true;
     const result = original.apply(this, args);
-    if (!result) blocked = true;
+    if (result) opened = true;
+    else blocked = true;
     return result;
   } as OpenWindow;
   target.open = patched;
@@ -30,6 +34,9 @@ export function watchGooglePopup(target: Window = window): GooglePopupWatch {
     },
     get blocked() {
       return blocked;
+    },
+    get opened() {
+      return opened;
     },
     restore() {
       if (target.open === patched) target.open = original;

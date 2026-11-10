@@ -22,6 +22,7 @@ describe("watchGooglePopup", () => {
     expect(view.open("https://accounts.google.com", "_blank")).toBe(opened);
     expect(watch.attempted).toBe(true);
     expect(watch.blocked).toBe(false);
+    expect(watch.opened).toBe(true);
     watch.restore();
   });
 

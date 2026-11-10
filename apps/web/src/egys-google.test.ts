@@ -10,6 +10,9 @@ const host = {
   get childElementCount() {
     return rendered.length;
   },
+  get firstElementChild() {
+    return rendered[0] ?? null;
+  },
   dispatchEvent: vi.fn((event: Event) => {
     events.push(event.type);
     return true;
@@ -102,6 +105,23 @@ it("refuses to leave an empty host when Google renders no control", async () => 
   ).rejects.toThrow("rendered no sign-in control");
   expect(events).toEqual([GOOGLE_UNAVAILABLE_EVENT]);
   expect(host.replaceChildren).toHaveBeenCalled();
+});
+
+it("treats a zero-height control as no control at all", async () => {
+  const { GOOGLE_UNAVAILABLE_EVENT, renderEgysGoogleButton } =
+    await import("./egys-google.js");
+  const sdk = installSdk();
+  // An unregistered origin can also yield an iframe with no box: the row looks
+  // pressable while nothing sits under the pointer.
+  sdk.renderButton.mockImplementation(() => {
+    rendered = [
+      { getBoundingClientRect: () => ({ width: 0, height: 0 }) } as Element,
+    ];
+  });
+  await expect(
+    renderEgysGoogleButton(host as unknown as HTMLElement, vi.fn()),
+  ).rejects.toThrow("rendered no sign-in control");
+  expect(events).toEqual([GOOGLE_UNAVAILABLE_EVENT]);
 });
 
 it("an old provider callback cannot sign in after the inline control is disposed", async () => {

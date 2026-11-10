@@ -1055,6 +1055,42 @@ test("an origin Google refuses never leaves a dead provider row", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("a Google control that answers a press with silence says so", async ({
+  page,
+}) => {
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: `window.google = { accounts: { id: {
+        initialize() {}, cancel() {},
+        // Google does render a box here, so the row looks alive; the press
+        // itself goes nowhere because the origin is not allowed.
+        renderButton(element) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Sign in with Google";
+          button.style.width = "200px";
+          button.style.height = "44px";
+          element.replaceChildren(button);
+        }
+      } } };`,
+    }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const account = page.locator('[data-setting="account"]');
+  const control = account.locator(".egys-google-control");
+  const rendered = control.locator(".egys-google-button button");
+  await expect(rendered).toBeVisible();
+  await expect(account.getByRole("alert")).toHaveCount(0);
+
+  // A press that produces neither a consent window nor a credential must turn
+  // into a message instead of silence.
+  await rendered.click();
+  await expect(account.getByRole("alert")).toContainText(/terdaftar/i, {
+    timeout: 10_000,
+  });
+});
+
 test("active e-GYS session displays the member profile badge", async ({
   page,
 }) => {
