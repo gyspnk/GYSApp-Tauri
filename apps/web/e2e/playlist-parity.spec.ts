@@ -96,6 +96,8 @@ test("imports upstream playlist JSON and persists song reordering", async ({
   ).toHaveCount(1);
   await renamed.getByText(/Kelola isi/).click();
   await renamed.getByRole("button", { name: "Hapus playlist" }).click();
+  // Deleting a saved playlist asks first; the row only goes after the confirm.
+  await page.locator(".confirm-dialog-confirm").click();
   await expect(renamed).toHaveCount(0);
 });
 

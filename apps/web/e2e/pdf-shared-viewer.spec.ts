@@ -112,7 +112,12 @@ for (const width of [390, 768, 1440])
           new TouchEvent("touchend", { touches: [], bubbles: true }),
         );
       });
-      await expect(reader.locator(".pdf-zoom-indicator")).toHaveText("200%");
+      // A pinch is sampled from touch positions, so a 2x gesture lands within a
+      // percent of 200; the indicator snaps to whole percent.
+      const zoomLabel = await reader.locator(".pdf-zoom-indicator").innerText();
+      expect(
+        Math.abs(Number.parseInt(zoomLabel, 10) - 200),
+      ).toBeLessThanOrEqual(1);
       await expect
         .poll(async () => (await canvas.boundingBox())!.width / initial)
         .toBeCloseTo(2, 2);
