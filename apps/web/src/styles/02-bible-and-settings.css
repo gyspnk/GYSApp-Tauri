@@ -692,9 +692,6 @@
   background: color-mix(in srgb, #b98132 14%, transparent);
   color: #b98132;
 }
-.split-version-select {
-  min-width: 140px;
-}
 .split-version-select .control-select-trigger {
   min-height: var(--control-hit, 44px);
 }
@@ -849,13 +846,6 @@
   color: var(--ink);
   font-family: var(--font-reading);
   line-height: 1.6;
-}
-.selection-actions,
-.highlight-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
 }
 .highlight-dot {
   width: 28px;
@@ -1178,10 +1168,6 @@
   max-width: 100%;
   margin: 0;
 }
-.lyrics-break {
-  /* UI system: stanzas separate by 20px of air, never by a rule. */
-  height: 20px;
-}
 .progress-save-notice {
   display: block;
   margin-top: 4px;
@@ -1215,76 +1201,9 @@
     transform: translateY(0);
   }
 }
-.faith-layout {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 24px;
-  margin-top: 32px;
-}
-.faith-list,
-.faith-detail {
-  min-width: 0;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-.faith-list {
-  align-self: start;
-  overflow: hidden;
-}
-.faith-list > label {
-  display: block;
-  padding: 16px 16px 8px;
-  color: var(--muted);
-  font-size: 0.625rem;
-  font-weight: 650;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.faith-list > input {
-  width: calc(100% - 34px);
-  min-height: 38px;
-  margin: 0 16px 14px;
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-soft);
-  color: var(--ink);
-  font-size: 0.75rem;
-}
-.faith-list button {
-  display: grid;
-  grid-template-columns: 26px 1fr;
-  gap: 8px;
-  align-items: start;
-  width: 100%;
-  min-height: 55px;
-  padding: 12px 16px;
-  border: 0;
-  border-top: 1px solid var(--line);
-  background: transparent;
-  color: var(--muted);
-  text-align: left;
-  cursor: pointer;
-}
-.faith-list button:hover,
 .faith-list button.is-selected {
   background: var(--blue-soft);
   color: var(--ink);
-}
-.faith-list button span {
-  color: var(--blue);
-  font-size: 0.6875rem;
-  font-variant-numeric: tabular-nums;
-}
-.faith-list button strong {
-  font-size: 0.6875rem;
-  font-weight: 550;
-  line-height: 1.35;
-}
-.faith-detail {
-  padding: clamp(24px, 5vw, 56px);
 }
 .faith-number {
   display: grid;
@@ -1306,17 +1225,6 @@
   font-size: clamp(1.375rem, 3vw, 1.9375rem);
   line-height: 1.45;
   letter-spacing: -0.025em;
-}
-.faith-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--line);
-}
-.faith-actions button {
-  min-height: 40px;
-  font-size: 0.75rem;
 }
 .faith-note {
   display: grid;
@@ -1347,18 +1255,6 @@
 }
 .more-page > .page-intro h1 {
   font-size: clamp(1.75rem, 3vw, 2.25rem);
-}
-.more-category-bar {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 4px 2px 10px;
-  margin-top: 12px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.more-category-bar::-webkit-scrollbar {
-  display: none;
 }
 .more-cat-btn {
   flex-shrink: 0;
@@ -1451,18 +1347,6 @@
   color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.5;
-}
-.more-settings-link {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  gap: 8px;
-  color: var(--blue);
-  font-weight: 650;
-  text-decoration: none;
-}
-.more-settings-link:hover {
-  text-decoration: underline;
 }
 .more-card {
   min-width: 0;
@@ -2258,42 +2142,12 @@
   color: var(--ink);
   cursor: pointer;
 }
-.speech-controls {
-  display: flex;
-  align-items: end;
-  gap: 8px;
-  margin-left: auto;
-  flex-wrap: wrap;
-}
 
 .hymn-more-actions[open] > .hymn-more-actions-panel,
 .hymn-reader-settings[open] > .song-controls,
 .speech-controls.is-open,
 .reader-action-group.is-open .reader-secondary-action {
   animation: selector-in 180ms var(--ease-out);
-}
-.speech-controls label {
-  display: grid;
-  gap: 4px;
-  color: var(--muted);
-  font-size: 0.625rem;
-}
-.speech-controls select {
-  min-width: 124px;
-  max-width: 180px;
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.6875rem;
-}
-.speech-controls input {
-  width: 90px;
-  min-width: 72px;
-  accent-color: var(--blue);
 }
 .media-meta small,
 .media-meta span {
@@ -2400,13 +2254,6 @@
 .sauh-offline-state .quiet-button {
   justify-self: start;
 }
-.chord-aligned-line {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: end;
-  white-space: pre-wrap;
-  line-height: 1.55;
-}
 .chord-capability,
 .chord-rich-line {
   display: block;
@@ -2469,8 +2316,7 @@
   .navigation-shell {
     padding-inline: 12px;
   }
-  .navigation-shell .nav-copy,
-  .sidebar-foot {
+  .navigation-shell .nav-copy {
     display: none;
   }
   .nav-item {
@@ -2585,9 +2431,6 @@
     margin: 24px 0 22px;
     font-size: 1.5rem;
   }
-  .feature-empty {
-    margin-top: 56px;
-  }
   .pack-badge {
     display: inline-flex;
     margin-top: 20px;
@@ -2598,20 +2441,6 @@
   }
   .search-row .primary-button {
     padding-inline: 12px;
-  }
-  .reader-toolbar {
-    top: 66px;
-    align-items: stretch;
-  }
-  .reader-toolbar-title {
-    flex: 1 1 100%;
-    min-height: 44px;
-  }
-  .reader-toolbar label {
-    flex: 1 1 0;
-  }
-  .reader-spacer {
-    display: none;
   }
   .reader-toolbar .quiet-button {
     flex: 1 1 0;
@@ -2738,17 +2567,6 @@
     padding-inline: 0;
     font-size: 1.0625rem;
   }
-  .faith-layout {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  .faith-list > div {
-    max-height: 240px;
-    overflow: auto;
-  }
-  .faith-detail {
-    padding: 24px 20px;
-  }
   .faith-copy {
     font-size: 1.375rem;
   }
@@ -2765,9 +2583,6 @@
   }
   .playlist-list li {
     grid-template-columns: 1fr;
-  }
-  .playlist-item-actions {
-    justify-content: flex-end;
   }
   .toast {
     right: 14px;

@@ -51,6 +51,23 @@ export function mentionsIn(files) {
   return files.map(({ text }) => text).join("\n");
 }
 
+/**
+ * Prefixes that a template literal can complete at runtime.
+ *
+ * `className={`is-${color}`}` never spells `is-blue`, so a plain grep would
+ * call those rules dead and delete colours that are still painted. Anything
+ * whose name starts with a captured prefix stays alive.
+ */
+export function dynamicPrefixes(files) {
+  const prefixes = new Set();
+  for (const { text } of files) {
+    for (const match of text.matchAll(/([A-Za-z][\w-]*?)-\$\{/g)) {
+      prefixes.add(`${match[1]}-`);
+    }
+  }
+  return prefixes;
+}
+
 async function walk(dir, out) {
   const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
   for (const entry of entries) {
@@ -80,13 +97,16 @@ export async function deadClasses(root) {
       declared.set(name, files);
     }
   }
-  const text = mentionsIn(
-    await Promise.all(
-      sources.map(async (path) => ({ text: await readFile(path, "utf8") })),
-    ),
+  const sourcesWithText = await Promise.all(
+    sources.map(async (path) => ({ text: await readFile(path, "utf8") })),
   );
+  const text = mentionsIn(sourcesWithText);
+  const prefixes = dynamicPrefixes(sourcesWithText);
   return [...declared]
     .filter(([name]) => !text.includes(name))
+    .filter(
+      ([name]) => ![...prefixes].some((prefix) => name.startsWith(prefix)),
+    )
     .map(([name, files]) => ({ name, files: [...files].sort() }))
     .sort((left, right) => left.name.localeCompare(right.name));
 }

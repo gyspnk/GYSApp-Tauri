@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { classesInCss, mentionsIn, deadClasses } from "./dead-css.mjs";
+import {
+  classesInCss,
+  deadClasses,
+  dynamicPrefixes,
+  mentionsIn,
+} from "./dead-css.mjs";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -53,5 +58,20 @@ test("deadClasses ignores docs and build output", async () => {
   assert.deepEqual(
     dead.map((entry) => entry.name),
     ["quoted", "shipped"],
+  );
+});
+
+test("keeps classes a template literal can still complete", () => {
+  const prefixes = dynamicPrefixes([
+    { text: "className={`highlight-dot is-${color}`}" },
+    { text: "`bible-address-field is-${field}`" },
+  ]);
+  assert.deepEqual([...prefixes].sort(), ["is-"]);
+  const names = ["is-blue", "is-dragging", "reader-toolbar"];
+  assert.deepEqual(
+    names.filter((name) =>
+      [...prefixes].some((prefix) => name.startsWith(prefix)),
+    ),
+    ["is-blue", "is-dragging"],
   );
 });
