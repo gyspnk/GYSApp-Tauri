@@ -171,6 +171,10 @@ export function HymnDetail({
     return ((initialTranspose % 12) + 12) % 12;
   });
   const [accidental, setAccidental] = useHymnNotation();
+  // Most of the reader markup sits in a closed disclosure; mounting it only
+  // when the panel opens keeps the first reader paint cheap (561 ms of mount
+  // work for the whole tree before this gate).
+  const [moreActionsOpen, setMoreActionsOpen] = useState(false);
   const [capo, setCapo] = useState(0);
   const [viewScope, setViewScope] = useState<"all" | "verse">(() => {
     if (typeof window === "undefined") return "verse";
@@ -1747,7 +1751,11 @@ export function HymnDetail({
               </span>
             </button>
           )}
-          <details className="hymn-more-actions" name="hymn-text-toolbar-menu">
+          <details
+            className="hymn-more-actions"
+            name="hymn-text-toolbar-menu"
+            onToggle={(event) => setMoreActionsOpen(event.currentTarget.open)}
+          >
             <summary
               className="hymn-more-actions-summary"
               aria-label={translate(locale, "kidung.options")}
@@ -1762,573 +1770,607 @@ export function HymnDetail({
               </span>
             </summary>
             <div className="hymn-more-actions-panel">
-              <div className="hymn-segmented-toolbar">
-                {viewerMode !== "pdf" && (
-                  <div
-                    className="hymn-scope-pill-group"
-                    role="group"
-                    aria-label={translate(locale, "kidung.verseScope")}
-                  >
-                    <button
-                      type="button"
-                      className={`hymn-scope-pill-btn${viewScope === "all" ? " is-active" : ""}`}
-                      onClick={() => updateViewScope("all")}
-                      title={translate(locale, "kidung.showAllVerses")}
-                      aria-pressed={viewScope === "all"}
-                    >
-                      {translate(locale, "kidung.allVerses")}
-                    </button>
-                    <button
-                      type="button"
-                      className={`hymn-scope-pill-btn${viewScope === "verse" ? " is-active" : ""}`}
-                      onClick={() => updateViewScope("verse")}
-                      title={translate(locale, "kidung.showVerseByVerse")}
-                      aria-pressed={viewScope === "verse"}
-                    >
-                      {translate(locale, "kidung.verseLabel", {
-                        count: safeVerseIndex + 1,
-                      })}
-                    </button>
-                  </div>
-                )}
-
-                <div className="hymn-autoscroll-control">
-                  <button
-                    type="button"
-                    className={`quiet-button hymn-autoscroll-btn${autoScrollActive ? " is-active" : ""}`}
-                    onClick={() => setAutoScrollActive((a) => !a)}
-                    title={
-                      autoScrollActive
-                        ? translate(locale, "kidung.autoScrollStop")
-                        : translate(locale, "kidung.autoScrollStart")
-                    }
-                    aria-label={
-                      autoScrollActive
-                        ? translate(locale, "kidung.autoScrollStop")
-                        : translate(locale, "kidung.autoScrollStart")
-                    }
-                    aria-pressed={autoScrollActive}
-                  >
-                    <span className="hymn-action-icon" aria-hidden="true">
-                      <Icon
-                        name={autoScrollActive ? "pause" : "south"}
-                        size={16}
-                      />
-                    </span>
-                    <span className="hymn-action-label">
-                      {autoScrollActive
-                        ? `Gulir ${autoScrollSpeed}×`
-                        : translate(locale, "kidung.autoScroll")}
-                    </span>
-                  </button>
-                  {autoScrollActive && (
-                    <select
-                      className="hymn-autoscroll-speed-select"
-                      value={autoScrollSpeed}
-                      onChange={(e) =>
-                        setAutoScrollSpeed(Number(e.target.value))
-                      }
-                      aria-label={translate(locale, "kidung.autoScrollSpeed")}
-                    >
-                      <option value={1}>1×</option>
-                      <option value={2}>2×</option>
-                      <option value={3}>3×</option>
-                      <option value={4}>4×</option>
-                      <option value={5}>5×</option>
-                    </select>
-                  )}
-                </div>
-              </div>
-              <button
-                type="button"
-                className="quiet-button hymn-action hymn-fullscreen-action"
-                onClick={(event) => {
-                  setLyricsPanelOpen(true);
-                  event.currentTarget
-                    .closest("details")
-                    ?.removeAttribute("open");
-                }}
-                aria-label={translate(locale, "kidung.fullscreenLyrics")}
-              >
-                <span className="hymn-action-icon" aria-hidden="true">
-                  <Icon name="fullscreen" size={18} />
-                </span>
-                <span className="hymn-action-caption" aria-hidden="true">
-                  {translate(locale, "kidung.fullscreenShort")}
-                </span>
-                <span className="hymn-action-label">
-                  {translate(locale, "kidung.fullscreenLyrics")}
-                </span>
-              </button>
-              <button
-                type="button"
-                className="quiet-button hymn-action"
-                onClick={toggle}
-                aria-pressed={favorite}
-              >
-                <span className="hymn-action-icon" aria-hidden="true">
-                  <Icon name="heart" size={18} />
-                </span>
-                <span className="hymn-action-caption" aria-hidden="true">
-                  {translate(locale, "kidung.favoriteShort")}
-                </span>
-                <span className="hymn-action-label">
-                  {favorite
-                    ? translate(locale, "kidung.favorite")
-                    : translate(locale, "kidung.saveFavorite")}
-                </span>
-              </button>
-              {!item.assetCode && (
-                <button
-                  type="button"
-                  className="quiet-button hymn-action"
-                  aria-pressed={playlist.items.some(
-                    (entry) => entry.songId === item.id,
-                  )}
-                  onClick={() => {
-                    const added = addMidiPlaylistItem({
-                      songId: item.id,
-                      title: item.title,
-                      ...(musicMidiRef?.sha256
-                        ? {
-                            sourceHash: musicMidiRef.sha256,
-                          }
-                        : {}),
-                    });
-                    show(
-                      added
-                        ? translate(locale, "kidung.queueAdded")
-                        : translate(locale, "kidung.queueExists"),
-                    );
-                  }}
-                >
-                  <span className="hymn-action-icon" aria-hidden="true">
-                    <Icon name="playlist" size={18} />
-                  </span>
-                  <span className="hymn-action-caption" aria-hidden="true">
-                    {translate(locale, "kidung.queueShort")}
-                  </span>
-                  <span className="hymn-action-label">
-                    {playlist.items.some((entry) => entry.songId === item.id)
-                      ? translate(locale, "kidung.queueCount", {
-                          count: playlist.items.length,
-                        })
-                      : translate(locale, "kidung.queueAdd")}
-                  </span>
-                </button>
-              )}
-              {!item.assetCode && (
-                <button
-                  type="button"
-                  className="quiet-button hymn-action"
-                  onClick={() => {
-                    const added = addSongToActivePlaylist(item.id);
-                    show(
-                      added
-                        ? translate(locale, "kidung.savedToActivePlaylist")
-                        : translate(locale, "kidung.activePlaylistMissing"),
-                    );
-                  }}
-                >
-                  <span className="hymn-action-icon" aria-hidden="true">
-                    <Icon name="bookmark" size={18} />
-                  </span>
-                  <span className="hymn-action-caption" aria-hidden="true">
-                    {translate(locale, "kidung.save")}
-                  </span>
-                  <span className="hymn-action-label">
-                    {translate(locale, "kidung.saveToPlaylist")}
-                  </span>
-                </button>
-              )}
-              {pdfBytes && (
-                <button
-                  type="button"
-                  className="quiet-button hymn-action"
-                  onClick={() => {
-                    const ref = musicPdfRef;
-                    if (pdfSource === "canonical" && ref)
-                      downloadMusicAsset(ref, pdfBytes);
-                    if (pdfSource === "fork")
-                      downloadMusicAsset(
-                        {
-                          id: `KR-${numberLabel(item.number, item.id)}`,
-                          path: "kr_master.pdf",
-                        },
-                        pdfBytes,
-                      );
-                    if (pdfSource === "distributed")
-                      downloadMusicAsset(
-                        { id: item.id, path: item.pdfPath },
-                        pdfBytes,
-                      );
-                  }}
-                >
-                  <span className="hymn-action-icon" aria-hidden="true">
-                    <Icon name="download" size={18} />
-                  </span>
-                  <span className="hymn-action-label">
-                    {translate(locale, "kidung.downloadPdf")}
-                  </span>
-                </button>
-              )}
-              <details
-                className="hymn-reader-settings"
-                name="hymn-reader-settings"
-              >
-                <summary
-                  className="hymn-reader-settings-summary"
-                  aria-label={translate(locale, "kidung.readerSettings")}
-                  title={translate(locale, "kidung.readerSettings")}
-                >
-                  <span className="reader-aa-label" aria-hidden="true">
-                    Aa
-                  </span>
-                  <span className="hymn-action-caption" aria-hidden="true">
-                    {translate(locale, "kidung.text")}
-                  </span>
-                  <span className="reader-settings-copy">
-                    {translate(locale, "kidung.readerSettings")}
-                  </span>
-                </summary>
-                <div className="song-controls">
-                  <details
-                    className="reader-settings-group hymn-reading-settings"
-                    name={readerControlGroup}
-                    open
-                  >
-                    <summary>{translate(locale, "kidung.textSpacing")}</summary>
-                    <div className="reader-settings-group-body">
+              {moreActionsOpen && (
+                <>
+                  <div className="hymn-segmented-toolbar">
+                    {viewerMode !== "pdf" && (
                       <div
-                        className="reader-preferences"
-                        aria-label={translate(locale, "kidung.textSettings")}
+                        className="hymn-scope-pill-group"
+                        role="group"
+                        aria-label={translate(locale, "kidung.verseScope")}
                       >
-                        <span>{translate(locale, "kidung.text")}</span>
                         <button
                           type="button"
-                          onPointerDown={() =>
-                            holdStart(() =>
-                              updateTypography({
-                                fontSize: fitFontSize - 1,
-                              }),
-                            )
-                          }
-                          onPointerUp={holdStop}
-                          onPointerLeave={holdStop}
-                          onPointerCancel={holdStop}
-                          onClick={tapStep(() =>
-                            updateTypography({
-                              fontSize: fitFontSize - 1,
-                            }),
-                          )}
-                          disabled={fitFontSize <= MIN_HYMN_FONT_SIZE}
-                          aria-label={translate(locale, "common.decreaseText")}
+                          className={`hymn-scope-pill-btn${viewScope === "all" ? " is-active" : ""}`}
+                          onClick={() => updateViewScope("all")}
+                          title={translate(locale, "kidung.showAllVerses")}
+                          aria-pressed={viewScope === "all"}
                         >
-                          A−
-                        </button>
-                        <output aria-live="polite">
-                          {Math.round(fitFontSize)} px
-                        </output>
-                        <button
-                          type="button"
-                          onPointerDown={() =>
-                            holdStart(() =>
-                              updateTypography({
-                                fontSize: fitFontSize + 1,
-                              }),
-                            )
-                          }
-                          onPointerUp={holdStop}
-                          onPointerLeave={holdStop}
-                          onPointerCancel={holdStop}
-                          onClick={tapStep(() =>
-                            updateTypography({
-                              fontSize: fitFontSize + 1,
-                            }),
-                          )}
-                          disabled={fitFontSize >= MAX_HYMN_FONT_SIZE}
-                          aria-label={translate(locale, "common.increaseText")}
-                        >
-                          A+
+                          {translate(locale, "kidung.allVerses")}
                         </button>
                         <button
                           type="button"
-                          onPointerDown={() =>
-                            holdStart(() =>
-                              updateTypography({
-                                lineHeight: typography.lineHeight - 0.1,
-                              }),
-                            )
-                          }
-                          onPointerUp={holdStop}
-                          onPointerLeave={holdStop}
-                          onPointerCancel={holdStop}
-                          onClick={tapStep(() =>
-                            updateTypography({
-                              lineHeight: typography.lineHeight - 0.1,
-                            }),
-                          )}
-                          aria-label={translate(
-                            locale,
-                            "kidung.decreaseSpacing",
-                          )}
+                          className={`hymn-scope-pill-btn${viewScope === "verse" ? " is-active" : ""}`}
+                          onClick={() => updateViewScope("verse")}
+                          title={translate(locale, "kidung.showVerseByVerse")}
+                          aria-pressed={viewScope === "verse"}
                         >
-                          − Spasi
-                        </button>
-                        <button
-                          type="button"
-                          onPointerDown={() =>
-                            holdStart(() =>
-                              updateTypography({
-                                lineHeight: typography.lineHeight + 0.1,
-                              }),
-                            )
-                          }
-                          onPointerUp={holdStop}
-                          onPointerLeave={holdStop}
-                          onPointerCancel={holdStop}
-                          onClick={tapStep(() =>
-                            updateTypography({
-                              lineHeight: typography.lineHeight + 0.1,
-                            }),
-                          )}
-                          aria-label={translate(
-                            locale,
-                            "kidung.increaseSpacing",
-                          )}
-                        >
-                          + Spasi
-                        </button>
-                        <button
-                          type="button"
-                          className="text-button"
-                          aria-label={translate(locale, "kidung.resetText")}
-                          onClick={() =>
-                            updateTypography(DEFAULT_HYMN_TYPOGRAPHY)
-                          }
-                        >
-                          <Icon name="repeat" size={18} />
+                          {translate(locale, "kidung.verseLabel", {
+                            count: safeVerseIndex + 1,
+                          })}
                         </button>
                       </div>
-                    </div>
-                  </details>
-                  <details
-                    className="reader-settings-group hymn-music-settings"
-                    name={readerControlGroup}
-                  >
-                    <summary>{translate(locale, "kidung.musicChord")}</summary>
-                    <div className="reader-settings-group-body">
-                      {midiAvailable && (
-                        <div className="hymn-midi-reader-controls">
-                          <output className="hymn-soundfont-active">
-                            <span>
-                              {translate(locale, "kidung.activeSoundfont")}
-                            </span>
-                            <strong>
-                              {midiState.soundfont ??
-                                (soundfontInstalled
-                                  ? "GeneralUser-GS"
-                                  : "TimGM6mb")}
-                            </strong>
-                          </output>
-                          {midiState.status === "loading" && (
-                            <div
-                              className="midi-preload-bar"
-                              role="progressbar"
-                              aria-label={translate(
-                                locale,
-                                "kidung.loadingMidi",
-                              )}
-                              aria-valuenow={midiState.loadingProgress}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                              style={{
-                                height: 4,
-                                background: "rgba(141,110,63,0.18)",
-                                borderRadius: 999,
-                                overflow: "hidden",
-                                margin: "6px 0",
-                              }}
-                            >
-                              <div
-                                className="midi-preload-fill"
-                                style={{
-                                  width: `${Math.max(4, midiState.loadingProgress)}%`,
-                                  height: "100%",
-                                  background: "var(--accent, #8d6e3f)",
-                                  transition: "width 0.2s ease",
-                                }}
-                              />
-                            </div>
-                          )}
-                          {(midiState.songId === item.id &&
-                            (midiState.status === "playing" ||
-                              midiState.status === "paused" ||
-                              midiState.status === "ready" ||
-                              midiState.status === "stopped")) ||
-                          midiState.status === "loading" ? (
-                            midiState.duration > 0 ? (
-                              <HymnMidiProgress
-                                locale={locale}
-                                switching={isMidiSwitchingRef.current}
-                              />
-                            ) : null
-                          ) : null}
-                          <div
-                            className="hymn-midi-volume"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              marginTop: 6,
-                            }}
-                          >
-                            <span style={{ fontSize: "0.75rem", minWidth: 48 }}>
-                              {translate(locale, "media.volumeShort")}
-                            </span>
-                            <input
-                              type="range"
-                              min={0}
-                              max={1}
-                              step={0.05}
-                              value={midiState.muted ? 0 : midiState.volume}
-                              onChange={(e) =>
-                                void midiPlayer
-                                  .setVolume(Number(e.target.value))
-                                  .catch(() => undefined)
-                              }
-                              style={{ flex: 1 }}
-                              aria-label={translate(locale, "media.volumeMidi")}
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                void midiPlayer
-                                  .setMuted(!midiState.muted)
-                                  .catch(() => undefined)
-                              }
-                              className="media-mute-button"
-                              aria-label={translate(
-                                locale,
-                                midiState.muted
-                                  ? "media.unmuteMidi"
-                                  : "media.muteMidi",
-                              )}
-                            >
-                              <Icon
-                                name={midiState.muted ? "volumeOff" : "volume"}
-                                size={16}
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      <MidiMusicControls
-                        locale={locale}
-                        keyIndex={keyIndex}
-                        accidental={accidental}
-                        transpose={transpose}
-                        instrument={
-                          midiAvailable ? midiSettings.instrument : undefined
+                    )}
+
+                    <div className="hymn-autoscroll-control">
+                      <button
+                        type="button"
+                        className={`quiet-button hymn-autoscroll-btn${autoScrollActive ? " is-active" : ""}`}
+                        onClick={() => setAutoScrollActive((a) => !a)}
+                        title={
+                          autoScrollActive
+                            ? translate(locale, "kidung.autoScrollStop")
+                            : translate(locale, "kidung.autoScrollStart")
                         }
-                        surface="reader"
-                        onTransposeChange={updateTranspose}
-                      />
-                      {midiAvailable && (
-                        <MidiTempoStepper
-                          locale={locale}
-                          tempo={midiSettings.tempo}
-                          reader
-                        />
-                      )}
-                      <Select
-                        value={accidental}
-                        onChange={setAccidental}
-                        label={translate(locale, "kidung.notation")}
-                        options={[
-                          {
-                            value: "sharp",
-                            label: translate(locale, "kidung.sharp"),
-                          },
-                          {
-                            value: "flat",
-                            label: translate(locale, "kidung.flat"),
-                          },
-                        ]}
-                      />
-                      <output className="hymn-key-description">
-                        {translate(locale, "kidung.displayedKey", {
-                          key: renderedKey,
-                        })}
-                        {capo > 0
-                          ? ` (${translate(locale, "kidung.shapeKey", { key: chordKeyName((((sourceKeyIndex + transpose - capo) % 12) + 12) % 12, accidental) })})`
-                          : ""}
-                      </output>
-                      <div className="capo-control">
-                        <span>
-                          {translate(locale, "kidung.capo", {
-                            value:
-                              capo === 0
-                                ? translate(locale, "kidung.noCapo")
-                                : translate(locale, "kidung.fret", {
-                                    count: capo,
-                                  }),
-                          })}
+                        aria-label={
+                          autoScrollActive
+                            ? translate(locale, "kidung.autoScrollStop")
+                            : translate(locale, "kidung.autoScrollStart")
+                        }
+                        aria-pressed={autoScrollActive}
+                      >
+                        <span className="hymn-action-icon" aria-hidden="true">
+                          <Icon
+                            name={autoScrollActive ? "pause" : "south"}
+                            size={16}
+                          />
                         </span>
-                        <div className="capo-btn-group">
-                          <button
-                            type="button"
-                            onPointerDown={() =>
-                              holdStart(() =>
-                                setCapo((c) => Math.max(0, c - 1)),
-                              )
-                            }
-                            onPointerUp={holdStop}
-                            onPointerLeave={holdStop}
-                            onPointerCancel={holdStop}
-                            onClick={tapStep(() =>
-                              setCapo((c) => Math.max(0, c - 1)),
+                        <span className="hymn-action-label">
+                          {autoScrollActive
+                            ? `Gulir ${autoScrollSpeed}×`
+                            : translate(locale, "kidung.autoScroll")}
+                        </span>
+                      </button>
+                      {autoScrollActive && (
+                        <select
+                          className="hymn-autoscroll-speed-select"
+                          value={autoScrollSpeed}
+                          onChange={(e) =>
+                            setAutoScrollSpeed(Number(e.target.value))
+                          }
+                          aria-label={translate(
+                            locale,
+                            "kidung.autoScrollSpeed",
+                          )}
+                        >
+                          <option value={1}>1×</option>
+                          <option value={2}>2×</option>
+                          <option value={3}>3×</option>
+                          <option value={4}>4×</option>
+                          <option value={5}>5×</option>
+                        </select>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="quiet-button hymn-action hymn-fullscreen-action"
+                    onClick={(event) => {
+                      setLyricsPanelOpen(true);
+                      event.currentTarget
+                        .closest("details")
+                        ?.removeAttribute("open");
+                    }}
+                    aria-label={translate(locale, "kidung.fullscreenLyrics")}
+                  >
+                    <span className="hymn-action-icon" aria-hidden="true">
+                      <Icon name="fullscreen" size={18} />
+                    </span>
+                    <span className="hymn-action-caption" aria-hidden="true">
+                      {translate(locale, "kidung.fullscreenShort")}
+                    </span>
+                    <span className="hymn-action-label">
+                      {translate(locale, "kidung.fullscreenLyrics")}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="quiet-button hymn-action"
+                    onClick={toggle}
+                    aria-pressed={favorite}
+                  >
+                    <span className="hymn-action-icon" aria-hidden="true">
+                      <Icon name="heart" size={18} />
+                    </span>
+                    <span className="hymn-action-caption" aria-hidden="true">
+                      {translate(locale, "kidung.favoriteShort")}
+                    </span>
+                    <span className="hymn-action-label">
+                      {favorite
+                        ? translate(locale, "kidung.favorite")
+                        : translate(locale, "kidung.saveFavorite")}
+                    </span>
+                  </button>
+                  {!item.assetCode && (
+                    <button
+                      type="button"
+                      className="quiet-button hymn-action"
+                      aria-pressed={playlist.items.some(
+                        (entry) => entry.songId === item.id,
+                      )}
+                      onClick={() => {
+                        const added = addMidiPlaylistItem({
+                          songId: item.id,
+                          title: item.title,
+                          ...(musicMidiRef?.sha256
+                            ? {
+                                sourceHash: musicMidiRef.sha256,
+                              }
+                            : {}),
+                        });
+                        show(
+                          added
+                            ? translate(locale, "kidung.queueAdded")
+                            : translate(locale, "kidung.queueExists"),
+                        );
+                      }}
+                    >
+                      <span className="hymn-action-icon" aria-hidden="true">
+                        <Icon name="playlist" size={18} />
+                      </span>
+                      <span className="hymn-action-caption" aria-hidden="true">
+                        {translate(locale, "kidung.queueShort")}
+                      </span>
+                      <span className="hymn-action-label">
+                        {playlist.items.some(
+                          (entry) => entry.songId === item.id,
+                        )
+                          ? translate(locale, "kidung.queueCount", {
+                              count: playlist.items.length,
+                            })
+                          : translate(locale, "kidung.queueAdd")}
+                      </span>
+                    </button>
+                  )}
+                  {!item.assetCode && (
+                    <button
+                      type="button"
+                      className="quiet-button hymn-action"
+                      onClick={() => {
+                        const added = addSongToActivePlaylist(item.id);
+                        show(
+                          added
+                            ? translate(locale, "kidung.savedToActivePlaylist")
+                            : translate(locale, "kidung.activePlaylistMissing"),
+                        );
+                      }}
+                    >
+                      <span className="hymn-action-icon" aria-hidden="true">
+                        <Icon name="bookmark" size={18} />
+                      </span>
+                      <span className="hymn-action-caption" aria-hidden="true">
+                        {translate(locale, "kidung.save")}
+                      </span>
+                      <span className="hymn-action-label">
+                        {translate(locale, "kidung.saveToPlaylist")}
+                      </span>
+                    </button>
+                  )}
+                  {pdfBytes && (
+                    <button
+                      type="button"
+                      className="quiet-button hymn-action"
+                      onClick={() => {
+                        const ref = musicPdfRef;
+                        if (pdfSource === "canonical" && ref)
+                          downloadMusicAsset(ref, pdfBytes);
+                        if (pdfSource === "fork")
+                          downloadMusicAsset(
+                            {
+                              id: `KR-${numberLabel(item.number, item.id)}`,
+                              path: "kr_master.pdf",
+                            },
+                            pdfBytes,
+                          );
+                        if (pdfSource === "distributed")
+                          downloadMusicAsset(
+                            { id: item.id, path: item.pdfPath },
+                            pdfBytes,
+                          );
+                      }}
+                    >
+                      <span className="hymn-action-icon" aria-hidden="true">
+                        <Icon name="download" size={18} />
+                      </span>
+                      <span className="hymn-action-label">
+                        {translate(locale, "kidung.downloadPdf")}
+                      </span>
+                    </button>
+                  )}
+                  <details
+                    className="hymn-reader-settings"
+                    name="hymn-reader-settings"
+                  >
+                    <summary
+                      className="hymn-reader-settings-summary"
+                      aria-label={translate(locale, "kidung.readerSettings")}
+                      title={translate(locale, "kidung.readerSettings")}
+                    >
+                      <span className="reader-aa-label" aria-hidden="true">
+                        Aa
+                      </span>
+                      <span className="hymn-action-caption" aria-hidden="true">
+                        {translate(locale, "kidung.text")}
+                      </span>
+                      <span className="reader-settings-copy">
+                        {translate(locale, "kidung.readerSettings")}
+                      </span>
+                    </summary>
+                    <div className="song-controls">
+                      <details
+                        className="reader-settings-group hymn-reading-settings"
+                        name={readerControlGroup}
+                        open
+                      >
+                        <summary>
+                          {translate(locale, "kidung.textSpacing")}
+                        </summary>
+                        <div className="reader-settings-group-body">
+                          <div
+                            className="reader-preferences"
+                            aria-label={translate(
+                              locale,
+                              "kidung.textSettings",
                             )}
-                            disabled={capo <= 0}
-                            aria-label={translate(locale, "kidung.capoDown")}
                           >
-                            −
-                          </button>
-                          <strong>{capo === 0 ? "0" : capo}</strong>
-                          <button
-                            type="button"
-                            onPointerDown={() =>
-                              holdStart(() =>
-                                setCapo((c) => Math.min(11, c + 1)),
-                              )
-                            }
-                            onPointerUp={holdStop}
-                            onPointerLeave={holdStop}
-                            onPointerCancel={holdStop}
-                            onClick={tapStep(() =>
-                              setCapo((c) => Math.min(11, c + 1)),
-                            )}
-                            disabled={capo >= 11}
-                            aria-label={translate(locale, "kidung.capoUp")}
-                          >
-                            +
-                          </button>
-                          {capo > 0 && (
+                            <span>{translate(locale, "kidung.text")}</span>
                             <button
                               type="button"
-                              className="transpose-reset-btn"
-                              onClick={() => setCapo(0)}
-                              title={translate(locale, "kidung.resetCapo")}
+                              onPointerDown={() =>
+                                holdStart(() =>
+                                  updateTypography({
+                                    fontSize: fitFontSize - 1,
+                                  }),
+                                )
+                              }
+                              onPointerUp={holdStop}
+                              onPointerLeave={holdStop}
+                              onPointerCancel={holdStop}
+                              onClick={tapStep(() =>
+                                updateTypography({
+                                  fontSize: fitFontSize - 1,
+                                }),
+                              )}
+                              disabled={fitFontSize <= MIN_HYMN_FONT_SIZE}
+                              aria-label={translate(
+                                locale,
+                                "common.decreaseText",
+                              )}
+                            >
+                              A−
+                            </button>
+                            <output aria-live="polite">
+                              {Math.round(fitFontSize)} px
+                            </output>
+                            <button
+                              type="button"
+                              onPointerDown={() =>
+                                holdStart(() =>
+                                  updateTypography({
+                                    fontSize: fitFontSize + 1,
+                                  }),
+                                )
+                              }
+                              onPointerUp={holdStop}
+                              onPointerLeave={holdStop}
+                              onPointerCancel={holdStop}
+                              onClick={tapStep(() =>
+                                updateTypography({
+                                  fontSize: fitFontSize + 1,
+                                }),
+                              )}
+                              disabled={fitFontSize >= MAX_HYMN_FONT_SIZE}
+                              aria-label={translate(
+                                locale,
+                                "common.increaseText",
+                              )}
+                            >
+                              A+
+                            </button>
+                            <button
+                              type="button"
+                              onPointerDown={() =>
+                                holdStart(() =>
+                                  updateTypography({
+                                    lineHeight: typography.lineHeight - 0.1,
+                                  }),
+                                )
+                              }
+                              onPointerUp={holdStop}
+                              onPointerLeave={holdStop}
+                              onPointerCancel={holdStop}
+                              onClick={tapStep(() =>
+                                updateTypography({
+                                  lineHeight: typography.lineHeight - 0.1,
+                                }),
+                              )}
+                              aria-label={translate(
+                                locale,
+                                "kidung.decreaseSpacing",
+                              )}
+                            >
+                              − Spasi
+                            </button>
+                            <button
+                              type="button"
+                              onPointerDown={() =>
+                                holdStart(() =>
+                                  updateTypography({
+                                    lineHeight: typography.lineHeight + 0.1,
+                                  }),
+                                )
+                              }
+                              onPointerUp={holdStop}
+                              onPointerLeave={holdStop}
+                              onPointerCancel={holdStop}
+                              onClick={tapStep(() =>
+                                updateTypography({
+                                  lineHeight: typography.lineHeight + 0.1,
+                                }),
+                              )}
+                              aria-label={translate(
+                                locale,
+                                "kidung.increaseSpacing",
+                              )}
+                            >
+                              + Spasi
+                            </button>
+                            <button
+                              type="button"
+                              className="text-button"
+                              aria-label={translate(locale, "kidung.resetText")}
+                              onClick={() =>
+                                updateTypography(DEFAULT_HYMN_TYPOGRAPHY)
+                              }
                             >
                               <Icon name="repeat" size={18} />
                             </button>
-                          )}
+                          </div>
                         </div>
-                      </div>
+                      </details>
+                      <details
+                        className="reader-settings-group hymn-music-settings"
+                        name={readerControlGroup}
+                      >
+                        <summary>
+                          {translate(locale, "kidung.musicChord")}
+                        </summary>
+                        <div className="reader-settings-group-body">
+                          {midiAvailable && (
+                            <div className="hymn-midi-reader-controls">
+                              <output className="hymn-soundfont-active">
+                                <span>
+                                  {translate(locale, "kidung.activeSoundfont")}
+                                </span>
+                                <strong>
+                                  {midiState.soundfont ??
+                                    (soundfontInstalled
+                                      ? "GeneralUser-GS"
+                                      : "TimGM6mb")}
+                                </strong>
+                              </output>
+                              {midiState.status === "loading" && (
+                                <div
+                                  className="midi-preload-bar"
+                                  role="progressbar"
+                                  aria-label={translate(
+                                    locale,
+                                    "kidung.loadingMidi",
+                                  )}
+                                  aria-valuenow={midiState.loadingProgress}
+                                  aria-valuemin={0}
+                                  aria-valuemax={100}
+                                  style={{
+                                    height: 4,
+                                    background: "rgba(141,110,63,0.18)",
+                                    borderRadius: 999,
+                                    overflow: "hidden",
+                                    margin: "6px 0",
+                                  }}
+                                >
+                                  <div
+                                    className="midi-preload-fill"
+                                    style={{
+                                      width: `${Math.max(4, midiState.loadingProgress)}%`,
+                                      height: "100%",
+                                      background: "var(--accent, #8d6e3f)",
+                                      transition: "width 0.2s ease",
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              {(midiState.songId === item.id &&
+                                (midiState.status === "playing" ||
+                                  midiState.status === "paused" ||
+                                  midiState.status === "ready" ||
+                                  midiState.status === "stopped")) ||
+                              midiState.status === "loading" ? (
+                                midiState.duration > 0 ? (
+                                  <HymnMidiProgress
+                                    locale={locale}
+                                    switching={isMidiSwitchingRef.current}
+                                  />
+                                ) : null
+                              ) : null}
+                              <div
+                                className="hymn-midi-volume"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  marginTop: 6,
+                                }}
+                              >
+                                <span
+                                  style={{ fontSize: "0.75rem", minWidth: 48 }}
+                                >
+                                  {translate(locale, "media.volumeShort")}
+                                </span>
+                                <input
+                                  type="range"
+                                  min={0}
+                                  max={1}
+                                  step={0.05}
+                                  value={midiState.muted ? 0 : midiState.volume}
+                                  onChange={(e) =>
+                                    void midiPlayer
+                                      .setVolume(Number(e.target.value))
+                                      .catch(() => undefined)
+                                  }
+                                  style={{ flex: 1 }}
+                                  aria-label={translate(
+                                    locale,
+                                    "media.volumeMidi",
+                                  )}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void midiPlayer
+                                      .setMuted(!midiState.muted)
+                                      .catch(() => undefined)
+                                  }
+                                  className="media-mute-button"
+                                  aria-label={translate(
+                                    locale,
+                                    midiState.muted
+                                      ? "media.unmuteMidi"
+                                      : "media.muteMidi",
+                                  )}
+                                >
+                                  <Icon
+                                    name={
+                                      midiState.muted ? "volumeOff" : "volume"
+                                    }
+                                    size={16}
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          <MidiMusicControls
+                            locale={locale}
+                            keyIndex={keyIndex}
+                            accidental={accidental}
+                            transpose={transpose}
+                            instrument={
+                              midiAvailable
+                                ? midiSettings.instrument
+                                : undefined
+                            }
+                            surface="reader"
+                            onTransposeChange={updateTranspose}
+                          />
+                          {midiAvailable && (
+                            <MidiTempoStepper
+                              locale={locale}
+                              tempo={midiSettings.tempo}
+                              reader
+                            />
+                          )}
+                          <Select
+                            value={accidental}
+                            onChange={setAccidental}
+                            label={translate(locale, "kidung.notation")}
+                            options={[
+                              {
+                                value: "sharp",
+                                label: translate(locale, "kidung.sharp"),
+                              },
+                              {
+                                value: "flat",
+                                label: translate(locale, "kidung.flat"),
+                              },
+                            ]}
+                          />
+                          <output className="hymn-key-description">
+                            {translate(locale, "kidung.displayedKey", {
+                              key: renderedKey,
+                            })}
+                            {capo > 0
+                              ? ` (${translate(locale, "kidung.shapeKey", { key: chordKeyName((((sourceKeyIndex + transpose - capo) % 12) + 12) % 12, accidental) })})`
+                              : ""}
+                          </output>
+                          <div className="capo-control">
+                            <span>
+                              {translate(locale, "kidung.capo", {
+                                value:
+                                  capo === 0
+                                    ? translate(locale, "kidung.noCapo")
+                                    : translate(locale, "kidung.fret", {
+                                        count: capo,
+                                      }),
+                              })}
+                            </span>
+                            <div className="capo-btn-group">
+                              <button
+                                type="button"
+                                onPointerDown={() =>
+                                  holdStart(() =>
+                                    setCapo((c) => Math.max(0, c - 1)),
+                                  )
+                                }
+                                onPointerUp={holdStop}
+                                onPointerLeave={holdStop}
+                                onPointerCancel={holdStop}
+                                onClick={tapStep(() =>
+                                  setCapo((c) => Math.max(0, c - 1)),
+                                )}
+                                disabled={capo <= 0}
+                                aria-label={translate(
+                                  locale,
+                                  "kidung.capoDown",
+                                )}
+                              >
+                                −
+                              </button>
+                              <strong>{capo === 0 ? "0" : capo}</strong>
+                              <button
+                                type="button"
+                                onPointerDown={() =>
+                                  holdStart(() =>
+                                    setCapo((c) => Math.min(11, c + 1)),
+                                  )
+                                }
+                                onPointerUp={holdStop}
+                                onPointerLeave={holdStop}
+                                onPointerCancel={holdStop}
+                                onClick={tapStep(() =>
+                                  setCapo((c) => Math.min(11, c + 1)),
+                                )}
+                                disabled={capo >= 11}
+                                aria-label={translate(locale, "kidung.capoUp")}
+                              >
+                                +
+                              </button>
+                              {capo > 0 && (
+                                <button
+                                  type="button"
+                                  className="transpose-reset-btn"
+                                  onClick={() => setCapo(0)}
+                                  title={translate(locale, "kidung.resetCapo")}
+                                >
+                                  <Icon name="repeat" size={18} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </details>
                     </div>
                   </details>
-                </div>
-              </details>
+                </>
+              )}
             </div>
           </details>
         </div>
