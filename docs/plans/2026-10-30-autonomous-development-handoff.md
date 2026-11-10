@@ -7374,3 +7374,13 @@ Pemilik meminta semua peningkatan UI dirancang lewat OpenDesign dan aplikasi tid
 **Token gerak disatukan:** sebelumnya `--motion-fast`/`--motion-normal` didefinisikan **dua kali** dengan nilai berbeda (`ui-preferences.css` 160/200 ms vs `styles/00-tokens.css` 150/220 ms) dan puluhan aturan menulis 180–240 ms sendiri. Sekarang hanya satu sumber: `--motion-fast 120ms`, `--motion-normal 180ms`, `--motion-slow 260ms`, plus `--motion-entrance 220ms`, `--motion-stagger 40ms`, `--motion-distance 8px`, `--motion-lift -2px`, `--motion-press 0.96`, dan tiga easing (`--ease-out`, `--ease-in`, `--ease-standard`). `ui-preferences.css` hanya menyisakan preferensi non-gerak.
 
 **Irisan pertama yang diterapkan:** baris katalog kidung dan baris pengaturan kini menganimasikan warna latar (`var(--motion-fast)`) alih-alih berganti seketika, dan tombol primer/sekunder/tenang memberi umpan balik tekan `scale(0.975)`. Bukti: CI selektif `0fe9291` **hijau**. Jujur: kehalusan gerak bersifat persepsi — spec dan regresi visual hanya menjaga struktur, bukan rasa; penilaian akhir tetap di pemilik lewat pratinjau OpenDesign.
+
+### Irisan gerak kedua: baris katalog dan umpan balik tekan (10 Nov, putaran 221)
+
+Resep diambil apa adanya dari artefak OpenDesign (`--motion-entrance 220ms`, `--ease-entrance cubic-bezier(0.16,1,0.3,1)`, `--motion-stagger 40ms`, jarak 8 px, `--motion-press 0.96`):
+
+- `apps/web/src/kidung-catalog.tsx` menandai daftar dengan `is-staggering` selama 760 ms pertama; baris pertama sampai keduabelas memakai `animation: catalogue-row-in … backwards` dengan `animation-delay: rowIndex × 40 ms` (indeks maksimal 11). Baris ke-13 dan seterusnya tidak dianimasikan supaya menggulir tidak terasa lambat.
+- `apps/web/src/app-design.css` juga memberi umpan balik tekan `scale(0.995)` pada baris katalog/literatur dan `scale(0.96)` pada kontrol topbar (pencarian, tema, akun), dengan transisi 120 ms.
+- Semua aturan dibungkus `@media (prefers-reduced-motion: no-preference)`, jadi pembaca yang meminta gerak minimal tidak melihat satu pun animasi ini.
+
+Bukti hosted: CI selektif `42765631815` **hijau** untuk stagger, `42766664608` **hijau** untuk umpan balik tekan. Belum ada klaim “terasa halus” — itu penilaian pemilik lewat `pnpm dev` 5173 atau pratinjau OpenDesign; yang dijamin di sini hanya durasi, easing, reduksi gerak, dan tidak ada perubahan tata letak.
