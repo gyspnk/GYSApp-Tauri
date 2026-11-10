@@ -142,6 +142,9 @@ export function HymnDetail({
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  // One number explains the reader click: how much of it was this render.
+  // Hosted baselines collect marks, so this needs no extra harness.
+  const [renderStartedAt] = useState(() => performance.now());
   const requestedMode = searchParams.get("mode");
   const item =
     state.status === "ready"
@@ -151,6 +154,10 @@ export function HymnDetail({
   // The hosted navigation baseline needs to know whether the click waited for
   // data or for this render; two marks are enough and cost nothing at runtime.
   useEffect(() => {
+    performance.measure("gys-reader-render", {
+      start: renderStartedAt,
+      end: performance.now(),
+    });
     performance.mark("gys-reader-mounted");
     const frame = requestAnimationFrame(() =>
       performance.mark("gys-reader-painted"),
