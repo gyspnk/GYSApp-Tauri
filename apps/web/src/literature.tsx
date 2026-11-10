@@ -550,9 +550,37 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         )}
 
       {status === "loading" && (
-        <div className="loading-panel" role="status">
-          <LoadingProgress label={translate(locale, "literature.loading")} />
-        </div>
+        <>
+          {/* Reserve the shelf so the sections below it do not jump when the
+              catalogue lands: the same rows, the same cover box, no data. */}
+          <section
+            className="literature-featured is-loading"
+            aria-hidden="true"
+          >
+            <div className="section-title-row">
+              <div>
+                <p className="date-line">
+                  {translate(locale, "literature.officialCollection")}
+                </p>
+                <h2>{translate(locale, "literature.latest")}</h2>
+              </div>
+            </div>
+            <div className="literature-shelf">
+              {[0, 1, 2, 3].map((index) => (
+                <div className="literature-shelf-item" key={index}>
+                  <span className="literature-cover literature-cover-skeleton" />
+                  <span>
+                    <strong className="skeleton-bar" />
+                    <small className="skeleton-bar is-short" />
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+          <span className="sr-only" role="status">
+            <LoadingProgress label={translate(locale, "literature.loading")} />
+          </span>
+        </>
       )}
       {status === "error" && (
         <div className="error-panel" role="alert">

@@ -25,6 +25,10 @@ on:
         description: "Run the whole browser suite even when this tree already passed"
         type: boolean
         default: false
+      perf:
+        description: "Run the route performance baseline and print its CLS rows"
+        type: boolean
+        default: false
   # Strict navigation budgets run weekly instead of on every main push: the
   # hosted two-core runners cannot meet 1s/250ms, and a permanently red main
   # hides real regressions. The thresholds themselves are unchanged.
@@ -512,10 +516,10 @@ jobs:
   # hand). Hosted pull-request runners cannot meet them — the same two cases
   # fail on the 8-core ARM host — so they no longer turn every PR shard red.
   perf-budget:
-    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1' && needs.changes.outputs.web == 'true') || (github.event_name == 'workflow_dispatch' && github.event.inputs.full == 'true') }}
+    if: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1' && needs.changes.outputs.web == 'true') || (github.event_name == 'workflow_dispatch' && (github.event.inputs.full == 'true' || github.event.inputs.perf == 'true')) }}
     needs: [changes, web-build]
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -539,7 +543,11 @@ jobs:
       - name: Measure the warm-navigation budgets
         env:
           GYS_E2E_PREBUILT: "1"
-        run: pnpm --filter @gys/web exec playwright test e2e/instant-navigation.spec.ts --grep @perf --workers=2 --retries=0
+        run: |
+          pnpm --filter @gys/web exec playwright test e2e/instant-navigation.spec.ts --grep @perf --workers=2 --retries=0
+          if [ "${{ github.event.inputs.perf }}" = "true" ]; then
+            pnpm --filter @gys/web exec playwright test e2e/runtime-performance-baseline.spec.ts --grep "primary routes" --workers=1 --retries=0
+          fi
 
   # The `-linux` visual baselines must be regenerated on the hosted renderer
   # whenever a UI change is intentional. This manual job uploads fresh

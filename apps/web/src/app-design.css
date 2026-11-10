@@ -846,6 +846,21 @@
   font-family: var(--font-reading);
   line-height: 1.75;
 }
+.literature-cover-skeleton {
+  background: var(--surface-soft);
+  box-shadow: none;
+}
+.skeleton-bar {
+  display: block;
+  height: 0.75rem;
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+.skeleton-bar.is-short {
+  width: 55%;
+  height: 0.625rem;
+  margin-top: 6px;
+}
 .literature-shelf-item {
   grid-template-rows: auto 1fr;
   border: 0;
