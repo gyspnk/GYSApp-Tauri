@@ -154,9 +154,8 @@ export function HymnDetail({
   // The hosted navigation baseline needs to know whether the click waited for
   // data or for this render; two marks are enough and cost nothing at runtime.
   useEffect(() => {
-    performance.measure("gys-reader-render", {
-      start: renderStartedAt,
-      end: performance.now(),
+    performance.mark("gys-reader-render", {
+      detail: { ms: Math.round(performance.now() - renderStartedAt) },
     });
     performance.mark("gys-reader-mounted");
     const frame = requestAnimationFrame(() =>
