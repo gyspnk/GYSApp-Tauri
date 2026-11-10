@@ -2923,6 +2923,11 @@ Bukti hosted: QA `42727774114` (61 tangkapan, 320/390, light+dark) menangkap pil
 Cacat pil kosong di 320 px lolos dari axe karena elemennya tetap punya `aria-label`; yang hilang hanya isi yang terlihat. `apps/web/scripts/ui-consistency-audit.mjs` sekarang memeriksa setiap `a`, `button`, `summary`, dan `[role="button"]` yang terlihat: teks dihitung hanya bila `Range.getClientRects()` menghasilkan piksel (label `display:none` dan teks di dalam `content-visibility: auto` tidak dihitung), ikon dihitung lewat `svg/img/picture/canvas` yang terlihat atau anak berwarna setipis 2 px (bar hamburger), dan swatch warna dikecualikan karena latarnya adalah isinya.
 Iterasi hosted: `42731590842` menandai swatch dan hamburger (aturan terlalu kasar), `42732195810` menyisakan hamburger (bar 2 px), dan `42734229055` bersih: **44 muatan, 0 temuan** untuk 320/390/1440 × light/dark. Aturan ini yang akan menahan kelas cacat pil kosong agar tidak kembali.
 
+### Misteri grid “Lainnya” di 768 px: bukan cacat (10 Nov, putaran 212)
+
+Kesan bahwa tiga kartu koleksi melebar penuh di 768 px ternyata salah baca tangkapan layar. Probe sementara di browser hosted (`apps/web/e2e/tmp-grid-probe.spec.ts`, run `42737281381`) melaporkan `display:grid`, `grid-template-columns: 210.469px 210.484px 210.484px`, lebar grid 651 px, tiga kartu **210×112** pada viewport 768 — sesuai CSS `repeat(3, minmax(0, 1fr))`. Probe dihapus setelah menjawab; metode ini (spec sementara + log hosted) dipakai ketika penyebab tidak bisa dipastikan tanpa browser lokal, alih-alih mengubah CSS buta.
+Catatan kecil untuk probe berikutnya: base path preview adalah `/GYSApp-Tauri/`, jadi `page.goto("/lainnya")` mendarat di halaman pesan Vite, bukan aplikasi.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
