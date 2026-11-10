@@ -453,7 +453,8 @@ jobs:
   # for ready PRs/main.
   e2e:
     if: ${{ always() }}
-    needs: [changes, e2e-selective, e2e-shard, update-visual-baselines]
+    needs:
+      [changes, e2e-selective, e2e-shard, update-visual-baselines, perf-budget]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -465,6 +466,14 @@ jobs:
           fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.qa }}" != "true" ] && [ "${{ inputs.full }}" != "true" ] && [ "${{ needs.update-visual-baselines.result }}" = "success" ]; then
             echo "Baseline regeneration dispatch: the visual job is this run's verification."
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.perf }}" = "true" ]; then
+            if [ "${{ needs.perf-budget.result }}" != "success" ]; then
+              echo "A perf dispatch must measure; the perf job reported ${{ needs.perf-budget.result }}."
+              exit 1
+            fi
+            echo "Performance dispatch: the perf job is this run's verification."
             exit 0
           fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.full }}" = "true" ]; then
@@ -559,7 +568,8 @@ jobs:
     # A plain dispatch regenerates the baselines; `-f qa=true` only asks for
     # screenshots and audits, so it must not pay for a second build. `-f full=true`
     # verifies an unchanged tree, so it must not rewrite the baselines it checks.
-    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.qa && inputs.full != true }}
+    # `-f perf=true` asks for a performance measurement only, in the same spirit.
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.qa && inputs.full != true && inputs.perf != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
