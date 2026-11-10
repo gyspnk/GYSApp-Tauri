@@ -331,7 +331,19 @@ for (const viewport of viewports) {
             // Some icons are drawn as plain elements with their own fill (the
             // Bible hamburger's three bars), so count painted children too.
             [...el.querySelectorAll("*")].some((node) => {
-              if (!visibleBox(node)) return false;
+              // Icon strokes can be 2 px tall (the hamburger's bars), so the
+              // painted-child probe accepts thin boxes that the control probe
+              // would reject.
+              const box = node.getBoundingClientRect();
+              if (box.width < 2 || box.height < 2) return false;
+              if (
+                typeof node.checkVisibility === "function" &&
+                !node.checkVisibility({
+                  checkOpacity: true,
+                  checkVisibilityCSS: true,
+                })
+              )
+                return false;
               const style = getComputedStyle(node);
               return (
                 style.backgroundImage !== "none" ||
