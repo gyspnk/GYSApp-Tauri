@@ -850,6 +850,14 @@
   background: var(--surface-soft);
   box-shadow: none;
 }
+/* The placeholder keeps the real type boxes and paints them, so the skeleton
+   shelf and the loaded shelf are the same height to the pixel. */
+.literature-featured.is-loading .literature-shelf-item > span > strong,
+.literature-featured.is-loading .literature-shelf-item > span > small {
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: transparent;
+}
 .skeleton-bar {
   display: block;
   height: 0.75rem;

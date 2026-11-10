@@ -571,10 +571,14 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
             <div className="literature-shelf">
               {[0, 1, 2, 3].map((index) => (
                 <div className="literature-shelf-item" key={index}>
-                  <span className="literature-cover literature-cover-skeleton" />
+                  {/* Same boxes as a real card: the compact cover, a title
+                      that reserves three lines and a meta line. Only the ink
+                      is missing, so the shelf cannot change height when the
+                      catalogue lands. */}
+                  <span className="literature-cover is-compact literature-cover-skeleton" />
                   <span>
-                    <strong className="skeleton-bar" />
-                    <small className="skeleton-bar is-short" />
+                    <strong>{"\u00a0"}</strong>
+                    <small>{"\u00a0"}</small>
                   </span>
                 </div>
               ))}
