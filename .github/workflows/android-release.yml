@@ -1,0 +1,142 @@
+name: Android release cadence
+
+# Every 25 goal rounds the agent dispatches this workflow: it builds the arm64
+# APK through native-android.yml, generates the changelog from git history since
+# the previous release, attaches both to a GitHub Release, and publishes it.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (default: v0.1.0-preview.<YYYYMMDD>.<n>)"
+        required: false
+        default: ""
+        type: string
+      from:
+        description: "First commit range base (default: latest published release tag)"
+        required: false
+        default: ""
+        type: string
+      draft:
+        description: "Keep the release as a draft"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: android-release-cadence
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Resolve the previous release and build the changelog
+        id: notes
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          from="${{ inputs.from }}"
+          if [ -z "$from" ]; then
+            from=$(gh release list --limit 1 --exclude-drafts --json tagName --jq '.[0].tagName // empty')
+          fi
+          existing=$(git tag --list 'v0.1.0-preview.*' | paste -sd, -)
+          node scripts/release-notes.mjs \
+            --from "${from}" \
+            --date "$(date -u +%Y-%m-%d)" \
+            --existing "${existing}" \
+            ${{ inputs.tag != '' && format('--tag {0}', inputs.tag) || '' }} \
+            > release.json
+          node - <<'NODE'
+          const { readFileSync, appendFileSync, writeFileSync } = require('node:fs');
+          const release = JSON.parse(readFileSync('release.json', 'utf8'));
+          if (!/^v[0-9][A-Za-z0-9.-]+$/.test(release.tag)) throw new Error('Invalid tag');
+          appendFileSync(process.env.GITHUB_ENV, `GYS_RELEASE_TAG=${release.tag}\n`);
+          appendFileSync(process.env.GITHUB_ENV, `GYS_RELEASE_FROM=${release.from ?? ''}\n`);
+          writeFileSync('release-notes.md', `${release.notes}\n`);
+          writeFileSync(`CHANGELOG-${release.tag}.md`, `${release.notes}\n`);
+          const summary = [
+            `## ${release.tag}`,
+            '',
+            `Base: ${release.from ?? 'initial commit'}…${process.env.GITHUB_SHA}`,
+            '',
+            Object.entries(release.counts).map(([type, count]) => `- ${type}: ${count}`).join('\n'),
+          ].join('\n');
+          writeFileSync('release-summary.md', summary);
+          NODE
+          echo "tag=$GYS_RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          cat release-summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Create the draft release for this commit
+        run: |
+          set -euo pipefail
+          if gh release view "$GYS_RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $GYS_RELEASE_TAG already exists; refusing to overwrite."
+            exit 1
+          fi
+          gh release create "$GYS_RELEASE_TAG" \
+            --draft \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "GYSApp ${GYS_RELEASE_TAG#v}" \
+            --notes-file release-notes.md
+          gh release upload "$GYS_RELEASE_TAG" "CHANGELOG-${GYS_RELEASE_TAG}.md"
+      - name: Dispatch the APK build for this commit
+        run: |
+          set -euo pipefail
+          gh workflow run native-android.yml --ref main \
+            -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG"
+      - name: Wait for the APK build
+        run: |
+          set -euo pipefail
+          run_id=""
+          for attempt in $(seq 1 60); do
+            run_id=$(gh run list --workflow native-android.yml --commit "$GITHUB_SHA" \
+              --json databaseId,createdAt --jq 'sort_by(.createdAt) | reverse | .[0].databaseId // empty')
+            if [ -n "$run_id" ]; then break; fi
+            sleep 10
+          done
+          test -n "$run_id"
+          echo "APK build: $run_id"
+          gh run watch "$run_id" --interval 20 --exit-status
+      - name: Verify the release assets and publish
+        run: |
+          set -euo pipefail
+          assets=$(gh release view "$GYS_RELEASE_TAG" --json assets --jq '.assets[].name')
+          echo "$assets"
+          for required in \
+            GYSApp-0.1.0-android-arm64-preview.apk \
+            SHA256SUMS-android.txt \
+            native-provenance-android.json \
+            "CHANGELOG-${GYS_RELEASE_TAG}.md"; do
+            grep -Fxq "$required" <<< "$assets" || { echo "Missing asset: $required"; exit 1; }
+          done
+          gh release download "$GYS_RELEASE_TAG" --pattern 'native-provenance-android.json' --dir verify-assets
+          node -e "
+            const provenance = require('./verify-assets/native-provenance-android.json');
+            if (provenance.commit !== process.env.GITHUB_SHA) {
+              throw new Error('Artifact source mismatch: ' + provenance.commit);
+            }
+            if (provenance.signing !== 'Android debug identity') {
+              throw new Error('Unexpected signing identity: ' + provenance.signing);
+            }
+          "
+          if [ "${{ inputs.draft }}" = "true" ]; then
+            echo "Draft requested; leaving $GYS_RELEASE_TAG as draft."
+          else
+            gh release edit "$GYS_RELEASE_TAG" --draft=false
+          fi
+          gh release view "$GYS_RELEASE_TAG" --json url --jq .url >> "$GITHUB_STEP_SUMMARY"
