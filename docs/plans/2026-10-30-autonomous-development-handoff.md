@@ -7358,3 +7358,9 @@ Keempat run `perf.yml` (`42747517399`, `42747875593`, `42748121838`, `4274833656
 Sekalian dibersihkan: `box-shadow` pada `.literature-cover.is-compact` dihapus karena kartu shelf sudah punya bingkai sendiri dan bayangan kedua terbaca sebagai garis ganda (QA `42748976028`, 1440).
 
 Uji lanjutan (10 Nov): spec perf sekarang mengambil snapshot geometri **sebelum** `document.fonts.ready` (`atVisible`) dan sesudahnya (`atReady`). Hasil `42749910796`: untuk `literatur-phone` keduanya identik (`literatureFeatured` top 335 tinggi 286, `literatureSections` top 649), dan di beranda pun semua kotak sama. Artinya pertukaran font **bukan** penyebabnya; geseran 53 px terjadi sebelum sampel pertama (di dalam frame awal saat shelf menggantikan shell), bukan setelah paint. Instrumen ini tetap dipakai karena memisahkan “geser setelah paint” dari “geser saat frame pertama” untuk ronde berikutnya.
+
+### Hero Sauh di ponsel: foto di atas, teks di bawah (10 Nov, putaran 219)
+
+Selama beberapa putaran kartu Sauh di ponsel tetap memakai lapisan `!important` dari blok “satu kartu gabungan” yang ditulis untuk desktop, sehingga foto menjadi latar penuh dan judul duduk di atasnya (QA `42753136569`). Blok itu sekarang dibatasi `@media (min-width: 960px)`, dan aturan tumpuk untuk ponsel dinaikkan spesifisitasnya ke `.home-grid .verse-panel:has(.sauh-card-media) …` plus `!important` pada properti yang diperebutkan (posisi, inset, aspect 16/9, tinggi, latar) supaya menang dari aturan lama yang masih memakai `!important`.
+
+Bukti: QA `42755753993` (beranda 320/390 light+dark) menunjukkan foto banner 16/9 utuh lalu judul + ayat di permukaan padat; sebelumnya foto tertutup scrim setinggi kartu (390 px). Baseline `home-390`, `home-768`, delapan `literature-catalog-*`, dan dua `kidung-reader-*` diperbarui dari artefak full sweep `42757406259` (semua job hijau, termasuk `perf-budget`), bukan dari mesin lokal.
