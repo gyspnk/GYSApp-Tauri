@@ -314,7 +314,9 @@
 .pujian-item {
   padding-block: 4px;
   padding-inline: 12px;
-  min-height: 60px;
+  /* The UI system asks for a 64 px row: six rows still fit a phone screen and
+     stay comfortably tappable one-handed. */
+  min-height: 64px;
   /* Rows used to flip colour on hover with no transition, which read as stiff. */
   transition: background-color var(--motion-fast) var(--ease-out);
 }
@@ -323,6 +325,9 @@
 }
 .hymn-page .pujian-nomor {
   font-family: inherit;
+  /* Fixed digit widths so 9 → 10 never nudges the title beside it. */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ink);
