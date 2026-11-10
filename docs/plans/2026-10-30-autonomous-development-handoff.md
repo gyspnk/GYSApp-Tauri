@@ -2913,6 +2913,11 @@ Angka `perf.yml` (`42711266936`, `42711696187`, `42713083381`), tiga run, 1280×
 
 Pemisahan titik ukur pembaca (`42714237203`): shell `.hymn-detail-page` **639 ms** dan ayat `.lyrics-sheet` **650 ms** — keduanya hampir bersamaan, jadi 600 ms itu biaya render/mount komponen pembaca (chunk sudah hangat, tidak ada permintaan jaringan), bukan menunggu data. Langkah berikutnya harus memecah pohon pembaca, bukan menambah prefetch.
 
+### Tab antrean tetap berlabel di 320 px (10 Nov, putaran 209–210)
+
+Di 320 px tab “Kidung / Antrean MIDI” pada `/kidung?section=playlist` tampil sebagai dua pil **kosong**: label disembunyikan oleh aturan ≤600 px, dan ikonnya disembunyikan oleh aturan ≤340 px, sehingga tidak ada isi yang tersisa. Perbaikan `06ffaf9` mengembalikan label untuk halaman antrean saja (katalog tetap ikon-saja karena pemilih koleksi butuh ruang) dan ikon tetap tampil; `@container` tidak dipakai lagi karena pada 320 px ia tidak pernah cocok.
+Bukti hosted: QA `42727774114` (61 tangkapan, 320/390, light+dark) menangkap pil kosong, lalu QA `42728665381` menunjukkan “Kidung” dan “Antrean MIDI” lengkap tanpa terpotong; push CI `42727727942` hijau.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
