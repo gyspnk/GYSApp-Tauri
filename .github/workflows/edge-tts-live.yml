@@ -24,11 +24,11 @@ jobs:
   live-keyless-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 2
-    # This probes a third-party endpoint. Microsoft answered the handshake with
-    # HTTP 403 for every Edge build we tried (B-35), so a red run here would
-    # only ever report that outage and hide real regressions in the branches
-    # that do gate on our code. The probe still runs, and its failure is
-    # surfaced in the run summary instead of blocking the pull request.
+    # This probes a third-party endpoint. B-35 (Microsoft answered 403 for
+    # every Edge build) is fixed by the version-2 Sec-MS-GEC token, and the
+    # Worker now relays the same handshake for the web, so both probes run.
+    # They stay continue-on-error because an upstream outage must not hide a
+    # real regression in the branches that gate on our code.
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -38,11 +38,22 @@ jobs:
       - name: Synthesize Indonesian speech without an API key
         id: smoke
         run: node scripts/edge-tts-live-smoke.mjs
+      - name: Synthesize through the deployed Worker relay
+        id: relay
+        run: |
+          body='{"text":"Pujilah Allah yang Maha Esa","voice":"id-ID-GadisNeural"}'
+          code=$(curl -sS -o relay.mp3 -w '%{http_code}' -X POST \
+            -H 'content-type: application/json' \
+            -H 'origin: https://gyspnk.github.io' \
+            --data "$body" \
+            https://gysapp-tauri-bff.pas-presensi.workers.dev/api/v1/tts/edge)
+          bytes=$(wc -c < relay.mp3)
+          echo "relay http=$code bytes=$bytes"
+          test "$code" = 200
+          test "$bytes" -gt 2000
+
       - name: Record the live probe result
         if: always()
         run: |
-          if [ "${{ steps.smoke.outcome }}" = "success" ]; then
-            echo "Edge TTS live probe passed." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "Edge TTS live probe failed - upstream handshake refused (tracked as B-35)." >> "$GITHUB_STEP_SUMMARY"
-          fi
+          echo "Direct handshake: ${{ steps.smoke.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Worker relay: ${{ steps.relay.outcome }}" >> "$GITHUB_STEP_SUMMARY"
