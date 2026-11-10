@@ -5007,82 +5007,74 @@ body:has(.hymn-detail-page.is-text-viewer)
     backdrop-filter: none;
   }
 }
-/* One merged Sauh card in every orientation: full-bleed artwork, a scrim that
-   fades into the copy, and no inset edge on either side of the text block. */
-.home-page .verse-panel:has(.sauh-card-media) {
-  padding: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-end !important;
-  min-height: 460px;
-  overflow: hidden;
-}
-.home-page .sauh-card-media {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: auto !important;
-  min-height: 100% !important;
-  aspect-ratio: auto !important;
-  border-radius: inherit !important;
-  flex: none !important;
-}
-.home-page .sauh-card-media .sauh-image,
-.home-page .sauh-card-media .sauh-image-wrap {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  object-position: center 20% !important;
-}
-.home-page .sauh-card-media .sauh-media-overlay {
-  display: block !important;
-  position: absolute;
-  inset: 0;
-}
-.home-page .sauh-card-content {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-end !important;
-  gap: 8px !important;
-  height: 100% !important;
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  align-self: stretch !important;
-  border-radius: 0 0 16px 16px !important;
-  padding: 22px 20px 20px !important;
-  background: linear-gradient(
-    180deg,
-    rgba(var(--surface-rgb), 0) 0%,
-    rgba(var(--surface-rgb), 0.55) 14%,
-    rgba(var(--surface-rgb), 0.85) 38%,
-    rgba(var(--surface-rgb), 0.97) 68%,
-    var(--surface) 100%
-  ) !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-@media (min-width: 900px) {
+/* One merged Sauh card from tablet landscape up: full-bleed artwork, a scrim
+   that fades into the copy, and no inset edge on either side of the text
+   block. Phones (< 960 px) stack the photo above a solid panel instead — this
+   block used to be unconditional, so its `!important` rules beat the stacked
+   layout and kept the tall overlay card on phones. */
+@media (min-width: 960px) {
+  /* One merged Sauh card in every orientation: full-bleed artwork, a scrim that
+     fades into the copy, and no inset edge on either side of the text block. */
   .home-page .verse-panel:has(.sauh-card-media) {
-    min-height: 340px;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    min-height: 460px;
+    overflow: hidden;
+  }
+  .home-page .sauh-card-media {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    aspect-ratio: auto !important;
+    border-radius: inherit !important;
+    flex: none !important;
+  }
+  .home-page .sauh-card-media .sauh-image,
+  .home-page .sauh-card-media .sauh-image-wrap {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center 20% !important;
+  }
+  .home-page .sauh-card-media .sauh-media-overlay {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+  }
+  .home-page .sauh-card-content {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    height: 100% !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    align-self: stretch !important;
+    border-radius: 0 0 16px 16px !important;
+    padding: 22px 20px 20px !important;
+    background: linear-gradient(
+      180deg,
+      rgba(var(--surface-rgb), 0) 0%,
+      rgba(var(--surface-rgb), 0.55) 14%,
+      rgba(var(--surface-rgb), 0.85) 38%,
+      rgba(var(--surface-rgb), 0.97) 68%,
+      var(--surface) 100%
+    ) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  @media (min-width: 900px) {
+    .home-page .verse-panel:has(.sauh-card-media) {
+      min-height: 340px;
+    }
   }
 }
 
-/* On phones the caption owns most of the card, so its top edge needs an almost
-   opaque surface: at 390 px the title used to land on the illustration with
-   only ~30 % surface behind it. Desktop keeps the wider fade because the
-   caption there is a short strip over the artwork. */
-@media (max-width: 899px) {
-  .home-page .sauh-card-content {
-    background: linear-gradient(
-      180deg,
-      rgba(var(--surface-rgb), 0.72) 0%,
-      rgba(var(--surface-rgb), 0.9) 10%,
-      rgba(var(--surface-rgb), 0.97) 26%,
-      var(--surface) 55%
-    ) !important;
-  }
-}
 /* Sauh reference sits beside the title instead of in a separate eyebrow row. */
 .home-page .sauh-title-row {
   display: flex;
