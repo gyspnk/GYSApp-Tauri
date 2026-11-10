@@ -50,9 +50,14 @@ test.describe("distributed asset UI", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("combobox", { name: "Koleksi", exact: true }).click();
-    await expect(page.getByRole("option", { name: "english" })).toHaveCount(0);
-    await expect(page.getByRole("option", { name: "mandarin" })).toHaveCount(0);
+    const chips = page.getByRole("group", { name: "Koleksi", exact: true });
+    await expect(chips).toBeVisible();
+    await expect(chips.getByRole("button", { name: /english/i })).toHaveCount(
+      0,
+    );
+    await expect(chips.getByRole("button", { name: /mandarin/i })).toHaveCount(
+      0,
+    );
   });
 
   test("Kidung catalog labels an installed optional hymnal readably", async ({

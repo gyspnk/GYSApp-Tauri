@@ -190,10 +190,12 @@ test("the catalogue opens on KR and remembers the chosen book", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/kidung");
-  const collection = page.getByRole("combobox", { name: /Koleksi/i });
+  const collection = page.getByRole("group", { name: /Koleksi/i });
   await expect(collection).toBeVisible();
   // The bundled shelf ships one collection (KR); installed packs add the rest,
   // so the default is what this contract can prove in CI. The stored-book
   // resolution is covered by unit tests.
-  await expect(collection).toContainText("KR");
+  await expect(
+    collection.getByRole("button", { name: "KR", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
