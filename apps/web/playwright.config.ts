@@ -2,16 +2,21 @@ import { defineConfig, devices } from "@playwright/test";
 import { resolveE2eServerCommand } from "./src/e2e-server-command.js";
 
 export default defineConfig({
-  // Screenshots must show the resting state; otherwise a row entrance or a
-  // spinner can land in the middle of a comparison and churn every baseline.
-  expect: { toHaveScreenshot: { animations: "disabled" } },
+  // One `expect` object only: a second key with the same name silently replaced
+  // the first, which dropped the screenshot rule below for a whole round while
+  // the docs claimed it was active.
+  expect: {
+    // Screenshots must show the resting state; otherwise a row entrance or a
+    // spinner can land in the middle of a comparison and churn every baseline.
+    toHaveScreenshot: { animations: "disabled" },
+    // Vite compiles a route on its first visit; production/CI retain their
+    // original assertion budget and are measured separately from dev mode.
+    timeout: process.env.GYS_E2E_DEV === "1" ? 15_000 : 5_000,
+  },
   testDir: "./e2e",
   // Sequential e2e shares one preview server; a 30s budget intermittently
   // starves first-hit navigations (cold asset compile) on slower runners.
   timeout: 40_000,
-  // Vite compiles a route on its first visit; production/CI retain their
-  // original assertion budget and are measured separately from dev mode.
-  expect: { timeout: process.env.GYS_E2E_DEV === "1" ? 15_000 : 5_000 },
   // A few specs fetch immutable upstream fixtures (gyschordweb raw CDN).
   // One retry absorbs transient upstream hiccups without masking real bugs.
   retries: 1,
