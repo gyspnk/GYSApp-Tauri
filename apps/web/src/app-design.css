@@ -5950,7 +5950,11 @@ body:has(.hymn-detail-page.is-text-viewer)
     animation: none;
   }
 
-  .pujian-list.is-staggering .pujian-item:nth-child(-n + 12) {
+  /* Every row painted in the first frame settles, not only the first twelve:
+     the catalogue commits a full screen at once, so a cap left the lower half
+     of that screen standing still while the top half moved. The row index is
+     already capped at 11 in the markup, so the wave still never trails. */
+  .pujian-list.is-staggering .pujian-item {
     animation: catalogue-row-in var(--motion-entrance)
       var(--motion-ease-entrance) backwards;
     animation-delay: calc(var(--row-index, 0) * var(--motion-stagger));

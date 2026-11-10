@@ -294,3 +294,28 @@ test("MIDI dock fades the old geometry before restoring the new geometry", async
     ),
   ).toBe(0);
 });
+
+test("every catalogue row on the first screen settles, not only a prefix", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/kidung");
+  const list = page.locator(".pujian-list").first();
+  await expect(list.locator(".pujian-item").first()).toBeVisible({
+    timeout: 30_000,
+  });
+  // The staggering class lives for 760 ms, too short to catch reliably from the
+  // test side, so replay the first frame and read what the stylesheet would do.
+  const frame = await list.evaluate((ol) => {
+    ol.classList.add("is-staggering");
+    const rows = [...ol.querySelectorAll(".pujian-item")];
+    const moving = rows.filter(
+      (row) => getComputedStyle(row).animationName === "catalogue-row-in",
+    );
+    ol.classList.remove("is-staggering");
+    return { rows: rows.length, moving: moving.length };
+  });
+  expect(frame.rows).toBeGreaterThanOrEqual(14);
+  expect(frame.moving).toBe(frame.rows);
+});
