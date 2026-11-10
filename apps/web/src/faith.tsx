@@ -419,6 +419,29 @@ export function FaithPage({ locale }: { locale: Locale }) {
               </button>
             )}
           </div>
+          {query.trim() !== "" && (
+            <p className="faith-result-count" role="status">
+              {translate(locale, "faith.resultCount", {
+                count: filtered.length,
+                total: items.length,
+              })}
+            </p>
+          )}
+          {filtered.length === 0 && (
+            <div className="faith-empty">
+              <p>{translate(locale, "faith.empty")}</p>
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  searchRef.current?.focus();
+                }}
+              >
+                {translate(locale, "faith.clearSearch")}
+              </button>
+            </div>
+          )}
           <div
             className="faith-rows"
             role="list"

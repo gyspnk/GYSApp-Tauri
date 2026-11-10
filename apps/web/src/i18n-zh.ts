@@ -600,6 +600,8 @@ export const zhFeatureMessages: Record<string, string> = {
   "faith.search": "搜索信仰要点",
   "faith.searchPlaceholder": "搜索编号或关键词…",
   "faith.clearSearch": "清除搜索",
+  "faith.resultCount": "{total} 条中的 {count} 条",
+  "faith.empty": "没有符合此搜索的条目。",
   "faith.list": "信仰基础列表",
   "faith.topic": "要点 {number}",
   "faith.copySection": "复制段落",

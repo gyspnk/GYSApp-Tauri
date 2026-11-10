@@ -613,6 +613,8 @@ export const enFeatureMessages: Record<string, string> = {
   "faith.search": "Search faith topics",
   "faith.searchPlaceholder": "Search number or keyword…",
   "faith.clearSearch": "Clear search",
+  "faith.resultCount": "{count} of {total} points",
+  "faith.empty": "No point matches this search.",
   "faith.list": "List of faith foundations",
   "faith.topic": "Topic {number}",
   "faith.copySection": "Copy section",

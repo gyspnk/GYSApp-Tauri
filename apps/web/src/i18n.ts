@@ -640,6 +640,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.search": "Cari pokok iman",
     "faith.searchPlaceholder": "Cari nomor atau kata…",
     "faith.clearSearch": "Hapus pencarian",
+    "faith.resultCount": "{count} dari {total} pokok",
+    "faith.empty": "Tidak ada pokok yang cocok dengan pencarian ini.",
     "faith.list": "Daftar dasar kepercayaan",
     "faith.topic": "Pokok {number}",
     "faith.copySection": "Salin bagian",
