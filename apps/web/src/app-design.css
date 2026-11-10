@@ -136,6 +136,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
+  max-width: 520px;
 }
 /* The three entry points used to be full cards, which competed with the
    content below them. The OpenDesign Beranda pass makes them quiet doors: a
@@ -1249,8 +1250,10 @@
 }
 @media (min-width: 1200px) {
   .home-welcome {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
+    /* The three doors belong under the headline, not beside it: at 1440 they
+       drifted into the top-right corner and read as toolbar icons. */
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
     gap: 24px;
   }
   .home-portals {
