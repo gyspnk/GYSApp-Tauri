@@ -2070,11 +2070,11 @@ test("desktop reader keeps the catalog index beside the text", async ({
   const current = rail.locator('.kidung-rail-row[aria-current="page"]');
   await expect(current).toHaveCount(1);
   const target = rail.locator(".kidung-rail-row").nth(2);
-  const title = (await target.innerText()).trim();
+  const title = (await target.locator(".kidung-rail-title").innerText()).trim();
   await target.click();
   await expect(page).toHaveURL(/\/kidung\/hymn-/);
   await expect(
-    rail.locator('.kidung-rail-row[aria-current="page"]'),
+    rail.locator('.kidung-rail-row[aria-current="page"] .kidung-rail-title'),
   ).toHaveText(title);
 });
 
