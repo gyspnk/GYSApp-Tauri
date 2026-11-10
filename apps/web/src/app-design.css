@@ -295,6 +295,70 @@
   text-shadow: none;
 }
 
+/* The literature shelf is a row of covers, not a row of framed cards: a 2:3
+   cover with the title underneath and the next cover peeking in from the
+   right edge, so the swipe is discoverable without an arrow. The cover is in
+   normal flow, so the text needs no scrim and no backdrop blur. */
+.home-literature-shelf .suara-library-item {
+  flex: 0 0 clamp(150px, 18vw, 186px);
+  width: clamp(150px, 18vw, 186px);
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  gap: 10px;
+  justify-content: flex-start;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.home-literature-shelf .suara-library-item:hover {
+  transform: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+.home-literature-shelf .suara-card-media {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.home-literature-shelf .suara-library-item:hover .suara-card-media {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent),
+    0 10px 20px rgba(0, 0, 0, 0.1);
+}
+.home-literature-shelf .suara-card-content {
+  padding: 0;
+  gap: 3px;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.home-literature-shelf .suara-card-content strong {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  max-height: none;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+.home-literature-shelf .suara-card-content .suara-date {
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-shadow: none;
+}
+.home-literature-shelf .suara-card-content small {
+  display: none;
+}
+
 /* Catalog rows use distinct number, title and icon-action lanes. */
 .hymn-index-heading {
   padding-block: 0 16px;

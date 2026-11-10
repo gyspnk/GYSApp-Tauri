@@ -336,3 +336,27 @@ test("reader icons stay centered and compact actions retain accessible names", a
     ).toBeLessThanOrEqual(1);
   }
 });
+
+test("home literature covers stand at 2:3 with the title underneath", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/");
+  const shelf = page.locator(".home-literature-shelf");
+  await expect(shelf).toBeVisible();
+  const card = shelf.locator(".suara-library-item").first();
+  await expect(card).toBeVisible();
+  // The cover is a book face, not a framed card: 2:3, no border, title below.
+  const cover = (await card.locator(".suara-card-media").boundingBox())!;
+  expect(Math.abs(cover.width / cover.height - 2 / 3)).toBeLessThan(0.04);
+  await expect(card).toHaveCSS("border-top-width", "0px");
+  const title = (await card.locator("strong").boundingBox())!;
+  expect(title.y).toBeGreaterThanOrEqual(cover.y + cover.height - 1);
+  // The next cover peeks in from the right edge, so the swipe is discoverable.
+  const second = (await shelf
+    .locator(".suara-library-item")
+    .nth(1)
+    .boundingBox())!;
+  expect(second.x).toBeLessThan(390);
+});
