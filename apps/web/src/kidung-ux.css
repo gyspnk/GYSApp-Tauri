@@ -1541,3 +1541,83 @@ kidung-row-menu > summary:focus-visible,
     align-items: start;
   }
 }
+
+/* Desktop reader: the index keeps its seat beside the text, so moving between
+   songs is one click instead of a trip back to the catalog. */
+@media (min-width: 1200px) {
+  .kidung-reader-split {
+    display: grid;
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+  }
+
+  .kidung-reader-rail {
+    position: sticky;
+    top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    max-height: calc(100dvh - 24px);
+  }
+
+  .kidung-rail-list {
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+  }
+
+  .kidung-rail-row {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .kidung-rail-row:hover {
+    background: var(--surface-soft);
+  }
+
+  .kidung-rail-row:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: -3px;
+  }
+
+  .kidung-rail-row[aria-current="page"] {
+    color: var(--blue);
+    background: var(--blue-soft);
+  }
+
+  .kidung-rail-number {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kidung-rail-title {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.9375rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kidung-reader-pane {
+    min-width: 0;
+  }
+}

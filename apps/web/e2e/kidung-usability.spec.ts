@@ -2057,3 +2057,30 @@ test("collection chips replace the dropdown with 44 px targets", async ({
   // Exactly one collection is active, and it says so to assistive tech.
   await expect(group.locator('[aria-pressed="true"]')).toHaveCount(1);
 });
+
+test("desktop reader keeps the catalog index beside the text", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  const rail = page.locator(".kidung-reader-rail");
+  await expect(rail).toBeVisible();
+  // The song on screen is marked in the index, so the rail is a map and not a
+  // second, silently disagreeing list.
+  const current = rail.locator('.kidung-rail-row[aria-current="page"]');
+  await expect(current).toHaveCount(1);
+  const target = rail.locator(".kidung-rail-row").nth(2);
+  const title = (await target.innerText()).trim();
+  await target.click();
+  await expect(page).toHaveURL(/\/kidung\/hymn-/);
+  await expect(
+    rail.locator('.kidung-rail-row[aria-current="page"]'),
+  ).toHaveText(title);
+});
+
+test("phones keep the reader alone", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+  await expect(page.locator(".hymn-detail-page")).toBeVisible();
+  await expect(page.locator(".kidung-reader-rail")).toHaveCount(0);
+});

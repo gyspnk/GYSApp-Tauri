@@ -22,6 +22,7 @@ import {
   parseHymnMetadata,
 } from "./kidung-shared.js";
 import { canonicalHymnId, splitHymnFallback } from "./kidung-ids.js";
+import { KidungReaderRail } from "./kidung-reader-rail.js";
 
 const HymnCatalog = preloadable(() =>
   import("./kidung-catalog.js").then((module) => ({
@@ -143,6 +144,7 @@ function KidungReaderDataPage({
     loadCoreHymns,
     parseCatalog,
   );
+  const wide = useWideReader();
   const split =
     catalog.status === "ready"
       ? splitHymnFallback(
@@ -161,7 +163,7 @@ function KidungReaderDataPage({
         </button>
       </div>
     );
-  return (
+  const detail = (
     <HymnDetail
       key={songId}
       locale={locale}
@@ -170,6 +172,29 @@ function KidungReaderDataPage({
       {...(musicLock ? { musicLock } : {})}
     />
   );
+  // Desktop buys the index a seat next to the text; phones keep the reader
+  // alone because a rail would eat half the columns they do not have.
+  if (!wide || catalog.status !== "ready") return detail;
+  return (
+    <div className="kidung-reader-split">
+      <KidungReaderRail locale={locale} state={catalog} activeId={songId} />
+      <div className="kidung-reader-pane">{detail}</div>
+    </div>
+  );
+}
+
+function useWideReader() {
+  const [wide, setWide] = useState(
+    () => window.matchMedia("(min-width: 1200px)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1200px)");
+    const sync = () => setWide(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  return wide;
 }
 
 function KidungCatalogDataPage({
