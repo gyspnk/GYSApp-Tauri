@@ -2044,3 +2044,24 @@ for (const [name, width, height, surface, theme] of visualCases) {
     });
   });
 }
+
+test("collection chips replace the dropdown with 44 px targets", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/kidung");
+  const toolbar = page.locator(".kidung-controls-field");
+  const group = toolbar.getByRole("group", { name: "Koleksi" });
+  await expect(group).toBeVisible();
+  // The dropdown is gone: one collection used to hide inside a menu, which is
+  // a two-tap job for a choice that fits on one row.
+  await expect(toolbar.locator(".kidung-collection-select")).toHaveCount(0);
+  const chips = group.locator(".kidung-collection-chip");
+  const count = await chips.count();
+  expect(count).toBeGreaterThan(0);
+  for (let index = 0; index < count; index += 1) {
+    const box = await chips.nth(index).boundingBox();
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  }
+  // Exactly one collection is active, and it says so to assistive tech.
+  await expect(group.locator('[aria-pressed="true"]')).toHaveCount(1);
+});

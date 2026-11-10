@@ -15,7 +15,6 @@ import { type HymnMetadata, type UpstreamMusicLock } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { findMusicAsset } from "./music-assets.js";
-import { Select } from "./select.js";
 import { Icon } from "./icons.js";
 import { triggerRipple } from "./ripple.js";
 import { buildHymnSearchIndex, searchHymns } from "./hymn-search.js";
@@ -261,17 +260,23 @@ export function HymnCatalog({
           <KidungLocalNav active="songs" locale={locale} />
           {state.status === "ready" && (
             <div className="kidung-header-filter">
-              <Select
-                value={activeBook}
-                onChange={setBook}
-                className="kidung-collection-select"
-                animated
-                label={translate(locale, "kidung.collection")}
-                options={books.map((value) => ({
-                  value,
-                  label: hymnCollectionLabel(value),
-                }))}
-              />
+              <div
+                role="group"
+                aria-label={translate(locale, "kidung.collection")}
+                className="kidung-collection-chips"
+              >
+                {books.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className="kidung-collection-chip"
+                    aria-pressed={value === activeBook}
+                    onClick={() => setBook(value)}
+                  >
+                    {hymnCollectionLabel(value)}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           <div

@@ -66,15 +66,6 @@
       text-overflow: ellipsis;
     }
   }
-  .hymn-page .kidung-controls-field .control-select-trigger {
-    width: 100%;
-    min-width: 0;
-    padding-inline: 6px;
-    gap: 6px;
-  }
-  .hymn-page .kidung-controls-field .kidung-collection-select {
-    min-width: 0;
-  }
   .hymn-page .kidung-controls-field .kidung-mode-control {
     padding-left: 0;
     border-left: 0;
@@ -286,12 +277,10 @@
 /* The collection pill hugs its label and arrow at every width; stretching the
    cell left the arrow, the Aa/score switch and the search box spread apart. */
 @media (max-width: 1100px) {
+  /* The chip row takes the flexible column so it can scroll instead of
+     widening the toolbar past the viewport. */
   .hymn-page .kidung-controls-field {
-    grid-template-columns: 96px max-content max-content;
-  }
-  .hymn-page .kidung-controls-field .kidung-collection-select {
-    width: fit-content;
-    max-width: min(60vw, 220px);
+    grid-template-columns: 96px minmax(0, 1fr) max-content;
   }
   .hymn-page .kidung-controls-field .kidung-mode-control {
     justify-self: start;
