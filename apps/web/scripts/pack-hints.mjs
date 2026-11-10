@@ -43,20 +43,3 @@ export function injectHymnMetadataPreload(html, rootBase) {
   const tag = `<link rel="preload" as="fetch" href="${hymnMetadataUrl(rootBase)}" crossorigin="anonymous" />`;
   return html.replace("</head>", `  ${tag}\n  </head>`);
 }
-
-/**
- * `/literatur` fetches its 160 KB catalogue snapshot only after the shell
- * mounts; preloading it from the stub overlaps the download with boot, the same
- * trick that moved the kidung catalogue forward.
- */
-export function literatureSnapshotUrl(rootBase) {
-  const base = rootBase.endsWith("/") ? rootBase : `${rootBase}/`;
-  return `${base}offline/literature.json`;
-}
-
-export function injectLiteraturePreload(html, rootBase) {
-  if (!html.includes("</head>")) return html;
-  if (html.includes("literature.json", html.indexOf("<head"))) return html;
-  const tag = `<link rel="preload" as="fetch" href="${literatureSnapshotUrl(rootBase)}" crossorigin="anonymous" />`;
-  return html.replace("</head>", `  ${tag}\n  </head>`);
-}

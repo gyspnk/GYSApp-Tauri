@@ -13,7 +13,6 @@ import {
 import {
   injectBiblePackFetch,
   injectHymnMetadataPreload,
-  injectLiteraturePreload,
 } from "./pack-hints.mjs";
 import { fontPreloadTags } from "./font-preload.mjs";
 import {
@@ -147,15 +146,11 @@ for (const route of [
     route === "bible" || route === "alkitab"
       ? injectBiblePackFetch(html, base)
       : html;
-  const withLiterature =
-    route === "literature" || literatureRoutes.includes(route)
-      ? injectLiteraturePreload(withPack, base)
-      : withPack;
   await writeFile(
     target,
     route === "kidung" || hymnRoutes.includes(route)
-      ? injectHymnMetadataPreload(withLiterature, base)
-      : withLiterature,
+      ? injectHymnMetadataPreload(withPack, base)
+      : withPack,
   );
 }
 
