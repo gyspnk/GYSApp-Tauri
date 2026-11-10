@@ -318,9 +318,26 @@ for (const viewport of viewports) {
         )) {
           if (!visibleBox(el)) continue;
           const text = (el.textContent ?? "").trim();
-          const media = [
-            ...el.querySelectorAll("svg, img, picture, canvas"),
-          ].some(visibleBox);
+          // A swatch's background IS its content (colour picker), so it is not
+          // a blank control.
+          if (
+            /swatch/.test(typeof el.className === "string" ? el.className : "")
+          )
+            continue;
+          const media =
+            [...el.querySelectorAll("svg, img, picture, canvas")].some(
+              visibleBox,
+            ) ||
+            // Some icons are drawn as plain elements with their own fill (the
+            // Bible hamburger's three bars), so count painted children too.
+            [...el.querySelectorAll("*")].some((node) => {
+              if (!visibleBox(node)) return false;
+              const style = getComputedStyle(node);
+              return (
+                style.backgroundImage !== "none" ||
+                style.backgroundColor !== "rgba(0, 0, 0, 0)"
+              );
+            });
           if (text.length === 0 && !media) out.push({ element: label(el) });
         }
         return out.slice(0, 12);
