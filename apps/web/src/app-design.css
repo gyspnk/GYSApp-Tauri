@@ -6200,7 +6200,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 .confirm-dialog h2 {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-size: 1.125rem;
   line-height: 1.3;
 }
