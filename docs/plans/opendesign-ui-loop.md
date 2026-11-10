@@ -19,7 +19,7 @@ Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus
 | 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                           |
 | 4   | Iman (teks, PDF, tindakan)                                  | artefak tidak cocok   | —                     | lihat catatan “Iman — artefak tidak cocok”  |
 | 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                           |
-| 6   | Suara (hero, rak kartu, pembaca)                            | belum                 | —                     | —                                           |
+| 6   | Suara (hero, rak kartu, pembaca)                            | artefak tidak cocok   | —                     | lihat catatan “Suara — artefak tidak cocok” |
 | 7   | Lainnya/pengaturan (kategori, baris, dialog)                | sebagian (02, 06, 08) | `60a5d60`             | `apps/web/e2e/more-settings-groups.spec.ts` |
 | 8   | Dialog/sheet bersama (pemilih, popover, panel)              | belum                 | —                     | —                                           |
 
@@ -110,6 +110,26 @@ di 390 px, dua kolom di 1440 px).
 Butir 03/04/07 butuh satu sumber nilai per baris (tema, ukuran teks, gerak, bahasa,
 jumlah unduhan, versi) supaya nilai tidak ditebak; itu pekerjaan terpisah agar
 tidak menambah state baru tanpa pemilik.
+
+## Suara — artefak tidak cocok dengan permukaan yang ada
+
+Artefak `docs/design/gysapp-ui-system` bagian "Suara · usulan perubahan" (7 butir)
+menggambarkan **pemutar audio**: dock 56 px di atas navigasi, progres 2 px, kolom
+durasi tabular, ikon putar 44 px, panel "sedang diputar" di desktop.
+
+Permukaan yang terkirim berbeda: `/suara` adalah daftar tulisan Suara Sejati
+(`apps/web/src/online-content.tsx`, 665 baris) dengan pembaca artikel. Audio di
+aplikasi ini hanya ada di dua tempat lain: dock MIDI kidung
+(`apps/web/src/kidung-midi-controls.tsx`) dan bacaan-aloud TTS Alkitab
+(`bible-header.tsx`). `SuaraSejatiPostSchema` (`packages/contracts/src/index.ts:312-321`)
+tidak membawa `audioUrl` maupun `durationSec`, jadi dock, progres, dan durasi
+tidak bisa diisi tanpa mengarang data.
+
+Keputusan: tidak diubah. Yang dibutuhkan salah satu dari dua hal, dan keduanya
+bukan penataan ulang: (a) artefak baru untuk permukaan daftar/pembaca Suara yang
+benar-benar ada, atau (b) fitur pemutaran audio untuk kiriman Suara Sejati
+beserta medan data resminya. Mencatat ini lebih jujur daripada membangun dock
+kosong.
 
 ## Iman — artefak tidak cocok dengan permukaan yang ada
 
