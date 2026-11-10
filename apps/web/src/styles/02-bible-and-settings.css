@@ -1165,7 +1165,9 @@
   color: var(--ink);
   font-family: var(--font-reading);
   font-size: 1.125rem;
-  line-height: 1.65;
+  /* UI system: 1.75 keeps serif stanzas airy without stealing lines from the
+     autofit measurement. */
+  line-height: 1.75;
   touch-action: pan-y;
 }
 .lyrics-sheet p {
@@ -1173,7 +1175,8 @@
   margin: 0;
 }
 .lyrics-break {
-  height: 18px;
+  /* UI system: stanzas separate by 20px of air, never by a rule. */
+  height: 20px;
 }
 .progress-save-notice {
   display: block;
