@@ -12,16 +12,16 @@ Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus
 
 ## Rotasi dan status
 
-| #   | Permukaan                                                   | Status                | Run OpenDesign        | Bukti                                       |
-| --- | ----------------------------------------------------------- | --------------------- | --------------------- | ------------------------------------------- |
-| 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan              | `ui-loop` run beranda | —                                           |
-| 2   | Kidung (katalog + pembaca + dock MIDI)                      | sebagian              | —                     | —                                           |
-| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                           |
-| 4   | Iman (teks, PDF, tindakan)                                  | artefak tidak cocok   | —                     | lihat catatan “Iman — artefak tidak cocok”  |
-| 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                           |
-| 6   | Suara (hero, rak kartu, pembaca)                            | artefak tidak cocok   | —                     | lihat catatan “Suara — artefak tidak cocok” |
-| 7   | Lainnya/pengaturan (kategori, baris, dialog)                | sebagian (02, 06, 08) | `60a5d60`             | `apps/web/e2e/more-settings-groups.spec.ts` |
-| 8   | Dialog/sheet bersama (pemilih, popover, panel)              | belum                 | —                     | —                                           |
+| #   | Permukaan                                                   | Status                | Run OpenDesign        | Bukti                                        |
+| --- | ----------------------------------------------------------- | --------------------- | --------------------- | -------------------------------------------- |
+| 1   | Beranda (hero Sauh, aksi cepat, ayat, rak literatur, suara) | berjalan              | `ui-loop` run beranda | —                                            |
+| 2   | Kidung (katalog + pembaca + dock MIDI)                      | sebagian              | —                     | —                                            |
+| 3   | Alkitab (pemilih kitab, pembaca, catatan)                   | sebagian (03, 05, 06) | —                     | —                                            |
+| 4   | Iman (teks, PDF, tindakan)                                  | artefak tidak cocok   | —                     | lihat catatan “Iman — artefak tidak cocok”   |
+| 5   | Literatur (hero, rak terbaru, dua kolom, pembaca)           | belum                 | —                     | —                                            |
+| 6   | Suara (hero, rak kartu, pembaca)                            | artefak tidak cocok   | —                     | lihat catatan “Suara — artefak tidak cocok”  |
+| 7   | Lainnya/pengaturan (kategori, baris, dialog)                | sebagian (02, 06, 08) | `60a5d60`             | `apps/web/e2e/more-settings-groups.spec.ts`  |
+| 8   | Dialog/sheet bersama (pemilih, popover, panel)              | sebagian              | `ee267866`            | `apps/web/e2e/kidung-confirm-delete.spec.ts` |
 
 ## Catatan
 
@@ -130,6 +130,29 @@ bukan penataan ulang: (a) artefak baru untuk permukaan daftar/pembaca Suara yang
 benar-benar ada, atau (b) fitur pemutaran audio untuk kiriman Suara Sejati
 beserta medan data resminya. Mencatat ini lebih jujur daripada membangun dock
 kosong.
+
+## Dialog & sheet
+
+Artefak: `docs/design/gysapp-ui-system/index.html` bagian "09 · Dialog" dan
+"10 · Bottom sheet" — keputusan yang menghentikan alur, satu aksi destruktif,
+selalu di kanan, label menyebut akibatnya; fokus masuk, Esc menutup, klik latar
+menutup; masuk lapisan 220 ms.
+
+| Aturan                                                 | Status                                                                                                      |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Fokus masuk ke dialog, Esc menutup, klik latar menutup | sudah — `apps/web/src/dialog-focus.ts` `useDialogFocus` dipakai semua dialog                                |
+| Satu aksi destruktif, di kanan, label menyebut akibat  | diterapkan lewat `apps/web/src/confirm-dialog.tsx`; dipakai `kidung-playlist-page.tsx` untuk hapus playlist |
+| Masuk 220 ms                                           | sudah — `--motion-entrance: 220ms`                                                                          |
+| Latar belakang tetap terlihat di belakang sheet        | belum relevan: aplikasi tidak punya bottom sheet; pilihan cepat memakai popover/menu                        |
+
+Kontrak: `apps/web/e2e/kidung-confirm-delete.spec.ts` — dialog muncul, fokus
+jatuh di "Batal", tombol hapus memakai `--danger` dan tinggi >= 43,5 px, Esc
+membatalkan (playlist masih ada), lalu konfirmasi menghapus.
+
+Sisa pekerjaan yang jujur: dialog/sheet bersama (pemilih, popover, panel) belum
+disatukan jadi satu primitif; hanya konfirmasi destruktif yang sudah punya
+primitif. Menyatukan semuanya adalah refactor besar dan tidak dikerjakan tanpa
+alasan yang terukur.
 
 ## Iman — artefak tidak cocok dengan permukaan yang ada
 
