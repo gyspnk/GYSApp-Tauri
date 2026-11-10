@@ -7384,3 +7384,9 @@ Resep diambil apa adanya dari artefak OpenDesign (`--motion-entrance 220ms`, `--
 - Semua aturan dibungkus `@media (prefers-reduced-motion: no-preference)`, jadi pembaca yang meminta gerak minimal tidak melihat satu pun animasi ini.
 
 Bukti hosted: CI selektif `42765631815` **hijau** untuk stagger, `42766664608` **hijau** untuk umpan balik tekan. Belum ada klaim “terasa halus” — itu penilaian pemilik lewat `pnpm dev` 5173 atau pratinjau OpenDesign; yang dijamin di sini hanya durasi, easing, reduksi gerak, dan tidak ada perubahan tata letak.
+
+### Irisan gerak ketiga + screenshot deterministik (10 Nov, putaran 223)
+
+- **Rak Suara ikut masuk berurutan (`9556f0b`):** kartu di `.suara-library-grid` memakai resep yang sama dengan katalog (`catalogue-row-in`, 220 ms, jeda 40 ms per indeks, batas 12 kartu). Indeks dikirim sebagai `--row-index` dari `apps/web/src/online-content.tsx`, jadi tidak perlu state tambahan; animasi hanya jalan sekali saat kartu dipasang.
+- **Screenshot dibekukan geraknya:** `apps/web/playwright.config.ts` kini menetapkan `expect: { toHaveScreenshot: { animations: "disabled" } }` (konfigurasi CI mewarisinya). Tanpa ini, animasi masuk atau spinner bisa tertangkap di tengah dan membuat setiap baseline bergoyang setiap kali gerak ditambah — persis risiko yang muncul setelah dua irisan gerak sebelumnya.
+- **Bukti:** full sweep `42768156550` **hijau** (verify, web-build, perf-budget, e2e, update-visual-baselines); artefaknya berbeda **1 PNG** dari repo, yaitu `kidung-reader-settings-390x844-linux.png` yang memang dikenal sebagai noise anti-alias (ukuran sama, tes visual tetap lolos), jadi tidak diadopsi. Tidak ada baseline lain yang bergeser, artinya gerak baru tidak bocor ke tangkapan.
