@@ -25,3 +25,6 @@ test-results/
 playwright-report/
 coverage/
 apps/web/ui-screenshots/
+
+# OpenDesign exports: single-file design docs, kept byte-for-byte.
+docs/design/

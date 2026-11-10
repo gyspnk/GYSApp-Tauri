@@ -1,0 +1,2306 @@
+<!doctype html>
+<html lang="id" data-theme="light" data-motion="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rancangan ulang beranda GYSApp — Saat ini vs Usulan</title>
+<meta name="description" content="Papan perbandingan beranda GYSApp untuk ponsel 390 px dan desktop 1440 px, dengan empat tema dan catatan rancangan.">
+<style>
+/* ============================================================
+   1. Primitif tata letak (struktur saja)
+   ============================================================ */
+@layer od-layout {
+  [hidden]:not([hidden="until-found" i]) { display: none !important; }
+  dialog:not([open]) { display: none !important; }
+
+  :where(.od-stack,.od-row,.od-row-top,.od-cluster,.od-grid,.od-field,.od-stat,.od-cell,.od-tile) > :where(*) { min-width: 0; }
+
+  .od-stack   { display: flex; flex-direction: column; gap: var(--od-gap, 8px); }
+  .od-row     { display: flex; align-items: center; gap: var(--od-gap, 8px); }
+  .od-row-top { display: flex; align-items: flex-start; gap: var(--od-gap, 8px); }
+  .od-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--od-gap, 8px); }
+  .od-fill    { flex: 1 1 0; min-width: 0; }
+  .od-fixed   { flex: none; }
+  .od-grid    { display: grid; gap: var(--od-gap, 12px); grid-template-columns: repeat(var(--od-cols, 3), minmax(0, 1fr)); }
+
+  .od-stat, .od-field, .od-cell { display: grid; gap: var(--od-gap, 2px); }
+  :where(.od-stat,.od-field,.od-cell) > :where(*) { display: block; }
+  .od-tile { display: grid; grid-template-rows: auto 1fr; }
+  :where(.od-tile) > :where(*) { display: block; }
+
+  .od-media { display: block; width: 100%; height: auto; aspect-ratio: var(--od-ratio, auto); }
+  .od-media-cover { object-fit: cover; }
+
+  .od-icon { display: inline-block; inline-size: var(--od-icon-size, 1em); block-size: var(--od-icon-size, 1em); flex: none; }
+
+  .od-truncate { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .od-clamp-2, .od-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .od-clamp-2 { -webkit-line-clamp: 2; }
+  .od-clamp-3 { -webkit-line-clamp: 3; }
+  .od-lines-2 { min-height: calc(2 * 1.4em); }
+  .od-nowrap  { white-space: nowrap; }
+  .od-keep    { word-break: keep-all; overflow-wrap: anywhere; }
+
+  .od-screen { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }
+  .od-scroll { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+
+  .od-rail { display: flex; gap: var(--od-gap, 8px); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+             padding-inline: var(--od-rail-pad, 16px); scroll-padding-inline: var(--od-rail-pad, 16px); }
+  .od-rail::-webkit-scrollbar { display: none; }
+  :where(.od-rail) > :where(*) { flex: none; scroll-snap-align: start; }
+  :where(.od-rail) > :where(:last-child) { margin-inline-end: var(--od-rail-pad, 16px); }
+
+  .od-spacer { flex: none; visibility: hidden; pointer-events: none; }
+  .od-touch  { min-width: 44px; min-height: 44px; }
+}
+:root [hidden]:where(:not([hidden="until-found" i])) { display: none; }
+/* /OD-LAYOUT-PRIMITIVES v1 */
+
+/* ============================================================
+   2. Token: radius, tipe, gerak, dan empat tema
+   ============================================================ */
+:root {
+  --r-1: 6px;
+  --r-2: 8px;
+  --r-3: 10px;
+  --r-4: 12px;
+  --r-5: 16px;
+  --r-6: 24px;
+  --r-pill: 999px;
+
+  --fs-1: .625rem;
+  --fs-2: .6875rem;
+  --fs-3: .75rem;
+  --fs-4: .8125rem;
+  --fs-5: .875rem;
+  --fs-6: .96875rem;
+  --fs-7: 1.0625rem;
+  --fs-8: 1.15625rem;
+  --fs-9: 1.25rem;
+  --fs-10: 1.34375rem;
+  --fs-11: 1.46875rem;
+  --fs-12: 1.625rem;
+  --fs-13: 1.75rem;
+
+  --t-fast: 120ms;
+  --t-normal: 180ms;
+  --t-slow: 260ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.16, 1, 0.3, 1);
+  --stagger: 40ms;
+
+  --font-ui: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", "Times New Roman", serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --sw: #FFFFFF;
+  --swa: #0C5A4F;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F2F5F2;
+  --bg-deep: #E5EAE6;
+  --surface: #FFFFFF;
+  --surface-2: #E9EFEA;
+  --surface-3: #F6F9F6;
+  --line: #D9E0DA;
+  --line-strong: #BDC9C1;
+  --ink: #101B17;
+  --ink-2: #34433D;
+  --ink-3: #56655F;
+  --accent: #0C5A4F;
+  --accent-soft: #DCEBE4;
+  --accent-on: #FFFFFF;
+  --accent-2: #8A5A2B;
+  --verse-bg: #0E3B35;
+  --verse-ink: #F3F7F3;
+  --verse-ink-2: #C7DBD2;
+  --verse-accent: #9FD8C6;
+  --verse-line: rgba(255, 255, 255, .22);
+  --verse-soft: rgba(255, 255, 255, .10);
+  --shadow-card: 0 1px 2px rgba(12, 28, 22, .06), 0 20px 36px -26px rgba(12, 28, 22, .5);
+  --shadow-soft: 0 1px 2px rgba(12, 28, 22, .05), 0 10px 20px -16px rgba(12, 28, 22, .4);
+  --focus: #0C5A4F;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0F1513;
+  --bg-deep: #070B0A;
+  --surface: #161D19;
+  --surface-2: #1D2621;
+  --surface-3: #131A17;
+  --line: #2A352F;
+  --line-strong: #3D4B44;
+  --ink: #EDF2EE;
+  --ink-2: #C3CEC7;
+  --ink-3: #94A29B;
+  --accent: #85D3BF;
+  --accent-soft: #17322A;
+  --accent-on: #05140F;
+  --accent-2: #D6B184;
+  --verse-bg: #17231F;
+  --verse-ink: #EFF5F0;
+  --verse-ink-2: #BFCFC7;
+  --verse-accent: #8FD6C1;
+  --verse-line: #2E4038;
+  --verse-soft: #1F2F29;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, .5), 0 24px 44px -28px rgba(0, 0, 0, .9);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, .45), 0 10px 20px -16px rgba(0, 0, 0, .8);
+  --focus: #85D3BF;
+}
+
+:root[data-theme="sepia"] {
+  color-scheme: light;
+  --bg: #F6EEDD;
+  --bg-deep: #E9DDC7;
+  --surface: #FDF7EA;
+  --surface-2: #EFE3CE;
+  --surface-3: #F9F1E1;
+  --line: #DCCBB0;
+  --line-strong: #C3AE8D;
+  --ink: #2B2115;
+  --ink-2: #4B3D2B;
+  --ink-3: #6B5A44;
+  --accent: #7A4423;
+  --accent-soft: #EEDFC4;
+  --accent-on: #FFF8EC;
+  --accent-2: #4F6B4A;
+  --verse-bg: #3B2C1D;
+  --verse-ink: #FBF3E3;
+  --verse-ink-2: #D9C7AB;
+  --verse-accent: #E2C089;
+  --verse-line: #5A4632;
+  --verse-soft: #4A3827;
+  --shadow-card: 0 1px 2px rgba(52, 38, 20, .08), 0 20px 36px -26px rgba(52, 38, 20, .45);
+  --shadow-soft: 0 1px 2px rgba(52, 38, 20, .06), 0 10px 20px -16px rgba(52, 38, 20, .35);
+  --focus: #7A4423;
+}
+
+:root[data-theme="amoled"] {
+  color-scheme: dark;
+  --bg: #040706;
+  --bg-deep: #000000;
+  --surface: #070C0A;
+  --surface-2: #0D1412;
+  --surface-3: #050A08;
+  --line: #1B2621;
+  --line-strong: #2B3A33;
+  --ink: #F2F6F3;
+  --ink-2: #C0CCC5;
+  --ink-3: #8F9D96;
+  --accent: #8FE3CD;
+  --accent-soft: #0E211B;
+  --accent-on: #00120D;
+  --accent-2: #DCC49B;
+  --verse-bg: #07120F;
+  --verse-ink: #F4F8F5;
+  --verse-ink-2: #AFC0B8;
+  --verse-accent: #8FE3CD;
+  --verse-line: #243830;
+  --verse-soft: #0C1512;
+  --shadow-card: 0 0 0 1px var(--line);
+  --shadow-soft: 0 0 0 1px var(--line);
+  --focus: #8FE3CD;
+}
+
+/* ============================================================
+   3. Dasar halaman papan
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg-deep);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-5);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+}
+h1, h2, h3, h4, p, figure, blockquote { margin: 0; }
+button { font: inherit; }
+button, [role="switch"] { -webkit-tap-highlight-color: transparent; }
+button:focus-visible,
+[role="switch"]:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.od-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -.15em;
+}
+.ic-14 { --od-icon-size: 14px; }
+.ic-16 { --od-icon-size: 16px; }
+.ic-18 { --od-icon-size: 18px; }
+.ic-20 { --od-icon-size: 20px; }
+.ic-22 { --od-icon-size: 22px; }
+.ic-24 { --od-icon-size: 24px; }
+.nowrap { white-space: nowrap; }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Kepala papan */
+.boardhead {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.boardhead__inner {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.boardhead__id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.boardhead__mark {
+  width: 36px; height: 36px;
+  flex: none;
+  display: grid; place-items: center;
+  border-radius: var(--r-3);
+  background: var(--accent);
+  color: var(--accent-on);
+}
+.boardhead__mark svg { width: 22px; height: 22px; }
+.boardhead__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-8);
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  font-weight: 600;
+  color: var(--ink);
+}
+.boardhead__sub { font-size: var(--fs-2); color: var(--ink-3); line-height: 1.4; }
+.controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.themes {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+}
+.theme {
+  min-height: 44px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--fs-3);
+  font-weight: 550;
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.theme:hover { background: var(--surface-2); color: var(--ink); }
+.theme[aria-pressed="true"] {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+}
+.theme__dot {
+  width: 14px; height: 14px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--sw);
+  box-shadow: inset 0 0 0 3px var(--swa), 0 0 0 1px var(--line-strong);
+}
+.switch {
+  min-height: 44px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  color: var(--ink-2);
+  font-size: var(--fs-3);
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.switch:hover { border-color: var(--line-strong); color: var(--ink); }
+.switch[aria-checked="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+.switch__label { font-weight: 550; }
+.switch__track {
+  width: 36px; height: 20px;
+  flex: none;
+  position: relative;
+  border-radius: var(--r-pill);
+  background: var(--line-strong);
+  transition: background-color var(--t-normal) var(--ease);
+}
+.switch__knob {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform var(--t-normal) var(--ease), background-color var(--t-normal) var(--ease);
+}
+.switch[aria-checked="true"] .switch__track { background: var(--accent); }
+.switch[aria-checked="true"] .switch__knob { transform: translateX(16px); background: var(--accent-on); }
+.switch__state { font-size: var(--fs-2); color: var(--ink-3); min-width: 48px; white-space: nowrap; }
+.switch[aria-checked="true"] .switch__state { color: var(--ink-2); }
+
+/* Anotasi gerak */
+.motionstrip {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 12px 24px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.motionstrip__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-2);
+  font-weight: 650;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-inline-end: 4px;
+}
+.mchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  font-size: var(--fs-2);
+  color: var(--ink-2);
+}
+.mchip b { font-family: var(--font-mono); font-weight: 600; color: var(--ink); font-size: var(--fs-2); }
+.mchip--ease b { letter-spacing: -.02em; }
+
+/* ============================================================
+   4. Papan, label bingkai, dan cangkang perangkat
+   ============================================================ */
+.board {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 24px 24px 56px;
+  display: grid;
+  grid-template-columns: 412px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+.board__col { min-width: 0; display: flex; flex-direction: column; gap: 40px; }
+
+.unit { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.unit__label { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 26px; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--fs-1);
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+.badge--new { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.badge--new::before { background: var(--accent); }
+.unit__meta { margin-inline-start: auto; font-size: var(--fs-2); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* Bingkai ponsel */
+.phone {
+  position: relative;
+  width: 412px;
+  max-width: 100%;
+  padding: 10px;
+  border-radius: 52px;
+  background: linear-gradient(155deg, #3B3F42 0%, #1B1E1F 48%, #0A0B0C 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 0 0 2px rgba(0, 0, 0, .8),
+              0 30px 60px -26px rgba(8, 14, 12, .6), 0 8px 18px -10px rgba(8, 14, 12, .35);
+}
+.phone::before, .phone::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  border-radius: 2px;
+  background: #15181A;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .08);
+}
+.phone::before { left: -2px; top: 150px; height: 76px; }
+.phone::after { right: -2px; top: 220px; height: 64px; }
+.phone__screen {
+  position: relative;
+  width: 390px;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 42px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+}
+.phone__camera {
+  position: absolute;
+  z-index: 4;
+  top: 14px; left: 50%;
+  width: 10px; height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #05070A;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .08);
+  pointer-events: none;
+}
+.statusbar {
+  position: relative;
+  z-index: 3;
+  height: 44px;
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: var(--fs-3);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.statusbar__icons { display: inline-flex; align-items: center; gap: 6px; opacity: .82; }
+.statusbar__icons svg { width: 15px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.homebar {
+  height: 22px;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+}
+.homebar span { width: 96px; height: 4px; border-radius: var(--r-pill); background: var(--ink); opacity: .28; }
+
+/* Bingkai desktop */
+.desk-wrap { min-width: 0; width: 100%; overflow-x: auto; overflow-y: hidden; padding-bottom: 12px; }
+.desk {
+  width: 1440px;
+  zoom: var(--dz, 1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-5);
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 30px 70px -46px rgba(8, 18, 14, .65), 0 2px 6px rgba(8, 18, 14, .08);
+}
+.desk__bar {
+  height: 34px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.desk__dots { display: flex; gap: 6px; flex: none; }
+.desk__dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
+.desk__url {
+  margin: 0 auto;
+  padding: 2px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-3);
+  font-size: var(--fs-2);
+  letter-spacing: .01em;
+}
+
+/* ============================================================
+   5. Komponen aplikasi bersama
+   ============================================================ */
+.app { background: var(--bg); color: var(--ink); position: relative; isolation: isolate; }
+.app--m { width: 100%; }
+.app--d { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 100%; }
+
+.mtop { padding: 8px 20px 14px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+.mtop__row { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mtop__tools { display: flex; align-items: center; gap: 2px; }
+.mmain { padding: 6px 20px 36px; display: flex; flex-direction: column; gap: 32px; }
+
+.brand { display: inline-flex; align-items: center; gap: 8px; min-width: 0; color: var(--ink); }
+.brand__mark {
+  width: 30px; height: 30px;
+  flex: none;
+  display: grid; place-items: center;
+  border-radius: var(--r-3);
+  background: var(--accent);
+  color: var(--accent-on);
+}
+.brand__mark svg { width: 20px; height: 20px; }
+.brand__name { font-family: var(--font-display); font-size: var(--fs-8); line-height: 1; letter-spacing: -.01em; }
+.brand__tag { display: block; font-size: var(--fs-1); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; line-height: 1.3; }
+
+.iconbtn {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.iconbtn:hover { background: var(--surface-2); color: var(--ink); }
+.chipbtn {
+  min-width: 44px; height: 44px;
+  padding: 0 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--fs-3);
+  font-weight: 650;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.chipbtn:hover { border-color: var(--line-strong); color: var(--ink); }
+.avatar {
+  width: 44px; height: 44px;
+  padding: 0;
+  display: grid; place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.avatar__circle {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-4);
+  font-weight: 700;
+  letter-spacing: .02em;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.avatar:hover .avatar__circle { background: var(--accent); color: var(--accent-on); }
+
+.search {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-4);
+  background: var(--surface);
+  color: var(--ink-3);
+  font-size: var(--fs-5);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.search:hover { border-color: var(--line-strong); background: var(--surface-3); color: var(--ink-2); }
+.search .od-icon { color: var(--ink-3); }
+.search--d { width: 420px; }
+
+.eyebrow {
+  font-size: var(--fs-2);
+  font-weight: 650;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1.12;
+  color: var(--ink);
+}
+.display--m { font-size: var(--fs-12); }
+.display--d { font-size: var(--fs-13); }
+.lede { font-size: var(--fs-5); line-height: 1.6; color: var(--ink-2); max-width: 44ch; }
+
+.sect { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.sect__title { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-9); line-height: 1.2; letter-spacing: -.01em; color: var(--ink); }
+.sect__link {
+  min-height: 44px;
+  padding: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: var(--fs-4);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sect__link .od-icon { transition: transform var(--t-fast) var(--ease); }
+.sect__link:hover .od-icon { transform: translateX(2px); }
+
+/* Aksi cepat */
+.quick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.quick__item {
+  min-height: 92px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--r-4);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.quick__item:hover { background: var(--surface-3); }
+.quick__icon {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.quick__item:hover .quick__icon { background: var(--accent); color: var(--accent-on); }
+.quick__item:active .quick__icon { transform: scale(.94); }
+.quick__label { font-size: var(--fs-4); font-weight: 600; line-height: 1.2; }
+.quick__help { font-size: var(--fs-2); line-height: 1.2; color: var(--ink-3); }
+.quick--d { grid-template-columns: repeat(3, 104px); gap: 4px; }
+
+/* Kartu Sauh */
+.hero {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-5);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+@media (hover: hover) {
+  .hero.lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-card), 0 0 0 1px var(--line-strong); }
+}
+.hero__media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #0E3A33; }
+.hero__media > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero__badge {
+  position: absolute;
+  top: 12px; left: 12px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: #0B2A25;
+  color: #F0F6F0;
+  font-size: var(--fs-1);
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.hero__body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; }
+.kicker {
+  font-size: var(--fs-2);
+  font-weight: 650;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  line-height: 1.4;
+}
+.hero__title { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-11); line-height: 1.22; letter-spacing: -.01em; }
+.hero__verse { font-family: var(--font-display); font-size: var(--fs-6); line-height: 1.55; color: var(--ink-2); }
+.hero__ref { font-size: var(--fs-2); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.hero__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  margin-top: 2px;
+  border-top: 1px solid var(--line);
+}
+.meta { font-size: var(--fs-3); color: var(--ink-3); }
+.link {
+  min-height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: var(--fs-4);
+  font-weight: 650;
+  cursor: pointer;
+}
+.link .od-icon { transition: transform var(--t-fast) var(--ease); }
+.link:hover .od-icon { transform: translateX(2px); }
+
+/* Panel ayat */
+.verse {
+  position: relative;
+  overflow: hidden;
+  background: var(--verse-bg);
+  color: var(--verse-ink);
+  border: 1px solid var(--verse-line);
+  border-radius: var(--r-5);
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.verse::before {
+  content: "\201C";
+  position: absolute;
+  top: -18px; right: 10px;
+  font-family: var(--font-display);
+  font-size: 128px;
+  line-height: 1;
+  color: var(--verse-accent);
+  opacity: .16;
+  pointer-events: none;
+}
+.verse__kicker {
+  position: relative;
+  z-index: 1;
+  font-size: var(--fs-2);
+  font-weight: 650;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--verse-accent);
+}
+.verse__text {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: var(--fs-8);
+  line-height: 1.5;
+  letter-spacing: -.01em;
+  max-width: 32ch;
+}
+.verse__ref { position: relative; z-index: 1; font-size: var(--fs-2); letter-spacing: .06em; text-transform: uppercase; color: var(--verse-ink-2); font-weight: 600; }
+.verse__actions { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.ghost {
+  min-height: 44px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--verse-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--verse-ink);
+  font-size: var(--fs-4);
+  font-weight: 550;
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.ghost:hover { background: var(--verse-soft); border-color: var(--verse-ink-2); }
+.verse :focus-visible { outline-color: var(--verse-ink); }
+
+/* Rak dan sampul */
+.rail { --od-gap: 14px; padding-block: 2px 8px; scroll-behavior: smooth; }
+.rail--bleed { margin-inline: -20px; --od-rail-pad: 20px; }
+.book { width: 132px; display: flex; flex-direction: column; gap: 8px; }
+.cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  padding: 12px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: var(--r-1);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08), var(--shadow-soft);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+@media (hover: hover) {
+  .book:hover .cover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08), var(--shadow-card); }
+}
+.cover--a { background: #DCE8DE; color: #14322C; }
+.cover--b { background: #EADFC8; color: #46331A; }
+.cover--c { background: #CFDCE1; color: #1B3540; }
+.cover--d { background: #1C3A33; color: #E9F2EA; }
+.cover--e { background: #E4D5CE; color: #4A2F2A; }
+.cover__pub { font-size: var(--fs-1); font-weight: 700; letter-spacing: .18em; text-transform: uppercase; opacity: .72; }
+.cover__title { font-family: var(--font-display); font-size: var(--fs-6); line-height: 1.14; letter-spacing: -.01em; }
+.cover__rule { width: 24px; height: 1px; background: currentColor; opacity: .4; }
+.cover__author { font-size: var(--fs-1); line-height: 1.3; opacity: .78; letter-spacing: .01em; }
+.book__name { font-family: var(--font-display); font-size: var(--fs-5); font-weight: 600; line-height: 1.3; letter-spacing: -.005em; }
+.book__meta { font-size: var(--fs-2); color: var(--ink-3); line-height: 1.35; }
+
+/* Kartu episode */
+.ep { width: 272px; display: flex; flex-direction: column; gap: 8px; }
+.ep__media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--r-4);
+  background: #12332E;
+  box-shadow: var(--shadow-soft);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+.ep__media > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+@media (hover: hover) {
+  .ep:hover .ep__media { transform: translateY(-2px); box-shadow: var(--shadow-card); }
+}
+.ep__play {
+  position: absolute;
+  left: 10px; bottom: 10px;
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: rgba(9, 26, 22, .82);
+  color: #F2F7F3;
+  transition: background-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.ep:hover .ep__play { background: var(--accent); color: var(--accent-on); transform: scale(1.04); }
+.ep__dur {
+  position: absolute;
+  right: 10px; bottom: 10px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: rgba(9, 26, 22, .82);
+  color: #F2F7F3;
+  font-size: var(--fs-2);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ep__title { font-size: var(--fs-6); font-weight: 650; line-height: 1.35; letter-spacing: -.005em; }
+.ep__meta { font-size: var(--fs-2); color: var(--ink-3); line-height: 1.4; }
+
+/* Navigasi ponsel */
+.tabbar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.tab {
+  min-height: 60px;
+  padding: 8px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: var(--fs-1);
+  font-weight: 550;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.tab:hover { background: var(--surface-3); color: var(--ink-2); }
+.tab.is-active { color: var(--accent); font-weight: 700; }
+.tab__icon {
+  width: 44px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: var(--r-pill);
+  transition: background-color var(--t-fast) var(--ease);
+}
+.tab.is-active .tab__icon { background: var(--accent-soft); }
+
+/* Sidebar desktop */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: 26px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.brand--d { align-items: flex-start; padding: 0 8px; }
+.brand--d .brand__mark { width: 34px; height: 34px; border-radius: var(--r-3); }
+.brand--d .brand__mark svg { width: 22px; height: 22px; }
+.brand--d .brand__name { font-size: var(--fs-9); }
+.snav { display: flex; flex-direction: column; gap: 2px; }
+.snav__item {
+  min-height: 48px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-radius: var(--r-3);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--fs-5);
+  font-weight: 550;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.snav__item .od-icon { color: currentColor; opacity: .82; }
+.snav__item:hover { background: var(--surface-2); color: var(--ink); }
+.snav__item.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 650; }
+.side-quiet { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.side-quiet__text { font-family: var(--font-display); font-size: var(--fs-5); line-height: 1.45; color: var(--ink-2); }
+.side-quiet__ref { font-size: var(--fs-2); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+
+/* Topbar dan isi desktop */
+.dmain { min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
+.dtop { height: 76px; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--line); }
+.dtop__tools { display: flex; align-items: center; gap: 6px; flex: none; }
+.dtop__divider { width: 1px; height: 24px; background: var(--line); margin: 0 6px; }
+.account {
+  min-height: 44px;
+  padding: 0 6px 0 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--fs-4);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease);
+}
+.account:hover { background: var(--surface-2); }
+.dcontent { width: 100%; max-width: 1176px; margin: 0 auto; padding: 32px 48px 56px; display: flex; flex-direction: column; gap: 40px; }
+.dhead { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 32px; }
+.hello { display: flex; flex-direction: column; gap: 10px; }
+.dhead .lede { max-width: 42ch; }
+.hero--d { display: grid; grid-template-columns: 440px minmax(0, 1fr); }
+.hero--d .hero__media { aspect-ratio: auto; min-height: 320px; }
+.hero--d .hero__body { padding: 28px 32px; justify-content: center; gap: 10px; }
+.hero--d .hero__title { font-size: var(--fs-12); }
+.hero--d .hero__verse { font-size: var(--fs-7); }
+.hero--d .hero__foot { margin-top: 10px; }
+.verse--d { padding: 28px 32px; gap: 14px; }
+.verse--d .verse__text { font-size: var(--fs-10); max-width: 62ch; }
+.sect--d { margin-bottom: 16px; }
+.sect--d .sect__title { font-size: var(--fs-11); }
+.grid-books { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; }
+.grid-books .book { width: auto; }
+.grid-books .cover__title { font-size: var(--fs-7); }
+.grid-books .book__name { font-size: var(--fs-6); }
+.grid-eps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.grid-eps .ep { width: auto; }
+.grid-eps .ep__title { font-size: var(--fs-7); }
+
+/* ============================================================
+   6. Tampilan "Saat ini" (lebih datar, kotak, seragam)
+   ============================================================ */
+.ctop {
+  height: 56px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.cbrand { font-size: var(--fs-4); font-weight: 750; letter-spacing: -.01em; }
+.ctop__tools { display: flex; align-items: center; gap: 2px; }
+.cicon {
+  min-width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border: 0;
+  border-radius: var(--r-2);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--fs-3);
+  font-weight: 650;
+  cursor: pointer;
+}
+.cicon:hover { background: var(--surface-2); }
+.csearchrow { padding: 8px 14px 10px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.csearch {
+  width: 100%;
+  height: 44px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-size: var(--fs-3);
+  text-align: left;
+  cursor: pointer;
+}
+.cbody { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.chead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.chead h2 { font-size: var(--fs-8); font-weight: 700; letter-spacing: -.01em; }
+.chead span { font-size: var(--fs-2); color: var(--ink-3); }
+.cquick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.cquick__item {
+  min-height: 72px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--fs-3);
+  font-weight: 600;
+  cursor: pointer;
+}
+.cquick__item:hover { border-color: var(--line-strong); }
+.cquick__item .od-icon { color: var(--ink-3); }
+.cblock { border: 1px solid var(--line); border-radius: var(--r-3); background: var(--surface); overflow: hidden; }
+.cblock__media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #22302C; }
+.cblock__media > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cblock__pad { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.cbadge {
+  position: absolute;
+  top: 10px; left: 10px;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: rgba(9, 24, 20, .82);
+  color: #F1F5F1;
+  font-size: var(--fs-1);
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.ckicker { font-size: var(--fs-1); font-weight: 650; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); line-height: 1.4; }
+.ctitle { font-size: var(--fs-6); font-weight: 700; line-height: 1.35; }
+.cverse { font-size: var(--fs-3); line-height: 1.55; color: var(--ink-2); }
+.cmeta { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: var(--fs-2); color: var(--ink-3); }
+.clink { color: var(--accent); font-weight: 650; }
+.cblock__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.cblock__head h3 { font-size: var(--fs-4); font-weight: 700; }
+.cblock__head span { font-size: var(--fs-2); color: var(--accent); text-decoration: underline; }
+.c-rail { padding: 12px; --od-gap: 10px; }
+.cbook { width: 104px; display: flex; flex-direction: column; gap: 6px; }
+.cbook .cover { width: 104px; }
+.cbook .cover__title { font-size: var(--fs-4); }
+.cbook .cover__author { font-size: var(--fs-1); }
+.cbook__name { font-size: var(--fs-2); font-weight: 600; line-height: 1.3; color: var(--ink-2); }
+.cbook__meta { font-size: var(--fs-1); color: var(--ink-3); }
+.cep { width: 200px; display: flex; flex-direction: column; gap: 6px; }
+.cep__media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--r-2); background: #1A2A26; }
+.cep__media > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cep__dur { position: absolute; right: 6px; bottom: 6px; padding: 1px 6px; border-radius: var(--r-1); background: rgba(9, 24, 20, .82); color: #F1F5F1; font-size: var(--fs-1); font-weight: 600; }
+.cep__title { font-size: var(--fs-3); font-weight: 650; line-height: 1.35; }
+.cep__meta { font-size: var(--fs-1); color: var(--ink-3); }
+.ctabbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--surface); border-top: 1px solid var(--line); }
+.ctab {
+  min-height: 56px;
+  padding: 6px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: var(--fs-2);
+  cursor: pointer;
+}
+.ctab.is-active { color: var(--accent); font-weight: 700; }
+
+/* Varian desktop "Saat ini" */
+.cside { background: var(--surface); border-right: 1px solid var(--line); padding: 22px 14px 20px; display: flex; flex-direction: column; gap: 18px; }
+.cside .cbrand { padding: 0 10px; }
+.cnav { display: flex; flex-direction: column; gap: 2px; }
+.cnav__item {
+  min-height: 44px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: var(--r-2);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--fs-4);
+  text-align: left;
+  cursor: pointer;
+}
+.cnav__item:hover { background: var(--surface-2); }
+.cnav__item.is-active { background: var(--surface-2); color: var(--ink); font-weight: 650; }
+.cside__foot { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-2); color: var(--ink-3); }
+.dtop--cur { height: 60px; padding: 0 28px; }
+.cbody--d { width: 100%; max-width: 1128px; margin: 0 auto; padding: 24px 28px 48px; gap: 14px; }
+.chead--d h2 { font-size: var(--fs-9); }
+.cquick--d { gap: 12px; }
+.cquick--d .cquick__item { min-height: 80px; font-size: var(--fs-4); }
+.cblock--hero { display: grid; grid-template-columns: 340px minmax(0, 1fr); }
+.cblock--hero .cblock__media { aspect-ratio: auto; min-height: 232px; }
+.cblock--hero .cblock__pad { padding: 18px; gap: 8px; }
+.cblock--hero .ctitle { font-size: var(--fs-9); }
+.cblock--hero .cverse { font-size: var(--fs-4); }
+.cgrid { display: grid; gap: 12px; padding: 14px; }
+.cgrid--books { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.cgrid--books .cbook { width: auto; }
+.cgrid--books .cover { width: 100%; }
+.cgrid--books .cover__title { font-size: var(--fs-6); }
+.cgrid--books .cbook__name { font-size: var(--fs-4); }
+.cgrid--eps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cgrid--eps .cep { width: auto; }
+.cgrid--eps .cep__title { font-size: var(--fs-4); }
+
+/* ============================================================
+   7. Gerak: masuk, hover, tekan, fokus, kurangi gerak
+   ============================================================ */
+@keyframes rise {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to { opacity: 1; transform: none; }
+}
+html.anim-ready .reveal { opacity: 0; }
+html.anim-ready .reveal.is-in {
+  opacity: 1;
+  animation: rise var(--t-slow) var(--ease-in) backwards;
+  animation-delay: calc(var(--i, 0) * var(--stagger));
+}
+.theme-fading *, .theme-fading *::before, .theme-fading *::after {
+  transition: background-color var(--t-normal) var(--ease), color var(--t-normal) var(--ease),
+              border-color var(--t-normal) var(--ease), box-shadow var(--t-normal) var(--ease) !important;
+}
+[data-motion="reduce"] .reveal,
+[data-motion="reduce"] .reveal.is-in {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
+[data-motion="reduce"] *,
+[data-motion="reduce"] *::before,
+[data-motion="reduce"] *::after {
+  animation-duration: .001ms !important;
+  animation-delay: 0ms !important;
+  transition-duration: .001ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion="full"]) .reveal,
+  html:not([data-motion="full"]) .reveal.is-in { opacity: 1 !important; animation: none !important; transform: none !important; }
+}
+
+/* ============================================================
+   8. Panel catatan
+   ============================================================ */
+.notes { max-width: 1800px; margin: 0 auto; padding: 0 24px 72px; }
+.notes__head { display: flex; flex-direction: column; gap: 8px; padding: 28px 0 20px; border-top: 1px solid var(--line); }
+.notes__title { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-11); line-height: 1.2; letter-spacing: -.01em; }
+.notes__lede { font-size: var(--fs-5); color: var(--ink-2); max-width: 68ch; line-height: 1.6; }
+.notes__grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-5); padding: 22px 22px 18px; }
+.note--wide { grid-column: 1; grid-row: 1 / span 2; }
+.note:nth-of-type(2) { grid-column: 2; grid-row: 1; }
+.note:nth-of-type(3) { grid-column: 2; grid-row: 2; }
+.note h3 { font-family: var(--font-display); font-size: var(--fs-8); font-weight: 600; line-height: 1.3; margin-bottom: 4px; }
+.note__sub { font-size: var(--fs-2); color: var(--ink-3); margin-bottom: 12px; }
+.numlist { list-style: none; margin: 0; padding: 0; counter-reset: note; }
+.numlist li {
+  counter-increment: note;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-4);
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.numlist li:first-child { border-top: 0; padding-top: 0; }
+.numlist li::before {
+  content: counter(note, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--accent);
+  padding-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.numlist strong { display: block; color: var(--ink); font-weight: 650; margin-bottom: 2px; }
+.plainlist { list-style: none; margin: 0; padding: 0; }
+.plainlist li { padding: 10px 0; border-top: 1px solid var(--line); font-size: var(--fs-4); line-height: 1.55; color: var(--ink-2); }
+.plainlist li:first-child { border-top: 0; padding-top: 0; }
+.plainlist strong { color: var(--ink); font-weight: 650; }
+.tokens { margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-5); padding: 20px 22px; }
+.tokens__title { font-family: var(--font-display); font-size: var(--fs-8); font-weight: 600; margin-bottom: 12px; }
+.tokens__grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.token { padding: 12px; border-radius: var(--r-3); border: 1px solid var(--line); background: var(--surface-3); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.token__k { font-family: var(--font-mono); font-size: var(--fs-3); color: var(--ink); letter-spacing: -.02em; white-space: nowrap; }
+.token__v { font-size: var(--fs-2); color: var(--ink-3); line-height: 1.4; }
+.notes__fine { margin-top: 14px; font-size: var(--fs-2); color: var(--ink-3); line-height: 1.55; }
+
+/* ============================================================
+   9. Responsif
+   ============================================================ */
+@media (max-width: 1279px) {
+  .board { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+  .board__col--phone { display: grid; grid-template-columns: repeat(2, minmax(0, 412px)); gap: 24px; justify-content: center; }
+  .board__col--desk { display: flex; flex-direction: column; gap: 36px; }
+}
+@media (max-width: 1300px) {
+  .tokens__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 1100px) {
+  .notes__grid { grid-template-columns: minmax(0, 1fr); }
+  .note--wide,
+  .note:nth-of-type(2),
+  .note:nth-of-type(3) { grid-column: auto; grid-row: auto; }
+}
+@media (max-width: 920px) {
+  .board__col--phone { grid-template-columns: minmax(0, 412px); }
+  .boardhead { position: static; }
+  .boardhead__inner { padding: 12px 16px; }
+  .boardhead__sub { max-width: 46ch; }
+  .motionstrip { padding: 10px 16px 0; }
+  .board { padding: 20px 16px 40px; }
+  .notes { padding: 0 16px 56px; }
+  .dtop, .dtop--cur { height: 64px; padding: 0 28px; }
+  .dcontent { padding: 28px 28px 48px; }
+  .grid-eps { gap: 16px; }
+}
+@media (max-width: 720px) {
+  .tokens__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .theme { padding: 0 10px; }
+  .theme__name { display: none; }
+  .controls { gap: 6px; }
+  .switch { padding: 0 12px; gap: 8px; }
+  .switch__state { display: none; }
+}
+@media (max-width: 520px) {
+  .phone { zoom: .8; }
+  .unit__meta { margin-inline-start: 0; width: 100%; }
+  .boardhead__title { font-size: var(--fs-7); }
+  .boardhead__mark { width: 32px; height: 32px; }
+  .board { padding: 16px 12px 36px; }
+  .notes { padding: 0 12px 48px; }
+  .dtop, .dtop--cur { padding: 0 16px; }
+  .search--d { width: 100%; }
+  .dtop { gap: 12px; }
+  .account__name { display: none; }
+  .note { padding: 18px 16px 14px; }
+  .tokens { padding: 16px; }
+}
+@media (max-width: 340px) {
+  .phone { zoom: .7; }
+  .badge { padding: 0 8px; letter-spacing: .06em; }
+}
+</style>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.6 12 4l8 6.6V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 1 6.5 21H19"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 17.5V6.2l10-2v11.3"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c1.8 2.2 2.8 3.6 2.8 5.2a2.8 2.8 0 0 1-5.6 0C9.2 6.6 10.2 5.2 12 3Z"/><path d="M9.5 12h5v7.5h-5z"/><path d="M8 21h8"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path d="M4 6h6v6H4zM14 6h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.3 3.6 8.5S14.4 18.1 12 20.5C9.6 18.1 8.4 15.2 8.4 12S9.6 5.9 12 3.5Z"/></symbol>
+  <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4m0 0L8 8m4-4 4 4"/><path d="M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/></symbol>
+</svg>
+
+<header class="boardhead">
+  <div class="boardhead__inner">
+    <div class="boardhead__id">
+      <span class="boardhead__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <circle cx="12" cy="5.6" r="2.1"/>
+          <path d="M12 7.7V20"/>
+          <path d="M7.5 11.5h9"/>
+          <path d="M4.8 15.2c.5 3.1 3.4 5.3 7.2 5.3s6.7-2.2 7.2-5.3"/>
+          <path d="m4.8 15.2-1.3 1.1M19.2 15.2l1.3 1.1"/>
+        </svg>
+      </span>
+      <div>
+        <h1 class="boardhead__title">Rancangan ulang beranda GYSApp</h1>
+        <p class="boardhead__sub">Saat ini dan usulan · ponsel 390 px &amp; desktop 1440 px · empat tema</p>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="themes" role="group" aria-label="Tema pratinjau">
+        <button class="theme" type="button" data-theme-btn="light" aria-pressed="true" aria-label="Tema terang" style="--sw:#FFFFFF; --swa:#0C5A4F">
+          <span class="theme__dot" aria-hidden="true"></span><span class="theme__name">Terang</span>
+        </button>
+        <button class="theme" type="button" data-theme-btn="dark" aria-pressed="false" aria-label="Tema gelap" style="--sw:#161D19; --swa:#85D3BF">
+          <span class="theme__dot" aria-hidden="true"></span><span class="theme__name">Gelap</span>
+        </button>
+        <button class="theme" type="button" data-theme-btn="sepia" aria-pressed="false" aria-label="Tema sepia" style="--sw:#FDF7EA; --swa:#7A4423">
+          <span class="theme__dot" aria-hidden="true"></span><span class="theme__name">Sepia</span>
+        </button>
+        <button class="theme" type="button" data-theme-btn="amoled" aria-pressed="false" aria-label="Tema amoled" style="--sw:#070C0A; --swa:#8FE3CD">
+          <span class="theme__dot" aria-hidden="true"></span><span class="theme__name">Amoled</span>
+        </button>
+      </div>
+      <button class="switch" type="button" role="switch" aria-checked="false" id="motionToggle">
+        <span class="switch__label">Kurangi gerak</span>
+        <span class="switch__track" aria-hidden="true"><span class="switch__knob"></span></span>
+        <span class="switch__state" id="motionState">Nonaktif</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="motionstrip" aria-label="Anotasi token gerak">
+  <span class="motionstrip__label">Arah gerak</span>
+  <span class="mchip"><b>120 ms</b> hover &amp; tekan</span>
+  <span class="mchip"><b>180 ms</b> fokus &amp; tema</span>
+  <span class="mchip"><b>260 ms</b> masuk kartu</span>
+  <span class="mchip"><b>40 ms</b> stagger</span>
+  <span class="mchip mchip--ease"><b>cubic-bezier(0.22, 1, 0.36, 1)</b> standar</span>
+</div>
+
+<main class="board">
+  <div class="board__col board__col--phone">
+
+    <!-- PONSEL · SAAT INI -->
+    <figure class="unit">
+      <figcaption class="unit__label">
+        <span class="badge">Saat ini</span>
+        <span class="unit__meta">Ponsel · 390 px</span>
+      </figcaption>
+      <div class="phone">
+        <div class="phone__screen">
+          <div class="statusbar" aria-hidden="true">
+            <span>9:41</span>
+            <span class="statusbar__icons">
+              <svg viewBox="0 0 15 12"><path d="M1.5 10.5v-2m4 2v-4.5m4 4.5v-7m4 7v-9"/></svg>
+              <svg viewBox="0 0 16 12"><path d="M1.5 4.7a9.2 9.2 0 0 1 13 0M4.2 7.3a5.4 5.4 0 0 1 7.6 0M6.9 10a1.55 1.55 0 0 1 2.2 0"/></svg>
+              <svg viewBox="0 0 20 11"><rect x=".75" y="1.25" width="16.5" height="8.5" rx="2"/><path d="M18.5 4v3M3.2 3.4h10.4v4.2H3.2z" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="phone__camera" aria-hidden="true"></div>
+          <div class="app app--m app--cur">
+            <header class="ctop">
+              <span class="cbrand">GYSApp</span>
+              <div class="ctop__tools">
+                <button class="cicon" type="button" aria-label="Pilih bahasa">ID</button>
+                <button class="cicon" type="button" aria-label="Ubah tema"><svg class="od-icon ic-20"><use href="#i-theme"></use></svg></button>
+                <button class="avatar" type="button" aria-label="Akun Sari"><span class="avatar__circle" aria-hidden="true">S</span></button>
+              </div>
+            </header>
+            <div class="csearchrow">
+              <button class="csearch" type="button" aria-label="Cari di GYSApp">
+                <svg class="od-icon ic-16"><use href="#i-search"></use></svg>
+                <span>Cari ayat, kidung, artikel</span>
+              </button>
+            </div>
+            <div class="cbody">
+              <div class="chead"><h2>Beranda</h2><span>Sabtu, 15 November</span></div>
+              <div class="cquick">
+                <button class="cquick__item" type="button"><svg class="od-icon ic-20"><use href="#i-book"></use></svg><span>Alkitab</span></button>
+                <button class="cquick__item" type="button"><svg class="od-icon ic-20"><use href="#i-music"></use></svg><span>Kidung</span></button>
+                <button class="cquick__item" type="button"><svg class="od-icon ic-20"><use href="#i-flame"></use></svg><span>Iman</span></button>
+              </div>
+              <section class="cblock">
+                <div class="cblock__media">
+                  <svg viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                    <rect width="800" height="450" fill="#22302C"/>
+                    <circle cx="600" cy="140" r="60" fill="#C9B98F" opacity=".8"/>
+                    <path d="M0 300l140-90 120 70 150-110 190 120 200-70v230H0z" fill="#1A2623"/>
+                    <path d="M0 360l180-50 160 40 190-40 270 40v100H0z" fill="#131D1A"/>
+                  </svg>
+                  <span class="cbadge">Sauh</span>
+                </div>
+                <div class="cblock__pad">
+                  <p class="ckicker">Artikel harian · tjc.org</p>
+                  <h3 class="ctitle">Berpegang pada sauh yang teguh</h3>
+                  <p class="cverse">“Pengharapan itu adalah sauh yang kuat dan aman bagi jiwa kita.” <span class="nowrap">Ibrani 6:19</span></p>
+                  <div class="cmeta"><span>5 menit baca</span><span class="clink">Baca</span></div>
+                </div>
+              </section>
+              <section class="cblock">
+                <div class="cblock__pad">
+                  <p class="ckicker">Ayat harian</p>
+                  <p class="cverse">“Allah itu bagi kita tempat perlindungan dan kekuatan, sebagai penolong dalam kesesakan sangat terbukti.”</p>
+                  <div class="cmeta"><span>Mazmur 46:2 · TB</span><span class="clink">Bagikan</span></div>
+                </div>
+              </section>
+              <section class="cblock">
+                <div class="cblock__head"><h3>Pilihan literatur terbaru</h3><span>Lihat semua</span></div>
+                <div class="od-rail c-rail">
+                  <div class="cbook">
+                    <div class="cover cover--a"><span class="cover__pub">GYS</span><span class="cover__title">Kidung Rohani</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <p class="cbook__name">Kidung Rohani</p><p class="cbook__meta">Buku nyanyian</p>
+                  </div>
+                  <div class="cbook">
+                    <div class="cover cover--b"><span class="cover__pub">GYS</span><span class="cover__title">Renungan Pagi</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <p class="cbook__name">Renungan Pagi</p><p class="cbook__meta">Renungan 30 hari</p>
+                  </div>
+                  <div class="cbook">
+                    <div class="cover cover--c"><span class="cover__pub">GYS</span><span class="cover__title">Sari Iman</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <p class="cbook__name">Sari Iman</p><p class="cbook__meta">Kumpulan renungan</p>
+                  </div>
+                  <div class="cbook">
+                    <div class="cover cover--d"><span class="cover__pub">GYS</span><span class="cover__title">Tuntunan Ibadah</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <p class="cbook__name">Tuntunan Ibadah</p><p class="cbook__meta">Panduan kebaktian</p>
+                  </div>
+                </div>
+              </section>
+              <section class="cblock">
+                <div class="cblock__head"><h3>Suara Sejati</h3><span>Semua</span></div>
+                <div class="od-rail c-rail">
+                  <div class="cep">
+                    <div class="cep__media">
+                      <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                        <rect width="640" height="360" fill="#12332E"/>
+                        <circle cx="470" cy="120" r="64" fill="#DCCDA9" opacity=".85"/>
+                        <path d="M0 236c80-16 150-16 230 0s170 16 250 0 110-10 160-4v128H0z" fill="#0C2622"/>
+                        <path d="M0 288c90-14 170-12 250 2s170 12 250-2 90-8 140-4v76H0z" fill="#081B18"/>
+                      </svg>
+                      <span class="cep__dur">12:40</span>
+                    </div>
+                    <p class="cep__title">Berakar dalam Firman</p>
+                    <p class="cep__meta">Renungan audio</p>
+                  </div>
+                  <div class="cep">
+                    <div class="cep__media">
+                      <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                        <rect width="640" height="360" fill="#22333B"/>
+                        <circle cx="320" cy="180" r="76" fill="#E4D3B4" opacity=".75"/>
+                        <path d="M0 250l180-70 160 60 140-50 160 60v110H0z" fill="#16242A"/>
+                        <path d="M0 306l200-40 180 40 260-30v84H0z" fill="#0F1A1F"/>
+                      </svg>
+                      <span class="cep__dur">09:18</span>
+                    </div>
+                    <p class="cep__title">Tenang di Tengah Gelisah</p>
+                    <p class="cep__meta">Renungan audio</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+            <nav class="ctabbar" aria-label="Navigasi utama">
+              <button class="ctab is-active" type="button" aria-current="page"><svg class="od-icon ic-20"><use href="#i-home"></use></svg><span>Beranda</span></button>
+              <button class="ctab" type="button"><svg class="od-icon ic-20"><use href="#i-book"></use></svg><span>Alkitab</span></button>
+              <button class="ctab" type="button"><svg class="od-icon ic-20"><use href="#i-music"></use></svg><span>Kidung</span></button>
+              <button class="ctab" type="button"><svg class="od-icon ic-20"><use href="#i-flame"></use></svg><span>Iman</span></button>
+              <button class="ctab" type="button"><svg class="od-icon ic-20"><use href="#i-more"></use></svg><span>Lainnya</span></button>
+            </nav>
+            <div class="homebar" aria-hidden="true"><span></span></div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <!-- PONSEL · USULAN -->
+    <figure class="unit">
+      <figcaption class="unit__label">
+        <span class="badge badge--new">Usulan</span>
+        <span class="unit__meta">Ponsel · 390 px</span>
+      </figcaption>
+      <div class="phone">
+        <div class="phone__screen">
+          <div class="statusbar" aria-hidden="true">
+            <span>9:41</span>
+            <span class="statusbar__icons">
+              <svg viewBox="0 0 15 12"><path d="M1.5 10.5v-2m4 2v-4.5m4 4.5v-7m4 7v-9"/></svg>
+              <svg viewBox="0 0 16 12"><path d="M1.5 4.7a9.2 9.2 0 0 1 13 0M4.2 7.3a5.4 5.4 0 0 1 7.6 0M6.9 10a1.55 1.55 0 0 1 2.2 0"/></svg>
+              <svg viewBox="0 0 20 11"><rect x=".75" y="1.25" width="16.5" height="8.5" rx="2"/><path d="M18.5 4v3M3.2 3.4h10.4v4.2H3.2z" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="phone__camera" aria-hidden="true"></div>
+          <div class="app app--m app--new">
+            <header class="mtop">
+              <div class="mtop__row">
+                <span class="brand">
+                  <span class="brand__mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                      <circle cx="12" cy="5.6" r="2.1"/>
+                      <path d="M12 7.7V20M7.5 11.5h9"/>
+                      <path d="M4.8 15.2c.5 3.1 3.4 5.3 7.2 5.3s6.7-2.2 7.2-5.3"/>
+                      <path d="m4.8 15.2-1.3 1.1M19.2 15.2l1.3 1.1"/>
+                    </svg>
+                  </span>
+                  <span class="brand__name">GYSApp</span>
+                </span>
+                <div class="mtop__tools">
+                  <button class="chipbtn" type="button" aria-label="Bahasa: Indonesia">ID</button>
+                  <button class="iconbtn" type="button" aria-label="Ubah tema tampilan"><svg class="od-icon ic-20"><use href="#i-theme"></use></svg></button>
+                  <button class="avatar" type="button" aria-label="Akun Sari"><span class="avatar__circle" aria-hidden="true">S</span></button>
+                </div>
+              </div>
+              <button class="search" type="button" aria-label="Cari ayat, kidung, atau artikel">
+                <svg class="od-icon ic-18"><use href="#i-search"></use></svg>
+                <span>Cari ayat, kidung, artikel</span>
+              </button>
+            </header>
+
+            <div class="mmain">
+              <section class="hello reveal" style="--i:0">
+                <p class="eyebrow">Sabtu, 15 November</p>
+                <h2 class="display display--m">Tenang di hadapan-Nya</h2>
+                <p class="lede">Renungan, kidung, dan bacaan singkat untuk menemani hari ini.</p>
+              </section>
+
+              <section class="quick reveal" style="--i:1" aria-label="Aksi cepat">
+                <button class="quick__item" type="button">
+                  <span class="quick__icon"><svg class="od-icon ic-22"><use href="#i-book"></use></svg></span>
+                  <span class="quick__label">Alkitab</span>
+                  <span class="quick__help">Baca pasal</span>
+                </button>
+                <button class="quick__item" type="button">
+                  <span class="quick__icon"><svg class="od-icon ic-22"><use href="#i-music"></use></svg></span>
+                  <span class="quick__label">Kidung</span>
+                  <span class="quick__help">Pilih nyanyian</span>
+                </button>
+                <button class="quick__item" type="button">
+                  <span class="quick__icon"><svg class="od-icon ic-22"><use href="#i-flame"></use></svg></span>
+                  <span class="quick__label">Iman</span>
+                  <span class="quick__help">Tumbuh iman</span>
+                </button>
+              </section>
+
+              <article class="hero lift reveal" style="--i:2">
+                <div class="hero__media">
+                  <svg viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi sauh di atas garis horizon">
+                    <rect width="800" height="450" fill="#0E3A33"/>
+                    <circle cx="236" cy="150" r="112" fill="#164A41" opacity=".55"/>
+                    <circle cx="236" cy="150" r="72" fill="#E8D9B4" opacity=".9"/>
+                    <path d="M0 286c90-18 170-26 260-18s180 30 280 24 190-24 260-20v178H0z" fill="#0B2E29"/>
+                    <path d="M0 336c110-20 200-22 300-12s190 26 290 18 150-18 210-14v122H0z" fill="#082521"/>
+                    <path d="M0 388c120-16 230-18 340-8s220 20 320 12 100-8 140-6v64H0z" fill="#061C19"/>
+                    <g fill="none" stroke="#DCEBE3" stroke-opacity=".3" stroke-width="1.5">
+                      <path d="M60 316h150M60 330h96M560 300h150M560 314h110"/>
+                    </g>
+                    <g fill="none" stroke="#E7F0E9" stroke-opacity=".26" stroke-width="3" stroke-linecap="round">
+                      <circle cx="636" cy="196" r="26"/>
+                      <path d="M636 222v134M588 262h96M582 300c10 30 30 46 54 46s44-16 54-46"/>
+                    </g>
+                  </svg>
+                  <span class="hero__badge">Sauh</span>
+                </div>
+                <div class="hero__body">
+                  <p class="kicker">Artikel harian · tjc.org</p>
+                  <h3 class="hero__title">Berpegang pada sauh yang teguh</h3>
+                  <p class="hero__verse">“Pengharapan itu adalah sauh yang kuat dan aman bagi jiwa kita.”</p>
+                  <p class="hero__ref">Ibrani 6:19</p>
+                  <div class="hero__foot">
+                    <span class="meta">5 menit baca</span>
+                    <button class="link" type="button">Baca renungan <svg class="od-icon ic-16"><use href="#i-arrow"></use></svg></button>
+                  </div>
+                </div>
+              </article>
+
+              <section class="verse reveal" style="--i:3" aria-label="Ayat harian">
+                <p class="verse__kicker">Ayat harian</p>
+                <p class="verse__text">“Allah itu bagi kita tempat perlindungan dan kekuatan, sebagai penolong dalam kesesakan sangat terbukti.”</p>
+                <p class="verse__ref">Mazmur 46:2 · Terjemahan Baru</p>
+                <div class="verse__actions">
+                  <button class="ghost" type="button"><svg class="od-icon ic-16"><use href="#i-copy"></use></svg>Salin</button>
+                  <button class="ghost" type="button"><svg class="od-icon ic-16"><use href="#i-share"></use></svg>Bagikan</button>
+                </div>
+              </section>
+
+              <section class="shelf reveal" style="--i:4">
+                <div class="sect">
+                  <h3 class="sect__title">Pilihan literatur terbaru</h3>
+                  <button class="sect__link" type="button">Lihat semua <svg class="od-icon ic-16"><use href="#i-arrow"></use></svg></button>
+                </div>
+                <div class="rail rail--bleed od-rail">
+                  <article class="book">
+                    <div class="cover cover--a"><span class="cover__pub">GYS</span><span class="cover__title">Kidung Rohani</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <h4 class="book__name">Kidung Rohani</h4>
+                    <p class="book__meta">Buku nyanyian</p>
+                  </article>
+                  <article class="book">
+                    <div class="cover cover--b"><span class="cover__pub">GYS</span><span class="cover__title">Renungan Pagi</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <h4 class="book__name">Renungan Pagi</h4>
+                    <p class="book__meta">Renungan 30 hari</p>
+                  </article>
+                  <article class="book">
+                    <div class="cover cover--c"><span class="cover__pub">GYS</span><span class="cover__title">Sari Iman</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <h4 class="book__name">Sari Iman</h4>
+                    <p class="book__meta">Kumpulan renungan</p>
+                  </article>
+                  <article class="book">
+                    <div class="cover cover--d"><span class="cover__pub">GYS</span><span class="cover__title">Tuntunan Ibadah</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <h4 class="book__name">Tuntunan Ibadah</h4>
+                    <p class="book__meta">Panduan kebaktian</p>
+                  </article>
+                  <article class="book">
+                    <div class="cover cover--e"><span class="cover__pub">GYS</span><span class="cover__title">Doa Sehari-hari</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                    <h4 class="book__name">Doa Sehari-hari</h4>
+                    <p class="book__meta">Kumpulan doa</p>
+                  </article>
+                </div>
+              </section>
+
+              <section class="shelf reveal" style="--i:5">
+                <div class="sect">
+                  <h3 class="sect__title">Suara Sejati</h3>
+                  <button class="sect__link" type="button">Semua episode <svg class="od-icon ic-16"><use href="#i-arrow"></use></svg></button>
+                </div>
+                <div class="rail rail--bleed od-rail">
+                  <article class="ep">
+                    <div class="ep__media">
+                      <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                        <rect width="640" height="360" fill="#12332E"/>
+                        <circle cx="470" cy="120" r="64" fill="#DCCDA9" opacity=".85"/>
+                        <path d="M0 236c80-16 150-16 230 0s170 16 250 0 110-10 160-4v128H0z" fill="#0C2622"/>
+                        <path d="M0 288c90-14 170-12 250 2s170 12 250-2 90-8 140-4v76H0z" fill="#081B18"/>
+                      </svg>
+                      <span class="ep__play" aria-hidden="true"><svg class="od-icon ic-16"><use href="#i-play"></use></svg></span>
+                      <span class="ep__dur">12:40</span>
+                    </div>
+                    <h4 class="ep__title">Berakar dalam Firman</h4>
+                    <p class="ep__meta">Renungan audio</p>
+                  </article>
+                  <article class="ep">
+                    <div class="ep__media">
+                      <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                        <rect width="640" height="360" fill="#243528"/>
+                        <circle cx="170" cy="128" r="52" fill="#CFD8B8" opacity=".8"/>
+                        <path d="M0 270c120-40 240-40 360 0s200 20 280-10v100H0z" fill="#1A281E"/>
+                        <g fill="none" stroke="#CFD8B8" stroke-opacity=".35" stroke-width="2">
+                          <path d="M470 300v-90M470 240l26-22M470 258l-24-20"/>
+                        </g>
+                      </svg>
+                      <span class="ep__play" aria-hidden="true"><svg class="od-icon ic-16"><use href="#i-play"></use></svg></span>
+                      <span class="ep__dur">09:18</span>
+                    </div>
+                    <h4 class="ep__title">Tenang di Tengah Gelisah</h4>
+                    <p class="ep__meta">Renungan audio</p>
+                  </article>
+                  <article class="ep">
+                    <div class="ep__media">
+                      <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                        <rect width="640" height="360" fill="#22333B"/>
+                        <circle cx="320" cy="180" r="76" fill="#E4D3B4" opacity=".75"/>
+                        <path d="M0 250l180-70 160 60 140-50 160 60v110H0z" fill="#16242A"/>
+                        <path d="M0 306l200-40 180 40 260-30v84H0z" fill="#0F1A1F"/>
+                      </svg>
+                      <span class="ep__play" aria-hidden="true"><svg class="od-icon ic-16"><use href="#i-play"></use></svg></span>
+                      <span class="ep__dur">15:02</span>
+                    </div>
+                    <h4 class="ep__title">Sauh yang Menghidupkan</h4>
+                    <p class="ep__meta">Renungan audio</p>
+                  </article>
+                </div>
+              </section>
+            </div>
+
+            <nav class="tabbar" aria-label="Navigasi utama">
+              <button class="tab is-active" type="button" aria-current="page">
+                <span class="tab__icon"><svg class="od-icon ic-22"><use href="#i-home"></use></svg></span>
+                <span>Beranda</span>
+              </button>
+              <button class="tab" type="button">
+                <span class="tab__icon"><svg class="od-icon ic-22"><use href="#i-book"></use></svg></span>
+                <span>Alkitab</span>
+              </button>
+              <button class="tab" type="button">
+                <span class="tab__icon"><svg class="od-icon ic-22"><use href="#i-music"></use></svg></span>
+                <span>Kidung</span>
+              </button>
+              <button class="tab" type="button">
+                <span class="tab__icon"><svg class="od-icon ic-22"><use href="#i-flame"></use></svg></span>
+                <span>Iman</span>
+              </button>
+              <button class="tab" type="button">
+                <span class="tab__icon"><svg class="od-icon ic-22"><use href="#i-more"></use></svg></span>
+                <span>Lainnya</span>
+              </button>
+            </nav>
+            <div class="homebar" aria-hidden="true"><span></span></div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+  </div>
+
+  <div class="board__col board__col--desk">
+
+    <!-- DESKTOP · SAAT INI -->
+    <figure class="unit">
+      <figcaption class="unit__label">
+        <span class="badge">Saat ini</span>
+        <span class="unit__meta">Desktop · 1440 px</span>
+      </figcaption>
+      <div class="desk-wrap" data-deskwrap>
+        <div class="desk">
+          <div class="desk__bar" aria-hidden="true">
+            <span class="desk__dots"><span></span><span></span><span></span></span>
+            <span class="desk__url">gysapp.id/beranda</span>
+          </div>
+          <div class="app app--d app--cur">
+            <aside class="cside">
+              <span class="cbrand">GYSApp</span>
+              <nav class="cnav" aria-label="Navigasi utama">
+                <button class="cnav__item is-active" type="button" aria-current="page"><svg class="od-icon ic-20"><use href="#i-home"></use></svg>Beranda</button>
+                <button class="cnav__item" type="button"><svg class="od-icon ic-20"><use href="#i-book"></use></svg>Alkitab</button>
+                <button class="cnav__item" type="button"><svg class="od-icon ic-20"><use href="#i-music"></use></svg>Kidung</button>
+                <button class="cnav__item" type="button"><svg class="od-icon ic-20"><use href="#i-flame"></use></svg>Iman</button>
+                <button class="cnav__item" type="button"><svg class="od-icon ic-20"><use href="#i-more"></use></svg>Lainnya</button>
+              </nav>
+              <div class="cside__foot"><span>Pusat bantuan</span><span>Tentang GYSApp</span></div>
+            </aside>
+            <div class="dmain">
+              <header class="dtop dtop--cur">
+                <button class="csearch" type="button" aria-label="Cari di GYSApp" style="max-width:340px">
+                  <svg class="od-icon ic-16"><use href="#i-search"></use></svg>
+                  <span>Cari ayat, kidung, artikel</span>
+                </button>
+                <div class="ctop__tools">
+                  <button class="cicon" type="button" aria-label="Bahasa: Indonesia">ID</button>
+                  <button class="cicon" type="button" aria-label="Ubah tema"><svg class="od-icon ic-20"><use href="#i-theme"></use></svg></button>
+                  <button class="avatar" type="button" aria-label="Akun Sari"><span class="avatar__circle" aria-hidden="true">S</span></button>
+                </div>
+              </header>
+              <div class="cbody cbody--d">
+                <div class="chead chead--d"><h2>Beranda</h2><span>Sabtu, 15 November</span></div>
+                <div class="cquick cquick--d">
+                  <button class="cquick__item" type="button"><svg class="od-icon ic-22"><use href="#i-book"></use></svg><span>Alkitab</span></button>
+                  <button class="cquick__item" type="button"><svg class="od-icon ic-22"><use href="#i-music"></use></svg><span>Kidung</span></button>
+                  <button class="cquick__item" type="button"><svg class="od-icon ic-22"><use href="#i-flame"></use></svg><span>Iman</span></button>
+                </div>
+                <section class="cblock cblock--hero">
+                  <div class="cblock__media">
+                    <svg viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                      <rect width="800" height="450" fill="#22302C"/>
+                      <circle cx="600" cy="140" r="60" fill="#C9B98F" opacity=".8"/>
+                      <path d="M0 300l140-90 120 70 150-110 190 120 200-70v230H0z" fill="#1A2623"/>
+                      <path d="M0 360l180-50 160 40 190-40 270 40v100H0z" fill="#131D1A"/>
+                    </svg>
+                    <span class="cbadge">Sauh</span>
+                  </div>
+                  <div class="cblock__pad">
+                    <p class="ckicker">Artikel harian · tjc.org</p>
+                    <h3 class="ctitle">Berpegang pada sauh yang teguh</h3>
+                    <p class="cverse">“Pengharapan itu adalah sauh yang kuat dan aman bagi jiwa kita.” <span class="nowrap">Ibrani 6:19</span></p>
+                    <div class="cmeta"><span>5 menit baca</span><span class="clink">Baca renungan</span></div>
+                  </div>
+                </section>
+                <section class="cblock">
+                  <div class="cblock__pad">
+                    <p class="ckicker">Ayat harian</p>
+                    <p class="cverse">“Allah itu bagi kita tempat perlindungan dan kekuatan, sebagai penolong dalam kesesakan sangat terbukti.”</p>
+                    <div class="cmeta"><span>Mazmur 46:2 · TB</span><span class="clink">Salin · Bagikan</span></div>
+                  </div>
+                </section>
+                <section class="cblock">
+                  <div class="cblock__head"><h3>Pilihan literatur terbaru</h3><span>Lihat semua</span></div>
+                  <div class="cgrid cgrid--books">
+                    <div class="cbook">
+                      <div class="cover cover--a"><span class="cover__pub">GYS</span><span class="cover__title">Kidung Rohani</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <p class="cbook__name">Kidung Rohani</p><p class="cbook__meta">Buku nyanyian</p>
+                    </div>
+                    <div class="cbook">
+                      <div class="cover cover--b"><span class="cover__pub">GYS</span><span class="cover__title">Renungan Pagi</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <p class="cbook__name">Renungan Pagi</p><p class="cbook__meta">Renungan 30 hari</p>
+                    </div>
+                    <div class="cbook">
+                      <div class="cover cover--c"><span class="cover__pub">GYS</span><span class="cover__title">Sari Iman</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <p class="cbook__name">Sari Iman</p><p class="cbook__meta">Kumpulan renungan</p>
+                    </div>
+                    <div class="cbook">
+                      <div class="cover cover--d"><span class="cover__pub">GYS</span><span class="cover__title">Tuntunan Ibadah</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <p class="cbook__name">Tuntunan Ibadah</p><p class="cbook__meta">Panduan kebaktian</p>
+                    </div>
+                    <div class="cbook">
+                      <div class="cover cover--e"><span class="cover__pub">GYS</span><span class="cover__title">Doa Sehari-hari</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <p class="cbook__name">Doa Sehari-hari</p><p class="cbook__meta">Kumpulan doa</p>
+                    </div>
+                  </div>
+                </section>
+                <section class="cblock">
+                  <div class="cblock__head"><h3>Suara Sejati</h3><span>Semua episode</span></div>
+                  <div class="cgrid cgrid--eps">
+                    <div class="cep">
+                      <div class="cep__media">
+                        <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                          <rect width="640" height="360" fill="#12332E"/>
+                          <circle cx="470" cy="120" r="64" fill="#DCCDA9" opacity=".85"/>
+                          <path d="M0 236c80-16 150-16 230 0s170 16 250 0 110-10 160-4v128H0z" fill="#0C2622"/>
+                          <path d="M0 288c90-14 170-12 250 2s170 12 250-2 90-8 140-4v76H0z" fill="#081B18"/>
+                        </svg>
+                        <span class="cep__dur">12:40</span>
+                      </div>
+                      <p class="cep__title">Berakar dalam Firman</p>
+                      <p class="cep__meta">Renungan audio</p>
+                    </div>
+                    <div class="cep">
+                      <div class="cep__media">
+                        <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                          <rect width="640" height="360" fill="#243528"/>
+                          <circle cx="170" cy="128" r="52" fill="#CFD8B8" opacity=".8"/>
+                          <path d="M0 270c120-40 240-40 360 0s200 20 280-10v100H0z" fill="#1A281E"/>
+                          <g fill="none" stroke="#CFD8B8" stroke-opacity=".35" stroke-width="2">
+                            <path d="M470 300v-90M470 240l26-22M470 258l-24-20"/>
+                          </g>
+                        </svg>
+                        <span class="cep__dur">09:18</span>
+                      </div>
+                      <p class="cep__title">Tenang di Tengah Gelisah</p>
+                      <p class="cep__meta">Renungan audio</p>
+                    </div>
+                    <div class="cep">
+                      <div class="cep__media">
+                        <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                          <rect width="640" height="360" fill="#22333B"/>
+                          <circle cx="320" cy="180" r="76" fill="#E4D3B4" opacity=".75"/>
+                          <path d="M0 250l180-70 160 60 140-50 160 60v110H0z" fill="#16242A"/>
+                          <path d="M0 306l200-40 180 40 260-30v84H0z" fill="#0F1A1F"/>
+                        </svg>
+                        <span class="cep__dur">15:02</span>
+                      </div>
+                      <p class="cep__title">Sauh yang Menghidupkan</p>
+                      <p class="cep__meta">Renungan audio</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <!-- DESKTOP · USULAN -->
+    <figure class="unit">
+      <figcaption class="unit__label">
+        <span class="badge badge--new">Usulan</span>
+        <span class="unit__meta">Desktop · 1440 px</span>
+      </figcaption>
+      <div class="desk-wrap" data-deskwrap>
+        <div class="desk">
+          <div class="desk__bar" aria-hidden="true">
+            <span class="desk__dots"><span></span><span></span><span></span></span>
+            <span class="desk__url">gysapp.id/beranda</span>
+          </div>
+          <div class="app app--d app--new">
+            <aside class="sidebar">
+              <span class="brand brand--d">
+                <span class="brand__mark" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <circle cx="12" cy="5.6" r="2.1"/>
+                    <path d="M12 7.7V20M7.5 11.5h9"/>
+                    <path d="M4.8 15.2c.5 3.1 3.4 5.3 7.2 5.3s6.7-2.2 7.2-5.3"/>
+                    <path d="m4.8 15.2-1.3 1.1M19.2 15.2l1.3 1.1"/>
+                  </svg>
+                </span>
+                <span>
+                  <span class="brand__name">GYSApp</span>
+                  <span class="brand__tag">Gereja Yesus Sejati</span>
+                </span>
+              </span>
+              <nav class="snav" aria-label="Navigasi utama">
+                <button class="snav__item is-active" type="button" aria-current="page"><svg class="od-icon ic-22"><use href="#i-home"></use></svg>Beranda</button>
+                <button class="snav__item" type="button"><svg class="od-icon ic-22"><use href="#i-book"></use></svg>Alkitab</button>
+                <button class="snav__item" type="button"><svg class="od-icon ic-22"><use href="#i-music"></use></svg>Kidung</button>
+                <button class="snav__item" type="button"><svg class="od-icon ic-22"><use href="#i-flame"></use></svg>Iman</button>
+                <button class="snav__item" type="button"><svg class="od-icon ic-22"><use href="#i-more"></use></svg>Lainnya</button>
+              </nav>
+              <div class="side-quiet">
+                <p class="eyebrow">Ayat hari ini</p>
+                <p class="side-quiet__text">“Pengharapan itu adalah sauh yang kuat dan aman bagi jiwa kita.”</p>
+                <p class="side-quiet__ref">Ibrani 6:19</p>
+              </div>
+            </aside>
+            <div class="dmain">
+              <header class="dtop">
+                <button class="search search--d" type="button" aria-label="Cari ayat, kidung, atau artikel">
+                  <svg class="od-icon ic-18"><use href="#i-search"></use></svg>
+                  <span>Cari ayat, kidung, artikel</span>
+                </button>
+                <div class="dtop__tools">
+                  <button class="chipbtn" type="button" aria-label="Bahasa: Indonesia">
+                    <svg class="od-icon ic-16" style="margin-right:6px"><use href="#i-globe"></use></svg>Indonesia
+                  </button>
+                  <button class="iconbtn" type="button" aria-label="Ubah tema tampilan"><svg class="od-icon ic-20"><use href="#i-theme"></use></svg></button>
+                  <span class="dtop__divider" aria-hidden="true"></span>
+                  <button class="account" type="button">
+                    <span class="avatar" aria-hidden="true"><span class="avatar__circle">S</span></span>
+                    <span class="account__name">Sari</span>
+                    <svg class="od-icon ic-16"><use href="#i-chevron"></use></svg>
+                  </button>
+                </div>
+              </header>
+
+              <div class="dcontent">
+                <section class="dhead">
+                  <div class="hello reveal" style="--i:0">
+                    <p class="eyebrow">Beranda · Sabtu, 15 November</p>
+                    <h2 class="display display--d">Tenang di hadapan-Nya</h2>
+                    <p class="lede">Renungan, kidung, dan bacaan singkat untuk menemani hari ini.</p>
+                  </div>
+                  <div class="quick quick--d reveal" style="--i:1" aria-label="Aksi cepat">
+                    <button class="quick__item" type="button">
+                      <span class="quick__icon"><svg class="od-icon ic-22"><use href="#i-book"></use></svg></span>
+                      <span class="quick__label">Alkitab</span>
+                      <span class="quick__help">Baca pasal</span>
+                    </button>
+                    <button class="quick__item" type="button">
+                      <span class="quick__icon"><svg class="od-icon ic-22"><use href="#i-music"></use></svg></span>
+                      <span class="quick__label">Kidung</span>
+                      <span class="quick__help">Pilih nyanyian</span>
+                    </button>
+                    <button class="quick__item" type="button">
+                      <span class="quick__icon"><svg class="od-icon ic-22"><use href="#i-flame"></use></svg></span>
+                      <span class="quick__label">Iman</span>
+                      <span class="quick__help">Tumbuh iman</span>
+                    </button>
+                  </div>
+                </section>
+
+                <article class="hero hero--d lift reveal" style="--i:2">
+                  <div class="hero__media">
+                    <svg viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi sauh di atas garis horizon">
+                      <rect width="800" height="450" fill="#0E3A33"/>
+                      <circle cx="236" cy="150" r="112" fill="#164A41" opacity=".55"/>
+                      <circle cx="236" cy="150" r="72" fill="#E8D9B4" opacity=".9"/>
+                      <path d="M0 286c90-18 170-26 260-18s180 30 280 24 190-24 260-20v178H0z" fill="#0B2E29"/>
+                      <path d="M0 336c110-20 200-22 300-12s190 26 290 18 150-18 210-14v122H0z" fill="#082521"/>
+                      <path d="M0 388c120-16 230-18 340-8s220 20 320 12 100-8 140-6v64H0z" fill="#061C19"/>
+                      <g fill="none" stroke="#DCEBE3" stroke-opacity=".3" stroke-width="1.5">
+                        <path d="M60 316h150M60 330h96M560 300h150M560 314h110"/>
+                      </g>
+                      <g fill="none" stroke="#E7F0E9" stroke-opacity=".26" stroke-width="3" stroke-linecap="round">
+                        <circle cx="636" cy="196" r="26"/>
+                        <path d="M636 222v134M588 262h96M582 300c10 30 30 46 54 46s44-16 54-46"/>
+                      </g>
+                    </svg>
+                    <span class="hero__badge">Sauh</span>
+                  </div>
+                  <div class="hero__body">
+                    <p class="kicker">Artikel harian · tjc.org</p>
+                    <h3 class="hero__title">Berpegang pada sauh yang teguh</h3>
+                    <p class="hero__verse">“Pengharapan itu adalah sauh yang kuat dan aman bagi jiwa kita.”</p>
+                    <p class="hero__ref">Ibrani 6:19</p>
+                    <div class="hero__foot">
+                      <span class="meta">5 menit baca</span>
+                      <button class="link" type="button">Baca renungan <svg class="od-icon ic-16"><use href="#i-arrow"></use></svg></button>
+                    </div>
+                  </div>
+                </article>
+
+                <section class="verse verse--d reveal" style="--i:3" aria-label="Ayat harian">
+                  <p class="verse__kicker">Ayat harian</p>
+                  <p class="verse__text">“Allah itu bagi kita tempat perlindungan dan kekuatan, sebagai penolong dalam kesesakan sangat terbukti.”</p>
+                  <p class="verse__ref">Mazmur 46:2 · Terjemahan Baru</p>
+                  <div class="verse__actions">
+                    <button class="ghost" type="button"><svg class="od-icon ic-16"><use href="#i-copy"></use></svg>Salin</button>
+                    <button class="ghost" type="button"><svg class="od-icon ic-16"><use href="#i-share"></use></svg>Bagikan</button>
+                  </div>
+                </section>
+
+                <section class="shelf reveal" style="--i:4">
+                  <div class="sect sect--d">
+                    <h3 class="sect__title">Pilihan literatur terbaru</h3>
+                    <button class="sect__link" type="button">Lihat semua <svg class="od-icon ic-16"><use href="#i-arrow"></use></svg></button>
+                  </div>
+                  <div class="grid-books">
+                    <article class="book">
+                      <div class="cover cover--a"><span class="cover__pub">GYS</span><span class="cover__title">Kidung Rohani</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <h4 class="book__name">Kidung Rohani</h4>
+                      <p class="book__meta">Buku nyanyian</p>
+                    </article>
+                    <article class="book">
+                      <div class="cover cover--b"><span class="cover__pub">GYS</span><span class="cover__title">Renungan Pagi</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <h4 class="book__name">Renungan Pagi</h4>
+                      <p class="book__meta">Renungan 30 hari</p>
+                    </article>
+                    <article class="book">
+                      <div class="cover cover--c"><span class="cover__pub">GYS</span><span class="cover__title">Sari Iman</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <h4 class="book__name">Sari Iman</h4>
+                      <p class="book__meta">Kumpulan renungan</p>
+                    </article>
+                    <article class="book">
+                      <div class="cover cover--d"><span class="cover__pub">GYS</span><span class="cover__title">Tuntunan Ibadah</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <h4 class="book__name">Tuntunan Ibadah</h4>
+                      <p class="book__meta">Panduan kebaktian</p>
+                    </article>
+                    <article class="book">
+                      <div class="cover cover--e"><span class="cover__pub">GYS</span><span class="cover__title">Doa Sehari-hari</span><span class="cover__rule" aria-hidden="true"></span><span class="cover__author">Gereja Yesus Sejati</span></div>
+                      <h4 class="book__name">Doa Sehari-hari</h4>
+                      <p class="book__meta">Kumpulan doa</p>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="shelf reveal" style="--i:5">
+                  <div class="sect sect--d">
+                    <h3 class="sect__title">Suara Sejati</h3>
+                    <button class="sect__link" type="button">Semua episode <svg class="od-icon ic-16"><use href="#i-arrow"></use></svg></button>
+                  </div>
+                  <div class="grid-eps">
+                    <article class="ep">
+                      <div class="ep__media">
+                        <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                          <rect width="640" height="360" fill="#12332E"/>
+                          <circle cx="470" cy="120" r="64" fill="#DCCDA9" opacity=".85"/>
+                          <path d="M0 236c80-16 150-16 230 0s170 16 250 0 110-10 160-4v128H0z" fill="#0C2622"/>
+                          <path d="M0 288c90-14 170-12 250 2s170 12 250-2 90-8 140-4v76H0z" fill="#081B18"/>
+                        </svg>
+                        <span class="ep__play" aria-hidden="true"><svg class="od-icon ic-16"><use href="#i-play"></use></svg></span>
+                        <span class="ep__dur">12:40</span>
+                      </div>
+                      <h4 class="ep__title">Berakar dalam Firman</h4>
+                      <p class="ep__meta">Renungan audio</p>
+                    </article>
+                    <article class="ep">
+                      <div class="ep__media">
+                        <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                          <rect width="640" height="360" fill="#243528"/>
+                          <circle cx="170" cy="128" r="52" fill="#CFD8B8" opacity=".8"/>
+                          <path d="M0 270c120-40 240-40 360 0s200 20 280-10v100H0z" fill="#1A281E"/>
+                          <g fill="none" stroke="#CFD8B8" stroke-opacity=".35" stroke-width="2">
+                            <path d="M470 300v-90M470 240l26-22M470 258l-24-20"/>
+                          </g>
+                        </svg>
+                        <span class="ep__play" aria-hidden="true"><svg class="od-icon ic-16"><use href="#i-play"></use></svg></span>
+                        <span class="ep__dur">09:18</span>
+                      </div>
+                      <h4 class="ep__title">Tenang di Tengah Gelisah</h4>
+                      <p class="ep__meta">Renungan audio</p>
+                    </article>
+                    <article class="ep">
+                      <div class="ep__media">
+                        <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                          <rect width="640" height="360" fill="#22333B"/>
+                          <circle cx="320" cy="180" r="76" fill="#E4D3B4" opacity=".75"/>
+                          <path d="M0 250l180-70 160 60 140-50 160 60v110H0z" fill="#16242A"/>
+                          <path d="M0 306l200-40 180 40 260-30v84H0z" fill="#0F1A1F"/>
+                        </svg>
+                        <span class="ep__play" aria-hidden="true"><svg class="od-icon ic-16"><use href="#i-play"></use></svg></span>
+                        <span class="ep__dur">15:02</span>
+                      </div>
+                      <h4 class="ep__title">Sauh yang Menghidupkan</h4>
+                      <p class="ep__meta">Renungan audio</p>
+                    </article>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+  </div>
+</main>
+
+<section class="notes" aria-labelledby="notesTitle">
+  <div class="notes__head">
+    <p class="eyebrow">Catatan rancangan</p>
+    <h2 class="notes__title" id="notesTitle">Dua belas perubahan, satu arah yang sama</h2>
+    <p class="notes__lede">Usulan tidak menambah fitur. Yang berubah adalah cara konten yang sudah ada ditata, diberi napas, dan diberi bobot — supaya beranda terasa seperti ruang untuk berhenti, bukan papan informasi yang harus dipindai.</p>
+  </div>
+
+  <div class="notes__grid">
+    <article class="note note--wide">
+      <h3>Perubahan dan alasannya</h3>
+      <p class="note__sub">Dari yang paling menentukan hierarki sampai detail gerak.</p>
+      <ol class="numlist">
+        <li><span><strong>Hierarki tiga lapis.</strong>Sapaan kecil, judul serif besar, lalu isi. Mata tahu harus mulai dari mana; versi lama memberi bobot hampir sama ke semua blok.</span></li>
+        <li><span><strong>Ritme jarak, bukan kotak.</strong>Bagian berjarak 32–40 px dan isi kartu 10–18 px. Bingkai tipis dipakai hanya saat benar-benar memisahkan, sehingga konten yang memisahkan diri — bukan garisnya.</span></li>
+        <li><span><strong>Sauh jadi satu-satunya hero.</strong>Satu kartu berbayang dengan media lebar menandai “baca ini dulu”; bagian lain turun satu tingkat agar tidak bersaing.</span></li>
+        <li><span><strong>Tiga aksi cepat tanpa bingkai.</strong>Ikon dalam lingkaran tipis dengan label dan kata kerja kecil. Tiga pintu, bukan tiga kotak yang bersaing dengan konten utama.</span></li>
+        <li><span><strong>Panel ayat dibalik.</strong>Permukaan gelap memutus ritme terang dan memberi satu momen hening. Teksnya tetap ≥4,5:1 di semua tema.</span></li>
+        <li><span><strong>Rak literatur tanpa wadah.</strong>Sampul 2:3 dengan intipan di tepi mengundang geser; panel berbingkai lama membuat rak terasa terkunci.</span></li>
+        <li><span><strong>Sampul punya wajah.</strong>Judul dan penulis muncul di bawah sampul, bukan thumbnail seragam. Hierarki buku terbaca sebelum dipilih.</span></li>
+        <li><span><strong>Suara Sejati 16:9.</strong>Tombol putar dan durasi menempel di media, jadi jenis dan panjang konten langsung dikenali tanpa membaca meta.</span></li>
+        <li><span><strong>Serif untuk suara, sans untuk alat.</strong>Judul dan ayat memakai serif; navigasi, tombol, dan meta tetap sans agar presisi dan tidak terasa seperti dokumen.</span></li>
+        <li><span><strong>Topbar ponsel dua baris.</strong>Merek dan alat di baris pertama, pencarian penuh di baris kedua. Semua target ≥44 px dan tidak ada yang terjepit di 390 px.</span></li>
+        <li><span><strong>Navigasi mengikuti lebar.</strong>Bottom-nav lima item di ponsel, sidebar lega di desktop; posisi dan urutan menu tetap sama agar pengguna tidak belajar dua kali.</span></li>
+        <li><span><strong>Gerak hanya untuk menjelaskan.</strong>Hover dan tekan 120 ms, fokus serta transisi tema 180 ms, kartu masuk 260 ms dengan stagger 40 ms. Semuanya berhenti lewat “Kurangi gerak”.</span></li>
+      </ol>
+    </article>
+
+    <article class="note">
+      <h3>Sengaja tidak diubah</h3>
+      <p class="note__sub">Batas yang dijaga agar usulan tetap bisa dipindahkan ke kode yang ada.</p>
+      <ul class="plainlist">
+        <li><strong>Lima tujuan navigasi</strong> dan urutannya: Beranda, Alkitab, Kidung, Iman, Lainnya.</li>
+        <li><strong>Empat tema</strong> serta token warna, 13 langkah tipe, radius 6–24, dan spacing kelipatan 2.</li>
+        <li><strong>Struktur konten:</strong> Sauh, tiga aksi, ayat harian, rak literatur, dan Suara Sejati.</li>
+        <li><strong>Bahasa dan nada:</strong> Indonesia, tenang, tanpa angka atau klaim baru.</li>
+        <li><strong>Target sentuh 44 px</strong> dan kontras teks minimal 4,5:1, termasuk di panel gelap.</li>
+        <li><strong>Tidak ada fitur, menu, atau halaman baru.</strong> Tidak ada pencarian baru, notifikasi, atau personalisasi tambahan.</li>
+      </ul>
+    </article>
+
+    <article class="note">
+      <h3>Risiko implementasi</h3>
+      <p class="note__sub">Yang perlu diuji sebelum rilis, bukan setelah.</p>
+      <ul class="plainlist">
+        <li><strong>Serif bergantung perangkat.</strong> Georgia dan Palatino berbeda di Android dan Windows; uji fallback dan metrik baris.</li>
+        <li><strong>Bingkai desktop berskala.</strong> Ukuran rancangan 1440 px; di layar sempit bingkai diperkecil agar tetap berdampingan.</li>
+        <li><strong>Sampul dan ilustrasi dari kode.</strong> Saat aset asli tersedia, pertahankan rasio 2:3 dan 16:9 agar tata letak tidak bergeser.</li>
+        <li><strong>Rak horizontal.</strong> Butuh scroll-snap, isyarat geser, dan “Lihat semua” sebagai jalur keyboard yang setara.</li>
+        <li><strong>Lebar desktop.</strong> Sidebar 264 px + konten 1080 px = 1344 px; di layar 1280 px konten menyempit dan perlu uji reflow.</li>
+        <li><strong>Animasi masuk.</strong> Memakai IntersectionObserver; sediakan fallback agar kartu tetap terlihat tanpa JavaScript.</li>
+        <li><strong>Panel gelap.</strong> Perlu diuji ulang jika aksen tema diganti atau kontras dinaikkan.</li>
+      </ul>
+    </article>
+  </div>
+
+  <div class="tokens">
+    <h3 class="tokens__title">Token gerak yang dipakai</h3>
+    <div class="tokens__grid">
+      <div class="token"><span class="token__k">fast · 120 ms</span><span class="token__v">Hover, tekan, panah tautan</span></div>
+      <div class="token"><span class="token__k">normal · 180 ms</span><span class="token__v">Cincin fokus, transisi tema</span></div>
+      <div class="token"><span class="token__k">slow · 260 ms</span><span class="token__v">Kartu masuk (opacity + 10 px)</span></div>
+      <div class="token"><span class="token__k">stagger · 40 ms</span><span class="token__v">Jeda antar kartu satu kelompok</span></div>
+      <div class="token"><span class="token__k">cubic-bezier(.22,1,.36,1)</span><span class="token__v">Easing standar untuk state</span></div>
+      <div class="token"><span class="token__k">cubic-bezier(.16,1,.3,1)</span><span class="token__v">Easing entrance kartu</span></div>
+    </div>
+    <p class="notes__fine">Bingkai di atas adalah spesimen visual: hover, fokus, dan tekan bekerja, tetapi tombol di dalamnya tidak menjalankan alur aplikasi. Yang benar-benar berfungsi di halaman ini adalah pemilih tema, saklar “Kurangi gerak”, fokus keyboard, dan gerak masuk kartu.</p>
+  </div>
+</section>
+
+<script>
+document.documentElement.classList.add('js');
+(function () {
+  var root = document.documentElement;
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll('[data-theme-btn]'));
+  var themeGroup = document.querySelector('.themes');
+  var motionBtn = document.getElementById('motionToggle');
+  var motionState = document.getElementById('motionState');
+  var deskWraps = Array.prototype.slice.call(document.querySelectorAll('[data-deskwrap]'));
+  var fadeTimer = null;
+
+  function store(key, value) {
+    try { localStorage.setItem(key, value); } catch (error) { /* pratinjau bisa memblokir penyimpanan */ }
+  }
+  function read(key) {
+    try { return localStorage.getItem(key); } catch (error) { return null; }
+  }
+
+  function reducedNow() {
+    return root.getAttribute('data-motion') === 'reduce';
+  }
+
+  function setTheme(name, animate) {
+    if (animate && !reducedNow()) {
+      root.classList.add('theme-fading');
+      window.clearTimeout(fadeTimer);
+      fadeTimer = window.setTimeout(function () { root.classList.remove('theme-fading'); }, 240);
+    }
+    root.setAttribute('data-theme', name);
+    themeButtons.forEach(function (button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-theme-btn') === name));
+    });
+  }
+
+  function setMotion(reduce, persist) {
+    root.setAttribute('data-motion', reduce ? 'reduce' : 'full');
+    motionBtn.setAttribute('aria-checked', String(reduce));
+    motionState.textContent = reduce ? 'Aktif' : 'Nonaktif';
+    if (persist) store('gys.motion', reduce ? 'reduce' : 'full');
+  }
+
+  themeButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      setTheme(button.getAttribute('data-theme-btn'), true);
+      store('gys.theme', button.getAttribute('data-theme-btn'));
+    });
+  });
+
+  if (themeGroup) {
+    themeGroup.addEventListener('keydown', function (event) {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      var current = themeButtons.indexOf(document.activeElement);
+      if (current < 0) return;
+      event.preventDefault();
+      var next = event.key === 'ArrowRight'
+        ? (current + 1) % themeButtons.length
+        : (current - 1 + themeButtons.length) % themeButtons.length;
+      themeButtons[next].focus();
+      themeButtons[next].click();
+    });
+  }
+
+  motionBtn.addEventListener('click', function () {
+    setMotion(!reducedNow(), true);
+  });
+
+  var storedTheme = read('gys.theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var allowedThemes = ['light', 'dark', 'sepia', 'amoled'];
+  var startTheme = allowedThemes.indexOf(storedTheme) >= 0 ? storedTheme : (prefersDark ? 'dark' : 'light');
+  setTheme(startTheme, false);
+
+  var storedMotion = read('gys.motion');
+  var systemReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setMotion(storedMotion ? storedMotion === 'reduce' : !!systemReduce, false);
+
+  function fitDesk() {
+    deskWraps.forEach(function (wrap) {
+      var width = wrap.clientWidth - 2;
+      var scale = Math.min(1, Math.max(0.2, width / 1440));
+      wrap.style.setProperty('--dz', scale.toFixed(4));
+    });
+  }
+  fitDesk();
+  window.addEventListener('resize', fitDesk);
+  if (window.ResizeObserver) {
+    var resizeObserver = new ResizeObserver(fitDesk);
+    deskWraps.forEach(function (wrap) { resizeObserver.observe(wrap); });
+  }
+
+  var reveals = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  function revealAll() { reveals.forEach(function (el) { el.classList.add('is-in'); }); }
+  root.classList.add('anim-ready');
+  window.setTimeout(revealAll, 3000);
+  try {
+    if (!('IntersectionObserver' in window)) {
+      revealAll();
+    } else {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+      reveals.forEach(function (el) { observer.observe(el); });
+    }
+  } catch (error) {
+    revealAll();
+  }
+})();
+</script>
+</body>
+</html>

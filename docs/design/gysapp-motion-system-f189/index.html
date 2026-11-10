@@ -1,0 +1,3470 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-reduced="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>GYSApp — Motion system</title>
+<style>
+/* OD-LAYOUT-PRIMITIVES v1 — structure only: display, flex/grid, overflow, wrapping, ratio, geometry.
+   Put this @layer first; product CSS outside the layer wins ordinary layout rules.
+   Native hidden and closed-dialog states take precedence over component display rules. */
+@layer od-layout {
+  [hidden]:not([hidden="until-found" i]) { display: none !important; }
+  dialog:not([open]) { display: none !important; }
+
+  :where(.od-stack,.od-row,.od-row-top,.od-cluster,.od-grid,.od-field,.od-stat,.od-cell,.od-tile) > :where(*) { min-width: 0; }
+
+  /* containers */
+  .od-stack   { display: flex; flex-direction: column; gap: var(--od-gap, 8px); }
+  .od-row     { display: flex; align-items: center; gap: var(--od-gap, 8px); }
+  .od-row-top { display: flex; align-items: flex-start; gap: var(--od-gap, 8px); }
+  .od-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--od-gap, 8px); }
+  .od-fill    { flex: 1 1 0; min-width: 0; }
+  .od-fixed   { flex: none; }
+  .od-grid    { display: grid; gap: var(--od-gap, 12px); grid-template-columns: repeat(var(--od-cols, 3), minmax(0, 1fr)); }
+
+  /* stacked information: each piece is its own line — never sibling inline spans */
+  .od-stat, .od-field, .od-cell { display: grid; gap: var(--od-gap, 2px); }
+  :where(.od-stat,.od-field,.od-cell) > :where(*) { display: block; }
+  .od-tile { display: grid; grid-template-rows: auto 1fr; }
+  :where(.od-tile) > :where(*) { display: block; }
+
+  /* media keeps its intrinsic ratio by default; never a distorted or cropped
+     cover by accident. height:auto lets the ratio win over an <img height="…">
+     attribute. Cropping to a uniform box is an explicit opt-in. */
+  .od-media { display: block; width: 100%; height: auto; aspect-ratio: var(--od-ratio, auto); }
+  .od-media-cover { object-fit: cover; }
+
+  /* functional inline SVG icons opt into bounded geometry; content SVGs keep their own */
+  .od-icon { display: inline-block; inline-size: var(--od-icon-size, 1em); block-size: var(--od-icon-size, 1em); flex: none; }
+
+  /* data text only — authored copy is rewritten to its budget instead */
+  .od-truncate { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .od-clamp-2, .od-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .od-clamp-2 { -webkit-line-clamp: 2; }
+  .od-clamp-3 { -webkit-line-clamp: 3; }
+  .od-lines-2 { min-height: calc(2 * 1.4em); }
+  .od-nowrap  { white-space: nowrap; }
+  .od-keep    { word-break: keep-all; overflow-wrap: anywhere; }
+
+  /* screen skeleton (optional): bars take their own space, the middle scrolls */
+  .od-screen { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }
+  .od-scroll { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+
+  /* horizontal rail: the next item peeks at the edge */
+  .od-rail { display: flex; gap: var(--od-gap, 8px); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+             padding-inline: var(--od-rail-pad, 16px); scroll-padding-inline: var(--od-rail-pad, 16px); }
+  .od-rail::-webkit-scrollbar { display: none; }
+  :where(.od-rail) > :where(*) { flex: none; scroll-snap-align: start; }
+  :where(.od-rail) > :where(:last-child) { margin-inline-end: var(--od-rail-pad, 16px); }
+
+  .od-spacer { flex: none; visibility: hidden; pointer-events: none; }
+  .od-touch  { min-width: 44px; min-height: 44px; }
+}
+:root [hidden]:where(:not([hidden="until-found" i])) { display: none; }
+/* /OD-LAYOUT-PRIMITIVES v1 */
+
+/* ============================================================
+   GYSApp design system tokens
+   ============================================================ */
+:root {
+  /* type — 13 steps, 0.625rem → 1.75rem */
+  --fs-01: 0.625rem;
+  --fs-02: 0.6875rem;
+  --fs-03: 0.75rem;
+  --fs-04: 0.8125rem;
+  --fs-05: 0.875rem;
+  --fs-06: 0.9375rem;
+  --fs-07: 1rem;
+  --fs-08: 1.0625rem;
+  --fs-09: 1.125rem;
+  --fs-10: 1.25rem;
+  --fs-11: 1.375rem;
+  --fs-12: 1.5rem;
+  --fs-13: 1.75rem;
+
+  --font-serif: "Source Serif 4", "Source Serif Pro", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-sans: Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* spacing — 2px grid up to 24, multiples of 4 above */
+  --sp-2: 2px;   --sp-4: 4px;   --sp-6: 6px;   --sp-8: 8px;
+  --sp-10: 10px; --sp-12: 12px; --sp-14: 14px; --sp-16: 16px;
+  --sp-18: 18px; --sp-20: 20px; --sp-22: 22px; --sp-24: 24px;
+  --sp-28: 28px; --sp-32: 32px; --sp-40: 40px; --sp-48: 48px;
+  --sp-64: 64px; --sp-80: 80px; --sp-96: 96px;
+
+  /* radius — 6, 8, 10, 12, 16, 24, 999 only */
+  --r-6: 6px; --r-8: 8px; --r-10: 10px; --r-12: 12px;
+  --r-16: 16px; --r-24: 24px; --r-999: 999px;
+
+  /* motion */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-entrance: 220ms;
+  --motion-slow: 260ms;
+  --motion-slower: 320ms;
+
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --motion-stagger: 40ms;
+  --motion-stagger-tight: 24ms;
+
+  --motion-distance-xs: 4px;
+  --motion-distance-sm: 6px;
+  --motion-distance: 8px;
+  --motion-distance-lg: 12px;
+  --motion-lift: -2px;
+
+  --motion-press-soft: 0.995;
+  --motion-press: 0.96;
+
+  /* palette — light */
+  --paper: #F5F1E6;
+  --surface: #FBF8F0;
+  --surface-soft: #EDE7D9;
+  --surface-raised: #FFFDF7;
+  --ink: #1D2633;
+  --muted: #59616F;
+  --line: #DAD2C1;
+  --blue: #1E3A5F;
+  --on-accent: #F7F3E8;
+  --gold: #8A6420;
+  --accent-soft: #E2E8F0;
+  --focus: #1E3A5F;
+
+  --code-bg: #14202F;
+  --code-ink: #EDE8DC;
+  --code-muted: #9FAABC;
+  --code-gold: #D3B77B;
+
+  --shadow-soft: 0 1px 2px rgb(35 29 18 / 0.04), 0 8px 24px rgb(35 29 18 / 0.05);
+  --shadow-lift: 0 16px 32px rgb(35 29 18 / 0.16);
+  --shadow-deep: 0 24px 48px rgb(20 16 8 / 0.22);
+  --shadow-color: 35 29 18;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --paper: #0E131A;
+  --surface: #151C25;
+  --surface-soft: #1C2531;
+  --surface-raised: #212B38;
+  --ink: #ECE7DB;
+  --muted: #A7B0BF;
+  --line: #2C3747;
+  --blue: #A3BFEA;
+  --on-accent: #0C1420;
+  --gold: #DBBB7C;
+  --accent-soft: #1D2A3C;
+  --focus: #A3BFEA;
+
+  --code-bg: #070B11;
+  --code-ink: #E7E2D6;
+  --code-muted: #8E99A8;
+  --code-gold: #D3B77B;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+  --shadow-lift: 0 16px 32px rgb(0 0 0 / 0.45);
+  --shadow-deep: 0 24px 48px rgb(0 0 0 / 0.55);
+  --shadow-color: 0 0 0;
+
+  color-scheme: dark;
+}
+
+[data-theme="sepia"] {
+  --paper: #EFE4CF;
+  --surface: #F7EDDC;
+  --surface-soft: #E8DAC0;
+  --surface-raised: #FCF5E8;
+  --ink: #322818;
+  --muted: #67573F;
+  --line: #D5C4A5;
+  --blue: #2C405C;
+  --on-accent: #F8F0E1;
+  --gold: #7A5717;
+  --accent-soft: #E4DCC6;
+  --focus: #2C405C;
+
+  --code-bg: #2A2117;
+  --code-ink: #F2E8D6;
+  --code-muted: #B3A38A;
+  --code-gold: #D3B77B;
+
+  --shadow-soft: 0 1px 2px rgb(60 44 20 / 0.06), 0 8px 24px rgb(60 44 20 / 0.08);
+  --shadow-lift: 0 16px 32px rgb(60 44 20 / 0.2);
+  --shadow-deep: 0 24px 48px rgb(45 32 14 / 0.3);
+  --shadow-color: 60 44 20;
+
+  color-scheme: light;
+}
+
+[data-theme="amoled"] {
+  --paper: #000000;
+  --surface: #080A0D;
+  --surface-soft: #0E1218;
+  --surface-raised: #141A22;
+  --ink: #E8E6DF;
+  --muted: #9AA2AF;
+  --line: #1F2630;
+  --blue: #A9C4F0;
+  --on-accent: #04070C;
+  --gold: #D9B876;
+  --accent-soft: #141E2C;
+  --focus: #A9C4F0;
+
+  --code-bg: #05070A;
+  --code-ink: #E7E2D6;
+  --code-muted: #8A94A2;
+  --code-gold: #D3B77B;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.4);
+  --shadow-lift: 0 16px 32px rgb(0 0 0 / 0.6);
+  --shadow-deep: 0 24px 48px rgb(0 0 0 / 0.7);
+  --shadow-color: 0 0 0;
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-07);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, p, figure, blockquote { margin: 0; }
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+a { color: var(--blue); text-underline-offset: 2px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+img, svg { max-width: 100%; }
+::selection { background: var(--blue); color: var(--on-accent); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: fixed; left: 16px; top: 12px; z-index: 300;
+  transform: translateY(-200%);
+  opacity: 0; pointer-events: none;
+  background: var(--blue); color: var(--on-accent);
+  padding: 10px 16px; border-radius: var(--r-8);
+  text-decoration: none; font-size: var(--fs-05); font-weight: 500;
+}
+.skip-link:focus { transform: none; opacity: 1; pointer-events: auto; }
+
+.wrap {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: var(--sp-16);
+}
+
+.od-icon { --od-icon-size: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.od-icon--sm { --od-icon-size: 16px; }
+.od-icon--lg { --od-icon-size: 22px; }
+.od-icon--fill { fill: currentColor; stroke: none; }
+.icon-pause { fill: currentColor; stroke: none; }
+.code-card :focus-visible { outline-color: var(--code-gold); }
+
+.eyebrow {
+  display: flex; align-items: center; gap: var(--sp-8);
+  font-family: var(--font-sans);
+  font-size: var(--fs-02);
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.eyebrow::before {
+  content: ""; inline-size: 18px; block-size: 1px; flex: none;
+  background: var(--gold);
+}
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   Masthead
+   ============================================================ */
+.masthead {
+  border-bottom: 1px solid var(--line);
+  padding-block: var(--sp-8) var(--sp-48);
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-8) var(--sp-16);
+  padding-block: var(--sp-4) var(--sp-32);
+}
+.brand {
+  display: flex; align-items: baseline; gap: var(--sp-8);
+  font-size: var(--fs-06); font-weight: 600; letter-spacing: 0.01em;
+}
+.brand::before {
+  content: ""; align-self: center; inline-size: 6px; block-size: 6px;
+  border-radius: var(--r-999); background: var(--gold); flex: none;
+}
+.brand-sub {
+  font-size: var(--fs-03);
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.controls { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-6) var(--sp-16); }
+
+.theme-control {
+  display: flex; align-items: center; gap: var(--sp-6);
+  padding: 2px 4px 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-999);
+  background: var(--surface);
+}
+.control-label {
+  font-size: var(--fs-02); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+}
+.theme-btn {
+  display: inline-grid; place-items: center;
+  inline-size: 36px; block-size: 36px;
+  padding: 0; border: 1px solid transparent; border-radius: var(--r-999);
+  background: transparent;
+}
+.theme-btn .swatch {
+  inline-size: 14px; block-size: 14px; border-radius: var(--r-999);
+  background: var(--sw); border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.theme-btn[aria-pressed="true"] { border-color: var(--blue); }
+.theme-name { font-size: var(--fs-03); color: var(--muted); min-inline-size: 48px; }
+
+.switch {
+  display: inline-flex; align-items: center; gap: var(--sp-8);
+  min-block-size: 44px; padding: 0;
+  border: 0; background: none;
+}
+.switch-track {
+  position: relative; flex: none;
+  inline-size: 36px; block-size: 20px;
+  border-radius: var(--r-999);
+  background: var(--line);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent);
+}
+.switch-knob {
+  position: absolute; inset-block-start: 2px; inset-inline-start: 2px;
+  inline-size: 16px; block-size: 16px; border-radius: var(--r-999);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 0 0 1px color-mix(in srgb, var(--ink) 22%, transparent);
+  transform: translateX(0);
+  transition: transform var(--motion-base) var(--motion-ease-standard);
+}
+.switch[aria-checked="true"] .switch-track { background: var(--blue); }
+.switch[aria-checked="true"] .switch-knob { transform: translateX(16px); }
+.switch-copy { display: grid; gap: 0; text-align: start; }
+.switch-label { font-size: var(--fs-03); font-weight: 500; line-height: 1.4; }
+.switch-state { font-size: var(--fs-02); color: var(--muted); line-height: 1.4; }
+
+.hero-head { display: grid; gap: var(--sp-16); max-width: 820px; }
+.hero-head > * { animation: intro var(--motion-slow) var(--motion-ease-entrance) backwards; }
+.hero-head > :nth-child(2) { animation-delay: 40ms; }
+.hero-head > :nth-child(3) { animation-delay: 80ms; }
+.hero-head > :nth-child(4) { animation-delay: 120ms; }
+.hero-head > :nth-child(5) { animation-delay: 160ms; }
+@keyframes intro {
+  from { opacity: 0; transform: translateY(var(--motion-distance)); }
+}
+h1 {
+  font-size: var(--fs-13);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  max-width: 18ch;
+}
+.lede {
+  max-width: 62ch;
+  font-size: var(--fs-08);
+  line-height: 1.65;
+  color: var(--muted);
+}
+.principle-line {
+  display: flex; flex-wrap: wrap; gap: var(--sp-4) var(--sp-12);
+  font-family: var(--font-serif);
+  font-size: var(--fs-05);
+  color: var(--ink);
+}
+.principle-line span { display: inline-flex; align-items: center; gap: var(--sp-8); }
+.principle-line span + span::before {
+  content: ""; inline-size: 3px; block-size: 3px; border-radius: var(--r-999);
+  background: var(--gold); flex: none;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: var(--sp-4) var(--sp-16);
+  font-size: var(--fs-03); color: var(--muted);
+  padding-block-start: var(--sp-4);
+}
+.meta span { display: inline-flex; align-items: center; gap: var(--sp-8); }
+.meta span + span::before {
+  content: ""; inline-size: 3px; block-size: 3px; border-radius: var(--r-999);
+  background: var(--gold); flex: none;
+}
+
+/* ============================================================
+   Section navigation
+   ============================================================ */
+.section-nav {
+  position: sticky; inset-block-start: 0; z-index: 40;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.section-nav .wrap {
+  display: flex; gap: var(--sp-2);
+  overflow-x: auto; scrollbar-width: none;
+  padding-block: var(--sp-2);
+}
+.section-nav .wrap::-webkit-scrollbar { display: none; }
+.section-nav a {
+  flex: none;
+  display: inline-flex; align-items: center;
+  min-block-size: 44px; padding-inline: var(--sp-12);
+  border-radius: var(--r-999);
+  color: var(--muted); text-decoration: none;
+  font-size: var(--fs-04); letter-spacing: 0.01em;
+}
+.section-nav a:hover { color: var(--ink); background: var(--surface-soft); }
+.section-nav a:focus-visible { outline-offset: -2px; }
+.section-nav a[aria-current="true"] { color: var(--ink); background: var(--surface-soft); font-weight: 500; }
+
+/* ============================================================
+   Sections
+   ============================================================ */
+.section { padding-block: var(--sp-48); border-bottom: 1px solid var(--line); }
+.section:last-of-type { border-bottom: 0; }
+.sec-head { display: grid; gap: var(--sp-10); max-width: 700px; margin-block-end: var(--sp-32); }
+.sec-head h2 { font-size: var(--fs-12); letter-spacing: -0.01em; }
+.dek { color: var(--muted); font-size: var(--fs-05); line-height: 1.65; max-width: 60ch; }
+
+/* ============================================================
+   Principles
+   ============================================================ */
+.principles {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--sp-16);
+}
+.principle {
+  display: grid; gap: var(--sp-6);
+  border-top: 1px solid var(--line);
+  padding-block-start: var(--sp-12);
+}
+.principle-no {
+  font-family: var(--font-mono); font-size: var(--fs-02);
+  color: var(--gold); letter-spacing: 0.04em;
+}
+.principle h3 { font-size: var(--fs-08); }
+.principle p { font-size: var(--fs-03); line-height: 1.6; color: var(--muted); }
+
+/* ============================================================
+   Token panels
+   ============================================================ */
+.tokens-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: var(--sp-32);
+  align-items: start;
+}
+.token-block + .token-block { margin-block-start: var(--sp-24); }
+.token-block h3 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-02);
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-block-end: var(--sp-8);
+}
+.dur-row {
+  display: grid;
+  grid-template-columns: 106px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: var(--sp-12);
+  padding-block: var(--sp-8);
+  border-top: 1px solid var(--line);
+}
+.dur-row .mono { font-size: var(--fs-03); }
+.bar { block-size: 6px; border-radius: var(--r-999); background: var(--surface-soft); overflow: hidden; }
+.bar span { display: block; block-size: 100%; background: var(--blue); border-radius: var(--r-999); }
+.dur-use { font-size: var(--fs-02); color: var(--muted); }
+.dur-value { font-family: var(--font-mono); font-size: var(--fs-02); color: var(--muted); text-align: end; }
+
+.ease-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8); }
+.ease-card {
+  border: 1px solid var(--line); border-radius: var(--r-10);
+  padding: var(--sp-10); background: var(--surface);
+}
+.ease-card svg { display: block; inline-size: 100%; block-size: auto; margin-block-end: var(--sp-6); }
+.ease-card .ease-name { display: block; font-size: var(--fs-03); font-weight: 500; }
+.ease-card .ease-value { display: block; font-family: var(--font-mono); font-size: var(--fs-01); color: var(--muted); margin-block-start: 2px; }
+
+.kv {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--sp-12); padding-block: var(--sp-6);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-03);
+}
+.kv .mono { color: var(--muted); }
+.kv strong { font-weight: 500; font-family: var(--font-mono); }
+
+/* ============================================================
+   Code
+   ============================================================ */
+.code-card {
+  border: 1px solid color-mix(in srgb, var(--line) 50%, transparent);
+  border-radius: var(--r-12);
+  overflow: hidden;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  box-shadow: var(--shadow-soft);
+}
+.code-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-8);
+  padding: var(--sp-6) var(--sp-8) var(--sp-6) var(--sp-14);
+  border-bottom: 1px solid rgb(255 255 255 / 0.09);
+  font-family: var(--font-mono);
+  font-size: var(--fs-02);
+  letter-spacing: 0.04em;
+  color: var(--code-muted);
+}
+.code-head .code-file { display: inline-flex; align-items: center; gap: var(--sp-8); }
+.code-head .code-file::before {
+  content: ""; inline-size: 6px; block-size: 6px; border-radius: var(--r-999);
+  background: var(--code-gold); flex: none;
+}
+.code-card pre {
+  margin: 0;
+  padding: var(--sp-16);
+  overflow: auto;
+  max-height: 480px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-03);
+  line-height: 1.7;
+  tab-size: 2;
+  color: var(--code-ink);
+}
+.code-card code { font: inherit; white-space: pre; }
+.code-card .cm { color: var(--code-muted); }
+.code-card .ck { color: var(--code-gold); }
+
+.copy-btn {
+  display: inline-flex; align-items: center; gap: var(--sp-6);
+  min-block-size: 36px; padding-inline: var(--sp-10);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: var(--r-8);
+  background: transparent; color: var(--code-ink);
+  font-family: var(--font-sans); font-size: var(--fs-02); letter-spacing: 0.02em;
+}
+.copy-btn:hover { background: rgb(255 255 255 / 0.08); }
+.copy-btn.is-copied { border-color: var(--code-gold); color: var(--code-gold); }
+
+/* ============================================================
+   Demo shell
+   ============================================================ */
+.demo { margin-block-start: var(--sp-40); }
+.demo:first-of-type { margin-block-start: 0; }
+.demo-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--sp-12);
+  padding-block-end: var(--sp-12);
+  border-bottom: 1px solid var(--line);
+  margin-block-end: var(--sp-16);
+}
+.demo-index {
+  font-family: var(--font-mono); font-size: var(--fs-02);
+  letter-spacing: 0.04em; color: var(--gold);
+  margin-block-end: var(--sp-2);
+}
+.demo-title { font-size: var(--fs-10); }
+.demo-desc { font-size: var(--fs-04); color: var(--muted); line-height: 1.6; max-width: 62ch; margin-block-start: var(--sp-4); }
+.demo-head > div { min-inline-size: 0; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-6);
+  min-block-size: 44px; padding-inline: var(--sp-14);
+  border: 1px solid var(--line);
+  border-radius: var(--r-999);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--fs-04); font-weight: 500; letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: transform var(--motion-fast) var(--motion-ease-standard);
+}
+.btn:hover { background: var(--surface-soft); }
+.btn:active { transform: scale(var(--motion-press)); }
+.app--static .btn:active { transform: none; }
+.btn .od-icon { color: currentColor; }
+
+.compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-16);
+  align-items: stretch;
+}
+.pane { display: flex; flex-direction: column; gap: var(--sp-8); min-inline-size: 0; }
+.pane-label {
+  display: flex; align-items: center; gap: var(--sp-8);
+  font-size: var(--fs-02); color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px var(--sp-8);
+  border: 1px solid var(--line); border-radius: var(--r-999);
+  font-size: var(--fs-01); font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted);
+}
+.tag--after { background: var(--accent-soft); border-color: transparent; color: var(--blue); }
+
+.app {
+  position: relative;
+  isolation: isolate;
+  inline-size: 100%; max-inline-size: 560px; margin-inline: auto;
+  min-block-size: 380px;
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-16);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+.demo[data-demo="b"] .app { min-block-size: 452px; }
+.demo[data-demo="c"] .app { min-block-size: 478px; }
+.demo[data-demo="d"] .app { min-block-size: 356px; }
+.demo[data-demo="e"] .app { min-block-size: 372px; }
+.demo[data-demo="f"] .app { min-block-size: 392px; }
+
+.app-bar {
+  display: flex; align-items: center; gap: var(--sp-8);
+  flex: none;
+  min-block-size: 48px;
+  padding: var(--sp-4) var(--sp-8) var(--sp-4) var(--sp-14);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.app-brand { font-family: var(--font-serif); font-size: var(--fs-06); font-weight: 600; letter-spacing: 0.01em; }
+.app-crumb { min-inline-size: 0; font-size: var(--fs-02); color: var(--muted); letter-spacing: 0.02em; }
+.app-bar .spacer { flex: 1 1 0; }
+.app-body {
+  display: flex; flex-direction: column; gap: var(--sp-12);
+  flex: 1 1 auto; min-block-size: 0;
+  padding: var(--sp-14);
+}
+
+.icon-btn {
+  display: inline-grid; place-items: center;
+  inline-size: 44px; block-size: 44px; flex: none;
+  padding: 0; border: 0; border-radius: var(--r-8);
+  background: transparent; color: var(--muted);
+  transition: transform var(--motion-fast) var(--motion-ease-standard);
+}
+.icon-btn:hover { color: var(--ink); }
+.app:not(.app--static) .icon-btn:active { transform: scale(var(--motion-press)); }
+.icon-btn:disabled { opacity: 0.4; cursor: default; }
+.icon-btn[aria-pressed="true"] { color: var(--gold); }
+.icon-btn[data-save-toggle][aria-pressed="true"] .od-icon { fill: currentColor; }
+
+/* Before panes are deliberately stiff: no transitions, no entrances. */
+.app--static *, .app--static *::before, .app--static *::after {
+  animation: none !important;
+  transition: none !important;
+}
+.app--static .song-row::before,
+.app--static .disc-trigger::before { display: none; }
+
+/* ============================================================
+   Demo A — hero
+   ============================================================ */
+.lift-wrap { position: relative; }
+.lift-shadow {
+  position: absolute; inset: 14px 16px 4px;
+  border-radius: var(--r-12);
+  box-shadow: var(--shadow-lift);
+  opacity: 0;
+  transition: opacity var(--motion-base) var(--motion-ease-standard);
+  pointer-events: none;
+}
+.hero-card {
+  position: relative; z-index: 1;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: var(--r-12);
+  background: var(--surface-raised);
+  color: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+  transition: transform var(--motion-base) var(--motion-ease-standard);
+}
+.hero-art { display: block; inline-size: 100%; block-size: auto; aspect-ratio: 320 / 150; }
+.hero-copy { display: grid; gap: var(--sp-4); padding: var(--sp-12) var(--sp-14) var(--sp-14); }
+.hero-kicker {
+  display: block;
+  font-size: var(--fs-01); letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--gold); font-weight: 500;
+}
+.hero-title {
+  display: block;
+  font-family: var(--font-serif); font-size: var(--fs-09); font-weight: 600;
+  line-height: 1.3; letter-spacing: -0.005em;
+}
+.hero-verse {
+  display: block;
+  font-family: var(--font-serif); font-style: italic;
+  font-size: var(--fs-05); line-height: 1.5; color: var(--muted);
+}
+.hero-ref { display: block; font-size: var(--fs-01); color: var(--muted); letter-spacing: 0.01em; }
+
+@media (hover: hover) {
+  .app:not(.app--static) .hero-card:hover { transform: translateY(var(--motion-lift)); }
+  .app:not(.app--static) .lift-wrap:hover .lift-shadow { opacity: 1; }
+}
+.app:not(.app--static) .hero-card:active { transform: translateY(-1px) scale(var(--motion-press-soft)); }
+
+.quick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-8); }
+.quick a {
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  min-block-size: 56px; padding: var(--sp-8) var(--sp-10);
+  border: 1px solid var(--line); border-radius: var(--r-10);
+  background: var(--surface); color: var(--ink); text-decoration: none;
+}
+.quick-label { display: block; font-size: var(--fs-04); font-weight: 500; line-height: 1.35; }
+.quick-sub { display: block; font-size: var(--fs-01); color: var(--muted); line-height: 1.35; }
+.quick a:hover { border-color: color-mix(in srgb, var(--blue) 35%, var(--line)); }
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(var(--motion-distance)); }
+}
+.app.is-playing .hero-card {
+  animation: riseIn var(--motion-entrance) var(--motion-ease-entrance) backwards;
+}
+.app.is-playing .quick a {
+  animation: riseIn var(--motion-entrance) var(--motion-ease-entrance) backwards;
+  animation-delay: calc(40ms + var(--i, 0) * var(--motion-stagger));
+}
+
+/* ============================================================
+   Demo B — catalogue
+   ============================================================ */
+.tabgroup { display: flex; flex-direction: column; gap: var(--sp-10); flex: 1 1 auto; min-block-size: 0; }
+.tabs {
+  position: relative;
+  isolation: isolate;
+  display: flex; gap: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-999);
+  background: var(--surface-soft);
+  flex: none;
+}
+.tab-pill {
+  position: absolute; inset-block-start: var(--sp-4); inset-block-end: var(--sp-4);
+  inset-inline-start: 0; inline-size: 0;
+  border-radius: var(--r-999);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 42%, transparent), 0 1px 2px rgb(0 0 0 / 0.06);
+  z-index: 0;
+  display: none;
+  transform-origin: left center;
+}
+.tabs[data-ready="true"] .tab-pill { display: block; }
+.tabs button {
+  position: relative; z-index: 1;
+  flex: 1 1 0; min-inline-size: 0;
+  min-block-size: 40px; padding-inline: var(--sp-10);
+  border: 0; border-radius: var(--r-999);
+  background: transparent; color: var(--muted);
+  font-size: var(--fs-04); font-weight: 500; letter-spacing: 0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tabs[data-pill="true"] button[aria-selected="true"] {
+  color: var(--ink);
+  font-weight: 600;
+}
+.tabs[data-pill="true"]:not([data-ready="true"]) button[aria-selected="true"] {
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: var(--r-999);
+}
+.tabs[data-pill="false"] button[aria-selected="true"] {
+  background: var(--blue); color: var(--on-accent);
+}
+
+.song-list {
+  display: flex; flex-direction: column;
+  min-block-size: 0;
+  border-top: 1px solid var(--line);
+  overflow: hidden;
+}
+.song-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: var(--sp-10);
+  min-block-size: 58px; padding: var(--sp-8) var(--sp-10);
+  border: 0; border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink); text-decoration: none; text-align: start;
+  transition: transform var(--motion-fast) var(--motion-ease-standard);
+}
+.song-row::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--surface-soft);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  transition: transform var(--motion-base) var(--motion-ease-standard);
+  z-index: 0;
+}
+@media (hover: hover) {
+  .song-row:hover::before, .song-row:focus-visible::before { transform: scaleX(1); opacity: 1; }
+}
+.song-row > * { position: relative; z-index: 1; }
+.song-row:focus-visible { outline-offset: -2px; }
+.song-no { font-family: var(--font-mono); font-size: var(--fs-01); color: var(--gold); }
+.song-main { display: grid; gap: 2px; min-inline-size: 0; }
+.song-title { display: block; font-size: var(--fs-05); font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; }
+.song-meta { display: block; font-size: var(--fs-01); color: var(--muted); }
+.song-row .od-icon { color: var(--muted); }
+.app:not(.app--static) .song-row:active { transform: scale(var(--motion-press-soft)); }
+
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(var(--motion-distance-sm)); }
+}
+.song-list.is-stagger .song-row {
+  animation: rowIn var(--motion-entrance) var(--motion-ease-entrance) backwards;
+  animation-delay: calc(var(--i, 0) * var(--motion-stagger));
+}
+.song-list.is-stagger .song-row:nth-child(n + 13) { animation: none; }
+
+/* ============================================================
+   Demo C — reader
+   ============================================================ */
+.reader { display: flex; flex-direction: column; flex: 1 1 auto; min-block-size: 0; }
+.reader-tools {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
+  padding: var(--sp-4) var(--sp-12);
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.tool-group { display: flex; align-items: center; gap: 0; }
+.reader-ref { font-size: var(--fs-01); color: var(--muted); letter-spacing: 0.02em; }
+.sheet {
+  position: relative;
+  flex: 1 1 auto; min-block-size: 190px;
+  padding: var(--sp-18) var(--sp-16) var(--sp-14);
+  overflow: hidden;
+}
+.verse-live { position: relative; z-index: 1; }
+.verse-ghost {
+  position: absolute; inset: 0; z-index: 2;
+  padding: var(--sp-18) var(--sp-16) var(--sp-14);
+  background: var(--surface);
+  pointer-events: none;
+}
+.verse-label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-01); letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--muted); margin-block-end: var(--sp-10);
+}
+.lyric {
+  font-family: var(--font-serif);
+  font-size: var(--fs-08); line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.verse-ghost .lyric, .verse-ghost .verse-label { margin-block-end: var(--sp-10); }
+.verse-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-8); padding: 0 var(--sp-12) var(--sp-6);
+  flex: none;
+}
+.dots { display: flex; align-items: center; gap: var(--sp-6); }
+.dot {
+  inline-size: 6px; block-size: 6px; border-radius: var(--r-999);
+  background: var(--line);
+  transition: transform var(--motion-base) var(--motion-ease-standard);
+}
+.dot.is-active { background: var(--blue); transform: scale(1.4); }
+.dock-zone {
+  position: relative; flex: none;
+  padding: var(--sp-8) var(--sp-12) var(--sp-12);
+  border-top: 1px solid var(--line);
+  margin-block-start: auto;
+}
+.queue-pill {
+  display: flex; align-items: center; gap: var(--sp-8);
+  inline-size: 100%; min-block-size: 48px;
+  padding: 0 var(--sp-14);
+  border: 0; border-radius: var(--r-999);
+  background: var(--blue); color: var(--on-accent);
+  font-size: var(--fs-04); font-weight: 500;
+  transition: opacity var(--motion-fast) var(--motion-ease-exit), transform var(--motion-fast) var(--motion-ease-exit);
+}
+.queue-pill .pill-title { min-inline-size: 0; text-align: start; }
+.queue-count {
+  margin-inline-start: auto;
+  padding: 2px var(--sp-8);
+  border-radius: var(--r-999);
+  background: rgb(255 255 255 / 0.16);
+  font-family: var(--font-mono); font-size: var(--fs-01);
+}
+.app.is-dock-open .queue-pill {
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translateY(var(--motion-distance-xs));
+}
+
+.dock {
+  position: absolute; inset-inline: var(--sp-8); inset-block-end: var(--sp-8); z-index: 6;
+  block-size: 202px;
+  display: flex; flex-direction: column;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-16);
+  box-shadow: var(--shadow-deep);
+  overflow: hidden;
+  transform-origin: bottom center;
+  transform: scaleY(0.06);
+  opacity: 0; visibility: hidden;
+  transition:
+    transform var(--motion-base) var(--motion-ease-exit),
+    opacity var(--motion-fast) var(--motion-ease-exit),
+    visibility 0s linear var(--motion-base);
+}
+.dock.is-open {
+  transform: scaleY(1);
+  opacity: 1; visibility: visible;
+  transition:
+    transform var(--motion-slow) var(--motion-ease-entrance),
+    opacity var(--motion-base) var(--motion-ease-standard),
+    visibility 0s linear 0s;
+}
+.dock-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-8);
+  padding: var(--sp-4) var(--sp-6) var(--sp-4) var(--sp-14);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-03); font-weight: 500;
+  flex: none;
+}
+.dock-list { display: flex; flex-direction: column; overflow-y: auto; min-block-size: 0; }
+.dock-row {
+  display: flex; align-items: center; gap: var(--sp-8);
+  min-block-size: 44px; padding: var(--sp-4) var(--sp-12);
+  border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; color: var(--ink); text-align: start;
+  font-size: var(--fs-03);
+}
+.dock-row:hover { background: var(--surface-soft); }
+.dock-row .od-icon { color: var(--muted); }
+.dock-meta { margin-inline-start: auto; font-family: var(--font-mono); font-size: var(--fs-01); color: var(--muted); }
+
+/* ============================================================
+   Demo D — settings
+   ============================================================ */
+.settings { display: flex; flex-direction: column; }
+.disc { border-bottom: 1px solid var(--line); }
+.disc-trigger {
+  position: relative;
+  display: flex; align-items: center; gap: var(--sp-10);
+  inline-size: 100%; min-block-size: 58px;
+  padding: var(--sp-8);
+  border: 0; background: transparent; color: var(--ink); text-align: start;
+}
+.disc-trigger::before {
+  content: "";
+  position: absolute; inset: 2px 2px;
+  border-radius: var(--r-8);
+  background: var(--surface-soft);
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-standard);
+}
+@media (hover: hover) { .disc-trigger:hover::before { opacity: 1; } }
+.disc-trigger > * { position: relative; z-index: 1; }
+.disc-copy { display: grid; gap: 2px; min-inline-size: 0; }
+.disc-label { display: block; font-size: var(--fs-04); font-weight: 500; line-height: 1.4; }
+.disc-meta { display: block; font-size: var(--fs-01); color: var(--muted); line-height: 1.4; }
+.disc-hint { margin-inline-start: auto; font-size: var(--fs-02); color: var(--muted); white-space: nowrap; }
+.disc-chevron {
+  --od-icon-size: 18px;
+  color: var(--muted);
+  transition: transform var(--motion-base) var(--motion-ease-standard);
+}
+.disc-trigger[aria-expanded="true"] .disc-chevron { transform: rotate(180deg); color: var(--blue); }
+.disc-panel { padding: 0 var(--sp-8) var(--sp-12); }
+.disc-inner { display: grid; gap: var(--sp-10); }
+.disc-panel.is-open .disc-inner {
+  animation: discIn var(--motion-base) var(--motion-ease-entrance) backwards;
+}
+@keyframes discIn {
+  from { opacity: 0; transform: translateY(calc(-1 * var(--motion-distance-sm))); }
+}
+.disc-note {
+  font-size: var(--fs-02); color: var(--muted); line-height: 1.55;
+  animation: noteIn var(--motion-base) var(--motion-ease-entrance) 60ms backwards;
+}
+@keyframes noteIn {
+  from { opacity: 0; transform: translateY(calc(-1 * var(--motion-distance-xs))); }
+}
+.theme-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-6); }
+.theme-chip {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-4);
+  min-block-size: 60px; padding: var(--sp-6) var(--sp-2);
+  border: 1px solid var(--line); border-radius: var(--r-8);
+  background: var(--surface); color: var(--muted);
+  font-size: var(--fs-01);
+}
+.theme-chip .swatch {
+  inline-size: 16px; block-size: 16px; border-radius: var(--r-999);
+  background: var(--sw); border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.theme-chip[aria-pressed="true"] {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 1px var(--blue);
+  color: var(--ink);
+}
+.switch-row {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
+  padding-block: var(--sp-2);
+}
+.switch-row .switch-copy { min-inline-size: 0; }
+.switch--sm .switch-track { inline-size: 34px; block-size: 20px; }
+.switch--sm .switch-knob { inline-size: 16px; block-size: 16px; }
+.switch--sm[aria-checked="true"] .switch-knob { transform: translateX(14px); }
+
+/* ============================================================
+   Demo E — search
+   ============================================================ */
+.search-trigger {
+  display: inline-flex; align-items: center; gap: var(--sp-6);
+  min-block-size: 44px; padding: 0 var(--sp-12);
+  border: 1px solid var(--line); border-radius: var(--r-999);
+  background: var(--surface); color: var(--muted);
+  font-size: var(--fs-03);
+}
+.search-trigger:hover { color: var(--ink); }
+.app-body--search { gap: var(--sp-14); justify-content: center; }
+.app-kicker { font-family: var(--font-serif); font-size: var(--fs-09); font-weight: 600; line-height: 1.3; }
+.app-note { font-size: var(--fs-03); color: var(--muted); line-height: 1.55; max-inline-size: 42ch; }
+.chip-row { display: flex; flex-wrap: wrap; gap: var(--sp-6); }
+.chip {
+  min-block-size: 36px; padding: 0 var(--sp-10);
+  border: 1px solid var(--line); border-radius: var(--r-999);
+  background: var(--surface); color: var(--muted);
+  font-size: var(--fs-02);
+}
+.chip:hover { color: var(--ink); border-color: color-mix(in srgb, var(--blue) 35%, var(--line)); }
+.last-opened {
+  margin-block-start: auto;
+  padding-block-start: var(--sp-8);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-02); color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.search-layer {
+  position: absolute; inset: 0; z-index: 30;
+  display: flex; justify-content: center; align-items: flex-start;
+  padding: var(--sp-12);
+}
+.search-scrim {
+  position: absolute; inset: 0;
+  background: rgb(8 12 18 / 0.56);
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-exit);
+}
+.search-panel {
+  position: relative;
+  inline-size: 100%; max-inline-size: 372px;
+  max-block-size: 100%;
+  display: flex; flex-direction: column;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-16);
+  box-shadow: var(--shadow-deep);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(var(--motion-distance-sm)) scale(0.98);
+  transition:
+    opacity var(--motion-fast) var(--motion-ease-exit),
+    transform var(--motion-fast) var(--motion-ease-exit);
+}
+.search-layer.is-open .search-scrim { opacity: 1; transition-timing-function: var(--motion-ease-standard); }
+.search-layer.is-open .search-panel {
+  opacity: 1; transform: none;
+  transition:
+    opacity var(--motion-base) var(--motion-ease-entrance),
+    transform var(--motion-base) var(--motion-ease-entrance);
+}
+.search-head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
+  padding: var(--sp-4) var(--sp-6) var(--sp-4) var(--sp-14);
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.search-title { font-family: var(--font-serif); font-size: var(--fs-06); font-weight: 600; }
+.search-label {
+  display: block;
+  padding: var(--sp-10) var(--sp-12) var(--sp-4);
+  font-size: var(--fs-01); letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--muted);
+}
+.search-input {
+  margin: 0 var(--sp-12) var(--sp-10);
+  min-block-size: 44px; padding: 0 var(--sp-10);
+  border: 1px solid var(--line); border-radius: var(--r-8);
+  background: var(--surface); color: var(--ink);
+  font-size: var(--fs-04);
+}
+.search-input::placeholder { color: var(--muted); opacity: 1; }
+.search-body { overflow-y: auto; min-block-size: 0; padding: 0 var(--sp-8) var(--sp-10); }
+.results { list-style: none; margin: 0; padding: 0; }
+.result-row {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 2px var(--sp-10);
+  align-items: center;
+  inline-size: 100%; min-block-size: 54px;
+  padding: var(--sp-6) var(--sp-8);
+  border: 0; border-bottom: 1px solid var(--line);
+  border-radius: var(--r-8);
+  background: transparent; color: var(--ink); text-align: start;
+}
+.result-row:hover { background: var(--surface-soft); }
+.result-row:focus-visible { outline-offset: -2px; }
+.result-kind {
+  grid-row: 1 / span 2; align-self: center;
+  font-size: var(--fs-01); letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--gold);
+}
+.result-title { font-size: var(--fs-04); font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; }
+.result-meta { font-size: var(--fs-01); color: var(--muted); line-height: 1.35; }
+.results.is-stagger .result-row {
+  animation: resultIn var(--motion-entrance) var(--motion-ease-entrance) backwards;
+  animation-delay: calc(var(--i, 0) * var(--motion-stagger-tight));
+}
+.results.is-stagger li:nth-child(n + 13) .result-row { animation: none; }
+@keyframes resultIn {
+  from { opacity: 0; transform: translateY(var(--motion-distance-xs)); }
+}
+.search-empty {
+  display: grid; gap: var(--sp-4); justify-items: center; text-align: center;
+  padding: var(--sp-24) var(--sp-16);
+  animation: fadeIn var(--motion-base) var(--motion-ease-standard) backwards;
+}
+@keyframes fadeIn { from { opacity: 0; } }
+.search-empty .empty-mark {
+  display: grid; place-items: center;
+  inline-size: 40px; block-size: 40px; border-radius: var(--r-999);
+  background: var(--surface-soft); color: var(--muted);
+  margin-block-end: var(--sp-4);
+}
+.search-empty .empty-mark .od-icon { color: var(--muted); }
+.empty-title { font-size: var(--fs-05); font-weight: 500; }
+.empty-copy { font-size: var(--fs-02); color: var(--muted); line-height: 1.55; max-inline-size: 32ch; overflow-wrap: anywhere; }
+
+/* ============================================================
+   Demo F — theme crossfade
+   ============================================================ */
+.theme-demo { display: flex; flex-direction: column; gap: var(--sp-10); flex: 1 1 auto; min-block-size: 0; }
+.theme-card {
+  position: relative; flex: 1 1 auto; min-block-size: 232px;
+  border: 1px solid var(--line); border-radius: var(--r-12);
+  overflow: hidden;
+  background: var(--surface);
+}
+.theme-face {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  padding: var(--sp-16);
+  background: var(--p-paper);
+  color: var(--p-ink);
+  opacity: 0;
+  transition: opacity var(--motion-base) var(--motion-ease-standard);
+}
+.theme-face[data-palette="light"] {
+  --p-paper: #F5F1E6; --p-surface: #FBF8F0; --p-ink: #1D2633;
+  --p-muted: #59616F; --p-line: #DAD2C1; --p-blue: #1E3A5F;
+  --p-on: #F7F3E8; --p-gold: #8A6420;
+}
+.theme-face[data-palette="sepia"] {
+  --p-paper: #EFE4CF; --p-surface: #F7EDDC; --p-ink: #322818;
+  --p-muted: #67573F; --p-line: #D5C4A5; --p-blue: #2C405C;
+  --p-on: #F8F0E1; --p-gold: #7A5717;
+}
+.theme-card:not(.show-b) .theme-face[data-face="a"],
+.theme-card.show-b .theme-face[data-face="b"] { opacity: 1; }
+.theme-face[aria-hidden="true"] { pointer-events: none; }
+.face-card {
+  display: flex; flex-direction: column; gap: var(--sp-6);
+  flex: 1 1 auto;
+  padding: var(--sp-14);
+  border: 1px solid var(--p-line); border-radius: var(--r-10);
+  background: var(--p-surface);
+}
+.face-kicker {
+  font-size: var(--fs-01); letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--p-gold); font-weight: 500;
+}
+.face-title { font-family: var(--font-serif); font-size: var(--fs-08); font-weight: 600; line-height: 1.3; }
+.face-verse { font-family: var(--font-serif); font-style: italic; font-size: var(--fs-04); line-height: 1.5; color: var(--p-muted); }
+.face-foot {
+  display: flex; align-items: center; gap: var(--sp-6);
+  margin-block-start: auto; padding-block-start: var(--sp-8);
+  font-size: var(--fs-01); color: var(--p-muted);
+}
+.face-dot { inline-size: 5px; block-size: 5px; border-radius: var(--r-999); background: var(--p-gold); }
+.theme-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
+  flex: none;
+}
+.theme-current { display: grid; gap: 0; }
+.theme-current .label { font-size: var(--fs-01); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.theme-current strong { font-size: var(--fs-04); font-weight: 500; }
+
+/* ============================================================
+   Recipes
+   ============================================================ */
+.recipes {
+  border: 1px solid var(--line);
+  border-radius: var(--r-16);
+  overflow: hidden;
+  background: var(--surface);
+}
+.recipe-tabs {
+  display: flex; gap: var(--sp-4);
+  overflow-x: auto; scrollbar-width: none;
+  padding: var(--sp-6);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+.recipe-tabs::-webkit-scrollbar { display: none; }
+.recipe-tab {
+  flex: none;
+  min-block-size: 40px; padding: 0 var(--sp-12);
+  border: 1px solid transparent; border-radius: var(--r-8);
+  background: transparent; color: var(--muted);
+  font-size: var(--fs-03); font-weight: 500; white-space: nowrap;
+}
+.recipe-tab[aria-selected="true"] {
+  background: var(--surface); color: var(--ink);
+  border-color: var(--line);
+}
+.recipe-panel .code-card { border: 0; border-radius: 0; box-shadow: none; }
+.recipe-panel .code-card pre { max-height: 440px; }
+
+/* ============================================================
+   Limits + footer
+   ============================================================ */
+.donts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--sp-24); }
+.dont {
+  display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: var(--sp-10);
+  padding-block: var(--sp-14);
+  border-top: 1px solid var(--line);
+}
+.dont .od-icon { --od-icon-size: 16px; color: var(--gold); margin-block-start: 3px; }
+.dont-title { font-size: var(--fs-05); font-weight: 500; line-height: 1.4; margin-block-end: 2px; }
+.dont-copy { font-size: var(--fs-03); color: var(--muted); line-height: 1.6; }
+.system-note {
+  margin-block-start: var(--sp-16);
+  padding: var(--sp-12) var(--sp-14);
+  border: 1px solid var(--line); border-radius: var(--r-10);
+  background: var(--surface);
+  font-size: var(--fs-03); color: var(--muted); line-height: 1.6;
+}
+.system-note strong { color: var(--ink); font-weight: 500; }
+
+footer { padding-block: var(--sp-24); }
+.footer-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--sp-8) var(--sp-16);
+  font-size: var(--fs-02); color: var(--muted);
+}
+.footer-row .brand { font-size: var(--fs-03); }
+
+.theme-veil {
+  position: fixed; inset: 0; z-index: 200;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .principles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .tokens-grid { grid-template-columns: minmax(0, 1fr); gap: var(--sp-24); }
+  .compare { grid-template-columns: minmax(0, 1fr); gap: var(--sp-24); }
+  .app { max-inline-size: 560px; }
+}
+@media (max-width: 768px) {
+  .wrap { padding-inline: var(--sp-16); }
+  .section { padding-block: var(--sp-32); }
+  .masthead { padding-block-end: var(--sp-32); }
+  .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .donts { grid-template-columns: minmax(0, 1fr); }
+  .code-card pre { font-size: var(--fs-02); }
+}
+@media (max-width: 560px) {
+  .topbar { align-items: flex-start; }
+  .controls { inline-size: 100%; justify-content: space-between; }
+  .theme-control { padding-inline-start: var(--sp-6); }
+  .theme-name { display: none; }
+  .principles { grid-template-columns: minmax(0, 1fr); }
+  .ease-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ease-card { padding: var(--sp-6); }
+  .hero-head h1 { max-inline-size: 14ch; }
+  .quick { grid-template-columns: minmax(0, 1fr); }
+  .quick a { min-block-size: 48px; }
+  .demo-head { align-items: flex-start; }
+  .demo-head > .btn { margin-inline-start: auto; }
+  .theme-chips { gap: var(--sp-4); }
+  .theme-chip { font-size: var(--fs-01); }
+  .search-panel { max-inline-size: none; }
+  .search-layer { padding: var(--sp-8); }
+  .result-row { grid-template-columns: 54px minmax(0, 1fr); }
+}
+
+@media (pointer: coarse) {
+  .theme-btn { inline-size: 44px; block-size: 44px; }
+  .icon-btn, .tabs button, .recipe-tab, .copy-btn, .chip, .theme-chip, .search-trigger { min-block-size: 44px; }
+  .song-row { min-block-size: 60px; }
+  .result-row { min-block-size: 58px; }
+  .dock-row { min-block-size: 46px; }
+}
+
+/* ============================================================
+   Reduced motion — a visible switch, not only an OS query
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-reduced="false"]) *,
+  html:not([data-reduced="false"]) *::before,
+  html:not([data-reduced="false"]) *::after {
+    animation-duration: 120ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    transition-property: opacity !important;
+    scroll-behavior: auto !important;
+  }
+  html:not([data-reduced="false"]) *,
+  html:not([data-reduced="false"]) *::before,
+  html:not([data-reduced="false"]) *::after {
+    transform: none !important;
+  }
+}
+html[data-reduced="true"] *,
+html[data-reduced="true"] *::before,
+html[data-reduced="true"] *::after {
+  animation-duration: 120ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 120ms !important;
+  transition-property: opacity !important;
+  scroll-behavior: auto !important;
+  transform: none !important;
+}
+/* A switch still has to show its state. Under reduced motion the knob
+   changes position with inset (no transition) instead of transform. */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-reduced="false"]) .switch[aria-checked="true"] .switch-knob { inset-inline-start: 18px; }
+  html:not([data-reduced="false"]) .switch--sm[aria-checked="true"] .switch-knob { inset-inline-start: 16px; }
+}
+html[data-reduced="true"] .switch[aria-checked="true"] .switch-knob { inset-inline-start: 18px; }
+html[data-reduced="true"] .switch--sm[aria-checked="true"] .switch-knob { inset-inline-start: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* Theme changes cross-fade the whole document where supported. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-base);
+  animation-timing-function: var(--motion-ease-standard);
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Langsung ke isi</a>
+
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2.6 7.4"/><path d="M3 4v6h6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></symbol>
+  <symbol id="i-empty" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8.5 11h5"/></symbol>
+</svg>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">GYSApp <span class="brand-sub">Sistem gerak</span></div>
+      <div class="controls">
+        <div class="theme-control" role="group" aria-label="Tema tampilan">
+          <span class="control-label">Tema</span>
+          <button class="theme-btn" type="button" data-set-theme="light" aria-pressed="true" aria-label="Tema terang" title="Terang">
+            <span class="swatch" style="--sw:#F5F1E6"></span>
+          </button>
+          <button class="theme-btn" type="button" data-set-theme="dark" aria-pressed="false" aria-label="Tema gelap" title="Gelap">
+            <span class="swatch" style="--sw:#151C25"></span>
+          </button>
+          <button class="theme-btn" type="button" data-set-theme="sepia" aria-pressed="false" aria-label="Tema sepia" title="Sepia">
+            <span class="swatch" style="--sw:#EFE4CF"></span>
+          </button>
+          <button class="theme-btn" type="button" data-set-theme="amoled" aria-pressed="false" aria-label="Tema AMOLED" title="AMOLED">
+            <span class="swatch" style="--sw:#000000"></span>
+          </button>
+          <span class="theme-name" data-theme-label>Terang</span>
+        </div>
+        <button class="switch" id="reduce-toggle" type="button" role="switch" aria-checked="false">
+          <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+          <span class="switch-copy">
+            <span class="switch-label">Kurangi gerak</span>
+            <span class="switch-state" id="reduce-state">Nonaktif</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-head">
+      <p class="eyebrow">GYSApp · Motion system v1.0</p>
+      <h1 lang="id">Gerak yang tenang.</h1>
+      <p class="lede">A reading app should feel like paper, not software. Six interaction patterns for GYSApp's hymns, Bible, and articles — one set of tokens, short distances, and a motion language quiet enough to read through.</p>
+      <p class="principle-line"><span>Purposeful</span><span>Fast</span><span>Continuous</span><span>Interruptible</span><span>Quiet</span></p>
+      <div class="meta">
+        <span>120–320 ms</span>
+        <span>3 easings</span>
+        <span>4 themes</span>
+        <span>Reduced motion</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="section-nav" aria-label="Bagian dokumen">
+  <div class="wrap">
+    <a href="#principles" aria-current="true">Principles</a>
+    <a href="#tokens">Tokens</a>
+    <a href="#demos">Six demos</a>
+    <a href="#recipes">Diff recipes</a>
+    <a href="#limits">What stays still</a>
+  </div>
+</nav>
+
+<main id="main">
+
+  <section class="section" id="principles">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">01 · Prinsip</p>
+        <h2>Five rules, one temperament</h2>
+        <p class="dek">The app is read in bed, on a train, before a service. Motion has to answer quickly, then get out of the way. These five rules decide every duration and easing below.</p>
+      </div>
+      <div class="principles">
+        <article class="principle">
+          <p class="principle-no">01</p>
+          <h3>Purposeful</h3>
+          <p>Motion confirms a change the reader just made — a tab, a verse, the queue. If nothing changed, nothing moves.</p>
+        </article>
+        <article class="principle">
+          <p class="principle-no">02</p>
+          <h3>Fast</h3>
+          <p>Press feedback lands in 120 ms. Entrances finish by 260 ms. Reading never waits for an animation.</p>
+        </article>
+        <article class="principle">
+          <p class="principle-no">03</p>
+          <h3>Continuous</h3>
+          <p>The tab pill travels, the dock grows from its handle, verses slide the way the page reads. Objects keep their identity between states.</p>
+        </article>
+        <article class="principle">
+          <p class="principle-no">04</p>
+          <h3>Interruptible</h3>
+          <p>Every transition yields to the next input. A second tab redirects the pill; closing the dock mid-rise reverses it.</p>
+        </article>
+        <article class="principle">
+          <p class="principle-no">05</p>
+          <h3>Quiet</h3>
+          <p>Short distances, soft contrast, one accent. Motion is felt as responsiveness, not as spectacle.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="tokens">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">02 · Token</p>
+        <h2>One set of numbers</h2>
+        <p class="dek">Every demo on this page reads from these declarations. Copy the whole block into the app's <span class="mono">:root</span>; do not introduce a local duration beside it.</p>
+      </div>
+
+      <div class="tokens-grid">
+        <div>
+          <div class="token-block">
+            <h3>Duration ladder</h3>
+            <div class="dur-row">
+              <span class="mono">--motion-fast</span>
+              <span class="bar"><span style="width:37.5%"></span></span>
+              <span class="dur-value">120 ms</span>
+            </div>
+            <div class="dur-row">
+              <span class="mono">--motion-base</span>
+              <span class="bar"><span style="width:56.25%"></span></span>
+              <span class="dur-value">180 ms</span>
+            </div>
+            <div class="dur-row">
+              <span class="mono">--motion-entrance</span>
+              <span class="bar"><span style="width:68.75%"></span></span>
+              <span class="dur-value">220 ms</span>
+            </div>
+            <div class="dur-row">
+              <span class="mono">--motion-slow</span>
+              <span class="bar"><span style="width:81.25%"></span></span>
+              <span class="dur-value">260 ms</span>
+            </div>
+            <div class="dur-row">
+              <span class="mono">--motion-slower</span>
+              <span class="bar"><span style="width:100%"></span></span>
+              <span class="dur-value">320 ms</span>
+            </div>
+            <p class="dur-use" style="margin-block-start:8px">Press → 120 · tabs and disclosure → 180 · cards and rows → 220 · dock → 260 · page theme → 180–320.</p>
+          </div>
+
+          <div class="token-block">
+            <h3>Easing curves</h3>
+            <div class="ease-grid">
+              <div class="ease-card">
+                <svg viewBox="0 0 120 60" role="img" aria-label="Standard easing curve">
+                  <path d="M4 56H116M4 56V4" stroke="currentColor" opacity="0.16" fill="none"/>
+                  <path d="M4 56C26 56 4 4 116 4" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+                <span class="ease-name">Standard</span>
+                <span class="ease-value">(.2, 0, 0, 1)</span>
+              </div>
+              <div class="ease-card">
+                <svg viewBox="0 0 120 60" role="img" aria-label="Entrance easing curve">
+                  <path d="M4 56H116M4 56V4" stroke="currentColor" opacity="0.16" fill="none"/>
+                  <path d="M4 56C22 4 38 4 116 4" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+                <span class="ease-name">Entrance</span>
+                <span class="ease-value">(.16, 1, .3, 1)</span>
+              </div>
+              <div class="ease-card">
+                <svg viewBox="0 0 120 60" role="img" aria-label="Exit easing curve">
+                  <path d="M4 56H116M4 56V4" stroke="currentColor" opacity="0.16" fill="none"/>
+                  <path d="M4 56C49 56 116 4 116 4" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+                <span class="ease-name">Exit</span>
+                <span class="ease-value">(.4, 0, 1, 1)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="token-block">
+            <h3>Stagger &amp; distance</h3>
+            <div class="kv"><span class="mono">--motion-stagger</span><strong>40 ms</strong></div>
+            <div class="kv"><span class="mono">--motion-stagger-tight</span><strong>24 ms</strong></div>
+            <div class="kv"><span class="mono">--motion-distance-sm</span><strong>6 px</strong></div>
+            <div class="kv"><span class="mono">--motion-distance</span><strong>8 px</strong></div>
+            <div class="kv"><span class="mono">--motion-distance-lg</span><strong>12 px</strong></div>
+            <div class="kv"><span class="mono">--motion-lift</span><strong>−2 px</strong></div>
+          </div>
+        </div>
+
+        <div class="code-card" data-recipe="tokens">
+          <div class="code-head">
+            <span class="code-file">motion.css</span>
+            <button class="copy-btn" type="button" data-copy>
+              <svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-copy"/></svg>
+              <span data-copy-label>Salin</span>
+            </button>
+          </div>
+          <pre><code><span class="cm">/* GYSApp motion tokens — the only motion values */</span>
+:root {
+  <span class="cm">/* duration */</span>
+  --motion-fast: 120ms;      <span class="cm">/* press */</span>
+  --motion-base: 180ms;      <span class="cm">/* tabs, dialog */</span>
+  --motion-entrance: 220ms;  <span class="cm">/* cards, rows */</span>
+  --motion-slow: 260ms;      <span class="cm">/* dock, sheet */</span>
+  --motion-slower: 320ms;    <span class="cm">/* page */</span>
+
+  <span class="cm">/* easing */</span>
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  <span class="cm">/* rhythm */</span>
+  --motion-stagger: 40ms;
+  --motion-stagger-tight: 24ms;
+
+  <span class="cm">/* distance */</span>
+  --motion-distance-xs: 4px;
+  --motion-distance-sm: 6px;
+  --motion-distance: 8px;
+  --motion-distance-lg: 12px;
+  --motion-lift: -2px;
+
+  <span class="cm">/* press */</span>
+  --motion-press-soft: 0.995;
+  --motion-press: 0.96;
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="demos">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">03 · Demo</p>
+        <h2>Six patterns, before and after</h2>
+        <p class="dek">Each pair is live. The left pane is the current app: correct, but instant. The right pane applies the system. Press <strong>Replay</strong> to restart the entrance, then use the controls directly — the comparison is interactive, not a video.</p>
+      </div>
+
+      <!-- A -->
+      <article class="demo" id="demo-a" data-demo="a">
+        <div class="demo-head">
+          <div>
+            <p class="demo-index">01 · Home</p>
+            <h3 class="demo-title">Hero card + quick links</h3>
+            <p class="demo-desc">A 220 ms rise, an 8 px distance, and a 40 ms stagger through the quick links. Hover is a 2 px lift with a shadow plate; press settles at 0.995.</p>
+          </div>
+          <button class="btn" type="button" data-replay>
+            <svg class="od-icon" aria-hidden="true"><use href="#i-replay"/></svg>
+            Replay
+          </button>
+        </div>
+        <div class="compare">
+          <div class="pane pane--before">
+            <div class="pane-label"><span class="tag">Before</span><span>Tidak ada gerak</span></div>
+            <div class="app app--static" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">GYSApp</span>
+                <span class="app-crumb">Bacaan &amp; nyanyian</span>
+              </div>
+              <div class="app-body">
+                <div class="lift-wrap">
+                  <span class="lift-shadow" aria-hidden="true"></span>
+                  <a class="hero-card" href="#demo-c" aria-label="Buka kidung Pujilah Allah Yang Maha Esa">
+                    <svg class="hero-art" viewBox="0 0 320 150" role="img" aria-label="Jendela gereja melengkung dengan cahaya pagi">
+                      <rect width="320" height="150" fill="#16243B"/>
+                      <path d="M40 150V96a34 34 0 0 1 68 0v54z" fill="#1B2C46" opacity="0.8"/>
+                      <path d="M212 150V96a34 34 0 0 1 68 0v54z" fill="#1B2C46" opacity="0.8"/>
+                      <path d="M96 150V70a64 64 0 0 1 128 0v80z" fill="#22395A"/>
+                      <path d="M110 150V73a50 50 0 0 1 100 0v77z" fill="#E9DFC6" opacity="0.07"/>
+                      <path d="M96 150V70a64 64 0 0 1 128 0v80" fill="none" stroke="#C9A96A" stroke-width="2"/>
+                      <path d="M160 6v144M96 88h128" stroke="#C9A96A" stroke-width="1.4" opacity="0.7"/>
+                      <path d="M160 150 236 70h44L196 150z" fill="#E9DFC6" opacity="0.05"/>
+                      <circle cx="160" cy="54" r="12" fill="#E9D9B4" opacity="0.28"/>
+                      <circle cx="160" cy="54" r="26" fill="#E9D9B4" opacity="0.06"/>
+                      <path d="M0 138h320" stroke="#C9A96A" stroke-width="1" opacity="0.4"/>
+                    </svg>
+                    <span class="hero-copy">
+                      <span class="hero-kicker">Pilihan terbaru</span>
+                      <span class="hero-title">Pujilah Allah Yang Maha Esa</span>
+                      <span class="hero-verse">“Kudus, kudus, kudus, Allah Yang Kuasa!”</span>
+                      <span class="hero-ref">Kidung Jemaat · MIDI siap</span>
+                    </span>
+                  </a>
+                </div>
+                <div class="quick">
+                  <a href="#demo-b" style="--i:0">
+                    <span class="quick-label">Kidung</span>
+                    <span class="quick-sub">Nyanyian jemaat</span>
+                  </a>
+                  <a href="#demo-e" style="--i:1">
+                    <span class="quick-label">Alkitab</span>
+                    <span class="quick-sub">Bacaan harian</span>
+                  </a>
+                  <a href="#demo-c" style="--i:2">
+                    <span class="quick-label">Antrean MIDI</span>
+                    <span class="quick-sub">3 lagu siap</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane pane--after">
+            <div class="pane-label"><span class="tag tag--after">After</span><span>220 ms · 8 px · stagger 40 ms</span></div>
+            <div class="app" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">GYSApp</span>
+                <span class="app-crumb">Bacaan &amp; nyanyian</span>
+              </div>
+              <div class="app-body">
+                <div class="lift-wrap">
+                  <span class="lift-shadow" aria-hidden="true"></span>
+                  <a class="hero-card" href="#demo-c" aria-label="Buka kidung Pujilah Allah Yang Maha Esa">
+                    <svg class="hero-art" viewBox="0 0 320 150" role="img" aria-label="Jendela gereja melengkung dengan cahaya pagi">
+                      <rect width="320" height="150" fill="#16243B"/>
+                      <path d="M40 150V96a34 34 0 0 1 68 0v54z" fill="#1B2C46" opacity="0.8"/>
+                      <path d="M212 150V96a34 34 0 0 1 68 0v54z" fill="#1B2C46" opacity="0.8"/>
+                      <path d="M96 150V70a64 64 0 0 1 128 0v80z" fill="#22395A"/>
+                      <path d="M110 150V73a50 50 0 0 1 100 0v77z" fill="#E9DFC6" opacity="0.07"/>
+                      <path d="M96 150V70a64 64 0 0 1 128 0v80" fill="none" stroke="#C9A96A" stroke-width="2"/>
+                      <path d="M160 6v144M96 88h128" stroke="#C9A96A" stroke-width="1.4" opacity="0.7"/>
+                      <path d="M160 150 236 70h44L196 150z" fill="#E9DFC6" opacity="0.05"/>
+                      <circle cx="160" cy="54" r="12" fill="#E9D9B4" opacity="0.28"/>
+                      <circle cx="160" cy="54" r="26" fill="#E9D9B4" opacity="0.06"/>
+                      <path d="M0 138h320" stroke="#C9A96A" stroke-width="1" opacity="0.4"/>
+                    </svg>
+                    <span class="hero-copy">
+                      <span class="hero-kicker">Pilihan terbaru</span>
+                      <span class="hero-title">Pujilah Allah Yang Maha Esa</span>
+                      <span class="hero-verse">“Kudus, kudus, kudus, Allah Yang Kuasa!”</span>
+                      <span class="hero-ref">Kidung Jemaat · MIDI siap</span>
+                    </span>
+                  </a>
+                </div>
+                <div class="quick">
+                  <a href="#demo-b" style="--i:0">
+                    <span class="quick-label">Kidung</span>
+                    <span class="quick-sub">Nyanyian jemaat</span>
+                  </a>
+                  <a href="#demo-e" style="--i:1">
+                    <span class="quick-label">Alkitab</span>
+                    <span class="quick-sub">Bacaan harian</span>
+                  </a>
+                  <a href="#demo-c" style="--i:2">
+                    <span class="quick-label">Antrean MIDI</span>
+                    <span class="quick-sub">3 lagu siap</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- B -->
+      <article class="demo" id="demo-b" data-demo="b">
+        <div class="demo-head">
+          <div>
+            <p class="demo-index">02 · Kidung</p>
+            <h3 class="demo-title">Catalogue rows + tab pill</h3>
+            <p class="demo-desc">Rows enter in 40 ms batches, capped at twelve. Hover sweeps a soft ground from left to right; press settles at 0.995. The two local-nav tabs share one pill that travels with FLIP.</p>
+          </div>
+          <button class="btn" type="button" data-replay>
+            <svg class="od-icon" aria-hidden="true"><use href="#i-replay"/></svg>
+            Replay
+          </button>
+        </div>
+        <div class="compare">
+          <div class="pane pane--before">
+            <div class="pane-label"><span class="tag">Before</span><span>Snap, no sweep</span></div>
+            <div class="app app--static" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">Kidung</span>
+                <span class="app-crumb">Kidung Jemaat</span>
+              </div>
+              <div class="app-body">
+                <div class="tabgroup" data-tabgroup>
+                  <div class="tabs" data-tabs data-pill="true" role="tablist" aria-label="Kidung dan pilihan terbaru">
+                    <span class="tab-pill" aria-hidden="true"></span>
+                    <button type="button" role="tab" id="tab-kidung-b" aria-controls="panel-kidung-b" aria-selected="true" tabindex="0">Kidung</button>
+                    <button type="button" role="tab" id="tab-terbaru-b" aria-controls="panel-terbaru-b" aria-selected="false" tabindex="-1">Pilihan terbaru</button>
+                  </div>
+                  <div class="song-list" id="panel-kidung-b" role="tabpanel" aria-labelledby="tab-kidung-b" data-panel="0">
+                    <a class="song-row" href="#demo-c" style="--i:0">
+                      <span class="song-no">01</span>
+                      <span class="song-main"><span class="song-title">Pujilah Allah Yang Maha Esa</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:1">
+                      <span class="song-no">02</span>
+                      <span class="song-main"><span class="song-title">Kudus, kudus, kudus, Allah Yang Kuasa!</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:2">
+                      <span class="song-no">03</span>
+                      <span class="song-main"><span class="song-title">Bila Kulihat Bintang Gemerlap</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:3">
+                      <span class="song-no">04</span>
+                      <span class="song-main"><span class="song-title">Tuhan, Kau Gembala Kami</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:4">
+                      <span class="song-no">05</span>
+                      <span class="song-main"><span class="song-title">Yesus Kekasih Jiwaku</span><span class="song-meta">Kidung Persekutuan · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                  </div>
+                  <div class="song-list" id="panel-terbaru-b" role="tabpanel" aria-labelledby="tab-terbaru-b" data-panel="1" hidden>
+                    <a class="song-row" href="#demo-c" style="--i:0">
+                      <span class="song-no">01</span>
+                      <span class="song-main"><span class="song-title">Pujilah Allah Yang Maha Esa</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:1">
+                      <span class="song-no">02</span>
+                      <span class="song-main"><span class="song-title">Kesalahan Ditutupi dengan Kesalahan</span><span class="song-meta">Artikel · Renungan</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:2">
+                      <span class="song-no">03</span>
+                      <span class="song-main"><span class="song-title">Mazmur 23</span><span class="song-meta">Alkitab · Bacaan</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane pane--after">
+            <div class="pane-label"><span class="tag tag--after">After</span><span>FLIP pill · 40 ms stagger</span></div>
+            <div class="app" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">Kidung</span>
+                <span class="app-crumb">Kidung Jemaat</span>
+              </div>
+              <div class="app-body">
+                <div class="tabgroup" data-tabgroup>
+                  <div class="tabs" data-tabs data-pill="true" role="tablist" aria-label="Kidung dan pilihan terbaru">
+                    <span class="tab-pill" aria-hidden="true"></span>
+                    <button type="button" role="tab" id="tab-kidung-a" aria-controls="panel-kidung-a" aria-selected="true" tabindex="0">Kidung</button>
+                    <button type="button" role="tab" id="tab-terbaru-a" aria-controls="panel-terbaru-a" aria-selected="false" tabindex="-1">Pilihan terbaru</button>
+                  </div>
+                  <div class="song-list" id="panel-kidung-a" role="tabpanel" aria-labelledby="tab-kidung-a" data-panel="0">
+                    <a class="song-row" href="#demo-c" style="--i:0">
+                      <span class="song-no">01</span>
+                      <span class="song-main"><span class="song-title">Pujilah Allah Yang Maha Esa</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:1">
+                      <span class="song-no">02</span>
+                      <span class="song-main"><span class="song-title">Kudus, kudus, kudus, Allah Yang Kuasa!</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:2">
+                      <span class="song-no">03</span>
+                      <span class="song-main"><span class="song-title">Bila Kulihat Bintang Gemerlap</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:3">
+                      <span class="song-no">04</span>
+                      <span class="song-main"><span class="song-title">Tuhan, Kau Gembala Kami</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:4">
+                      <span class="song-no">05</span>
+                      <span class="song-main"><span class="song-title">Yesus Kekasih Jiwaku</span><span class="song-meta">Kidung Persekutuan · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                  </div>
+                  <div class="song-list" id="panel-terbaru-a" role="tabpanel" aria-labelledby="tab-terbaru-a" data-panel="1" hidden>
+                    <a class="song-row" href="#demo-c" style="--i:0">
+                      <span class="song-no">01</span>
+                      <span class="song-main"><span class="song-title">Pujilah Allah Yang Maha Esa</span><span class="song-meta">Kidung Jemaat · MIDI</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:1">
+                      <span class="song-no">02</span>
+                      <span class="song-main"><span class="song-title">Kesalahan Ditutupi dengan Kesalahan</span><span class="song-meta">Artikel · Renungan</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    <a class="song-row" href="#demo-c" style="--i:2">
+                      <span class="song-no">03</span>
+                      <span class="song-main"><span class="song-title">Mazmur 23</span><span class="song-meta">Alkitab · Bacaan</span></span>
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- C -->
+      <article class="demo" id="demo-c" data-demo="c">
+        <div class="demo-head">
+          <div>
+            <p class="demo-index">03 · Kidung reader</p>
+            <h3 class="demo-title">Toolbar, verses, and the queue dock</h3>
+            <p class="demo-desc">Toolbar press is 0.96. Verses crossfade on a 12 px horizontal slide. The bottom pill becomes a dock in 260 ms: a <span class="mono">scaleY</span> wrapper anchored at the bottom, never an animated height.</p>
+          </div>
+          <button class="btn" type="button" data-replay>
+            <svg class="od-icon" aria-hidden="true"><use href="#i-replay"/></svg>
+            Replay
+          </button>
+        </div>
+        <div class="compare">
+          <div class="pane pane--before">
+            <div class="pane-label"><span class="tag">Before</span><span>Hard cut</span></div>
+            <div class="app app--static" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">Kidung</span>
+                <span class="app-crumb">Kidung Jemaat</span>
+              </div>
+              <div class="reader" data-reader>
+                <div class="reader-tools">
+                  <div class="tool-group">
+                    <button class="icon-btn" type="button" data-save-toggle aria-pressed="false" aria-label="Simpan kidung">
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-bookmark"/></svg>
+                    </button>
+                    <button class="icon-btn" type="button" data-play-toggle aria-pressed="false" aria-label="Putar MIDI">
+                      <svg class="od-icon od-icon--fill icon-play" aria-hidden="true"><use href="#i-play"/></svg>
+                      <svg class="od-icon icon-pause" aria-hidden="true" style="display:none"><use href="#i-pause"/></svg>
+                    </button>
+                  </div>
+                  <span class="reader-ref">MIDI · 1 lagu</span>
+                </div>
+                <div class="sheet">
+                  <div class="verse-live" data-verse-live>
+                    <p class="verse-label" data-verse-label>Bait 1 dari 2</p>
+                    <p class="lyric" data-lyric>Pujilah Allah Yang Maha Esa,<br>puji Dia, hai seluruh bumi.</p>
+                  </div>
+                </div>
+                <div class="verse-nav">
+                  <button class="icon-btn" type="button" data-verse-prev aria-label="Bait sebelumnya" disabled>
+                    <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+                  </button>
+                  <div class="dots" aria-hidden="true"><span class="dot is-active"></span><span class="dot"></span></div>
+                  <button class="icon-btn" type="button" data-verse-next aria-label="Bait berikutnya">
+                    <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                  </button>
+                </div>
+                <div class="dock-zone">
+                  <button class="queue-pill" type="button" data-queue-toggle aria-expanded="false" aria-controls="dock-b">
+                    <svg class="od-icon" aria-hidden="true"><use href="#i-music"/></svg>
+                    <span class="pill-title od-truncate" data-queue-title>Antrean MIDI</span>
+                    <span class="queue-count">3</span>
+                    <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-up"/></svg>
+                  </button>
+                  <div class="dock" id="dock-b" data-dock hidden>
+                    <div class="dock-head">
+                      <span>Antrean MIDI</span>
+                      <button class="icon-btn" type="button" data-dock-close aria-label="Tutup antrean">
+                        <svg class="od-icon" aria-hidden="true"><use href="#i-close"/></svg>
+                      </button>
+                    </div>
+                    <div class="dock-list">
+                      <button class="dock-row" type="button" data-queue-item="Pujilah Allah Yang Maha Esa">
+                        <svg class="od-icon od-icon--fill" aria-hidden="true"><use href="#i-play"/></svg>
+                        <span class="od-truncate">Pujilah Allah Yang Maha Esa</span>
+                        <span class="dock-meta">MIDI</span>
+                      </button>
+                      <button class="dock-row" type="button" data-queue-item="Kudus, kudus, kudus, Allah Yang Kuasa!">
+                        <svg class="od-icon od-icon--fill" aria-hidden="true"><use href="#i-play"/></svg>
+                        <span class="od-truncate">Kudus, kudus, kudus, Allah Yang Kuasa!</span>
+                        <span class="dock-meta">MIDI</span>
+                      </button>
+                      <button class="dock-row" type="button" data-queue-item="Bila Kulihat Bintang Gemerlap">
+                        <svg class="od-icon od-icon--fill" aria-hidden="true"><use href="#i-play"/></svg>
+                        <span class="od-truncate">Bila Kulihat Bintang Gemerlap</span>
+                        <span class="dock-meta">MIDI</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane pane--after">
+            <div class="pane-label"><span class="tag tag--after">After</span><span>12 px crossfade · 260 ms dock</span></div>
+            <div class="app" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">Kidung</span>
+                <span class="app-crumb">Kidung Jemaat</span>
+              </div>
+              <div class="reader" data-reader>
+                <div class="reader-tools">
+                  <div class="tool-group">
+                    <button class="icon-btn" type="button" data-save-toggle aria-pressed="false" aria-label="Simpan kidung">
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-bookmark"/></svg>
+                    </button>
+                    <button class="icon-btn" type="button" data-play-toggle aria-pressed="false" aria-label="Putar MIDI">
+                      <svg class="od-icon od-icon--fill icon-play" aria-hidden="true"><use href="#i-play"/></svg>
+                      <svg class="od-icon icon-pause" aria-hidden="true" style="display:none"><use href="#i-pause"/></svg>
+                    </button>
+                  </div>
+                  <span class="reader-ref">MIDI · 1 lagu</span>
+                </div>
+                <div class="sheet">
+                  <div class="verse-live" data-verse-live>
+                    <p class="verse-label" data-verse-label>Bait 1 dari 2</p>
+                    <p class="lyric" data-lyric>Pujilah Allah Yang Maha Esa,<br>puji Dia, hai seluruh bumi.</p>
+                  </div>
+                </div>
+                <div class="verse-nav">
+                  <button class="icon-btn" type="button" data-verse-prev aria-label="Bait sebelumnya" disabled>
+                    <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+                  </button>
+                  <div class="dots" aria-hidden="true"><span class="dot is-active"></span><span class="dot"></span></div>
+                  <button class="icon-btn" type="button" data-verse-next aria-label="Bait berikutnya">
+                    <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                  </button>
+                </div>
+                <div class="dock-zone">
+                  <button class="queue-pill" type="button" data-queue-toggle aria-expanded="false" aria-controls="dock-a">
+                    <svg class="od-icon" aria-hidden="true"><use href="#i-music"/></svg>
+                    <span class="pill-title od-truncate" data-queue-title>Antrean MIDI</span>
+                    <span class="queue-count">3</span>
+                    <svg class="od-icon" aria-hidden="true"><use href="#i-chevron-up"/></svg>
+                  </button>
+                  <div class="dock" id="dock-a" data-dock hidden>
+                    <div class="dock-head">
+                      <span>Antrean MIDI</span>
+                      <button class="icon-btn" type="button" data-dock-close aria-label="Tutup antrean">
+                        <svg class="od-icon" aria-hidden="true"><use href="#i-close"/></svg>
+                      </button>
+                    </div>
+                    <div class="dock-list">
+                      <button class="dock-row" type="button" data-queue-item="Pujilah Allah Yang Maha Esa">
+                        <svg class="od-icon od-icon--fill" aria-hidden="true"><use href="#i-play"/></svg>
+                        <span class="od-truncate">Pujilah Allah Yang Maha Esa</span>
+                        <span class="dock-meta">MIDI</span>
+                      </button>
+                      <button class="dock-row" type="button" data-queue-item="Kudus, kudus, kudus, Allah Yang Kuasa!">
+                        <svg class="od-icon od-icon--fill" aria-hidden="true"><use href="#i-play"/></svg>
+                        <span class="od-truncate">Kudus, kudus, kudus, Allah Yang Kuasa!</span>
+                        <span class="dock-meta">MIDI</span>
+                      </button>
+                      <button class="dock-row" type="button" data-queue-item="Bila Kulihat Bintang Gemerlap">
+                        <svg class="od-icon od-icon--fill" aria-hidden="true"><use href="#i-play"/></svg>
+                        <span class="od-truncate">Bila Kulihat Bintang Gemerlap</span>
+                        <span class="dock-meta">MIDI</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- D -->
+      <article class="demo" id="demo-d" data-demo="d">
+        <div class="demo-head">
+          <div>
+            <p class="demo-index">04 · /lainnya</p>
+            <h3 class="demo-title">Settings disclosures</h3>
+            <p class="demo-desc">The chevron turns 180° in 180 ms. Content arrives from 6 px above and the hint fades in 60 ms later. The row itself only raises a background plate — nothing moves on hover.</p>
+          </div>
+          <button class="btn" type="button" data-replay>
+            <svg class="od-icon" aria-hidden="true"><use href="#i-replay"/></svg>
+            Replay
+          </button>
+        </div>
+        <div class="compare">
+          <div class="pane pane--before">
+            <div class="pane-label"><span class="tag">Before</span><span>Chevron jumps</span></div>
+            <div class="app app--static" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">Lainnya</span>
+                <span class="app-crumb">Pengaturan</span>
+              </div>
+              <div class="app-body">
+                <div class="settings">
+                  <div class="disc">
+                    <button class="disc-trigger" type="button" data-disclosure aria-expanded="false" aria-controls="disc-tema-b">
+                      <span class="disc-copy"><span class="disc-label">Tema tampilan</span><span class="disc-meta">Warna permukaan dan tinta</span></span>
+                      <span class="disc-hint" data-theme-label>Terang</span>
+                      <svg class="od-icon disc-chevron" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </button>
+                    <div class="disc-panel" id="disc-tema-b" hidden>
+                      <div class="disc-inner">
+                        <div class="theme-chips">
+                          <button class="theme-chip" type="button" data-set-theme="light" aria-pressed="true"><span class="swatch" style="--sw:#F5F1E6"></span>Terang</button>
+                          <button class="theme-chip" type="button" data-set-theme="dark" aria-pressed="false"><span class="swatch" style="--sw:#151C25"></span>Gelap</button>
+                          <button class="theme-chip" type="button" data-set-theme="sepia" aria-pressed="false"><span class="swatch" style="--sw:#EFE4CF"></span>Sepia</button>
+                          <button class="theme-chip" type="button" data-set-theme="amoled" aria-pressed="false"><span class="swatch" style="--sw:#000000"></span>AMOLED</button>
+                        </div>
+                        <p class="disc-note">Tema berlaku untuk seluruh aplikasi dan diingat di perangkat ini.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="disc">
+                    <button class="disc-trigger" type="button" data-disclosure aria-expanded="false" aria-controls="disc-getar-b">
+                      <span class="disc-copy"><span class="disc-label">Getaran &amp; suara</span><span class="disc-meta">Umpan balik saat berpindah</span></span>
+                      <span class="disc-hint">Aktif</span>
+                      <svg class="od-icon disc-chevron" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </button>
+                    <div class="disc-panel" id="disc-getar-b" hidden>
+                      <div class="disc-inner">
+                        <div class="switch-row">
+                          <span class="disc-copy"><span class="disc-label">Getaran saat berpindah</span><span class="disc-meta">Hanya pada perangkat yang mendukung</span></span>
+                          <button class="switch switch--sm" type="button" role="switch" aria-checked="true" data-switch aria-label="Getaran saat berpindah">
+                            <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+                          </button>
+                        </div>
+                        <div class="switch-row">
+                          <span class="disc-copy"><span class="disc-label">Suara ketuk</span><span class="disc-meta">Halus, mengikuti tema</span></span>
+                          <button class="switch switch--sm" type="button" role="switch" aria-checked="false" data-switch aria-label="Suara ketuk">
+                            <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+                          </button>
+                        </div>
+                        <p class="disc-note">Getaran tidak pernah dipakai untuk menggantikan informasi visual.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="disc">
+                    <button class="disc-trigger" type="button" data-disclosure aria-expanded="false" aria-controls="disc-tentang-b">
+                      <span class="disc-copy"><span class="disc-label">Tentang GYSApp</span><span class="disc-meta">Bacaan &amp; nyanyian</span></span>
+                      <span class="disc-hint">v1.0</span>
+                      <svg class="od-icon disc-chevron" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </button>
+                    <div class="disc-panel" id="disc-tentang-b" hidden>
+                      <div class="disc-inner">
+                        <p class="disc-note">GYSApp 1.0 · Kidung, Alkitab, pernyataan iman, literatur, dan artikel dalam satu tempat.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane pane--after">
+            <div class="pane-label"><span class="tag tag--after">After</span><span>Rotate 180° · 6 px</span></div>
+            <div class="app" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">Lainnya</span>
+                <span class="app-crumb">Pengaturan</span>
+              </div>
+              <div class="app-body">
+                <div class="settings">
+                  <div class="disc">
+                    <button class="disc-trigger" type="button" data-disclosure aria-expanded="false" aria-controls="disc-tema-a">
+                      <span class="disc-copy"><span class="disc-label">Tema tampilan</span><span class="disc-meta">Warna permukaan dan tinta</span></span>
+                      <span class="disc-hint" data-theme-label>Terang</span>
+                      <svg class="od-icon disc-chevron" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </button>
+                    <div class="disc-panel" id="disc-tema-a" hidden>
+                      <div class="disc-inner">
+                        <div class="theme-chips">
+                          <button class="theme-chip" type="button" data-set-theme="light" aria-pressed="true"><span class="swatch" style="--sw:#F5F1E6"></span>Terang</button>
+                          <button class="theme-chip" type="button" data-set-theme="dark" aria-pressed="false"><span class="swatch" style="--sw:#151C25"></span>Gelap</button>
+                          <button class="theme-chip" type="button" data-set-theme="sepia" aria-pressed="false"><span class="swatch" style="--sw:#EFE4CF"></span>Sepia</button>
+                          <button class="theme-chip" type="button" data-set-theme="amoled" aria-pressed="false"><span class="swatch" style="--sw:#000000"></span>AMOLED</button>
+                        </div>
+                        <p class="disc-note">Tema berlaku untuk seluruh aplikasi dan diingat di perangkat ini.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="disc">
+                    <button class="disc-trigger" type="button" data-disclosure aria-expanded="false" aria-controls="disc-getar-a">
+                      <span class="disc-copy"><span class="disc-label">Getaran &amp; suara</span><span class="disc-meta">Umpan balik saat berpindah</span></span>
+                      <span class="disc-hint">Aktif</span>
+                      <svg class="od-icon disc-chevron" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </button>
+                    <div class="disc-panel" id="disc-getar-a" hidden>
+                      <div class="disc-inner">
+                        <div class="switch-row">
+                          <span class="disc-copy"><span class="disc-label">Getaran saat berpindah</span><span class="disc-meta">Hanya pada perangkat yang mendukung</span></span>
+                          <button class="switch switch--sm" type="button" role="switch" aria-checked="true" data-switch aria-label="Getaran saat berpindah">
+                            <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+                          </button>
+                        </div>
+                        <div class="switch-row">
+                          <span class="disc-copy"><span class="disc-label">Suara ketuk</span><span class="disc-meta">Halus, mengikuti tema</span></span>
+                          <button class="switch switch--sm" type="button" role="switch" aria-checked="false" data-switch aria-label="Suara ketuk">
+                            <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+                          </button>
+                        </div>
+                        <p class="disc-note">Getaran tidak pernah dipakai untuk menggantikan informasi visual.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="disc">
+                    <button class="disc-trigger" type="button" data-disclosure aria-expanded="false" aria-controls="disc-tentang-a">
+                      <span class="disc-copy"><span class="disc-label">Tentang GYSApp</span><span class="disc-meta">Bacaan &amp; nyanyian</span></span>
+                      <span class="disc-hint">v1.0</span>
+                      <svg class="od-icon disc-chevron" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                    </button>
+                    <div class="disc-panel" id="disc-tentang-a" hidden>
+                      <div class="disc-inner">
+                        <p class="disc-note">GYSApp 1.0 · Kidung, Alkitab, pernyataan iman, literatur, dan artikel dalam satu tempat.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- E -->
+      <article class="demo" id="demo-e" data-demo="e">
+        <div class="demo-head">
+          <div>
+            <p class="demo-index">05 · Global search</p>
+            <h3 class="demo-title">Search overlay</h3>
+            <p class="demo-desc">Scrim in 120 ms; panel in 180 ms from 0.98 and 6 px below. Result rows follow at 24 ms. Type to filter seven seeded entries, then clear the field to see the empty state fade in.</p>
+          </div>
+          <button class="btn" type="button" data-replay>
+            <svg class="od-icon" aria-hidden="true"><use href="#i-replay"/></svg>
+            Replay
+          </button>
+        </div>
+        <div class="compare">
+          <div class="pane pane--before">
+            <div class="pane-label"><span class="tag">Before</span><span>Instant panel</span></div>
+            <div class="app app--static" data-search-app lang="id">
+              <div class="app-bar">
+                <span class="app-brand">GYSApp</span>
+                <span class="spacer"></span>
+                <button class="search-trigger" type="button" data-search-open>
+                  <svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-search"/></svg>
+                  Cari
+                </button>
+              </div>
+              <div class="app-body app-body--search">
+                <p class="app-kicker">Bacaan &amp; nyanyian</p>
+                <p class="app-note">Cari kidung, ayat, dan artikel dari satu tempat. Hasil muncul saat mengetik.</p>
+                <div class="chip-row">
+                  <button class="chip" type="button" data-search-open data-search-q="kudus">Kudus</button>
+                  <button class="chip" type="button" data-search-open data-search-q="Mazmur">Mazmur</button>
+                  <button class="chip" type="button" data-search-open data-search-q="iman">Iman</button>
+                </div>
+                <p class="last-opened" role="status" data-last-opened>Terakhir dibuka — belum ada</p>
+              </div>
+              <div class="search-layer" data-search-layer hidden>
+                <div class="search-scrim" data-search-close aria-hidden="true"></div>
+                <div class="search-panel" data-search-panel role="dialog" aria-modal="true" aria-labelledby="search-title-b">
+                  <div class="search-head">
+                    <p class="search-title" id="search-title-b">Cari di GYSApp</p>
+                    <button class="icon-btn" type="button" data-search-close aria-label="Tutup pencarian">
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-close"/></svg>
+                    </button>
+                  </div>
+                  <label class="search-label" for="q-b">Kata kunci</label>
+                  <input class="search-input" id="q-b" type="search" autocomplete="off" placeholder="Kidung, ayat, artikel…" data-search-input>
+                  <div class="search-body">
+                    <ul class="results" data-search-results></ul>
+                    <div class="search-empty" data-search-empty hidden>
+                      <span class="empty-mark" aria-hidden="true"><svg class="od-icon"><use href="#i-empty"/></svg></span>
+                      <p class="empty-title">Tidak ada hasil</p>
+                      <p class="empty-copy">Tidak ada bacaan yang cocok dengan “<span data-empty-query></span>”. Coba kata lain.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane pane--after">
+            <div class="pane-label"><span class="tag tag--after">After</span><span>120 / 180 ms · 24 ms stagger</span></div>
+            <div class="app" data-search-app lang="id">
+              <div class="app-bar">
+                <span class="app-brand">GYSApp</span>
+                <span class="spacer"></span>
+                <button class="search-trigger" type="button" data-search-open>
+                  <svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-search"/></svg>
+                  Cari
+                </button>
+              </div>
+              <div class="app-body app-body--search">
+                <p class="app-kicker">Bacaan &amp; nyanyian</p>
+                <p class="app-note">Cari kidung, ayat, dan artikel dari satu tempat. Hasil muncul saat mengetik.</p>
+                <div class="chip-row">
+                  <button class="chip" type="button" data-search-open data-search-q="kudus">Kudus</button>
+                  <button class="chip" type="button" data-search-open data-search-q="Mazmur">Mazmur</button>
+                  <button class="chip" type="button" data-search-open data-search-q="iman">Iman</button>
+                </div>
+                <p class="last-opened" role="status" data-last-opened>Terakhir dibuka — belum ada</p>
+              </div>
+              <div class="search-layer" data-search-layer hidden>
+                <div class="search-scrim" data-search-close aria-hidden="true"></div>
+                <div class="search-panel" data-search-panel role="dialog" aria-modal="true" aria-labelledby="search-title-a">
+                  <div class="search-head">
+                    <p class="search-title" id="search-title-a">Cari di GYSApp</p>
+                    <button class="icon-btn" type="button" data-search-close aria-label="Tutup pencarian">
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-close"/></svg>
+                    </button>
+                  </div>
+                  <label class="search-label" for="q-a">Kata kunci</label>
+                  <input class="search-input" id="q-a" type="search" autocomplete="off" placeholder="Kidung, ayat, artikel…" data-search-input>
+                  <div class="search-body">
+                    <ul class="results" data-search-results></ul>
+                    <div class="search-empty" data-search-empty hidden>
+                      <span class="empty-mark" aria-hidden="true"><svg class="od-icon"><use href="#i-empty"/></svg></span>
+                      <p class="empty-title">Tidak ada hasil</p>
+                      <p class="empty-copy">Tidak ada bacaan yang cocok dengan “<span data-empty-query></span>”. Coba kata lain.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- F -->
+      <article class="demo" id="demo-f" data-demo="f">
+        <div class="demo-head">
+          <div>
+            <p class="demo-index">06 · Tema</p>
+            <h3 class="demo-title">Theme crossfade</h3>
+            <p class="demo-desc">The surface and the ink cross-fade together over 180 ms. Two snapshot layers swap opacity; no colour property is animated, and no instant flip is visible.</p>
+          </div>
+          <button class="btn" type="button" data-replay>
+            <svg class="od-icon" aria-hidden="true"><use href="#i-replay"/></svg>
+            Replay
+          </button>
+        </div>
+        <div class="compare">
+          <div class="pane pane--before">
+            <div class="pane-label"><span class="tag">Before</span><span>Instant flip</span></div>
+            <div class="app app--static" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">Lainnya</span>
+                <span class="app-crumb">Tema tampilan</span>
+              </div>
+              <div class="app-body">
+                <div class="theme-demo" data-theme-demo>
+                  <div class="theme-card">
+                    <div class="theme-face" data-palette="light" data-face="a" aria-hidden="false">
+                      <div class="face-card">
+                        <p class="face-kicker">Kidung Jemaat</p>
+                        <p class="face-title">Pujilah Allah Yang Maha Esa</p>
+                        <p class="face-verse">“Kudus, kudus, kudus, Allah Yang Kuasa!”</p>
+                        <p class="face-foot"><span class="face-dot"></span>Bait 1 dari 2</p>
+                      </div>
+                    </div>
+                    <div class="theme-face" data-palette="sepia" data-face="b" aria-hidden="true">
+                      <div class="face-card">
+                        <p class="face-kicker">Kidung Jemaat</p>
+                        <p class="face-title">Pujilah Allah Yang Maha Esa</p>
+                        <p class="face-verse">“Kudus, kudus, kudus, Allah Yang Kuasa!”</p>
+                        <p class="face-foot"><span class="face-dot"></span>Bait 1 dari 2</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="theme-foot">
+                    <p class="theme-current"><span class="label">Tema</span><strong data-theme-name>Terang</strong></p>
+                    <button class="btn" type="button" data-switch-face aria-label="Ganti tema kartu">
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-replay"/></svg>
+                      Ganti tema
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane pane--after">
+            <div class="pane-label"><span class="tag tag--after">After</span><span>Opacity only · 180 ms</span></div>
+            <div class="app" lang="id">
+              <div class="app-bar">
+                <span class="app-brand">Lainnya</span>
+                <span class="app-crumb">Tema tampilan</span>
+              </div>
+              <div class="app-body">
+                <div class="theme-demo" data-theme-demo>
+                  <div class="theme-card">
+                    <div class="theme-face" data-palette="light" data-face="a" aria-hidden="false">
+                      <div class="face-card">
+                        <p class="face-kicker">Kidung Jemaat</p>
+                        <p class="face-title">Pujilah Allah Yang Maha Esa</p>
+                        <p class="face-verse">“Kudus, kudus, kudus, Allah Yang Kuasa!”</p>
+                        <p class="face-foot"><span class="face-dot"></span>Bait 1 dari 2</p>
+                      </div>
+                    </div>
+                    <div class="theme-face" data-palette="sepia" data-face="b" aria-hidden="true">
+                      <div class="face-card">
+                        <p class="face-kicker">Kidung Jemaat</p>
+                        <p class="face-title">Pujilah Allah Yang Maha Esa</p>
+                        <p class="face-verse">“Kudus, kudus, kudus, Allah Yang Kuasa!”</p>
+                        <p class="face-foot"><span class="face-dot"></span>Bait 1 dari 2</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="theme-foot">
+                    <p class="theme-current"><span class="label">Tema</span><strong data-theme-name>Terang</strong></p>
+                    <button class="btn" type="button" data-switch-face aria-label="Ganti tema kartu">
+                      <svg class="od-icon" aria-hidden="true"><use href="#i-replay"/></svg>
+                      Ganti tema
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="recipes">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">04 · Resep</p>
+        <h2>Copy the diff</h2>
+        <p class="dek">Six copy-ready fragments: the tokens, the entrance utility, the tab FLIP, the dock entrance, the overlay, and the reduced-motion block that neutralises transforms.</p>
+      </div>
+
+      <div class="recipes" data-recipes>
+        <div class="recipe-tabs" role="tablist" aria-label="Resep gerak">
+          <button class="recipe-tab" type="button" role="tab" id="recipe-tab-0" aria-controls="recipe-panel-0" aria-selected="true" data-recipe-tab>Tokens</button>
+          <button class="recipe-tab" type="button" role="tab" id="recipe-tab-1" aria-controls="recipe-panel-1" aria-selected="false" tabindex="-1" data-recipe-tab>Entrance</button>
+          <button class="recipe-tab" type="button" role="tab" id="recipe-tab-2" aria-controls="recipe-panel-2" aria-selected="false" tabindex="-1" data-recipe-tab>Tab FLIP</button>
+          <button class="recipe-tab" type="button" role="tab" id="recipe-tab-3" aria-controls="recipe-panel-3" aria-selected="false" tabindex="-1" data-recipe-tab>Dock</button>
+          <button class="recipe-tab" type="button" role="tab" id="recipe-tab-4" aria-controls="recipe-panel-4" aria-selected="false" tabindex="-1" data-recipe-tab>Overlay</button>
+          <button class="recipe-tab" type="button" role="tab" id="recipe-tab-5" aria-controls="recipe-panel-5" aria-selected="false" tabindex="-1" data-recipe-tab>Reduced motion</button>
+        </div>
+
+        <div class="recipe-panel" id="recipe-panel-0" role="tabpanel" aria-labelledby="recipe-tab-0" data-recipe="recipe-tokens">
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-file">motion.css</span>
+              <button class="copy-btn" type="button" data-copy><svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-copy"/></svg><span data-copy-label>Salin</span></button>
+            </div>
+            <pre><code><span class="cm">/* GYSApp motion tokens */</span>
+:root {
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-entrance: 220ms;
+  --motion-slow: 260ms;
+  --motion-slower: 320ms;
+
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --motion-stagger: 40ms;
+  --motion-stagger-tight: 24ms;
+
+  --motion-distance-xs: 4px;
+  --motion-distance-sm: 6px;
+  --motion-distance: 8px;
+  --motion-distance-lg: 12px;
+  --motion-lift: -2px;
+
+  --motion-press-soft: 0.995;
+  --motion-press: 0.96;
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="recipe-panel" id="recipe-panel-1" role="tabpanel" aria-labelledby="recipe-tab-1" data-recipe="recipe-entrance" hidden>
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-file">entrance.css</span>
+              <button class="copy-btn" type="button" data-copy><svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-copy"/></svg><span data-copy-label>Salin</span></button>
+            </div>
+            <pre><code><span class="cm">/* One entrance, reused everywhere. `backwards`
+   keeps hover transforms free after the run. */</span>
+@keyframes enter {
+  from { opacity: 0; transform: translateY(var(--motion-distance)); }
+}
+
+.enter {
+  animation: enter var(--motion-entrance) var(--motion-ease-entrance) backwards;
+}
+
+.stagger > * {
+  animation: enter var(--motion-entrance) var(--motion-ease-entrance) backwards;
+  animation-delay: calc(var(--i, 0) * var(--motion-stagger));
+}
+
+<span class="cm">/* Cap the choreography. Never animate a long list. */</span>
+.stagger > :nth-child(n + 13) { animation: none; }
+
+.press {
+  transition: transform var(--motion-fast) var(--motion-ease-standard);
+}
+.press:active { transform: scale(var(--motion-press-soft)); }</code></pre>
+          </div>
+        </div>
+
+        <div class="recipe-panel" id="recipe-panel-2" role="tabpanel" aria-labelledby="recipe-tab-2" data-recipe="recipe-flip" hidden>
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-file">tabs.js</span>
+              <button class="copy-btn" type="button" data-copy><svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-copy"/></svg><span data-copy-label>Salin</span></button>
+            </div>
+            <pre><code>function movePill(pill, tab, tabs) {
+  const first = pill.getBoundingClientRect();
+  const box = tabs.getBoundingClientRect();
+  const target = tab.getBoundingClientRect();
+
+  pill.style.width = target.width + 'px';
+  pill.style.left = (target.left - box.left) + 'px';
+
+  const last = pill.getBoundingClientRect();
+  pill.animate(
+    [{ transform: `translateX(${first.left - last.left}px) scaleX(${first.width / last.width})` },
+     { transform: 'none' }],
+    { duration: 180, easing: 'cubic-bezier(0.2, 0, 0, 1)' }
+  );
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="recipe-panel" id="recipe-panel-3" role="tabpanel" aria-labelledby="recipe-tab-3" data-recipe="recipe-dock" hidden>
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-file">dock.css</span>
+              <button class="copy-btn" type="button" data-copy><svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-copy"/></svg><span data-copy-label>Salin</span></button>
+            </div>
+            <pre><code><span class="cm">/* Grow from the handle. Height stays fixed. */</span>
+.dock {
+  position: absolute;
+  inset-inline: 8px;
+  inset-block-end: 8px;
+  transform-origin: bottom center;
+  transform: scaleY(0.06);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform var(--motion-base) var(--motion-ease-exit),
+    opacity var(--motion-fast) var(--motion-ease-exit),
+    visibility 0s linear var(--motion-base);
+}
+
+.dock.is-open {
+  transform: scaleY(1);
+  opacity: 1;
+  visibility: visible;
+  transition:
+    transform var(--motion-slow) var(--motion-ease-entrance),
+    opacity var(--motion-base) var(--motion-ease-standard),
+    visibility 0s linear 0s;
+}
+
+.dock__inner {
+  opacity: 0;
+  transition: opacity var(--motion-base) linear 60ms;
+}
+.dock.is-open .dock__inner { opacity: 1; }</code></pre>
+          </div>
+        </div>
+
+        <div class="recipe-panel" id="recipe-panel-4" role="tabpanel" aria-labelledby="recipe-tab-4" data-recipe="recipe-overlay" hidden>
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-file">overlay.css</span>
+              <button class="copy-btn" type="button" data-copy><svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-copy"/></svg><span data-copy-label>Salin</span></button>
+            </div>
+            <pre><code>.search-scrim {
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease-exit);
+}
+
+.search-panel {
+  opacity: 0;
+  transform: translateY(var(--motion-distance-sm)) scale(0.98);
+  transition:
+    opacity var(--motion-fast) var(--motion-ease-exit),
+    transform var(--motion-fast) var(--motion-ease-exit);
+}
+
+.search-layer.is-open .search-scrim { opacity: 1; }
+.search-layer.is-open .search-panel {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--motion-base) var(--motion-ease-entrance),
+    transform var(--motion-base) var(--motion-ease-entrance);
+}
+
+<span class="cm">/* Rows follow at 24ms, then stop. */</span>
+.results.is-stagger .result-row {
+  animation: result-in var(--motion-entrance) var(--motion-ease-entrance) backwards;
+  animation-delay: calc(var(--i, 0) * var(--motion-stagger-tight));
+}
+@keyframes result-in {
+  from { opacity: 0; transform: translateY(var(--motion-distance-xs)); }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="recipe-panel" id="recipe-panel-5" role="tabpanel" aria-labelledby="recipe-tab-5" data-recipe="recipe-reduced" hidden>
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-file">reduced.css</span>
+              <button class="copy-btn" type="button" data-copy><svg class="od-icon od-icon--sm" aria-hidden="true"><use href="#i-copy"/></svg><span data-copy-label>Salin</span></button>
+            </div>
+            <pre><code>@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 120ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    transition-property: opacity !important;
+    scroll-behavior: auto !important;
+
+    /* no travel, no scale, no rotation */
+    transform: none !important;
+  }
+}
+
+<span class="cm">/* A switch still has to show its state: position the
+   knob with inset, which is not a transition. */</span>
+@media (prefers-reduced-motion: reduce) {
+  .switch[aria-checked="true"] .switch-knob {
+    inset-inline-start: 18px;
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="limits">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">05 · Batas</p>
+        <h2>What stays still</h2>
+        <p class="dek">A motion system is also a list of refusals. These four are out of scope for GYSApp, regardless of how good they look in a dribbble shot.</p>
+      </div>
+      <div class="donts">
+        <div class="dont">
+          <svg class="od-icon" aria-hidden="true"><use href="#i-close"/></svg>
+          <div>
+            <p class="dont-title">No bouncing cards</p>
+            <p class="dont-copy">Overshoot makes a reading surface feel like a toy. Press is 0.995, with no spring and no wobble.</p>
+          </div>
+        </div>
+        <div class="dont">
+          <svg class="od-icon" aria-hidden="true"><use href="#i-close"/></svg>
+          <div>
+            <p class="dont-title">No parallax on text</p>
+            <p class="dont-copy">Text that drifts while scrolling forces the eye to re-fixate. The sheet stays still; only the verse changes.</p>
+          </div>
+        </div>
+        <div class="dont">
+          <svg class="od-icon" aria-hidden="true"><use href="#i-close"/></svg>
+          <div>
+            <p class="dont-title">No entrance on every scroll</p>
+            <p class="dont-copy">One-time reveals at most, and only for new content. Re-triggering a section as it passes is a slideshow, not a reading app.</p>
+          </div>
+        </div>
+        <div class="dont">
+          <svg class="od-icon" aria-hidden="true"><use href="#i-close"/></svg>
+          <div>
+            <p class="dont-title">No infinite loops</p>
+            <p class="dont-copy">Only the existing loading skeleton may shimmer. Nothing else repeats; a loop competes with the words on the page.</p>
+          </div>
+        </div>
+      </div>
+      <p class="system-note"><strong>Also out:</strong> animating width, height, top, left, or background-color. The only geometry exception in this system is the sidebar rail's <span class="mono">grid-template-columns</span>; everything else travels with transforms and fades with opacity.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <span class="brand">GYSApp <span class="brand-sub">Motion system v1.0</span></span>
+    <span>Empat tema · Tekan Replay untuk membandingkan · Tanpa dependensi eksternal</span>
+  </div>
+</footer>
+
+<div class="theme-veil" id="theme-veil" hidden aria-hidden="true"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+  var DUR = { fast: 120, base: 180, entrance: 220, slow: 260, slower: 320 };
+  var EASE = {
+    standard: 'cubic-bezier(0.2, 0, 0, 1)',
+    entrance: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    exit: 'cubic-bezier(0.4, 0, 1, 1)'
+  };
+
+  function qsa(selector, context) {
+    return Array.prototype.slice.call((context || document).querySelectorAll(selector));
+  }
+  function reduced() {
+    return root.getAttribute('data-reduced') === 'true';
+  }
+  function instant(app) {
+    return reduced() || (app && app.classList.contains('app--static'));
+  }
+  function storeGet(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function storeSet(key, value) {
+    try { window.localStorage.setItem(key, value); } catch (e) { /* in-memory fallback */ }
+  }
+  function restartClass(el, name) {
+    el.classList.remove(name);
+    void el.offsetWidth;
+    el.classList.add(name);
+  }
+
+  /* ---------------------------------------------------------
+     Theme
+     --------------------------------------------------------- */
+  var THEMES = ['light', 'dark', 'sepia', 'amoled'];
+  var THEME_NAMES = { light: 'Terang', dark: 'Gelap', sepia: 'Sepia', amoled: 'AMOLED' };
+  var themeButtons = qsa('[data-set-theme]');
+  var themeLabels = qsa('[data-theme-label]');
+  var themeVeil = document.getElementById('theme-veil');
+
+  function currentTheme() {
+    var value = root.getAttribute('data-theme');
+    return THEMES.indexOf(value) > -1 ? value : 'light';
+  }
+  function paintTheme(name) {
+    root.setAttribute('data-theme', name);
+    themeButtons.forEach(function (button) {
+      button.setAttribute('aria-pressed', button.getAttribute('data-set-theme') === name ? 'true' : 'false');
+    });
+    themeLabels.forEach(function (label) {
+      label.textContent = THEME_NAMES[name];
+    });
+  }
+  function applyTheme(name, animate) {
+    if (THEMES.indexOf(name) < 0) { return; }
+    if (currentTheme() === name) { return; }
+    if (!animate || reduced()) { paintTheme(name); return; }
+    if (typeof document.startViewTransition === 'function') {
+      try {
+        document.startViewTransition(function () { paintTheme(name); });
+        return;
+      } catch (e) {
+        /* fall through to the surface veil */
+      }
+    }
+    if (!themeVeil || !themeVeil.animate) { paintTheme(name); return; }
+    var paper = window.getComputedStyle(root).getPropertyValue('--paper').trim();
+    themeVeil.style.background = paper || '#F5F1E6';
+    themeVeil.hidden = false;
+    if (themeVeil.getAnimations) {
+      themeVeil.getAnimations().forEach(function (animation) { animation.cancel(); });
+    }
+    paintTheme(name);
+    var veil = themeVeil.animate(
+      [{ opacity: 1 }, { opacity: 0 }],
+      { duration: DUR.base, easing: EASE.standard }
+    );
+    veil.onfinish = function () { themeVeil.hidden = true; };
+  }
+
+  var storedTheme = storeGet('gys-theme');
+  var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  paintTheme(THEMES.indexOf(storedTheme) > -1 ? storedTheme : (systemDark ? 'dark' : 'light'));
+
+  themeButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var name = button.getAttribute('data-set-theme');
+      applyTheme(name, true);
+      storeSet('gys-theme', name);
+    });
+  });
+
+  /* ---------------------------------------------------------
+     Reduced motion switch
+     --------------------------------------------------------- */
+  var reduceSwitch = document.getElementById('reduce-toggle');
+  var reduceState = document.getElementById('reduce-state');
+  var motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var storedReduce = storeGet('gys-reduce');
+
+  function paintReduced() {
+    var on = reduced();
+    reduceSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+    reduceState.textContent = on ? 'Aktif' : 'Nonaktif';
+  }
+  function setReduced(on, persist) {
+    root.setAttribute('data-reduced', on ? 'true' : 'false');
+    paintReduced();
+    if (persist) { storeSet('gys-reduce', on ? 'on' : 'off'); }
+  }
+
+  setReduced(storedReduce ? storedReduce === 'on' : !!(motionQuery && motionQuery.matches), false);
+  reduceSwitch.addEventListener('click', function () {
+    setReduced(!reduced(), true);
+  });
+  if (motionQuery) {
+    var onMotionChange = function (event) {
+      if (!storeGet('gys-reduce')) { setReduced(event.matches, false); }
+    };
+    if (motionQuery.addEventListener) { motionQuery.addEventListener('change', onMotionChange); }
+    else if (motionQuery.addListener) { motionQuery.addListener(onMotionChange); }
+  }
+
+  /* ---------------------------------------------------------
+     Demo A — hero entrance
+     --------------------------------------------------------- */
+  var demoA = document.querySelector('[data-demo="a"]');
+  var afterA = demoA ? demoA.querySelector('.pane--after .app') : null;
+  function playHero() {
+    if (!afterA) { return; }
+    restartClass(afterA, 'is-playing');
+  }
+
+  /* ---------------------------------------------------------
+     Demo B — tabs with a FLIP pill
+     --------------------------------------------------------- */
+  var tabControllers = [];
+  qsa('[data-tabgroup]').forEach(function (group) {
+    var tabs = group.querySelector('[data-tabs]');
+    if (!tabs) { return; }
+    var buttons = qsa('[role="tab"]', tabs);
+    var panels = qsa('[data-panel]', group);
+    var pill = tabs.querySelector('.tab-pill');
+    var current = 0;
+
+    function placePill(button) {
+      if (!pill) { return; }
+      if (pill.getAnimations) {
+        pill.getAnimations().forEach(function (animation) { animation.cancel(); });
+      }
+      var box = tabs.getBoundingClientRect();
+      var target = button.getBoundingClientRect();
+      pill.style.width = target.width + 'px';
+      pill.style.left = (target.left - box.left - tabs.clientLeft) + 'px';
+      pill.style.transform = 'none';
+    }
+    function flipPill(button) {
+      if (!pill) { return; }
+      var first = pill.getBoundingClientRect();
+      placePill(button);
+      var last = pill.getBoundingClientRect();
+      if (!first.width || !last.width || instant(tabs.closest('.app'))) { return; }
+      pill.animate(
+        [{ transform: 'translateX(' + (first.left - last.left) + 'px) scaleX(' + (first.width / last.width) + ')' },
+         { transform: 'none' }],
+        { duration: DUR.base, easing: EASE.standard }
+      );
+    }
+    function stagger(panel) {
+      var rows = qsa('.song-row', panel);
+      rows.forEach(function (row, index) {
+        row.style.setProperty('--i', String(Math.min(index, 11)));
+        row.classList.toggle('no-enter', index > 11);
+      });
+      restartClass(panel, 'is-stagger');
+    }
+    function select(index, animate) {
+      var safe = Math.max(0, Math.min(index, buttons.length - 1));
+      current = safe;
+      buttons.forEach(function (button, i) {
+        var on = i === safe;
+        button.setAttribute('aria-selected', on ? 'true' : 'false');
+        button.tabIndex = on ? 0 : -1;
+      });
+      panels.forEach(function (panel, i) {
+        if (i === safe) { panel.removeAttribute('hidden'); }
+        else { panel.setAttribute('hidden', ''); }
+      });
+      if (animate) { flipPill(buttons[safe]); stagger(panels[safe]); }
+      else { placePill(buttons[safe]); }
+    }
+
+    buttons.forEach(function (button, index) {
+      button.addEventListener('click', function () { select(index, true); });
+      button.addEventListener('keydown', function (event) {
+        var next = null;
+        if (event.key === 'ArrowRight') { next = (index + 1) % buttons.length; }
+        else if (event.key === 'ArrowLeft') { next = (index - 1 + buttons.length) % buttons.length; }
+        else if (event.key === 'Home') { next = 0; }
+        else if (event.key === 'End') { next = buttons.length - 1; }
+        if (next !== null) {
+          event.preventDefault();
+          buttons[next].focus();
+          select(next, true);
+        }
+      });
+    });
+
+    placePill(buttons[current]);
+    if (pill) { tabs.setAttribute('data-ready', 'true'); }
+    tabControllers.push({ group: group, select: select });
+
+    if (window.ResizeObserver) {
+      var observer = new ResizeObserver(function () { placePill(buttons[current]); });
+      observer.observe(tabs);
+      observer.observe(group);
+    }
+    window.addEventListener('resize', function () { placePill(buttons[current]); });
+  });
+
+  /* ---------------------------------------------------------
+     Demo C — reader, verses, queue dock
+     --------------------------------------------------------- */
+  var VERSES = [
+    { label: 'Bait 1 dari 2', lines: ['Pujilah Allah Yang Maha Esa,', 'puji Dia, hai seluruh bumi.'] },
+    { label: 'Bait 2 dari 2', lines: ['Kudus, kudus, kudus, Allah Yang Kuasa!', 'sorga dan bumi memuji nama-Nya.'] }
+  ];
+  var readerControllers = [];
+
+  qsa('[data-reader]').forEach(function (reader) {
+    var app = reader.closest('.app');
+    var label = reader.querySelector('[data-verse-label]');
+    var lyric = reader.querySelector('[data-lyric]');
+    var live = reader.querySelector('[data-verse-live]');
+    var sheet = reader.querySelector('.sheet');
+    var prev = reader.querySelector('[data-verse-prev]');
+    var next = reader.querySelector('[data-verse-next]');
+    var dots = qsa('.dot', reader);
+    var index = 0;
+
+    var dock = app.querySelector('[data-dock]');
+    var pill = app.querySelector('[data-queue-toggle]');
+    var dockClose = app.querySelector('[data-dock-close]');
+    var queueTitle = app.querySelector('[data-queue-title]');
+    var dockOpen = false;
+    var dockTimer = null;
+
+    function paint(i) {
+      index = i;
+      label.textContent = VERSES[i].label;
+      lyric.replaceChildren();
+      VERSES[i].lines.forEach(function (line, n) {
+        if (n) { lyric.appendChild(document.createElement('br')); }
+        lyric.appendChild(document.createTextNode(line));
+      });
+      dots.forEach(function (dot, n) { dot.classList.toggle('is-active', n === i); });
+      prev.disabled = i === 0;
+      next.disabled = i === VERSES.length - 1;
+    }
+
+    function go(i, direction) {
+      if (i < 0 || i >= VERSES.length || i === index) { return; }
+      if (instant(app)) { paint(i); return; }
+      if (live.getAnimations) {
+        live.getAnimations().forEach(function (animation) { animation.cancel(); });
+      }
+      live.style.opacity = '';
+      live.style.transform = '';
+      qsa('.verse-ghost', sheet).forEach(function (node) { node.remove(); });
+
+      var ghost = live.cloneNode(true);
+      ghost.classList.add('verse-ghost');
+      ghost.classList.remove('verse-live');
+      ghost.setAttribute('aria-hidden', 'true');
+      ghost.querySelectorAll('[data-verse-label]').forEach(function (node) { node.removeAttribute('data-verse-label'); });
+      ghost.querySelectorAll('[data-lyric]').forEach(function (node) { node.removeAttribute('data-lyric'); });
+      sheet.appendChild(ghost);
+
+      var dx = direction === 'prev' ? -12 : 12;
+      var out = ghost.animate(
+        [{ opacity: 1, transform: 'translateX(0)' }, { opacity: 0, transform: 'translateX(' + (-dx) + 'px)' }],
+        { duration: DUR.base, easing: EASE.exit }
+      );
+      live.style.opacity = '0';
+      live.style.transform = 'translateX(' + dx + 'px)';
+      paint(i);
+      var enter = live.animate(
+        [{ opacity: 0, transform: 'translateX(' + dx + 'px)' }, { opacity: 1, transform: 'translateX(0)' }],
+        { duration: DUR.entrance, easing: EASE.entrance }
+      );
+      function clean() { if (ghost.parentNode) { ghost.remove(); } }
+      out.onfinish = clean;
+      enter.onfinish = function () {
+        live.style.opacity = '';
+        live.style.transform = '';
+      };
+      window.setTimeout(clean, DUR.entrance + 160);
+    }
+
+    function openDock(moveFocus) {
+      if (!dock || dockOpen) { return; }
+      dockOpen = true;
+      window.clearTimeout(dockTimer);
+      dock.hidden = false;
+      window.requestAnimationFrame(function () {
+        if (!dockOpen) { return; }
+        dock.classList.add('is-open');
+        app.classList.add('is-dock-open');
+        pill.setAttribute('aria-expanded', 'true');
+        if (moveFocus && dockClose) { dockClose.focus(); }
+      });
+    }
+    function closeDock(returnFocus) {
+      if (!dock || !dockOpen) { return; }
+      dockOpen = false;
+      window.clearTimeout(dockTimer);
+      dock.classList.remove('is-open');
+      app.classList.remove('is-dock-open');
+      pill.setAttribute('aria-expanded', 'false');
+      dockTimer = window.setTimeout(function () {
+        if (!dock.classList.contains('is-open')) { dock.hidden = true; }
+      }, instant(app) ? 0 : DUR.base + 20);
+      if (returnFocus) { pill.focus(); }
+    }
+
+    if (pill) {
+      pill.addEventListener('click', function () { openDock(true); });
+      pill.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openDock(true);
+        }
+      });
+    }
+    if (dockClose) { dockClose.addEventListener('click', function () { closeDock(true); }); }
+    if (dock) {
+      dock.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') { event.preventDefault(); closeDock(true); }
+      });
+      qsa('[data-queue-item]', dock).forEach(function (row) {
+        row.addEventListener('click', function () {
+          if (queueTitle) { queueTitle.textContent = row.getAttribute('data-queue-item') || 'Antrean MIDI'; }
+          closeDock(true);
+        });
+      });
+    }
+
+    prev.addEventListener('click', function () { go(index - 1, 'prev'); });
+    next.addEventListener('click', function () { go(index + 1, 'next'); });
+
+    var play = app.querySelector('[data-play-toggle]');
+    if (play) {
+      play.addEventListener('click', function () {
+        var on = play.getAttribute('aria-pressed') === 'true';
+        play.setAttribute('aria-pressed', on ? 'false' : 'true');
+        play.setAttribute('aria-label', on ? 'Putar MIDI' : 'Jeda MIDI');
+        var pause = play.querySelector('.icon-pause');
+        var start = play.querySelector('.icon-play');
+        if (pause && start) {
+          pause.style.display = on ? 'none' : 'block';
+          start.style.display = on ? 'block' : 'none';
+        }
+      });
+    }
+    var save = app.querySelector('[data-save-toggle]');
+    if (save) {
+      save.addEventListener('click', function () {
+        var on = save.getAttribute('aria-pressed') === 'true';
+        save.setAttribute('aria-pressed', on ? 'false' : 'true');
+        save.setAttribute('aria-label', on ? 'Simpan kidung' : 'Hapus dari simpanan');
+      });
+    }
+
+    paint(0);
+    readerControllers.push({
+      replay: function () {
+        closeDock(false);
+        paint(0);
+        if (instant(app)) {
+          paint(1);
+          openDock(false);
+          return;
+        }
+        window.setTimeout(function () { go(1, 'next'); }, 240);
+        window.setTimeout(function () { openDock(false); }, 680);
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     Demo D — disclosures
+     --------------------------------------------------------- */
+  var disclosures = qsa('[data-disclosure]');
+  function setDisclosure(trigger, open) {
+    var panel = document.getElementById(trigger.getAttribute('aria-controls'));
+    if (!panel) { return; }
+    trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) {
+      panel.hidden = true;
+      panel.classList.remove('is-open');
+      return;
+    }
+    panel.hidden = false;
+    panel.classList.remove('is-open');
+    void panel.offsetWidth;
+    panel.classList.add('is-open');
+  }
+  disclosures.forEach(function (trigger) {
+    trigger.addEventListener('click', function () {
+      setDisclosure(trigger, trigger.getAttribute('aria-expanded') !== 'true');
+    });
+  });
+
+  qsa('[data-switch]').forEach(function (control) {
+    if (control.classList.contains('switch') && control.id === 'reduce-toggle') { return; }
+    control.addEventListener('click', function () {
+      control.setAttribute('aria-checked', control.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+    });
+  });
+
+  /* ---------------------------------------------------------
+     Demo E — search
+     --------------------------------------------------------- */
+  var SEARCH_INDEX = [
+    { title: 'Pujilah Allah Yang Maha Esa', kind: 'Kidung', meta: 'Kidung Jemaat' },
+    { title: 'Kudus, kudus, kudus, Allah Yang Kuasa!', kind: 'Kidung', meta: 'Kidung Jemaat' },
+    { title: 'Kesalahan Ditutupi dengan Kesalahan', kind: 'Artikel', meta: 'Renungan' },
+    { title: 'Mazmur 23', kind: 'Alkitab', meta: 'Perjanjian Lama' },
+    { title: 'Bila Kulihat Bintang Gemerlap', kind: 'Kidung', meta: 'Kidung Jemaat' },
+    { title: 'Tuhan, Kau Gembala Kami', kind: 'Kidung', meta: 'Kidung Jemaat' },
+    { title: 'Iman yang teguh', kind: 'Artikel', meta: 'Renungan' }
+  ];
+  var searchControllers = [];
+
+  qsa('[data-search-app]').forEach(function (app) {
+    var layer = app.querySelector('[data-search-layer]');
+    var panel = app.querySelector('[data-search-panel]');
+    var input = app.querySelector('[data-search-input]');
+    var results = app.querySelector('[data-search-results]');
+    var empty = app.querySelector('[data-search-empty]');
+    var emptyQuery = app.querySelector('[data-empty-query]');
+    var lastOpened = app.querySelector('[data-last-opened]');
+    var triggers = qsa('[data-search-open]', app);
+    var openTrigger = null;
+    var closeTimer = null;
+    var openState = false;
+
+    function buildRow(item, index) {
+      var li = document.createElement('li');
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'result-row';
+      button.style.setProperty('--i', String(Math.min(index, 11)));
+
+      var kind = document.createElement('span');
+      kind.className = 'result-kind';
+      kind.textContent = item.kind;
+
+      var title = document.createElement('span');
+      title.className = 'result-title';
+      title.textContent = item.title;
+
+      var meta = document.createElement('span');
+      meta.className = 'result-meta';
+      meta.textContent = item.meta;
+
+      button.appendChild(kind);
+      button.appendChild(title);
+      button.appendChild(meta);
+      button.addEventListener('click', function () {
+        if (lastOpened) { lastOpened.textContent = 'Terakhir dibuka — ' + item.kind + ' · ' + item.title; }
+        close(true);
+      });
+      li.appendChild(button);
+      return li;
+    }
+
+    function render(query, animate) {
+      var q = query.trim().toLowerCase();
+      var matches = SEARCH_INDEX.filter(function (item) {
+        return !q || (item.title + ' ' + item.kind + ' ' + item.meta).toLowerCase().indexOf(q) > -1;
+      });
+      results.replaceChildren();
+      matches.forEach(function (item, index) {
+        results.appendChild(buildRow(item, index));
+      });
+      results.classList.remove('is-stagger');
+      if (matches.length === 0) {
+        results.hidden = true;
+        empty.hidden = false;
+        if (emptyQuery) { emptyQuery.textContent = query.trim(); }
+        return;
+      }
+      empty.hidden = true;
+      results.hidden = false;
+      if (animate) {
+        void results.offsetWidth;
+        results.classList.add('is-stagger');
+      }
+    }
+
+    function onKey(event) {
+      if (event.key === 'Escape') { event.preventDefault(); close(true); return; }
+      if (event.key !== 'Tab' || !panel) { return; }
+      var focusable = qsa('button:not([disabled]), input:not([disabled]), a[href]', panel);
+      if (!focusable.length) { return; }
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    }
+
+    function open(trigger, query) {
+      searchControllers.forEach(function (controller) {
+        if (controller.app !== app) { controller.closeSilent(); }
+      });
+      openTrigger = trigger || document.activeElement;
+      openState = true;
+      window.clearTimeout(closeTimer);
+      layer.hidden = false;
+      input.value = query || '';
+      render(input.value, true);
+      window.requestAnimationFrame(function () {
+        if (openState) { layer.classList.add('is-open'); }
+      });
+      document.addEventListener('keydown', onKey);
+      window.setTimeout(function () {
+        if (!layer.hidden && openState) { input.focus(); }
+      }, instant(app) ? 0 : 30);
+    }
+
+    function close(returnFocus) {
+      if (layer.hidden) { return; }
+      openState = false;
+      layer.classList.remove('is-open');
+      document.removeEventListener('keydown', onKey);
+      window.clearTimeout(closeTimer);
+      closeTimer = window.setTimeout(function () { layer.hidden = true; }, instant(app) ? 0 : DUR.fast + 30);
+      if (returnFocus !== false && openTrigger && typeof openTrigger.focus === 'function') {
+        openTrigger.focus();
+      }
+    }
+
+    var controller = {
+      app: app,
+      closeSilent: function () { close(false); },
+      open: open,
+      trigger: triggers[0] || null
+    };
+    searchControllers.push(controller);
+
+    triggers.forEach(function (trigger) {
+      trigger.addEventListener('click', function () {
+        open(trigger, trigger.getAttribute('data-search-q') || '');
+      });
+    });
+    qsa('[data-search-close]', app).forEach(function (closer) {
+      closer.addEventListener('click', function () { close(true); });
+    });
+    input.addEventListener('input', function () { render(input.value, false); });
+  });
+
+  /* ---------------------------------------------------------
+     Demo F — theme crossfade
+     --------------------------------------------------------- */
+  var themeDemos = [];
+  qsa('[data-theme-demo]').forEach(function (demo) {
+    var card = demo.querySelector('.theme-card');
+    var button = demo.querySelector('[data-switch-face]');
+    var name = demo.querySelector('[data-theme-name]');
+    var faces = qsa('.theme-face', card);
+    var showingB = false;
+
+    function paintFaces() {
+      card.classList.toggle('show-b', showingB);
+      faces.forEach(function (face) {
+        var isB = face.getAttribute('data-face') === 'b';
+        face.setAttribute('aria-hidden', isB === showingB ? 'false' : 'true');
+      });
+      if (name) { name.textContent = showingB ? 'Sepia' : 'Terang'; }
+    }
+    if (button) {
+      button.addEventListener('click', function () {
+        showingB = !showingB;
+        paintFaces();
+      });
+    }
+    paintFaces();
+    themeDemos.push({
+      reset: function () { showingB = false; paintFaces(); }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     Replay buttons
+     --------------------------------------------------------- */
+  var replayActions = {
+    a: playHero,
+    b: function (demo) {
+      tabControllers.forEach(function (controller) {
+        if (demo.contains(controller.group)) { controller.select(0, true); }
+      });
+    },
+    c: function () {
+      readerControllers.forEach(function (controller) { controller.replay(); });
+    },
+    d: function (demo) {
+      qsa('[data-disclosure]', demo).forEach(function (trigger, index) {
+        setDisclosure(trigger, index === 0);
+      });
+    },
+    e: function (demo) {
+      var app = demo.querySelector('.pane--after [data-search-app]');
+      if (!app) { return; }
+      searchControllers.forEach(function (controller) {
+        if (controller.app === app) { controller.open(controller.trigger, ''); }
+      });
+    },
+    f: function () {
+      themeDemos.forEach(function (controller) { controller.reset(); });
+    }
+  };
+
+  qsa('[data-replay]').forEach(function (button) {
+    var demo = button.closest('[data-demo]');
+    if (!demo) { return; }
+    button.addEventListener('click', function () {
+      var action = replayActions[demo.getAttribute('data-demo')];
+      if (action) { action(demo); }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     Code copy
+     --------------------------------------------------------- */
+  qsa('[data-copy]').forEach(function (button) {
+    var label = button.querySelector('[data-copy-label]');
+    var timer = null;
+    function feedback(ok) {
+      if (!label) { return; }
+      label.textContent = ok ? 'Tersalin' : 'Pilih manual';
+      button.classList.toggle('is-copied', ok);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(function () {
+        label.textContent = 'Salin';
+        button.classList.remove('is-copied');
+      }, 1600);
+    }
+    button.addEventListener('click', function () {
+      var card = button.closest('[data-recipe]');
+      var code = card ? card.querySelector('pre code') : null;
+      if (!code) { return; }
+      var text = code.textContent;
+
+      function manualCopy() {
+        var range = document.createRange();
+        range.selectNodeContents(code);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        feedback(ok);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          navigator.clipboard.writeText(text).then(function () { feedback(true); }, manualCopy);
+        } catch (e) {
+          manualCopy();
+        }
+      } else {
+        manualCopy();
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     Recipe tabs
+     --------------------------------------------------------- */
+  var recipeTabs = qsa('[data-recipe-tab]');
+  function activateRecipe(tab) {
+    var list = tab.closest('[role="tablist"]');
+    var wrap = list ? list.closest('[data-recipes]') : null;
+    if (!wrap) { return; }
+    var tabs = qsa('[data-recipe-tab]', list);
+    var panels = qsa('[data-recipe]', wrap);
+    var index = tabs.indexOf(tab);
+    tabs.forEach(function (item, i) {
+      item.setAttribute('aria-selected', i === index ? 'true' : 'false');
+      item.tabIndex = i === index ? 0 : -1;
+    });
+    panels.forEach(function (panel, i) {
+      if (i === index) { panel.removeAttribute('hidden'); }
+      else { panel.setAttribute('hidden', ''); }
+    });
+  }
+  recipeTabs.forEach(function (tab) {
+    tab.addEventListener('click', function () { activateRecipe(tab); });
+    tab.addEventListener('keydown', function (event) {
+      var list = tab.closest('[role="tablist"]');
+      var tabs = qsa('[data-recipe-tab]', list);
+      var index = tabs.indexOf(tab);
+      var next = null;
+      if (event.key === 'ArrowRight') { next = (index + 1) % tabs.length; }
+      else if (event.key === 'ArrowLeft') { next = (index - 1 + tabs.length) % tabs.length; }
+      else if (event.key === 'Home') { next = 0; }
+      else if (event.key === 'End') { next = tabs.length - 1; }
+      if (next !== null) {
+        event.preventDefault();
+        tabs[next].focus();
+        activateRecipe(tabs[next]);
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     Section scroll spy
+     --------------------------------------------------------- */
+  var spyLinks = qsa('.section-nav a[href^="#"]');
+  if ('IntersectionObserver' in window && spyLinks.length) {
+    var linkById = {};
+    spyLinks.forEach(function (link) { linkById[link.getAttribute('href').slice(1)] = link; });
+    var setCurrent = function (id) {
+      spyLinks.forEach(function (link) { link.removeAttribute('aria-current'); });
+      if (linkById[id]) { linkById[id].setAttribute('aria-current', 'true'); }
+    };
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { setCurrent(entry.target.id); }
+      });
+    }, { rootMargin: '-42% 0px -52% 0px' });
+    ['principles', 'tokens', 'demos', 'recipes', 'limits'].forEach(function (id) {
+      var section = document.getElementById(id);
+      if (section) { spy.observe(section); }
+    });
+  }
+
+  /* Fonts settle: re-measure the pill once more. */
+  window.addEventListener('load', function () {
+    tabControllers.forEach(function (controller) {
+      var active = controller.group.querySelector('[role="tab"][aria-selected="true"]');
+      var pill = controller.group.querySelector('.tab-pill');
+      if (!active || !pill) { return; }
+      var tabs = controller.group.querySelector('[data-tabs]');
+      var box = tabs.getBoundingClientRect();
+      var target = active.getBoundingClientRect();
+      if (pill.getAnimations) {
+        pill.getAnimations().forEach(function (animation) { animation.cancel(); });
+      }
+      pill.style.width = target.width + 'px';
+      pill.style.left = (target.left - box.left - tabs.clientLeft) + 'px';
+    });
+  });
+})();
+</script>
+</body>
+</html>
