@@ -96,9 +96,14 @@
   --type-display-sm: 1.375rem; /* 22px */
   --type-display: 1.5rem; /* 24px */
   --type-display-lg: 1.75rem; /* 28px */
+  /* One motion scale for the whole app; components must not invent their
+     own durations. See the motion spec in the plan. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --motion-fast: 150ms;
-  --motion-normal: 220ms;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-fast: 120ms;
+  --motion-normal: 180ms;
+  --motion-slow: 260ms;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

@@ -1,7 +1,6 @@
 :root {
-  --motion-fast: 160ms;
-  --motion-normal: 200ms;
-  --motion-slow: 240ms;
+  /* Motion durations live in styles/00-tokens.css only; a second definition
+     here silently overrode the shared scale. */
   --ui-preference-radius: 14px;
 }
 
