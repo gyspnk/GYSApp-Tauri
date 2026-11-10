@@ -95,8 +95,15 @@ function isPdfDocumentUrl(url: string): boolean {
   return /\.pdf(?:$|[?#])/i.test(url);
 }
 
-async function prepare(page: Page): Promise<void> {
-  await page.clock.setFixedTime(new Date("2026-09-16T06:00:00+07:00"));
+async function prepare(
+  page: Page,
+  { clock = true }: { clock?: boolean } = {},
+): Promise<void> {
+  // The fixed clock keeps month labels and the greeting stable, but a frozen
+  // Date made the navigation measurement read wall time it never spent, so the
+  // client-navigation case opts out and times with performance.now().
+  if (clock)
+    await page.clock.setFixedTime(new Date("2026-09-16T06:00:00+07:00"));
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.addInitScript(() => {
     window.localStorage.setItem(
@@ -425,7 +432,7 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   // measured above; this one measures the shell's own client-side moves, which
   // is what a reader actually feels once the app is open.
   await page.setViewportSize({ width: 1280, height: 800 });
-  await prepare(page);
+  await prepare(page, { clock: false });
   await page.goto("/GYSApp-Tauri/");
   await expect(page.locator(".home-page")).toBeVisible({ timeout: 60_000 });
   // A reader looks at the home page before moving on; the numbers here are what
@@ -464,7 +471,7 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
   }> = [];
   for (const step of transitions) {
     await page.evaluate(() => performance.clearResourceTimings());
-    const started = Date.now();
+    const started = await page.evaluate(() => performance.now());
     if (step.link) {
       const link = page
         .locator(".navigation-shell")
@@ -485,13 +492,17 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
       timeout: 60_000,
     });
     const clickedAt = await page.evaluate(() => Math.round(performance.now()));
-    const ms = Date.now() - started;
+    const ms = Math.round(clickedAt - started);
     const contentMs = step.content
       ? await page
           .locator(step.content)
           .first()
           .waitFor({ state: "visible", timeout: 60_000 })
-          .then(() => Date.now() - started)
+          .then(async () =>
+            Math.round(
+              (await page.evaluate(() => performance.now())) - started,
+            ),
+          )
       : undefined;
     results.push({ id: step.id, ms, ...(contentMs ? { contentMs } : {}) });
     // Mount marks are written in effects, which can land a frame after the
