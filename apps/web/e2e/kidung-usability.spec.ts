@@ -882,8 +882,10 @@ test("empty Kidung search explains itself and clears in one tap", async ({
     .fill("zzzqqq");
   const empty = page.locator(".kidung-search-empty");
   await expect(empty).toBeVisible();
-  await expect(empty).toContainText("Tidak ada judul yang cocok.");
-  await expect(empty).toContainText("Coba kata kunci lain atau ubah filter");
+  await expect(empty).toContainText("Nyanyian tidak ditemukan.");
+  await expect(empty).toContainText("kosongkan pencarian");
+  // The hymn catalogue must not borrow the article wording any more.
+  await expect(empty).not.toContainText("Tidak ada judul yang cocok.");
   await expect(page.locator(".pujian-item")).toHaveCount(0);
 
   await empty.getByRole("button", { name: "Hapus filter" }).click();

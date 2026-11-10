@@ -385,8 +385,8 @@ export function HymnCatalog({
           {filtered.length === 0 &&
             (!needsCorpus || Boolean(corpus) || Boolean(corpusError)) && (
               <div className="empty-state kidung-search-empty" role="status">
-                <strong>{translate(locale, "literature.emptyTitle")}</strong>
-                <span>{translate(locale, "literature.emptyBody")}</span>
+                <strong>{translate(locale, "kidung.searchEmptyTitle")}</strong>
+                <span>{translate(locale, "kidung.searchEmptyBody")}</span>
                 {(query.trim().length > 0 || book !== "all") && (
                   <button
                     type="button"

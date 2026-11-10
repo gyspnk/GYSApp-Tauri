@@ -453,6 +453,8 @@ export const zhFeatureMessages: Record<string, string> = {
   "kidung.search": "搜索诗歌",
   "kidung.searchPlaceholder": "编号或标题…",
   "kidung.collection": "合集",
+  "kidung.searchEmptyTitle": "未找到诗歌。",
+  "kidung.searchEmptyBody": "请尝试其他关键词，或清除搜索。",
   "kidung.navigation": "诗歌导航",
   "kidung.songs": "诗歌",
   "kidung.playlist": "MIDI 队列",

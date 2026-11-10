@@ -465,6 +465,8 @@ export const enFeatureMessages: Record<string, string> = {
   "kidung.search": "Search hymns",
   "kidung.searchPlaceholder": "Number or title…",
   "kidung.collection": "Collection",
+  "kidung.searchEmptyTitle": "No hymn found.",
+  "kidung.searchEmptyBody": "Try another keyword, or clear the search.",
   "kidung.navigation": "Hymn navigation",
   "kidung.songs": "Hymns",
   "kidung.playlist": "MIDI queue",

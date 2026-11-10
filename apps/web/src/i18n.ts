@@ -492,6 +492,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.search": "Cari lagu",
     "kidung.searchPlaceholder": "Nomor atau judul…",
     "kidung.collection": "Koleksi",
+    "kidung.searchEmptyTitle": "Nyanyian tidak ditemukan.",
+    "kidung.searchEmptyBody": "Coba kata kunci lain, atau kosongkan pencarian.",
     "kidung.navigation": "Navigasi Kidung",
     "kidung.songs": "Kidung",
     "kidung.playlist": "Antrean MIDI",
