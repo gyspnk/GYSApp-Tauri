@@ -42,3 +42,11 @@ Aturan pemilik (10 Nov 2026): **setiap 25 putaran goal, build APK Android dan ch
 1. Baca job yang merah; kegagalan umum: SDK/NDK tidak terpasang, `tauri android init` gagal, verifikasi APK (`verify-android-apk.py`), atau aset tidak terunggah.
 2. Perbaiki di `main`, push, lalu dispatch ulang dengan tag baru (generator menaikkan nomor urut harian).
 3. Jangan menerbitkan release yang asetnya tidak lengkap; workflow sudah menolak (`Missing asset`).
+
+## Riwayat rilis
+
+| Putaran | Tag                         | APK                                    | Run build     | Tautan                                                                        |
+| ------- | --------------------------- | -------------------------------------- | ------------- | ----------------------------------------------------------------------------- |
+| 226     | `v0.1.0-preview.20261110.1` | 36 118 859 byte (arm64, signing debug) | `42782473369` | https://github.com/gyspnk/GYSApp-Tauri/releases/tag/v0.1.0-preview.20261110.1 |
+
+Rilis pertama dijalankan sebagai dry-run draft (`-f draft=true`) agar jalur build APK + unggah aset terbukti sebelum diterbitkan; setelah aset diverifikasi (APK, SHA256, provenance commit `c69796687aab`, changelog) release diterbitkan sebagai **pre-release**. Rilis berikutnya jatuh pada putaran **251**.
