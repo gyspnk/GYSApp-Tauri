@@ -5583,7 +5583,7 @@ body:has(.hymn-detail-page.is-text-viewer)
    banner + solid panel layout the desktop already uses. Appended last because
    this file loads after styles/05 and wins source order. */
 @media (max-width: 959px) {
-  .home-page .sauh-card-media {
+  .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-media {
     position: relative;
     inset: auto;
     width: 100%;
@@ -5598,7 +5598,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   .home-page .sauh-card-media .sauh-media-overlay {
     display: none;
   }
-  .home-page .sauh-card-content {
+  .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-content {
     /* The shared grid layout gives this block height:100%, which made it
        overlap the photo band it was meant to sit under. */
     height: auto;
