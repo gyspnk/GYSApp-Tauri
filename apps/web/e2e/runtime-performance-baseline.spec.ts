@@ -549,6 +549,20 @@ test("client navigation performance baseline", async ({ page }, testInfo) => {
     contentType: "application/json",
   });
   console.log(`[runtime-navigation] ${JSON.stringify(results)}`);
+  // The detail line can exceed GitHub's log line limit; print the reader's own
+  // render measure separately so the number always survives.
+  const readerDetail = details.find((entry) => entry.id === "kidung-pembaca");
+  console.log(
+    `[runtime-reader] ${JSON.stringify({
+      ms: readerDetail?.ms,
+      render: readerDetail?.marks.find((mark) =>
+        mark.name.startsWith("gys-reader-render:"),
+      )?.name,
+      mounted: readerDetail?.marks.find(
+        (mark) => mark.name === "gys-reader-mounted",
+      )?.at,
+    })}`,
+  );
   await testInfo.attach("runtime-navigation-detail.json", {
     body: Buffer.from(JSON.stringify(details, null, 2)),
     contentType: "application/json",
