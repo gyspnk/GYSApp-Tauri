@@ -237,16 +237,6 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
       ),
     [items],
   );
-  const counts = useMemo(
-    () =>
-      new Map(
-        availableCategories.map((value) => [
-          value,
-          items.filter((item) => item.category === value).length,
-        ]),
-      ),
-    [availableCategories, items],
-  );
   const filtered = useMemo(() => {
     const normalized = deferredQuery.trim().toLocaleLowerCase(locale);
     return items
@@ -334,21 +324,23 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
             placeholder={translate(locale, "literature.searchPlaceholder")}
           />
         </label>
-        <Select
-          value={category}
-          onChange={setCategory}
-          label={translate(locale, "literature.categoryLabel")}
-          options={[
-            {
-              value: "all",
-              label: categoryLabel(locale, "all"),
-            },
-            ...availableCategories.map((value) => ({
-              value,
-              label: `${categoryLabel(locale, value)} · ${counts.get(value) ?? 0}`,
-            })),
-          ]}
-        />
+        <div
+          role="group"
+          className="literature-category-chips"
+          aria-label={translate(locale, "literature.categoryLabel")}
+        >
+          {(["all", ...availableCategories] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              className="literature-category-chip"
+              aria-pressed={category === value}
+              onClick={() => setCategory(value)}
+            >
+              {categoryLabel(locale, value)}
+            </button>
+          ))}
+        </div>
         <Select
           value={sort}
           onChange={setSort}

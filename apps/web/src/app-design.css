@@ -1335,10 +1335,16 @@
 }
 .literature-page .literature-toolbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(2, minmax(140px, 180px));
+  grid-template-columns: minmax(0, 1fr) minmax(140px, 180px);
   align-items: end;
   gap: 10px;
   margin-block: 18px 4px;
+}
+/* The type filter is a chip row under the search, not a third dropdown: the
+   four types rarely change, so one tap beats open-then-pick, and the row keeps
+   its own line instead of squeezing the search field. */
+.literature-toolbar > .literature-category-chips {
+  grid-column: 1 / -1;
 }
 .literature-toolbar > .search-field {
   grid-column: auto;
@@ -1362,10 +1368,13 @@
 }
 @media (max-width: 1199px) {
   .literature-page .literature-toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
   .literature-toolbar > .search-field {
     grid-column: 1 / -1;
+  }
+  .literature-toolbar > .control-select {
+    max-width: 220px;
   }
 }
 @media (min-width: 1200px) {
@@ -5971,7 +5980,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .hymn-page .kidung-collection-chips::-webkit-scrollbar {
   display: none;
 }
-.hymn-page .kidung-collection-chip {
+:is(.kidung-collection-chip, .literature-category-chip) {
   flex: 0 0 auto;
   min-height: 44px;
   padding-inline: 14px;
@@ -5990,18 +5999,29 @@ body:has(.hymn-detail-page.is-text-viewer)
     color 120ms ease;
 }
 @media (prefers-reduced-motion: reduce) {
-  .hymn-page .kidung-collection-chip {
+  :is(.kidung-collection-chip, .literature-category-chip) {
     transition: none;
   }
 }
-.hymn-page .kidung-collection-chip[aria-pressed="true"] {
+:is(.kidung-collection-chip, .literature-category-chip)[aria-pressed="true"] {
   border-color: var(--blue);
   background: var(--blue-soft);
   color: var(--blue);
 }
-.hymn-page .kidung-collection-chip:focus-visible {
+:is(.kidung-collection-chip, .literature-category-chip):focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
+}
+.literature-page .literature-category-chips {
+  display: flex;
+  gap: 6px;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.literature-page .literature-category-chips::-webkit-scrollbar {
+  display: none;
 }
 @media (max-width: 1100px) {
   .hymn-page .kidung-controls-field {
@@ -6077,6 +6097,14 @@ body:has(.hymn-detail-page.is-text-viewer)
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 28px;
+  }
+}
+
+/* A desktop catalogue row is short, so two columns still left the third of the
+   field empty at 1440. Three columns fill it without widening the text. */
+@media (min-width: 1200px) {
+  .literature-page .literature-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
