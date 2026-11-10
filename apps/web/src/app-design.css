@@ -772,7 +772,9 @@
 .faith-page .faith-statement {
   margin: 0;
   text-align: justify;
-  max-width: none;
+  /* A justified paragraph on a 1920 px window runs past 110 characters; the
+     doctrine text is read, not scanned, so it keeps a reading measure. */
+  max-width: 68ch;
   font-family: var(--font-reading);
   font-size: calc(
     var(--faith-font-size, clamp(1.125rem, 1.4vw, 1.25rem)) *

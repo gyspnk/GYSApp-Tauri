@@ -62,7 +62,7 @@ berikutnya, spec yang ditulis dari kode yang ada lebih cepat dan lebih jujur.
 | Kidung    | sebagian | chip + rail `2e6af9c`, `42829604489`          |
 | Beranda   | sebagian | cover 2:3 `d50437a`, pita kosong `f0663995`   |
 | Alkitab   | sebagian | `3be29a6`, `42837850897`                      |
-| Iman      | sebagian | jumlah hasil + panel catatan `76f847e5`       |
+| Iman      | sebagian | ukuran baca 68ch (putaran 23, kontrak baru)   |
 | Literatur | sebagian | chip + 3 kolom `c1b044d`, CLS 0 `42878292349` |
 | Suara     | sebagian | urutan arsip `5e5ebdf`, `42911780544`         |
 | Lainnya   | sebagian | grup pengaturan `60a5d60`                     |
