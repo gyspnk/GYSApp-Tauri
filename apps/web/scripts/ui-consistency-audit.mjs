@@ -293,13 +293,46 @@ for (const viewport of viewports) {
         }
         return out.slice(0, 12);
       });
-      if (groups.length || centering.length)
+      // A control can pass axe and still be invisible: hiding both its label
+      // and its icon leaves a blank pill (the bug found on the queue tabs at
+      // 320 px). Require some visible content inside every hit target.
+      const silent = await page.evaluate(() => {
+        const label = (el) => {
+          const cls =
+            typeof el.className === "string" && el.className.trim()
+              ? `.${el.className.trim().split(/\s+/).slice(0, 3).join(".")}`
+              : "";
+          return `${el.tagName.toLowerCase()}${cls}`;
+        };
+        const visibleBox = (node) =>
+          node.getBoundingClientRect().width >= 8 &&
+          node.getBoundingClientRect().height >= 8 &&
+          (typeof node.checkVisibility !== "function" ||
+            node.checkVisibility({
+              checkOpacity: true,
+              checkVisibilityCSS: true,
+            }));
+        const out = [];
+        for (const el of document.querySelectorAll(
+          "a, button, summary, [role='button']",
+        )) {
+          if (!visibleBox(el)) continue;
+          const text = (el.textContent ?? "").trim();
+          const media = [
+            ...el.querySelectorAll("svg, img, picture, canvas"),
+          ].some(visibleBox);
+          if (text.length === 0 && !media) out.push({ element: label(el) });
+        }
+        return out.slice(0, 12);
+      });
+      if (groups.length || centering.length || silent.length)
         findings.push({
           viewport: viewport.name,
           theme,
           route,
           groups,
           centering,
+          silent,
         });
     }
     await context.close();
