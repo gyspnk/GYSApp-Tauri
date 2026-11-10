@@ -152,16 +152,10 @@ test.describe("distributed asset UI", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
-    const filter = page.locator(".kidung-header-filter .control-select");
-    await filter.locator(".control-select-trigger").click();
+    const filter = page.getByRole("group", { name: "Koleksi" });
     // One collection is always active, so "Semua" is no longer offered.
-    await expect(filter.locator(".control-select-option")).toHaveText([
-      "English",
-      "KR",
-    ]);
-    // The selected option carries a check mark in its accessible name, so match
-    // the label prefix instead of the exact string.
-    await page.getByRole("option", { name: /^English/ }).click();
+    await expect(filter.getByRole("button")).toHaveText(["English", "KR"]);
+    await filter.getByRole("button", { name: "English", exact: true }).click();
     await expect(
       page.locator('.pujian-item[data-id="hymne-001"]'),
     ).toBeVisible();

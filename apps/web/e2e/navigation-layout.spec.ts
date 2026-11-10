@@ -563,7 +563,7 @@ test.describe("responsive reader navigation", () => {
       )
       .toBeGreaterThan(200);
     await expect(
-      page.locator(".kidung-header-filter .control-select-trigger"),
+      page.locator(".kidung-header-filter .kidung-collection-chips"),
     ).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 

@@ -260,20 +260,18 @@ test("an optional hymnal persists offline and can be removed and reinstalled", a
   expect(metadataRequests).toHaveLength(1);
 
   await page.goto("/GYSApp-Tauri/kidung");
-  const collectionFilter = page.locator(
-    ".kidung-desktop-filter .control-select",
-  );
-  await collectionFilter.locator(".control-select-trigger").click();
-  await page.getByRole("option", { name: "English", exact: true }).click();
+  await page
+    .getByRole("group", { name: "Koleksi" })
+    .getByRole("button", { name: "English", exact: true })
+    .click();
   await expect(page.locator('.pujian-item[data-id="hymne-001"]')).toBeVisible();
 
   await context.setOffline(true);
   await page.reload();
-  const offlineCollectionFilter = page.locator(
-    ".kidung-desktop-filter .control-select",
-  );
-  await offlineCollectionFilter.locator(".control-select-trigger").click();
-  await page.getByRole("option", { name: "English", exact: true }).click();
+  await page
+    .getByRole("group", { name: "Koleksi" })
+    .getByRole("button", { name: "English", exact: true })
+    .click();
   await expect(page.locator('.pujian-item[data-id="hymne-001"]')).toBeVisible();
 
   await context.setOffline(false);
@@ -296,13 +294,17 @@ test("an optional hymnal persists offline and can be removed and reinstalled", a
   expect(metadataRequests).toHaveLength(2);
 
   await page.goto("/GYSApp-Tauri/kidung");
-  await page.locator(".kidung-desktop-filter .control-select-trigger").click();
-  await page.getByRole("option", { name: "English", exact: true }).click();
+  await page
+    .getByRole("group", { name: "Koleksi" })
+    .getByRole("button", { name: "English", exact: true })
+    .click();
   await expect(page.locator('.pujian-item[data-id="hymne-001"]')).toBeVisible();
   await context.setOffline(true);
   await page.reload();
-  await page.locator(".kidung-desktop-filter .control-select-trigger").click();
-  await page.getByRole("option", { name: "English", exact: true }).click();
+  await page
+    .getByRole("group", { name: "Koleksi" })
+    .getByRole("button", { name: "English", exact: true })
+    .click();
   await expect(page.locator('.pujian-item[data-id="hymne-001"]')).toBeVisible();
   await context.setOffline(false);
 });

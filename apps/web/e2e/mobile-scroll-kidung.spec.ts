@@ -8,7 +8,7 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
     await page.route(/^https:\/\//, (route) => route.abort());
     await page.goto("/GYSApp-Tauri/kidung");
     const field = page.locator(".kidung-controls-field");
-    await expect(field.locator(".control-select-trigger")).toBeVisible();
+    await expect(field.locator(".kidung-collection-chips")).toBeVisible();
     // Pointer devices keep 36px controls inside the compact 44px shell; a
     // coarse pointer is what must reach the full 44px finger target.
     const minTarget = (await page.evaluate(
@@ -26,7 +26,7 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
           .querySelector(".kidung-local-nav")!
           .getBoundingClientRect();
         const category = e
-          .querySelector(".control-select-trigger")!
+          .querySelector(".kidung-collection-chips")!
           .getBoundingClientRect();
         const mode = e
           .querySelector(".kidung-mode-cycle")!
@@ -75,10 +75,13 @@ for (const width of [320, 390, 430, 600, 601, 768, 820, 1024, 1100]) {
     await expect(field.locator(".kidung-local-nav small")).toHaveText("1");
     const geometry = await inspect();
     expect(geometry.overlap).toBe(false);
-    await field.getByRole("combobox").click();
-    // The chosen option renders a check, so its accessible name is "KR ✓".
-    await page.getByRole("option", { name: /^KR/ }).click();
-    await expect(field.getByRole("combobox")).toContainText("KR");
+    const chips = field
+      .getByRole("group", { name: "Koleksi" })
+      .getByRole("button");
+    await expect(chips.first()).toHaveAttribute("aria-pressed", "true");
+    await chips.first().click();
+    // Pressing the collection already shown must not reflow the field.
+    await expect(chips.first()).toHaveAttribute("aria-pressed", "true");
     expect((await inspect()).overlap).toBe(false);
   });
 }
@@ -93,14 +96,14 @@ test.describe("responsive Kidung field with a coarse pointer", () => {
     await page.route(/^https:\/\//, (route) => route.abort());
     await page.goto("/GYSApp-Tauri/kidung");
     const field = page.locator(".kidung-controls-field");
-    await expect(field.locator(".control-select-trigger")).toBeVisible();
+    await expect(field.locator(".kidung-collection-chips")).toBeVisible();
     const geometry = await field.evaluate((element) => {
       const container = element.getBoundingClientRect();
       const mode = element
         .querySelector(".kidung-mode-cycle")!
         .getBoundingClientRect();
       const category = element
-        .querySelector(".control-select-trigger")!
+        .querySelector(".kidung-collection-chips")!
         .getBoundingClientRect();
       const sameRow = Math.abs(mode.top - category.top) < 1;
       return {
