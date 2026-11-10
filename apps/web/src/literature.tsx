@@ -119,30 +119,6 @@ function literatureHref(item: LiteratureItem): string {
   return `/literatur/${encodeURIComponent(item.id)}${directRead ? "?read=1" : ""}`;
 }
 
-// The shelf only exists once its data lands; a placeholder with the same
-// geometry keeps everything below it still, so the layout shift is gone
-// instead of merely reserved by a guessed height (which measured no effect).
-function LiteratureFeaturedSkeleton() {
-  return (
-    <section className="literature-featured" aria-hidden="true">
-      <div className="section-title-row">
-        <span className="skeleton-line is-title" />
-      </div>
-      <div className="literature-shelf">
-        {Array.from({ length: 6 }, (_, index) => (
-          <div className="literature-shelf-item is-skeleton" key={index}>
-            <div className="literature-cover is-compact" data-skeleton="true" />
-            <span>
-              <strong className="skeleton-line" />
-              <small className="skeleton-line is-meta" />
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function literatureRowAction(
   item: LiteratureItem,
   progress: LiteratureProgress | undefined,
@@ -390,7 +366,6 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         />
       </section>
 
-      {status === "loading" && <LiteratureFeaturedSkeleton />}
       {status === "ready" && (
         <div className="catalog-filter-status">
           <span role="status">

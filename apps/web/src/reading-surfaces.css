@@ -839,6 +839,9 @@
   width: 100%;
   height: 116px;
   border-radius: 8px;
+  /* The shelf card already draws the frame; a second shadow read as a doubled
+     border where the rounded cover met it. */
+  box-shadow: none;
 }
 
 .literature-cover small {
@@ -1428,56 +1431,4 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-}
-
-/* The shelf placeholder keeps the same geometry as the six real cards, so the
-   rest of the page does not jump when the catalogue lands. */
-.literature-featured .skeleton-line {
-  display: block;
-  background: var(--surface-soft);
-  border-radius: var(--radius-sm);
-}
-
-.literature-featured .section-title-row .skeleton-line.is-title {
-  width: 160px;
-  height: 1.5rem;
-}
-
-.literature-shelf-item.is-skeleton {
-  /* The real cards use content-visibility with a guessed 172px intrinsic box;
-     the placeholder must not, or it reserves less than it renders. */
-  content-visibility: visible;
-  contain-intrinsic-size: none;
-  pointer-events: none;
-}
-
-.literature-shelf-item.is-skeleton .literature-cover.is-compact {
-  /* Real covers are 16:9 at their card width; a fixed 116px made the
-     placeholder 53px shorter and the page still jumped. */
-  height: auto;
-  aspect-ratio: 16 / 9;
-}
-
-.literature-shelf-item.is-skeleton .literature-cover[data-skeleton] {
-  background: var(--surface-soft);
-  box-shadow: none;
-}
-
-.literature-shelf-item.is-skeleton .skeleton-line {
-  width: 100%;
-  min-height: 0.9em;
-}
-
-.literature-shelf-item.is-skeleton strong.skeleton-line {
-  /* Real shelf titles wrap to four lines at phone widths; the shared
-     three-line minimum was 26px short and the meta line added the rest. */
-  min-height: calc(4 * 1.35em);
-}
-
-.literature-shelf-item.is-skeleton small.skeleton-line {
-  min-height: 2em;
-}
-
-.literature-shelf-item.is-skeleton .skeleton-line.is-meta {
-  width: 60%;
 }
