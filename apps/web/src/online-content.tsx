@@ -13,6 +13,8 @@ import {
   subscribeSauh,
 } from "./sauh.js";
 import { fetchSuara, getCachedSuara, subscribeSuara } from "./suara.js";
+import { Select } from "./select.js";
+import { sortSuaraPosts, type SuaraSort } from "./suara-sort.js";
 import { fetchOnlineArticle, getCachedArticle } from "./online-article.js";
 import { recordDiagnostic } from "./diagnostics.js";
 import { LazyImage } from "./lazy-image.js";
@@ -273,6 +275,7 @@ export function SauhPage({ locale }: { locale: Locale }) {
 
 export function SuaraPage({ locale }: { locale: Locale }) {
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SuaraSort>("recent");
   const searchRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<
     | { status: "loading" }
@@ -316,6 +319,7 @@ export function SuaraPage({ locale }: { locale: Locale }) {
             .includes(normalizedQuery),
         )
       : [];
+  const visiblePosts = sortSuaraPosts(filteredPosts, sort);
   return (
     <div
       className="page online-content-page suara-page"
@@ -335,23 +339,44 @@ export function SuaraPage({ locale }: { locale: Locale }) {
           className="catalog-search"
           aria-label={translate(locale, "catalog.searchSuara")}
         >
-          <label className="search-field">
-            <span className="sr-only">
-              {translate(locale, "catalog.searchSuara")}
-            </span>
-            <Icon name="search" size={18} />
-            <input
-              type="search"
-              ref={searchRef}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={translate(locale, "catalog.searchPlaceholder")}
+          <div className="suara-toolbar">
+            <label className="search-field">
+              <span className="sr-only">
+                {translate(locale, "catalog.searchSuara")}
+              </span>
+              <Icon name="search" size={18} />
+              <input
+                type="search"
+                ref={searchRef}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={translate(locale, "catalog.searchPlaceholder")}
+              />
+            </label>
+            <Select
+              value={sort}
+              onChange={setSort}
+              label={translate(locale, "suara.sortLabel")}
+              options={[
+                {
+                  value: "recent",
+                  label: translate(locale, "suara.sortRecent"),
+                },
+                {
+                  value: "oldest",
+                  label: translate(locale, "suara.sortOldest"),
+                },
+                {
+                  value: "title",
+                  label: translate(locale, "suara.sortTitle"),
+                },
+              ]}
             />
-          </label>
+          </div>
           <div className="catalog-filter-status">
             <span role="status">
               {translate(locale, "catalog.resultCount", {
-                count: filteredPosts.length,
+                count: visiblePosts.length,
               })}
             </span>
             {query && (
@@ -367,7 +392,7 @@ export function SuaraPage({ locale }: { locale: Locale }) {
               </button>
             )}
           </div>
-          {filteredPosts.length === 0 && (
+          {visiblePosts.length === 0 && (
             <div className="empty-state">
               <strong>{translate(locale, "literature.emptyTitle")}</strong>
               <span>{translate(locale, "literature.emptyBody")}</span>
@@ -400,7 +425,7 @@ export function SuaraPage({ locale }: { locale: Locale }) {
       )}
       {state.status === "ready" && state.posts.length > 0 && (
         <div className="suara-library-grid">
-          {filteredPosts.map((post, index) => (
+          {visiblePosts.map((post, index) => (
             <Link
               className="suara-library-item"
               key={post.id}

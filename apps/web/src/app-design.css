@@ -1301,6 +1301,18 @@
   }
 }
 
+/* The Suara search and its order control share one row until the phone folds them. */
+.suara-page .suara-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.suara-page .suara-toolbar .search-field {
+  flex: 1 1 240px;
+}
+
 /* Search feedback is shared by the two reading catalogs. */
 .catalog-search {
   margin-block: 18px 12px;

@@ -79,7 +79,14 @@ function changedSince(since) {
       ["diff", "--name-only", "--diff-filter=ACMR", since],
       { encoding: "utf8" },
     );
-    return out.split("\n").filter(Boolean);
+    // A brand-new file is not in that diff yet, and skipping it would mean the
+    // check stays green on code that has never been compiled.
+    const untracked = execFileSync(
+      "git",
+      ["ls-files", "--others", "--exclude-standard"],
+      { encoding: "utf8" },
+    );
+    return [...out.split("\n"), ...untracked.split("\n")].filter(Boolean);
   } catch {
     return [];
   }

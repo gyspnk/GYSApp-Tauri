@@ -281,4 +281,8 @@ dikirim (daftar teks dengan cari, chip kategori, sort, jumlah hasil, keadaan kos
 kerangka muat, dan galat offline). Artefak menyajikan dua bingkai 390×844 dan 1440×900,
 empat tema lewat `data-theme`, target 44 px, fokus 3 px, dan reduced-motion mati.
 
-Implementasi di `apps/web/src/online-content.tsx` belum dikerjakan.
+Implementasi mulai dikerjakan di `apps/web/src/online-content.tsx`: kontrol urutan
+(Terbaru / Terlama / Menurut judul) sudah memakai artefak itu, lewat helper
+`apps/web/src/suara-sort.ts` dan kontrak `apps/web/e2e/suara-sort.spec.ts`.
+Chip kategori dan sort yang setara dengan Literatur belum diambil karena feed tidak
+membawa kategori — hanya `source` yang selalu `tjc.org`, jadi chip akan kosong.
