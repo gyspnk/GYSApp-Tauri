@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { LoadingProgress } from "./loading-progress.js";
 import { Icon } from "./icons.js";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -403,6 +404,11 @@ export function SuaraPage({ locale }: { locale: Locale }) {
             <Link
               className="suara-library-item"
               key={post.id}
+              style={
+                {
+                  "--row-index": Math.min(index, 11),
+                } as CSSProperties
+              }
               to={`/suara/${encodeURIComponent(post.id)}`}
             >
               <div className="suara-card-media">

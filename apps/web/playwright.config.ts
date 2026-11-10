@@ -2,6 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 import { resolveE2eServerCommand } from "./src/e2e-server-command.js";
 
 export default defineConfig({
+  // Screenshots must show the resting state; otherwise a row entrance or a
+  // spinner can land in the middle of a comparison and churn every baseline.
+  expect: { toHaveScreenshot: { animations: "disabled" } },
   testDir: "./e2e",
   // Sequential e2e shares one preview server; a 30s budget intermittently
   // starves first-hit navigations (cold asset compile) on slower runners.

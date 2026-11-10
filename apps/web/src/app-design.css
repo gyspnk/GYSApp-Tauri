@@ -5875,6 +5875,17 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  /* Suara grid uses the same entrance recipe as the catalogue; the index is
+     capped at 11 so long shelves do not trail for a second. */
+  .suara-library-grid > .suara-library-item {
+    animation: catalogue-row-in var(--motion-entrance)
+      var(--motion-ease-entrance) backwards;
+    animation-delay: calc(var(--row-index, 0) * var(--motion-stagger));
+  }
+  .suara-library-grid > .suara-library-item:nth-child(n + 13) {
+    animation: none;
+  }
+
   .pujian-list.is-staggering .pujian-item:nth-child(-n + 12) {
     animation: catalogue-row-in var(--motion-entrance)
       var(--motion-ease-entrance) backwards;
