@@ -2,6 +2,12 @@ import { transitionReader } from "./reader-transition.js";
 import { isRouteWarm, preloadRoute } from "./route-preload.js";
 
 let navigationGeneration = 0;
+/**
+ * True while a link navigation is still resolving. A tap that lands in that
+ * window supersedes the pending one and must replace its history entry, or a
+ * quick double tap stacks two routes and Back walks through the abandoned one.
+ */
+let navigationInFlight = false;
 
 /** One page entrance is owned by exactly one path. Snapshot transitions mark the
  * incoming view as already animated, so a later subtree change never replays a
@@ -38,10 +44,14 @@ function animateRouteView(view: HTMLElement) {
 
 /** Warm local route code before taking the incoming snapshot. Remote content
  * never holds navigation; the reader's compact loading state owns that work. */
-export async function navigateSmooth(
-  navigate: (path: string) => void,
+export type RouteNavigate = (
   path: string,
-) {
+  options?: { replace?: boolean },
+) => void;
+
+export async function navigateSmooth(navigate: RouteNavigate, path: string) {
+  const replace = navigationInFlight;
+  navigationInFlight = true;
   const current = ++navigationGeneration;
   const origin = `${location.pathname}${location.search}`;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -60,25 +70,31 @@ export async function navigateSmooth(
   }
   if (current !== navigationGeneration) return;
   // A history move or another navigation already left this page.
-  if (`${location.pathname}${location.search}` !== origin) return;
+  if (`${location.pathname}${location.search}` !== origin) {
+    navigationInFlight = false;
+    return;
+  }
   // The incoming view fades in once it settles (MutationObserver below).
   // Waiting for the outgoing view to fade first added 110 ms to every click
   // while the swap itself looked the same.
   await transitionReader(
     () => {
-      if (current === navigationGeneration) navigate(path);
+      if (current === navigationGeneration)
+        navigate(path, replace ? { replace: true } : undefined);
     },
     "page",
     () => {
       if (current === navigationGeneration)
         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     },
-  );
+  ).finally(() => {
+    if (current === navigationGeneration) navigationInFlight = false;
+  });
 }
 
 /** Keep native link semantics while fading only the changing page. Loaded
  * after the shell so navigation effects add no initial bundle cost. */
-export function installRouteTransitions(navigate: (path: string) => void) {
+export function installRouteTransitions(navigate: RouteNavigate) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   const click = (event: MouseEvent) => {
     if (

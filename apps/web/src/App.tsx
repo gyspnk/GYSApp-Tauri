@@ -707,9 +707,9 @@ function RoutedApp() {
     void import("./route-transitions.js")
       .then((module) => {
         if (active)
-          dispose = module.installRouteTransitions((path) =>
-            navigateRef.current(path),
-          );
+          dispose = module.installRouteTransitions((path, options) => {
+            void navigateRef.current(path, options);
+          });
       })
       .catch(() => undefined);
     return () => {
