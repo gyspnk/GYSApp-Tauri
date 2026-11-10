@@ -700,11 +700,26 @@
   border-radius: var(--radius-md);
   background: var(--surface);
   content-visibility: auto;
-  contain-intrinsic-size: auto 172px;
+  /* Measured card heights (390/768/1440 px): the old 172px guess was shorter
+     than a real card, so the first layout reserved too little and the list
+     jumped when the catalogue landed (CLS 0,018 on /literatur). */
+  contain-intrinsic-size: auto 225px;
   transition:
     border-color var(--motion-fast) var(--ease-out),
     transform var(--motion-fast) var(--ease-out),
     box-shadow var(--motion-fast) var(--ease-out);
+}
+
+@media (min-width: 600px) {
+  .literature-shelf-item {
+    contain-intrinsic-size: auto 206px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .literature-shelf-item {
+    contain-intrinsic-size: auto 197px;
+  }
 }
 
 .literature-shelf-item:hover {
