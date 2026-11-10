@@ -756,6 +756,9 @@
 }
 
 .literature-row {
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    padding var(--motion-fast) var(--ease-out);
   display: grid;
   grid-template-columns: 54px 1fr auto;
   gap: 14px;
