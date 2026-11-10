@@ -891,8 +891,12 @@
     block-size: auto;
     overflow: visible;
   }
+  /* Menus used to appear by fading only, which read as a flash rather than a
+     surface arriving. The OpenDesign motion spec asks for a small rise plus a
+     0.98 scale, transform-origin at the trigger. */
   .control-select-menu {
-    animation: fade-in var(--motion-fast) var(--ease-out);
+    transform-origin: top center;
+    animation: menu-rise var(--motion-normal) var(--motion-ease-entrance);
   }
 }
 .more-setting-row:hover,
@@ -1724,6 +1728,13 @@
     animation: shared-popover-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
+@keyframes menu-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
 @keyframes shared-popover-in {
   from {
     opacity: 0;
