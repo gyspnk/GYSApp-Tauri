@@ -1444,6 +1444,10 @@
 }
 
 .literature-shelf-item.is-skeleton {
+  /* The real cards use content-visibility with a guessed 172px intrinsic box;
+     the placeholder must not, or it reserves less than it renders. */
+  content-visibility: visible;
+  contain-intrinsic-size: none;
   pointer-events: none;
 }
 
