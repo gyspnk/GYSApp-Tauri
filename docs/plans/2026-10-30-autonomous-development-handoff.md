@@ -7325,3 +7325,21 @@ ada API publik untuk membaca origins. Langkah manual + daftar origin dicatat di
 - **Tabel perf penuh run yang sama:** home 503/524/492, bible 523/511/567, kidung **490/492/494**, iman 445/485/473, literatur 700/742/773, suara 571/619/670, lainnya 491/508/523; CLS home 0,003/0,002/0,0166; long task ≤56 ms hanya di literatur-desktop.
 - **Sapuan sepia/AMOLED 320/390** (`42743979602`, 61 tangkapan): tab antrean berlabel, kartu kosong 640 px, teks Iman/Alkitab terbaca, pil navigasi aktif memakai cokelat tua `#8b5a2b` di atas `#f0e2cc` (kontras ≈5,5:1, sampel piksel) — tidak ada cacat yang perlu diubah. Satu-satunya “temuan” adalah teks tipis yang tampak pucat di pratinjau 320 karena antialias, bukan kontras.
 - Sisa: pemecahan komponen pembaca (561 ms mount), CLS Literatur 0,016–0,017, item owner-side.
+
+### Navigasi klien diukur hanya pada klik — target <300 ms terpenuhi (10 Nov, putaran 217)
+
+Dua cacat pengukuran ditemukan berurutan:
+
+1. **`page.clock.setFixedTime`** membekukan `Date`; uji navigasi kini `prepare(page, { clock: false })` dan memakai `performance.now()` (`7fa435a`).
+2. **Dwell hover ikut terhitung.** Uji menunggu 150 ms (tautan) dan 400 ms (baris pembaca) di dalam stopwatch, jadi setiap langkah tampak 150–400 ms lebih lambat daripada klik sesungguhnya. Stopwatch sekarang mulai **setelah** hover (`02f1513`).
+
+Tiga run berturut-turut sesudah perbaikan (`42746286574`, `42746486595`, `42746699739`), 1280×800:
+
+| langkah         | run 1      | run 2      | run 3      |
+| --------------- | ---------- | ---------- | ---------- |
+| beranda→Alkitab | 108 ms     | 130 ms     | 94 ms      |
+| Alkitab→Kidung  | 211 ms     | 90 ms      | 88 ms      |
+| Kidung→pembaca  | **139 ms** | **104 ms** | **108 ms** |
+
+Semua langkah **< 300 ms**, termasuk pembaca, dan angka “590–681 ms” sebelumnya adalah artefak dwell 400 ms. Mark pembaca merinci: `gys-reader-render-11` (render 11 ms), `gys-reader-mounted` ≈ 50 ms sebelum sampel, `gys-reader-painted` 16 ms kemudian — jadi pemecahan komponen pembaca **tidak diperlukan** untuk target ini; percobaan batch/gerbang panel di putaran 214–215 memang tidak bisa menolong.
+Catatan: suite primer (`readyMs`) tetap memakai jam beku untuk label tanggal, dan angka route-nya tidak berubah.
