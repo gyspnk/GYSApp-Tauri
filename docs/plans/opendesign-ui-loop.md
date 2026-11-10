@@ -78,9 +78,9 @@ Status per 10 Nov:
 | 02  | Satu baris memuat jenis, halaman, ukuran berkas | sebagian: jenis + tanggal ada; halaman/ukuran tidak ada di `literature.json` |
 | 03  | Status “Tersimpan” sebagai badge berteks        | belum: belum ada konsep “tersimpan” di data, hanya `progress`                |
 | 04  | Aksi unduh jadi ikon 44 px di ujung baris       | belum: unduhan PDF terjadi di pembaca, bukan di baris                        |
-| 05  | Filter jenis memakai chip                       | **diterapkan** `a1c0d1f` — chip 44 px menggantikan dropdown kategori         |
+| 05  | Filter jenis memakai chip                       | **diterapkan** `c1b044d` — chip 44 px menggantikan dropdown kategori         |
 | 06  | Sisa ruang penyimpanan sebagai hint             | belum: butuh `navigator.storage.estimate()` dan tidak ada teks resmi         |
-| 07  | Katalog desktop jadi grid tiga kolom            | **diterapkan** `a1c0d1f` — 3 kolom di ≥1200 px, 2 kolom di 1100–1199 px      |
+| 07  | Katalog desktop jadi grid tiga kolom            | **diterapkan** `c1b044d` — 3 kolom di ≥1200 px, 2 kolom di 1100–1199 px      |
 
 Kontrak: `apps/web/e2e/literature-catalog.spec.ts` (chip 44 px + `aria-pressed`,
 tiga kolom terukur pada 1440 px). Butir 02/03/04/06 menunggu data, bukan CSS.
