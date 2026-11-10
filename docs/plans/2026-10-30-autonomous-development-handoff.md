@@ -2928,6 +2928,15 @@ Iterasi hosted: `42731590842` menandai swatch dan hamburger (aturan terlalu kasa
 Kesan bahwa tiga kartu koleksi melebar penuh di 768 px ternyata salah baca tangkapan layar. Probe sementara di browser hosted (`apps/web/e2e/tmp-grid-probe.spec.ts`, run `42737281381`) melaporkan `display:grid`, `grid-template-columns: 210.469px 210.484px 210.484px`, lebar grid 651 px, tiga kartu **210×112** pada viewport 768 — sesuai CSS `repeat(3, minmax(0, 1fr))`. Probe dihapus setelah menjawab; metode ini (spec sementara + log hosted) dipakai ketika penyebab tidak bisa dipastikan tanpa browser lokal, alih-alih mengubah CSS buta.
 Catatan kecil untuk probe berikutnya: base path preview adalah `/GYSApp-Tauri/`, jadi `page.goto("/lainnya")` mendarat di halaman pesan Vite, bukan aplikasi.
 
+### Navigasi klien diukur ulang dengan jam nyata, dan klik pembaca dipisah (10 Nov, putaran 213)
+
+Harness `perf.yml` memakai `page.clock.setFixedTime` agar label bulan stabil; itu juga membekukan `Date`, sehingga uji navigasi menghitung `Date.now()` yang tidak bergerak. Uji navigasi sekarang `prepare(page, { clock: false })` dan menghitung dengan `performance.now()`.
+
+- Angka hosted (`42740443323`, 1280×800, hover 150/400 ms): beranda→Alkitab **250 ms**, Alkitab→Kidung **273 ms**, Kidung→pembaca **590 ms** (`contentMs` 597). Angka lama (264/274/611) nyaris sama, jadi bias jam beku kecil — tetapi metodologi sekarang benar dan `marks` akhirnya terbaca.
+- Mark pembaca: `gys-reader-mounted` dan `gys-reader-painted` muncul **~29/16 ms** sebelum selesai, jadi 590 ms itu hampir seluruhnya mount komponen pembaca (`assets/kidung-*.js` 16,8 KB, `pdf-meta`/`chord-ui-prefs` 25 ms) — bukan fetch.
+- Probe terpisah di browser hosted (`42740107019`, tanpa jam beku, klik setelah katalog tenang 2 dtk): shell pembaca **108 ms**, lirik **121 ms**, `gys-reader-mounted@+69`. Artinya target <300 ms **terpenuhi bila pembaca dibuka dari katalog yang sudah tenang**, dan 590 ms adalah klik pertama tepat setelah mendarat di katalog (katalog baru saja selesai mengecat).
+  Kejadian ini juga menjelaskan kenapa `marks` dulu kosong: jam beku membuat timeline mark tidak terbaca, bukan karena tidak ada mark. Probe dihapus setelah menjawab; angka mentah tersimpan di log run tersebut.
+
 ## 6. NEXT yang dapat langsung dikerjakan
 
 > Sejak 7 Nov (keputusan pemilik) **tidak ada proses berat di device ini**.
