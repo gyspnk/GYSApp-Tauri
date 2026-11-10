@@ -188,7 +188,7 @@
   /* Sections breathe at 32 px on desktop (the Beranda pass's 32-40 px rhythm);
      phones keep a tighter 22 px so the first screen still holds a section. */
   gap: 32px;
-  padding-top: 26px;
+  padding-top: 28px;
 }
 .home-grid .verse-panel {
   min-height: 260px;
