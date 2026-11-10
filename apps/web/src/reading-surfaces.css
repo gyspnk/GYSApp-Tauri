@@ -1468,6 +1468,16 @@
   min-height: 0.9em;
 }
 
+.literature-shelf-item.is-skeleton strong.skeleton-line {
+  /* Real shelf titles wrap to four lines at phone widths; the shared
+     three-line minimum was 26px short and the meta line added the rest. */
+  min-height: calc(4 * 1.35em);
+}
+
+.literature-shelf-item.is-skeleton small.skeleton-line {
+  min-height: 2em;
+}
+
 .literature-shelf-item.is-skeleton .skeleton-line.is-meta {
   width: 60%;
 }
