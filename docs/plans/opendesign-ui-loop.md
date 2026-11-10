@@ -1,3 +1,9 @@
+> **Dihentikan 10 November 2026.** Loop ini diganti `docs/plans/ui-spec-loop.md`
+> karena run OpenDesign per permukaan tidak lagi efektif: dua tugas terakhir
+> memerlukan dua run (run pertama "succeeded" tanpa artefak) dan sebagian besar
+> butirnya ditolak karena data tidak ada. Artefak yang sudah ada tetap dipakai
+> sebagai rujukan statis; run baru tidak dijalankan lagi.
+
 # Loop desain UI OpenDesign
 
 Pemilik (10 Nov): **seluruh desain UI** dipegang OpenDesign dan diperbaiki terus-menerus di dalam workflow otonom ini, bukan hanya animasi. Setiap putaran mengambil satu permukaan dari rotasi di bawah, menjalankan OpenDesign, menerapkan hasilnya, memverifikasi hosted, lalu mencatatnya di sini.
