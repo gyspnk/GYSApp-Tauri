@@ -56,6 +56,15 @@ function restoreDialogFocus(
   const fallback = document.querySelector<HTMLElement>(fallbackSelector);
   const target = opener?.isConnected ? opener : fallback;
   target?.focus({ preventScroll: true });
+  // A row menu closes when the dialog takes over, so its action is no longer
+  // focusable even though it is still in the DOM. Hand focus back to the menu
+  // summary, which is the control the reader actually pressed to get there.
+  if (target !== fallback && document.activeElement !== target) {
+    const summary = target
+      ?.closest("details")
+      ?.querySelector<HTMLElement>("summary");
+    summary?.focus({ preventScroll: true });
+  }
 }
 
 export function useDialogFocus({

@@ -142,3 +142,11 @@ Grid sheet mengukur kotaknya sendiri (`ResizeObserver`) dan menahan setiap sel �
 | `isUpdateBusy(editing, overlay)` — rute baca, MIDI, dan suara tidak lagi menahan pembaruan                   | Pemilik meminta pembaruan berjalan di halaman apa pun, tidak menunggu kembali ke Beranda       | `apps/web/src/app-update.test.ts`, `apps/web/e2e/app-update.spec.ts`       |
 | Yang masih menahan hanya draf tulisan (editor kotor/fokus di kolom teks) dan permukaan terbuka (dialog, PDF) | Reload di tengah menulis atau saat dialog terbuka menghilangkan pekerjaan yang belum tersimpan | `apps/web/e2e/app-update.spec.ts` "unsaved note…" dan "Faith PDF overlay…" |
 | Salinan `update.waiting` jadi "Selesaikan tulisan yang sedang dibuka dulu" (id/en/zh)                        | Kalimat lama menyebut "membaca", padahal membaca tidak lagi menahan                            | `apps/web/e2e/app-update.spec.ts` teks banner                              |
+
+### Aksesibilitas permukaan baru (diterapkan 11 Nov)
+
+| Perubahan                                                                                       | Alasan                                                                                | Kontrak                                                           |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Audit axe untuk sheet drag, dialog kitab, baris Iman + panel catatan, rail Kidung, dialog hapus | Permukaan baru ini hanya muncul saat dibuka, jadi audit rute tidak pernah melihatnya  | `bible-a11y.spec.ts`, `faith-a11y.spec.ts`, `kidung-a11y.spec.ts` |
+| Fokus kembali ke `<summary>` menu baris bila pemicu sudah tidak fokusable                       | Setelah "Batal", `<details>` sudah menutup sehingga fokus jatuh ke `<body>`           | `kidung-a11y.spec.ts` "Escape restores focus"                     |
+| Setiap sel grid drag ≥ 24 px                                                                    | WCAG 2.2 target-size minimum; 44 px tidak mungkin tanpa memecah "66 kitab satu layar" | `bible-quick-nav-overlay.spec.ts`                                 |
