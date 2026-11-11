@@ -161,6 +161,126 @@ async function settled(locator: Locator) {
   });
 }
 
+// A second collection makes the rail's collection chip render; the mock adds
+// one full entry to the real catalog so the active song and rows stay intact.
+const extraCollection = {
+  id: "hymn-901",
+  book: "english",
+  number: 901,
+  title: "Amazing Grace",
+  verses: ["Amazing grace, how sweet the sound."],
+  lyrics: "Amazing grace, how sweet the sound.",
+  midiPath: "assets/midi/901.mid",
+  pdfPath: "assets/pdf/901.pdf",
+};
+
+async function addSecondCollection(page: Page) {
+  await page.route("**/offline/hymn-catalog.json", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as { items: unknown[] };
+    await route.fulfill({
+      json: { ...body, items: [...body.items, extraCollection] },
+    });
+  });
+}
+
+// Same profile shape account-card.spec.ts uses: the card only has to prove it
+// renders the signed-in state, not that the network owns a real member.
+const accountProfile = {
+  id: "member-123",
+  displayName: "Sdr. Yohanes",
+  branchName: "Semarang",
+  branchCode: "SMG",
+  isMember: true,
+  membershipNo: "GYS-SMG-001",
+  email: "yohanes@example.org",
+  avatarUrl:
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+  locale: "id",
+};
+
+async function openAccount(page: Page) {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.route("**/api/v1/account/profile**", (route) =>
+    route.fulfill({ json: { profile: accountProfile } }),
+  );
+  await page.addInitScript((profile) => {
+    localStorage.setItem("gys-egys-profile-v1", JSON.stringify(profile));
+  }, accountProfile);
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  await expect(page.locator(".member-card")).toBeVisible({ timeout: 20_000 });
+}
+
+/** The production update coordinator only shows its banner behind a worker. */
+async function armAppUpdate(page: Page) {
+  await page.addInitScript(() => {
+    const armed = localStorage.getItem("gys-e2e-update-armed") !== "done";
+    const worker = new EventTarget() as EventTarget & {
+      state: string;
+      postMessage: (message: { type: string }) => void;
+    };
+    worker.state = "installed";
+    worker.postMessage = (message) => {
+      if (message.type !== "SKIP_WAITING") return;
+      localStorage.setItem("gys-e2e-update-armed", "done");
+    };
+    const registration = new EventTarget() as EventTarget & {
+      waiting: typeof worker | null;
+      installing: null;
+      active: { postMessage: () => void };
+      update: () => Promise<void>;
+    };
+    Object.assign(registration, {
+      waiting: armed ? worker : null,
+      installing: null,
+      active: { postMessage() {} },
+      update: async () => undefined,
+    });
+    const serviceWorker = new EventTarget();
+    Object.assign(serviceWorker, {
+      controller: {},
+      ready: Promise.resolve(registration),
+      register: async () => registration,
+    });
+    Object.defineProperty(navigator, "serviceWorker", {
+      value: serviceWorker,
+      configurable: true,
+    });
+  });
+}
+
+async function importPlaylist(page: Page, name: string) {
+  await page.goto("/GYSApp-Tauri/kidung?section=playlist");
+  await expect(
+    page.getByRole("heading", { name: "Antrean MIDI", exact: true }),
+  ).toBeVisible({ timeout: 30_000 });
+  await page
+    .locator(".kidung-tool-heading-actions input[type=file]")
+    .setInputFiles({
+      name: "shell-a11y-playlist.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(
+        JSON.stringify({
+          name,
+          songs: [
+            {
+              nomor: "001",
+              judul: "Pujilah Allah Yang Maha Esa",
+              fileHref: "docs/assets/001.mid",
+            },
+          ],
+          exportedAt: "2026-10-10T00:00:00.000Z",
+        }),
+      ),
+    });
+  const row = page.locator(".kidung-saved-playlist-row", {
+    has: page.getByText(`${name} (Imported)`, { exact: true }),
+  });
+  await expect(row).toBeVisible();
+  return row;
+}
+
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
@@ -275,4 +395,83 @@ test("the reading menu is a dialog: focus moves in, Escape closes it", async ({
   await page.keyboard.press("Escape");
   await expect(drawer).toBeHidden();
   await expect(trigger).toBeFocused();
+});
+
+test("the desktop Kidung rail and its collection chip are axe clean", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await addSecondCollection(page);
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+
+  const rail = page.locator(".kidung-reader-rail");
+  await expect(rail).toBeVisible({ timeout: 30_000 });
+  await expect(rail.locator(".kidung-rail-row").first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
+  ).toBeVisible({ timeout: 30_000 });
+
+  const chip = rail.locator(".kidung-collection-select");
+  await expect(chip).toBeVisible();
+  const trigger = chip.getByRole("combobox");
+  await expect(trigger).toBeVisible();
+
+  await expectNoAxeViolations(page);
+
+  // The chip is a listbox while open, and its options are part of the surface.
+  await trigger.click();
+  await expect(chip.getByRole("listbox")).toBeVisible();
+  await expectNoAxeViolations(page);
+
+  await page.keyboard.press("Escape");
+  await expect(chip.getByRole("listbox")).toBeHidden();
+});
+
+test("the saved-playlist delete dialog is axe clean", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  const row = await importPlaylist(page, "Audit Hapus");
+
+  await row.locator("details.kidung-row-menu > summary").first().click();
+  await expect(row.locator(".kidung-row-menu-panel")).toBeVisible();
+  await row
+    .locator(".kidung-danger-action", { hasText: /^Hapus playlist$/ })
+    .click();
+
+  const dialog = page.getByRole("dialog", { name: "Hapus playlist?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("tidak bisa dibatalkan");
+  // The dialog rises with an entrance animation; audit the settled modal.
+  await settled(dialog);
+
+  await expectNoAxeViolations(page);
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+});
+
+test("the signed-in account card on Lainnya is axe clean", async ({ page }) => {
+  await openAccount(page);
+  await expect(page.locator(".member-card")).toContainText("Sdr. Yohanes");
+
+  await expectNoAxeViolations(page);
+});
+
+test("the app update banner is axe clean while the update waits", async ({
+  page,
+}) => {
+  test.skip(process.env.GYS_E2E_DEV === "1", "Production update coordinator");
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await armAppUpdate(page);
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/lainnya");
+
+  const banner = page.locator(".app-update-banner");
+  await expect(banner).toBeVisible({ timeout: 20_000 });
+  await expect(banner).toContainText("Memperbarui aplikasi");
+
+  await expectNoAxeViolations(page);
 });

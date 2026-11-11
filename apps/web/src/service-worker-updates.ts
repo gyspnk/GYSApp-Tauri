@@ -9,7 +9,7 @@ export function installServiceWorkerUpdates(): () => void {
   const disposers: Array<() => void> = [];
   let disposed = false;
   let registration: ServiceWorkerRegistration | undefined;
-  const banner = document.createElement("aside");
+  const banner = document.createElement("div");
   banner.className = "app-update-banner";
   banner.setAttribute("role", "status");
   const spinner = document.createElement("span");

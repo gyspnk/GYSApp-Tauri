@@ -185,3 +185,7 @@ Iman: sheet topik melepas `aria-modal` saat panel catatan atau PDF di atasnya te
 | `.sauh-card-content` di state offline jadi `flex: 1 0 auto; justify-content: center`   | `margin-top: auto` menempelkan teks ke bawah, sisa CLS 0,00365 di phone                                                                                | idem                                                                       |
 
 Pergeseran 10 px serentak ~650 ms adalah animasi `soft-rise` pada `.home-grid > *`, bukan layout shift (CLS mengabaikan transform). `apps/web/e2e/shell-a11y.spec.ts` mengaudit Beranda/Alkitab/Suara/Lainnya dengan enam tag axe (0 violations), dan drawer "Menu Bacaan" sekarang memindahkan fokus ke dalam dialog sehingga Escape menutupnya.
+
+### Audit axe permukaan baru (11 Nov)
+
+Empat permukaan diaudit dengan enam tag di `apps/web/e2e/shell-a11y.spec.ts`: rail Kidung + chip koleksi (listbox), dialog hapus playlist, kartu akun (login palsu), dan banner pembaruan (service worker palsu). Hasil: 0 pelanggaran setelah satu perbaikan — `role="status"` dipasang pada `<aside>` melanggar `aria-allowed-role`, jadi banner memakai `<div>` (`apps/web/src/service-worker-updates.ts:12`). Dua `incomplete` dibiarkan dan dicatat: `aria-valid-attr-value` pada chip karena axe tidak bisa menelusuri `aria-controls` saat `aria-haspopup`, dan `color-contrast` pada paragraf dialog karena latar overlay.
