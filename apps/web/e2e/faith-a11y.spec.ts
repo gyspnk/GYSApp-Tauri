@@ -4,11 +4,17 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const ROW = ".faith-row";
 const SHEET = ".faith-modal-backdrop";
 const NOTE_PANEL = ".faith-notes";
+const AXE_TAGS = [
+  "wcag2a",
+  "wcag2aa",
+  "wcag21a",
+  "wcag21aa",
+  "wcag22aa",
+  "best-practice",
+];
 
 async function expectNoAxeViolations(page: Page) {
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa"])
-    .analyze();
+  const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
   expect(
     results.violations,
     JSON.stringify(results.violations, null, 2),
@@ -29,7 +35,7 @@ test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
 
-test("the row sheet is axe clean, expanded, and owns focus", async ({
+test("the phone page, row sheet, and note panel are axe clean", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -42,11 +48,61 @@ test("the row sheet is axe clean, expanded, and owns focus", async ({
   await row.click();
   const sheet = page.locator(SHEET);
   await expect(sheet).toBeVisible();
+  await expect(
+    sheet.getByRole("button", { name: "Tutup pokok iman" }),
+  ).toBeVisible();
   await expect(row).toHaveAttribute("aria-expanded", "true");
   await expect(sheet.locator(".faith-selection-close")).toBeFocused();
   expect(
     await sheet.evaluate((element) => element.contains(document.activeElement)),
   ).toBe(true);
+  await expectNoAxeViolations(page);
+
+  await page.getByRole("button", { name: /^Catatan pribadi/ }).click();
+  const panel = page.locator(NOTE_PANEL);
+  await expect(panel).toBeVisible();
+  await expect(
+    panel.getByRole("button", { name: "Tutup catatan" }),
+  ).toBeVisible();
+  await expect(page.locator('[aria-modal="true"]')).toHaveCount(1);
+  await expect(sheet).not.toHaveAttribute("aria-modal", "true");
+  await settled(panel.locator(".bible-notes-modal"));
+  await expectNoAxeViolations(page);
+});
+
+test("the wide page and topic sheet are axe clean", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/GYSApp-Tauri/iman");
+
+  const row = page.locator(ROW).first();
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  await expectNoAxeViolations(page);
+
+  await row.click();
+  await expect(page.locator(SHEET)).toBeVisible();
+  await expectNoAxeViolations(page);
+});
+
+test("the stacked PDF surface is axe clean", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/GYSApp-Tauri/iman");
+
+  const row = page.locator(ROW).first();
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  await row.click();
+  await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
+  const pdf = page.locator(".faith-pdf-backdrop");
+  const sheet = page.locator(SHEET);
+  await expect(pdf).toBeVisible();
+  await expect(pdf.getByRole("button", { name: "Tutup bacaan" })).toBeVisible();
+  await expect(sheet).toBeVisible();
+  await expect(page.locator('[aria-modal="true"]')).toHaveCount(1);
+  await expect(sheet).not.toHaveAttribute("aria-modal", "true");
+  await expect(pdf).toHaveAttribute("aria-modal", "true");
+  await expect(pdf.locator(".pdf-page-jump input")).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(pdf.locator(".pdf-loading")).toBeHidden();
   await expectNoAxeViolations(page);
 });
 

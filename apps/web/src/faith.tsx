@@ -223,6 +223,9 @@ export function FaithPage({ locale }: { locale: Locale }) {
     );
   }, [items, query]);
   const active = items.find((item) => item.number === selected);
+  // A layer on top owns modality. Leaving aria-modal on the sheet underneath
+  // would announce two modal dialogs at once.
+  const sheetCovered = Boolean(pdfRead) || notePopupOpen;
   // The PDF position belongs to the sheet, next to the button that resumes it:
   // in the row it competed with the statement for the reader's attention.
   const activeProgress = active
@@ -511,7 +514,7 @@ export function FaithPage({ locale }: { locale: Locale }) {
                 ref={faithModalRef}
                 className={`faith-modal-backdrop${isModalClosing ? " is-closing" : ""}`}
                 role="dialog"
-                aria-modal="true"
+                aria-modal={sheetCovered ? undefined : "true"}
                 aria-label={translate(locale, "faith.topic", {
                   number: active.number,
                 })}
