@@ -65,3 +65,8 @@ test("a locale edit pulls in the key-set contract", () => {
   const { tests } = collectChecks(["apps/web/src/i18n-en.ts"]);
   assert.deepEqual(tests, ["apps/web/src/i18n.test.ts"]);
 });
+
+test("a scripts tool drags its own node test into the check", () => {
+  const { tests } = collectChecks(["scripts/issue-queue.mjs"]);
+  assert.deepEqual(tests, ["scripts/issue-queue.test.mjs"]);
+});

@@ -44,6 +44,13 @@ export function collectChecks(files) {
       if (candidate !== source && existsSync(candidate)) tests.push(candidate);
     }
   }
+  // A scripts/*.mjs tool owns a sibling .test.mjs; without this the local check
+  // stayed green on a broken CLI until CI ran test:scripts.
+  for (const source of sources) {
+    if (!source.startsWith("scripts/") || !source.endsWith(".mjs")) continue;
+    const spec = source.replace(/\.mjs$/, ".test.mjs");
+    if (spec !== source && existsSync(spec)) tests.push(spec);
+  }
   // Four policy suites read every stylesheet rather than one module, so a plain
   // CSS edit has no sibling test to find. Run them whenever web CSS moves,
   // otherwise an off-scale radius only surfaces in CI (round 24 did exactly
