@@ -61,16 +61,25 @@ async function routeHome(page: Page) {
   );
 }
 
-async function panelHeight(page: Page) {
-  return page
-    .locator(".verse-panel")
-    .evaluate((el) => el.getBoundingClientRect().height);
+async function cardBox(page: Page) {
+  return page.evaluate(() => {
+    const rect = (selector: string) => {
+      const el = document.querySelector(selector);
+      if (!el) throw new Error(`missing ${selector}`);
+      const box = el.getBoundingClientRect();
+      return { top: box.top, height: box.height };
+    };
+    return { panel: rect(".verse-panel"), content: rect(".sauh-card-content") };
+  });
 }
 
 // The verse card is the last quiet placeholder before the feed lands. On phones
 // and tablets it used to be 180/182 px while the loaded card was 489-699 px, so
 // every section below it dropped on arrival (CLS 0.22 at 320 px, 0.32 at 768 px).
-for (const width of [390, 900]) {
+// From 960 px the panel height already matched, but the copy block inside it
+// still jumped 47-62 px because the loaded card is a merged hero and the
+// placeholder was a stacked card; the content box is asserted for that reason.
+for (const width of [390, 900, 1024, 1440]) {
   test(`verse slot keeps its height when the verse arrives at ${width}px`, async ({
     page,
   }) => {
@@ -82,7 +91,7 @@ for (const width of [390, 900]) {
     await expect(page.locator(".sauh-skeleton")).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(150);
-    const skeleton = await panelHeight(page);
+    const skeleton = await cardBox(page);
 
     await expect(page.locator(".sauh-card-body")).toBeVisible();
     await expect(page.locator(".sauh-image-wrap")).toHaveAttribute(
@@ -90,8 +99,16 @@ for (const width of [390, 900]) {
       "loaded",
     );
     await page.waitForTimeout(300);
-    const loaded = await panelHeight(page);
+    const loaded = await cardBox(page);
 
-    expect(Math.abs(loaded - skeleton)).toBeLessThanOrEqual(40);
+    expect(
+      Math.abs(loaded.panel.height - skeleton.panel.height),
+    ).toBeLessThanOrEqual(40);
+    expect(
+      Math.abs(loaded.content.top - skeleton.content.top),
+    ).toBeLessThanOrEqual(8);
+    expect(
+      Math.abs(loaded.content.height - skeleton.content.height),
+    ).toBeLessThanOrEqual(8);
   });
 }

@@ -3264,6 +3264,51 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin: 0;
   gap: 8px;
 }
+/* From 960 px the loaded card is a merged hero: zero panel padding, the photo
+   absolutely fills the frame and the copy sits on a scrim at the bottom. The
+   no-verse states kept the stacked padding, so the copy box jumped from an
+   inset block at the top to a full-bleed block at the bottom when the verse
+   landed (CLS 0.047-0.059 at 960-1199). Mirror the frame instead: same plate,
+   same full-bleed copy slot, same padding. */
+@media (min-width: 960px) {
+  .home-page .verse-panel:has(.sauh-skeleton),
+  .home-page .verse-panel:has(.sauh-offline-state) {
+    position: relative;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+  .home-page .verse-panel:has(.sauh-skeleton)::before,
+  .home-page .verse-panel:has(.sauh-offline-state)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--surface-soft);
+  }
+  .home-page .verse-panel:has(.sauh-skeleton) .sauh-card-content,
+  .home-page .verse-panel:has(.sauh-offline-state) .sauh-card-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    margin-top: auto;
+    padding: 22px 20px 20px;
+    flex: 0 0 auto;
+    justify-content: flex-end;
+  }
+  /* The copy slot is the last piece sized by its text (206-221 px measured), so
+     without this the placeholder and the loaded card still differ by 47-62 px.
+     One floor for every state, set to the tallest measured copy box (221 px at
+     1440) so the loaded card keeps its natural height there; the scrim already
+     covers the extra space. The three `:has()` selectors are needed to outrank
+     the 96 px skeleton rule. */
+  .home-page .verse-panel:has(.sauh-skeleton) .sauh-card-content,
+  .home-page .verse-panel:has(.sauh-offline-state) .sauh-card-content,
+  .home-page .verse-panel:has(.sauh-card-media) .sauh-card-content {
+    min-height: 221px;
+  }
+}
 .home-grid .sauh-offline-state strong {
   font-size: 1.0625rem;
 }
