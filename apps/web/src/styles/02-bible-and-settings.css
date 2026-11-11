@@ -3168,3 +3168,50 @@
   min-height: 32px;
   font-size: 0.75rem;
 }
+
+/* Expanded settings panels carry a list or a form, not one short value. In
+   landscape the offline download rows pair up and the backup field sits beside
+   its actions, so a single label stops owning a full-width row. */
+@media (min-width: 720px) {
+  .more-page
+    .more-setting-section[data-setting="offline"]
+    .distributed-asset-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+  .more-page
+    .more-setting-section[data-setting="offline"]
+    .distributed-asset-group-label {
+    grid-column: 1 / -1;
+  }
+  .more-page .more-setting-section[data-setting="backup"] .backup-inline {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: 24px;
+  }
+  .more-page
+    .more-setting-section[data-setting="backup"]
+    .backup-inline
+    > :is(.more-card-heading, p) {
+    grid-column: 1 / -1;
+  }
+  .more-page
+    .more-setting-section[data-setting="backup"]
+    .backup-inline
+    > .utility-actions {
+    grid-column: 2;
+    justify-content: end;
+  }
+}
+@media (max-height: 540px) and (orientation: landscape) {
+  /* A landscape phone shows four rows at once; keep the 44 px targets and trim
+     the paragraph margins and download-row padding that push them apart. */
+  .more-page .more-settings-content .more-card > p {
+    margin-block: 8px 12px;
+  }
+  .more-page
+    .more-setting-section[data-setting="offline"]
+    .distributed-asset-row {
+    padding-block: 8px;
+  }
+}
