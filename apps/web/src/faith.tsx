@@ -314,7 +314,9 @@ export function FaithPage({ locale }: { locale: Locale }) {
     });
   };
   const openReadMore = (trigger?: HTMLElement | null) => {
-    if (active) openFaithPdf(active, trigger);
+    // The sheet closes when the reader opens, so its own trigger disappears;
+    // focus returns to the row that opened the sheet once the reader closes.
+    if (active) openFaithPdf(active, faithOpenerRef.current ?? trigger);
   };
   const closeReadMore = () => {
     transitionReader(() => {

@@ -406,16 +406,19 @@ test("faith PDF overlay keeps both official links reachable across locales and w
       official: "PDF resmi ↗",
       source: "Buka halaman sumber resmi ↗",
       close: "Tutup bacaan",
+      readMore: /Baca lebih lanjut/,
     },
     en: {
       official: "Official PDF ↗",
       source: "Open official source page ↗",
       close: "Close reading",
+      readMore: /Read more/,
     },
     zh: {
       official: "官方 PDF ↗",
       source: "打开官方来源页面 ↗",
       close: "关闭阅读",
+      readMore: /阅读更多/,
     },
   } as const;
   await page.addInitScript(() => {
@@ -478,7 +481,7 @@ test("faith PDF overlay keeps both official links reachable across locales and w
       await page.goto(`/GYSApp-Tauri/iman?__gys_locale=${locale}`);
       const row = page.locator(".faith-row").first();
       await row.click();
-      await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
+      await page.getByRole("button", { name: copies[locale].readMore }).click();
 
       const overlay = page.locator(".faith-pdf-overlay");
       await expect(overlay).toBeVisible();

@@ -42,6 +42,16 @@ function restoreDialogFocus(
   openerRef: FocusTargetRef,
   fallbackSelector: string,
 ): void {
+  const active = document.activeElement;
+  // One layer can close because another opened on top of it (a row sheet hands
+  // over to the PDF reader). When the new layer already owns focus, restoring
+  // the opener here would pull focus out of its trap.
+  if (
+    active instanceof HTMLElement &&
+    active.closest('[role="dialog"], [aria-modal="true"]')
+  ) {
+    return;
+  }
   const opener = openerRef.current;
   const fallback = document.querySelector<HTMLElement>(fallbackSelector);
   const target = opener?.isConnected ? opener : fallback;

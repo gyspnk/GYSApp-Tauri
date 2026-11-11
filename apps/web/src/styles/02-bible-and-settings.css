@@ -2721,9 +2721,6 @@
      label: half a column squeezes it into narrow wrapped lines. */
   .more-page .more-setting-section[open] {
     grid-column: 1 / -1;
-  } /* Three provider buttons across 640 px pushed each label away from its icon. */
-  .more-page .egys-provider-all {
-    max-width: 480px;
   }
   /* A full-width panel would otherwise put one short value on a 640 px line
      and leave the rest of the row blank; the member fields pair up instead. */
