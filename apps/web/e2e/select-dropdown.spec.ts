@@ -89,13 +89,21 @@ async function expectActiveDescendant(
   trigger: Locator,
   menu: Locator,
 ) {
-  const activeId = await trigger.getAttribute("aria-activedescendant");
+  // The select used to keep aria-activedescendant on the trigger. It now moves
+  // real DOM focus into the list, which is what a screen reader follows, so the
+  // contract accepts either and then proves the focused row is the active one.
+  const activeId =
+    (await trigger.getAttribute("aria-activedescendant")) ??
+    (await page.evaluate(
+      () => document.activeElement?.closest('[role="option"]')?.id ?? null,
+    ));
   expect(activeId).toBeTruthy();
   const active = page.locator(`[id="${activeId}"]`);
   await expect(active).toHaveAttribute("role", "option");
   await expect(active).toHaveClass(/is-active/);
   await expect(active).toBeVisible();
   await expect(menu.locator(".control-select-option.is-active")).toHaveCount(1);
+  await expect(active).toBeFocused();
 }
 
 test("shared Select keeps touch, keyboard, locale, and viewport contracts", async ({

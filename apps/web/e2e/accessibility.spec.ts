@@ -471,6 +471,10 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
       page.getByRole("link", { name: "Open official source page ↗" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Close reading" }).click();
+    // Closing the reader returns to the topic sheet, which is still open; it
+    // has to be closed before the page chrome is reachable again.
+    await page.getByRole("button", { name: "Close faith topic" }).click();
+    await expect(page.getByRole("dialog", { name: "Topic 1" })).toBeHidden();
 
     await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();

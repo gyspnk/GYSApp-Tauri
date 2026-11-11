@@ -569,6 +569,11 @@ test("faith PDF overlay keeps both official links reachable across locales and w
         await close.press("Enter");
       }
       await expect(overlay).toBeHidden();
+      // The topic sheet stays open underneath the reader, so focus returns to
+      // the button that opened it; Escape then closes the sheet itself.
+      await expect(page.locator(".faith-read-more").first()).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(page.locator(".faith-modal-backdrop")).toBeHidden();
       await expect(row).toBeFocused();
     }
   }
