@@ -43,7 +43,6 @@ import {
   Routes,
   useLocation,
   useNavigate,
-  useNavigationType,
 } from "react-router-dom";
 import {
   DESTINATIONS,
@@ -479,37 +478,9 @@ function Shell({
       history.scrollRestoration = previous;
     };
   }, []);
-  // Every route used to start at the top, which threw away the reader's place
-  // when they came back from a hymn. Remember the offset per location and put it
-  // back for a history pop only; a forward navigation still starts at the top.
-  const navigationType = useNavigationType();
-  const scrollKey = location.pathname + location.search;
-  const scrollOffsets = useRef(new Map<string, number>());
-  useEffect(() => {
-    const save = () => scrollOffsets.current.set(scrollKey, window.scrollY);
-    window.addEventListener("scroll", save, { passive: true });
-    return () => window.removeEventListener("scroll", save);
-  }, [scrollKey]);
   useLayoutEffect(() => {
-    const saved =
-      navigationType === "POP"
-        ? scrollOffsets.current.get(scrollKey)
-        : undefined;
-    if (saved === undefined || saved <= 0) {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-      return;
-    }
-    // The hymn catalog appends rows after the first paint, so one scroll call
-    // lands short of a deep offset. Keep re-applying the offset until the page is
-    // tall enough to hold it, then stop.
-    let attempt = 0;
-    const restore = () => {
-      window.scrollTo({ top: saved, left: 0, behavior: "instant" });
-      if (Math.abs(window.scrollY - saved) <= 2) return;
-      if (attempt++ < 40) window.setTimeout(restore, 50);
-    };
-    restore();
-  }, [scrollKey, navigationType]);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [location.pathname]);
   const firstRouteRef = useRef(true);
   useEffect(() => {
     // Data-backed pages paint a loader before their heading exists, and on a
