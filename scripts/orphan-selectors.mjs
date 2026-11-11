@@ -132,7 +132,7 @@ export async function orphanSelectors(root) {
   return offenders;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const offenders = await orphanSelectors(process.cwd());
   if (offenders.length === 0) {
     console.log("No orphan selectors in the browser contracts.");

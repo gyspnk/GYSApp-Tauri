@@ -77,5 +77,5 @@ function main(argv) {
   console.log(`release gate: ${check.reason}`);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href)
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href)
   main(process.argv.slice(2));

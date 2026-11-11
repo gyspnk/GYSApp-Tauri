@@ -113,7 +113,7 @@ export async function deadClasses(root) {
 
 // A plain string compare breaks as soon as the checkout path has a
 // space, so compare resolved URLs.
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const root = process.cwd();
   const dead = await deadClasses(root);
   if (process.argv.includes("--json")) {

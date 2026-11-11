@@ -96,6 +96,15 @@ jobs:
             echo "Preview APK must use the optimized, non-debuggable release build"
             exit 1
           fi
+          if [ -n "${{ inputs.turn }}" ]; then
+            expected=$(node --input-type=module -e 'import { codeForTurn } from "./scripts/android-version-code.mjs"; process.stdout.write(String(codeForTurn(Number(process.argv[1]))))' "${{ inputs.turn }}")
+            if ! grep -q "versionCode='$expected'" "$RUNNER_TEMP/apk-badging.txt"; then
+              echo "APK versionCode is not $expected (release turn ${{ inputs.turn }}); Gradle ignored tauri.properties"
+              grep -o "versionCode='[0-9]*'" "$RUNNER_TEMP/apk-badging.txt" || true
+              exit 1
+            fi
+            echo "APK versionCode $expected verified for release turn ${{ inputs.turn }}"
+          fi
           cp "$apk_path" "android-artifacts/$APK_NAME"
           git rev-parse HEAD > android-artifacts/commit.txt
           sha256sum android-artifacts/*.apk > android-artifacts/SHA256SUMS-android.txt

@@ -70,7 +70,7 @@ export function pruneCss(css, dead) {
   return out;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const target = process.argv[2];
   if (!target) {
     console.error("usage: node scripts/prune-dead-css.mjs <file.css> [--dry]");
