@@ -91,6 +91,19 @@ const sauhFeed = [
 
 async function prepare(page: Page): Promise<void> {
   await page.clock.setFixedTime(new Date("2026-09-28T10:00:00Z"));
+  // The offline row prints the device's real storage estimate, so the number —
+  // and whether the line renders at all — changed between CI runners. Pin both.
+  await page.addInitScript(() => {
+    const api = navigator.storage ?? {};
+    Object.defineProperty(api, "estimate", {
+      configurable: true,
+      value: async () => ({ usage: 1_048_576, quota: 3_221_225_472 }),
+    });
+    Object.defineProperty(navigator, "storage", {
+      configurable: true,
+      value: api,
+    });
+  });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.route("https://accounts.google.com/gsi/client*", (route) =>
     route.abort(),
