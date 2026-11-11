@@ -118,3 +118,27 @@ Otak ini bekerja untuk seluruh harness, bukan hanya GYSApp-Tauri: repositori
 aplikasi, plugin sidebar, skrip harian, dan dokumen rencana. Putaran aplikasi
 tetap berjalan lewat `docs/plans/ui-spec-loop.md`; pekerjaan harness lewat
 panel GB Tools dan `docs/plans/agent-brain.md`.
+
+## Panel otak: interaksi langsung (11 Nov)
+
+Peta bukan lagi gambar statis. Yang bisa dilakukan dari panel:
+
+- **Pilih node** dengan klik atau `Space`; node terpilih menyorot garis ke
+  induk/anaknya, node lain meredup, dan kartu detail muncul di bawah peta
+  (status, putaran + alat terakhir, jumlah anak yang didelegasikan, folder
+  kerja, id sesi).
+- **Salin id** lewat tombol di kartu detail, `Enter`, atau klik ganda.
+- **Geser peta** dengan seret; **zoom** dengan roda (0,6×–2,2×, berpusat di
+  kursor) atau tombol **Pas** untuk kembali.
+- **Saring** dengan "Hanya berjalan" — peta hanya menyisakan sesi yang masih
+  bekerja beserta garisnya.
+- Animasi: garis berjalan memakai dash yang mengalir, node berjalan punya
+  halo berdenyut, perpindahan node memakai transisi `transform` 280 ms, dan
+  `prefers-reduced-motion` mematikan semuanya.
+
+Batas jujur: panel belum punya kontrak browser karena harness di mesin ini
+menjawab `401` untuk sesi non-operator, jadi verifikasi yang dijalankan baru
+`node --check client.js`, `node test/smoke.js`, dan pemeriksaan bahwa 18 kunci
+`t()` di panel ada di kedua kamus (`en` dan `id`). Kepemilikan tetap: peta
+hanya membaca `sessions.list` dan `binding(id).eventSource`; ia tidak
+mengarang fase workflow atau nama alat yang tidak ada di event.
