@@ -53,6 +53,12 @@ for (const viewport of [
     expect(Math.abs(box!.width - viewport.width)).toBeLessThanOrEqual(2);
     expect(box!.height).toBeGreaterThanOrEqual(viewport.height * 0.6);
     await expect(sheet).toHaveCSS("border-radius", "0px");
+    // WCAG 2.2 target size (minimum) is 24x24; the sheet is one continuous drag
+    // surface, so every cell has to stay at least that tall to be hittable.
+    const cell = await page.locator(".quick-nav-item").first().boundingBox();
+    expect(cell).not.toBeNull();
+    expect(cell!.height).toBeGreaterThanOrEqual(24);
+    expect(cell!.width).toBeGreaterThanOrEqual(24);
 
     const surface = await sheet.evaluate((element) => {
       const style = getComputedStyle(element);

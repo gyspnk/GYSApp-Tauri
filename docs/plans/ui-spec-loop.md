@@ -133,7 +133,7 @@ Dua kontrak ikut diperbaiki saat sweep konfirmasi `43017091830` (hijau): `apps/w
 
 Angka: 1024×600 ayat 576 → 726 px dari kolom 776 (74% → 93,6%), font 18 → 20 px; 844×390 614 → 678 dari 728 (84% → 93,1%), font 18 → 22,5 px. Cap `46rem`/`88ch` kini hanya untuk portrait dan jendela desktop yang tinggi: di landscape kolom ayat memakai lebar halaman penuh (1440×900: kolom 1216 px, teks 1142 px; sebelumnya 736 px di tengah). Alasan: pemilik membaca ayat selebar halaman pada mode landscape, dan sisa ruang di kanan-kiri terbaca sebagai halaman yang belum jadi.
 
-Grid sheet mengukur kotaknya sendiri (`ResizeObserver`): landscape 844×390 → 9 kolom × 8 baris, tinggi baris 25 px, `scrollHeight == clientHeight == 236` (tidak terpotong, tanpa gulir); portrait 390×844 → 3 kolom × 22 baris, 552 px, item terakhir berhenti 20 px di atas pil langkah. Pil langkah disembunyikan di landscape pendek karena readout melayang sudah memuat petunjuk yang sama; override media ditaruh paling akhir berkas supaya menang urutan sumber.
+Grid sheet mengukur kotaknya sendiri (`ResizeObserver`) dan menahan setiap sel ≥ **24 px** (WCAG 2.2 target-size minimum) dengan mengorbankan jumlah baris, bukan ukuran sel: landscape 844×390 → 10 kolom × 7 baris (sel 76,4×29,1 px); portrait 390×844 → 4 kolom × 17 baris (sel 83,5×28,2 px); keduanya `scrollHeight == clientHeight` (tidak terpotong, tanpa gulir), item terakhir portrait berhenti 20 px di atas pil langkah. Pil langkah disembunyikan di landscape pendek karena readout melayang sudah memuat petunjuk yang sama; override media ditaruh paling akhir berkas supaya menang urutan sumber.
 
 ### Lainnya: pembaruan memasang diri di halaman mana pun (diterapkan 11 Nov)
 

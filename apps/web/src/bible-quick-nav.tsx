@@ -170,18 +170,30 @@ export function BibleQuickNavOverlay({
       32,
   );
   const rowPitch = compact ? 25 : 30;
-  const minColumn = compact ? 78 : 96;
+  const minColumn = compact ? 78 : 88;
   const fitRows = Math.max(3, Math.floor(usableHeight / rowPitch));
   // A column narrower than the minimum breaks book names into three lines, so
   // the column count is capped by width first and only then by height.
+  // WCAG 2.2 target size (minimum) is 24 px; a shorter cell makes the drag
+  // land on the wrong book. When the height budget cannot hold 24 px rows, the
+  // grid trades rows for columns instead of shrinking the cells.
+  const rowGap = 4;
+  const maxRows = Math.max(
+    3,
+    Math.floor((usableHeight + rowGap) / (24 + rowGap)),
+  );
+  const wantedRows = Math.min(fitRows, maxRows);
   const columns = Math.max(
     1,
     Math.min(
-      Math.ceil(items.length / fitRows),
+      Math.ceil(items.length / wantedRows),
       Math.floor(usableWidth / minColumn),
     ),
   );
-  const rows = Math.max(1, Math.ceil(items.length / columns));
+  const rows = Math.min(
+    Math.max(1, Math.ceil(items.length / columns)),
+    maxRows,
+  );
 
   return (
     <div
