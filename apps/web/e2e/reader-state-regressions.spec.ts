@@ -123,11 +123,17 @@ test("history navigation resets window scroll before entering another page", asy
     dispatchEvent(new PopStateEvent("popstate"));
   });
   await expect(page.locator(".verse-row").first()).toBeVisible();
+  // A pop into a page that was never rendered still starts at the top: only a
+  // route the app already committed may hand its offset back.
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   await page.evaluate(() => window.scrollTo({ top: 400, behavior: "instant" }));
   await page.goBack();
   await expect(page.locator(".home-grid")).toBeVisible();
-  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  // Back into the page the reader left restores where they left it, which is
+  // the contract `kidung-scroll-restore.spec.ts` also pins on a longer list.
+  await expect
+    .poll(() => page.evaluate(() => scrollY))
+    .toBeGreaterThanOrEqual(300);
 });
 
 for (const width of [390, 1440]) {

@@ -484,9 +484,29 @@ function Shell({
   // top and never inherits a stale position.
   const navigationType = useNavigationType();
   // The catalog's mode toggle rewrites the query with `replace`, so keying this
-  // on the pathname keeps an offset discoverable after that rewrite.
-  const scrollKey = location.pathname;
+  // on the pathname keeps an offset discoverable after that rewrite. The base
+  // path is stripped so the same route has one key whether the app is hosted at
+  // `/` or under `/GYSApp-Tauri/` (the scroll listener below uses the URL, not
+  // this state, and must agree with it).
+  const scrollKey =
+    location.pathname.replace(
+      import.meta.env.BASE_URL.replace(/\/$/, ""),
+      "",
+    ) || "/";
   const scrollOffsets = useRef<Map<string, number>>(new Map());
+  // Only a route this app has already committed may hand an offset back. A
+  // synthetic pop to a page that was never rendered (or a forward jump) must
+  // still start at the top, exactly like a push.
+  const seenKeys = useRef<Set<string>>(new Set());
+  // React Router stamps every entry it pushes with an index. Comparing it with
+  // the index of the entry we were on is the only reliable signal that a pop is
+  // a step BACK; a synthetic popstate (or a pop into history the app never
+  // wrote) must behave like a forward navigation.
+  const historyIndexRef = useRef<number | null>(null);
+  // The scroll event that belongs to a navigation arrives after the URL has
+  // already changed, so the URL cannot say which route the reader was on. Keep
+  // the last value and let the route commit credit it to the outgoing key.
+  const lastScrollRef = useRef(0);
   const scrollKeyRef = useRef(scrollKey);
   const restoredOffsetRef = useRef(0);
   // While a pop is being restored the incoming route legitimately scrolls to
@@ -497,25 +517,33 @@ function Shell({
   // lands a frame later and must be credited to the incoming route. Crediting
   // it to the outgoing one saved 0 and made an earlier attempt useless.
   useLayoutEffect(() => {
+    const previous = scrollKeyRef.current;
+    if (previous !== scrollKey && seenKeys.current.has(previous)) {
+      scrollOffsets.current.set(previous, lastScrollRef.current);
+    }
     scrollKeyRef.current = scrollKey;
   }, [scrollKey]);
   useEffect(() => {
-    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-    // Read the key from the URL, not from React state: on a push the route
-    // resets the scroll before this component commits, and crediting that
-    // zero to the page being left would erase the offset we want back.
-    const keyAt = () =>
-      window.location.pathname.replace(base, "").replace(/\/$/, "") || "/";
     const save = () => {
+      lastScrollRef.current = window.scrollY;
       if (restoringRef.current) return;
-      scrollOffsets.current.set(keyAt(), window.scrollY);
+      const key = scrollKeyRef.current;
+      if (!seenKeys.current.has(key)) return;
+      scrollOffsets.current.set(key, window.scrollY);
     };
     window.addEventListener("scroll", save, { passive: true });
     return () => window.removeEventListener("scroll", save);
   }, []);
   useLayoutEffect(() => {
+    const raw = (window.history.state as { idx?: unknown } | null)?.idx;
+    const index = typeof raw === "number" ? raw : null;
+    const previousIndex = historyIndexRef.current;
+    historyIndexRef.current = index;
+    const steppedBack =
+      navigationType === "POP" &&
+      (index === null || previousIndex === null || index < previousIndex);
     const saved =
-      navigationType === "POP"
+      steppedBack && seenKeys.current.has(scrollKey)
         ? scrollOffsets.current.get(scrollKey)
         : undefined;
     restoredOffsetRef.current = saved ?? 0;
@@ -565,6 +593,11 @@ function Shell({
     }
     observer.observe(document.documentElement);
   }, [scrollKey, navigationType]);
+  // Declared after the restore effect so a pop checks the set before this
+  // commit admits its own key.
+  useLayoutEffect(() => {
+    seenKeys.current.add(scrollKey);
+  }, [scrollKey]);
   const firstRouteRef = useRef(true);
   useEffect(() => {
     // Data-backed pages paint a loader before their heading exists, and on a
