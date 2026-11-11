@@ -70,21 +70,23 @@ test("a real waiting worker activates once without another ready banner", async 
       .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
       .toBe(true);
     await expect(page.locator(".app-update-banner")).toHaveCount(0);
+    const navigations: string[] = [];
+    page.on("framenavigated", (frame) => {
+      if (frame === page.mainFrame()) navigations.push(frame.url());
+    });
     revision = 2;
     await page.evaluate(async () =>
       (await navigator.serviceWorker.ready).update(),
     );
-    const banner = page.locator(".app-update-banner");
-    await expect(banner).toBeVisible();
-    await Promise.all([
-      page.waitForEvent("framenavigated"),
-      banner.getByRole("button").click(),
-    ]);
+    // The new worker installs itself: one reload, no button to press, no
+    // banner left behind afterwards.
+    await expect
+      .poll(() => navigations.length, { timeout: 20_000 })
+      .toBeGreaterThanOrEqual(1);
+    await page.waitForTimeout(1500);
+    expect(navigations, "one reload, not a loop").toHaveLength(1);
     await expect(page.locator(".home-grid")).toBeVisible();
-    await page.evaluate(async () =>
-      (await navigator.serviceWorker.ready).update(),
-    );
-    await expect(banner).toHaveCount(0);
+    await expect(page.locator(".app-update-banner")).toHaveCount(0);
   } finally {
     await new Promise<void>((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),
