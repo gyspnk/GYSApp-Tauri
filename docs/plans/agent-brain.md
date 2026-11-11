@@ -242,4 +242,8 @@ Kontrak yang tersedia sekarang hanya `node --check`, `node test/smoke.js`, dan u
 
 Logika panel dipisah ke model murni di scope modul `client.js` (`buildGraph`, `readWorkflow`, `describeDetail`, `sameDetail`, `shortLabel`) dan diekspor lewat `typeof module` — `require` relatif tidak didukung loader klien (`dsh-client-modules/lib/client.js:840` melempar "missed the module table"), jadi tes menyentuh fungsi yang sama, bukan salinan.
 
-`node --test test/` di repo plugin = 16 kasus (`test/brain-model.test.js` 14 + `test/bundle-load.test.js` 2). Jalankan sebelum menyentuh panel; `bundle-load` menjalankan `client.js` di `vm` dengan loader tiruan sehingga "dock tetap terdaftar" tidak perlu browser.
+`node --test test/` di repo plugin = 18 kasus (`test/brain-model.test.js` 16 + `test/bundle-load.test.js` 2). Jalankan sebelum menyentuh panel; `bundle-load` menjalankan `client.js` di `vm` dengan loader tiruan sehingga "dock tetap terdaftar" tidak perlu browser.
+
+## Umur data (11 Nov)
+
+Panel sebelumnya hanya bisa menyatakan "sedang berjalan", padahal jendela event klien bisa tertinggal dari host — simpul bisa tampak hidup padahal datanya sudah basi. Karena itu tiap simpul kini membawa `detail.updatedAt` (waktu saat turn/tool/workflow terakhir benar-benar berubah, bukan saat chunk streaming masuk) dan menampilkan umurnya dalam bentuk pendek: di bawah 5 detik ditulis "baru saja" (kata disesuaikan locale), lalu `12s`, `3m`, `1h`. Simpul yang tidak punya detail tidak menampilkan umur sama sekali — kosong lebih jujur daripada angka palsu. Ambang 60 detik dipakai untuk menandai simpul `running === false` yang sudah lama tidak berubah: kelas `.kb-brain-node--stale` menurunkan opacity ke 0.72 dan `title` berisi umur yang sama, tanpa mengubah bentuk atau ukurannya. Batas 5 detik dipilih karena itu ritme publikasi tile streaming; 60 detik dipilih karena satu giliran agen yang sehat jarang diam lebih lama dari itu.
