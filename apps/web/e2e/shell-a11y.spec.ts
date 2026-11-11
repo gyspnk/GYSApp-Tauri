@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { composite, contrastRatio, parseCssColor } from "../src/contrast.js";
 
 // Beranda, Alkitab, Suara, and Lainnya were the last routes still outside the
 // full-tag audit. The Bible surfaces only exist while open, so each one is
@@ -281,6 +282,55 @@ async function importPlaylist(page: Page, name: string) {
   return row;
 }
 
+async function openDeleteDialog(page: Page, name: string) {
+  const row = await importPlaylist(page, name);
+  await row.locator("details.kidung-row-menu > summary").first().click();
+  await expect(row.locator(".kidung-row-menu-panel")).toBeVisible();
+  await row
+    .locator(".kidung-danger-action", { hasText: /^Hapus playlist$/ })
+    .click();
+
+  const dialog = page.getByRole("dialog", { name: "Hapus playlist?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("tidak bisa dibatalkan");
+  // The dialog rises with an entrance animation; audit the settled modal.
+  await settled(dialog);
+  return dialog;
+}
+
+const DIALOG_THEMES = ["light", "dark", "sepia", "amoled"] as const;
+
+type DialogColors = {
+  text: string;
+  panel: string;
+  overlay: string;
+  canvas: string;
+};
+
+/** Switch the shell theme and read the colors the open dialog actually paints. */
+async function readDialogColors(
+  page: Page,
+  theme: string,
+): Promise<DialogColors> {
+  return page.evaluate((nextTheme) => {
+    document.documentElement.dataset.theme = nextTheme;
+    const dialog = document.querySelector<HTMLElement>(".confirm-dialog");
+    const paragraph = dialog?.querySelector("p");
+    const backdrop = document.querySelector<HTMLElement>(
+      ".confirm-dialog-backdrop",
+    );
+    if (!dialog || !paragraph || !backdrop) {
+      throw new Error("Delete dialog is not mounted");
+    }
+    return {
+      text: getComputedStyle(paragraph).color,
+      panel: getComputedStyle(dialog).backgroundColor,
+      overlay: getComputedStyle(backdrop).backgroundColor,
+      canvas: getComputedStyle(document.body).backgroundColor,
+    };
+  }, theme);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
@@ -433,19 +483,7 @@ test("the saved-playlist delete dialog is axe clean", async ({ page }) => {
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/^https:\/\//, (route) => route.abort());
-  const row = await importPlaylist(page, "Audit Hapus");
-
-  await row.locator("details.kidung-row-menu > summary").first().click();
-  await expect(row.locator(".kidung-row-menu-panel")).toBeVisible();
-  await row
-    .locator(".kidung-danger-action", { hasText: /^Hapus playlist$/ })
-    .click();
-
-  const dialog = page.getByRole("dialog", { name: "Hapus playlist?" });
-  await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText("tidak bisa dibatalkan");
-  // The dialog rises with an entrance animation; audit the settled modal.
-  await settled(dialog);
+  const dialog = await openDeleteDialog(page, "Audit Hapus");
 
   await expectNoAxeViolations(page);
 
@@ -474,4 +512,65 @@ test("the app update banner is axe clean while the update waits", async ({
   await expect(banner).toContainText("Memperbarui aplikasi");
 
   await expectNoAxeViolations(page);
+});
+
+test("the delete dialog paragraph clears 4.5:1 in every shell theme", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  const dialog = await openDeleteDialog(page, "Audit Kontras");
+  await expect(dialog).toBeVisible();
+
+  for (const theme of DIALOG_THEMES) {
+    await test.step(theme, async () => {
+      const colors = await readDialogColors(page, theme);
+      // Flatten the backdrop onto the page, then the panel onto that stack;
+      // the paragraph itself has no background of its own.
+      const canvas = composite(parseCssColor(colors.canvas), {
+        r: 255,
+        g: 255,
+        b: 255,
+      });
+      const behindPanel = composite(parseCssColor(colors.overlay), canvas);
+      const panel = composite(parseCssColor(colors.panel), behindPanel);
+      const ratio = contrastRatio(parseCssColor(colors.text), panel);
+      expect(
+        ratio,
+        `${theme}: ${colors.text} on ${colors.panel} over ${colors.overlay} = ${ratio.toFixed(2)}:1`,
+      ).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+});
+
+test("the collection chip's aria-controls resolves to its listbox", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await addSecondCollection(page);
+  await page.goto("/GYSApp-Tauri/kidung/hymn-001");
+
+  const chip = page.locator(".kidung-reader-rail .kidung-collection-select");
+  await expect(chip).toBeVisible({ timeout: 30_000 });
+  const trigger = chip.getByRole("combobox");
+  await trigger.click();
+  await expect(chip.getByRole("listbox")).toBeVisible();
+
+  const controls = await trigger.getAttribute("aria-controls");
+  if (!controls) throw new Error("Collection chip has no aria-controls");
+  const target = await page.evaluate((id) => {
+    const element = document.getElementById(id);
+    return element === null
+      ? null
+      : {
+          role: element.getAttribute("role"),
+          hidden: element.getAttribute("aria-hidden"),
+        };
+  }, controls);
+  expect(target, `aria-controls="${controls}" must resolve`).not.toBeNull();
+  expect(target?.role).toBe("listbox");
+  expect(target?.hidden).toBe("false");
 });

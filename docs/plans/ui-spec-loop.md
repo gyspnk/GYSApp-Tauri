@@ -194,3 +194,7 @@ Empat permukaan diaudit dengan enam tag di `apps/web/e2e/shell-a11y.spec.ts`: ra
 
 Skeleton, kartu offline, dan kartu terisi kini memakai satu lantai `min-height`: 340 px dasar, 400 px di 960–1199, `max(510px, 56.25vw + 220px)` di bawah 600, dan `calc(56.25vw + 190px)` di 600–959. Di bawah 960 skeleton/offline juga mendapat placeholder media 16:9 supaya kotak isinya sama dengan kartu terisi.
 Tinggi terukur skeleton → loaded: 320/390 510→510, 599 557→557, 600 528→528, 768 622→622, 900 696→696, 960–1199 400→400, 1440 340→340 (selisih ≤0,7 px). CLS dengan feed nyata tertunda 1,5 detik: 320 0,222 → 0; 390 0,217 → 0; 600 0,185 → 0; 768 0,315 → 0; 900 0,285 → 0; 1440 0,059 → 0,020 (reflow di dalam panel yang sudah tetap). Kontrak `apps/web/e2e/home-verse-reservation.spec.ts` gagal di CSS lama (280 px @390, 458,8 px @900) dan lulus sesudahnya.
+
+### Dua `incomplete` axe jadi bukti terukur (11 Nov)
+
+`apps/web/src/contrast.ts` (baru) menghitung rasio kontras WCAG dari warna CSS apa pun yang dipakai shell (hex, `rgb()`, `rgba()`, `color(srgb …)`, `transparent`), dengan `composite()` untuk lapisan transparan. Kontrak `apps/web/e2e/shell-a11y.spec.ts` mengukur paragraf dialog hapus per tema: light 5,506 · dark 9,023 · sepia 9,743 · amoled 9,349 — semuanya ≥4,5:1, jadi tidak ada warna yang diubah. Kontrak kedua membuka chip koleksi, membaca `aria-controls`, dan menegaskan `getElementById(id)` ada dengan `role="listbox"` dan `aria-hidden="false"`, sehingga kekhawatiran axe ditutup tanpa `disableRules`.
