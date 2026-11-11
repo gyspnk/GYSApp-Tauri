@@ -1419,15 +1419,7 @@ kidung-row-menu > summary:focus-visible,
 .hymn-more-actions-panel .reader-settings-group:first-of-type {
   border-top: 0;
 }
-.hymn-more-actions-panel .reader-settings-group-title {
-  justify-content: space-between;
-  padding: 0 2px;
-  border-radius: 0;
-  background: transparent;
-  color: var(--ink);
-  font-size: 0.8125rem;
-  font-weight: 650;
-}
+
 .hymn-more-actions-panel .reader-settings-group-body {
   gap: 8px;
   padding: 4px 2px 10px;

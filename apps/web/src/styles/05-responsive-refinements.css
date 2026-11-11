@@ -191,18 +191,7 @@
 .hymn-text-title .viewer-chrome-button {
   flex: 0 0 44px;
 }
-.hymn-detail-page.is-text-viewer .detail-neighbors {
-  display: flex;
-  gap: 4px;
-}
-.hymn-detail-page.is-text-viewer .detail-neighbor-button {
-  width: 44px;
-  min-width: 44px;
-  padding: 0;
-}
-.hymn-detail-page.is-text-viewer .detail-neighbor-button .control-copy {
-  display: none;
-}
+
 .hymn-detail-page.is-text-viewer .hymn-detail-surface {
   display: flex;
   flex: 1;
@@ -375,19 +364,6 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
     border: 0;
-  }
-  .hymn-detail-page .detail-neighbors {
-    justify-content: flex-end;
-    gap: 6px;
-  }
-  .hymn-detail-page .detail-neighbors .detail-neighbor-button {
-    flex: 0 0 44px;
-    width: 44px;
-    min-width: 44px;
-    min-height: 44px;
-    padding-inline: 0;
-    gap: 0;
-    justify-content: center;
   }
 
   .more-category-bar,
@@ -840,15 +816,6 @@ body:has(.home-page)::-webkit-scrollbar {
    Accent Palette Swatches & Custom Picker
    ========================================================================== */
 
-.accent-dot.is-active {
-  box-shadow: 0 0 0 2.5px var(--ink);
-  transform: scale(1.1);
-}
-.accent-dot.is-custom {
-  background: var(--surface-soft);
-  cursor: pointer;
-}
-
 .accent-palette-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -1112,11 +1079,7 @@ body:has(.home-page)::-webkit-scrollbar {
   width: 34px;
   flex: 0 0 34px;
 }
-.detail-hero .detail-neighbor-button {
-  min-height: 32px;
-  padding-inline: 10px;
-  font-size: 0.75rem;
-}
+
 @media (max-width: 599px) {
   .hymn-text-toolbar .detail-actions .hymn-action {
     width: 36px;
@@ -1352,10 +1315,6 @@ body:has(.home-page)::-webkit-scrollbar {
   font-weight: 700;
 }
 
-.media-key-dropdown button.is-selected {
-  background: color-mix(in srgb, var(--blue) 18%, transparent);
-  color: var(--blue);
-}
 .media-midi-actions .media-transpose {
   display: inline-flex;
   align-items: center;
@@ -1568,11 +1527,6 @@ body:has(.home-page)::-webkit-scrollbar {
   flex-wrap: wrap;
 }
 
-.lyrics-key-dropdown button.is-selected {
-  background: color-mix(in srgb, var(--blue) 18%, transparent);
-  color: var(--blue);
-}
-
 .lyrics-verse-indicator {
   margin-left: auto;
   font-size: 0.6875rem;
@@ -1603,9 +1557,7 @@ body:has(.home-page)::-webkit-scrollbar {
   margin: 0;
   padding: 0;
 }
-.lyrics-chords-on .lyrics-chord-row {
-  min-height: 1.6em;
-}
+
 .lyrics-verse-text.is-pinching {
   transition: none !important;
 }

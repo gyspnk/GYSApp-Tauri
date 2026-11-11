@@ -155,16 +155,6 @@
   color: var(--blue);
 }
 
-.faith-selection-toolbar .quiet-button.has-note {
-  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
-  background: var(--blue-soft);
-  color: var(--blue);
-}
-
-.faith-selection-toolbar .faith-read-more {
-  margin-left: auto;
-}
-
 .faith-row-heading {
   width: 100%;
   min-width: 0;

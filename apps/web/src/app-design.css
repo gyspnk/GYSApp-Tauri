@@ -44,9 +44,6 @@
     background: var(--surface-soft);
     color: var(--ink);
   }
-  .navigation-shell .sidebar-foot {
-    display: none;
-  }
 }
 .topbar {
   border-bottom: 0;
@@ -880,11 +877,6 @@
   color: transparent;
 }
 
-.skeleton-bar.is-short {
-  width: 55%;
-  height: 0.625rem;
-  margin-top: 6px;
-}
 .literature-shelf-item {
   grid-template-rows: auto 1fr;
   border: 0;
@@ -4028,11 +4020,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding-inline: 12px;
   border-radius: 12px;
 }
-.home-grid .continue-icon {
-  flex: none;
-  display: grid;
-  place-items: center;
-}
+
 @media (min-width: 960px) {
   .home-grid .verse-panel:has(.sauh-card-media) {
     min-height: 0;

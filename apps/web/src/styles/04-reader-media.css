@@ -461,10 +461,6 @@
   background: var(--blue-soft);
 }
 
-.playlist-item-actions .text-button {
-  min-height: 36px;
-  padding: 6px 8px;
-}
 .utility-actions {
   display: flex;
   gap: 8px;
@@ -551,10 +547,7 @@
     justify-content: center;
     min-height: 40px;
   }
-  .detail-neighbors .quiet-button {
-    flex: 1 1 0;
-    justify-content: center;
-  }
+
   /* The header mode toggle must not push the compact text-mode reader past
      the fold: title and toggle share one row, neighbor buttons move to the
      text footer / pdf chrome that already provide song navigation. */
@@ -569,9 +562,7 @@
   }
   /* Outranks the global is-text-viewer flex rule above (0-3-0 vs 0-4-0):
      phones navigate songs from the text footer / pdf chrome instead. */
-  .hymn-detail-page.is-text-viewer .detail-hero .detail-neighbors {
-    display: none;
-  }
+
   .hymn-detail-surface {
     gap: 12px;
   }
@@ -749,23 +740,8 @@
   position: relative;
 }
 
-.reader-selectors .control-select {
-  min-width: 104px;
-}
-.reader-navigation-group .chapter-scrubber {
-  min-width: 150px;
-}
-
-.reader-action-group .quiet-button {
-  flex: 0 0 auto;
-}
-
 .speech-settings-toggle {
   display: inline-flex;
-}
-
-.speech-controls.is-open {
-  display: flex;
 }
 
 .pujian-list {
@@ -955,54 +931,8 @@
     padding: 8px 10px;
   }
 
-  .reader-selectors .control-select {
-    min-width: 0;
-  }
-  .reader-navigation-group .chapter-scrubber {
-    display: none;
-    width: 100%;
-    min-width: 0;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 8px;
-  }
-  .reader-navigation-group .chapter-scrubber input {
-    width: 100%;
-    min-width: 0;
-  }
-  .reader-navigation-group .bible-typography-controls {
-    justify-self: end;
-    min-height: 40px;
-    padding: 2px;
-  }
-  .reader-navigation-group .bible-typography-controls output {
-    min-width: 28px;
-  }
-
-  .reader-action-group .quiet-button {
-    min-width: 0;
-    min-height: 44px;
-    justify-content: center;
-    padding-inline: 8px;
-    width: 44px;
-    flex: 0 0 44px;
-    padding: 0;
-    white-space: nowrap;
-  }
-  .reader-action-group:not(.is-open) .reader-secondary-action {
-    display: none;
-  }
-  .reader-action-group.is-open {
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
   .speech-settings-toggle {
     display: inline-flex;
-  }
-
-  .speech-controls.is-open {
-    display: grid;
   }
 
   .hymn-detail-page .detail-actions {
@@ -2165,9 +2095,7 @@ body.gys-viewer-active {
   .app-frame.is-reader-route .main-content {
     padding-top: 16px;
   }
-  .app-frame.is-reader-route .reader-context-button .control-copy {
-    display: none;
-  }
+
   .app-frame.is-reader-route .reader-context-actions {
     gap: 4px;
   }

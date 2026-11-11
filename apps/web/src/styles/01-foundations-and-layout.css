@@ -535,41 +535,6 @@ a:focus-visible {
   color: var(--muted);
 }
 
-.route-loading-card.is-feature {
-  grid-area: feature;
-}
-.route-loading-card.is-stack {
-  grid-area: stack;
-}
-.route-loading-card.is-list {
-  grid-area: list;
-}
-
-.route-loading-line.is-title {
-  width: 68%;
-  height: 24px;
-  margin-top: 2px;
-}
-.route-loading-line.is-medium {
-  width: 78%;
-}
-.route-loading-line.is-short {
-  width: 48%;
-}
-.non-reader-route-loading.is-faith .route-loading-media,
-.non-reader-route-loading.is-more .route-loading-media {
-  min-height: 78px;
-}
-.non-reader-route-loading.is-faith .route-loading-grid,
-.non-reader-route-loading.is-more .route-loading-grid {
-  grid-template-areas:
-    "feature feature"
-    "stack list";
-  grid-template-rows: repeat(2, minmax(150px, 1fr));
-}
-.non-reader-route-loading.is-literature .route-loading-media {
-  min-height: 110px;
-}
 .route-recovery {
   display: grid;
   place-content: center;
@@ -623,27 +588,6 @@ a:focus-visible {
   color: var(--muted);
 }
 
-.reader-route-loading-control.is-wide {
-  width: 148px;
-}
-
-.reader-route-loading-line.is-kicker {
-  width: 40px;
-  height: 10px;
-  margin: 0 auto;
-}
-.reader-route-loading-line.is-title {
-  width: 62%;
-  height: 28px;
-  margin: 0 auto 8px;
-}
-.reader-route-loading-line.is-medium {
-  width: 78%;
-}
-.reader-route-loading-line.is-short {
-  width: 54%;
-}
-
 @media (max-width: 599px) {
   .non-reader-route-loading {
     min-height: calc(100dvh - 210px);
@@ -651,32 +595,12 @@ a:focus-visible {
     padding: 0 0 14px;
   }
 
-  .route-loading-grid,
-  .non-reader-route-loading.is-faith .route-loading-grid,
-  .non-reader-route-loading.is-more .route-loading-grid {
-    grid-template-areas:
-      "feature"
-      "stack"
-      "list";
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: none;
-    gap: 10px;
-  }
-
-  .non-reader-route-loading.is-faith .route-loading-media,
-  .non-reader-route-loading.is-more .route-loading-media {
-    min-height: 72px;
-  }
   .route-recovery {
     min-height: calc(100dvh - 210px);
     padding: 24px 16px;
   }
   .app-frame.is-reader-route .reader-route-loading {
     margin: 0;
-  }
-
-  .reader-route-loading-control.is-wide {
-    width: 108px;
   }
 }
 
@@ -714,9 +638,7 @@ a:focus-visible {
   margin: 0;
   font-size: clamp(1.5rem, 3vw, 2.125rem);
 }
-.bible-page-header .page-intro-actions {
-  justify-content: flex-end;
-}
+
 .bible-page-header:not(:focus-within):not(.is-search-open) {
   margin-bottom: 0;
   padding: 0;
@@ -1902,10 +1824,6 @@ blockquote {
   font-size: 0.6875rem;
 }
 
-.feature-page .page-intro {
-  padding-bottom: 32px;
-}
-
 .error-state {
   min-height: 100vh;
   display: grid;
@@ -2377,11 +2295,7 @@ textarea::placeholder {
   align-content: center;
   justify-items: start;
 }
-.suara-detail-page .online-error-detail {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  color: var(--muted);
-}
+
 .loading-panel {
   animation: loading-pulse 1.8s ease-in-out infinite;
 }
