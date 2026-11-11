@@ -62,7 +62,7 @@ for (const width of [390, 768, 1440]) {
       route.fulfill({ json: { ok: true } }),
     );
     await menu.getByRole("button", { name: "Keluar", exact: true }).click();
-    await expect(menu.getByText("WhatsApp · Apple")).toBeVisible();
+    await expect(menu.locator(".account-menu-provider")).toHaveCount(2);
     await expect(
       account.getByText("Maria Wijaya", { exact: true }),
     ).toHaveCount(0);
@@ -110,4 +110,60 @@ test("header Google signs in directly and refreshes its account information", as
   ).toBeVisible();
   await expect(page).toHaveURL(/GYSApp-Tauri\/$/);
   await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+});
+
+test("the three sign-in rows share one shape", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  // Google draws its own control; stub one so the geometry comparison is real.
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/javascript",
+      body: `
+        window.google = { accounts: { id: {
+          initialize() {},
+          renderButton(element) {
+            const button = document.createElement("button");
+            button.textContent = "Login dengan Google";
+            button.style.cssText =
+              "width:100%;height:40px;border:1px solid #747775;border-radius:6px;background:#fff;font:500 14px system-ui";
+            element.append(button);
+          },
+          cancel() {},
+        } } };
+      `,
+    }),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya");
+  await page.locator(".account-button").click();
+  const menu = page.locator(".account-popover");
+  await expect(menu).toHaveAttribute("data-menu-open", "true");
+
+  await expect(menu.getByText("WhatsApp · Apple")).toHaveCount(0);
+  const rows = menu.locator(
+    ".account-menu-login > .egys-google-control, .account-menu-login > .account-menu-provider",
+  );
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(1)).toContainText("WhatsApp");
+  await expect(rows.nth(2)).toContainText("Apple");
+
+  const boxes = await rows.evaluateAll((elements) =>
+    elements.map((element) => {
+      const box = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return {
+        width: Math.round(box.width),
+        height: Math.round(box.height),
+        radius: style.borderRadius,
+        border: style.borderTopWidth,
+      };
+    }),
+  );
+  for (const box of boxes) {
+    expect(box.width).toBe(boxes[0]!.width);
+    expect(Math.abs(box.height - boxes[0]!.height)).toBeLessThanOrEqual(1);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(box.border).toBe("1px");
+  }
+  expect(boxes[1]!.radius).toBe(boxes[2]!.radius);
 });

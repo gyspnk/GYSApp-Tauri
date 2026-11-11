@@ -24,6 +24,7 @@ import {
 import { createPlatformServices } from "./platform.js";
 import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
+import { ProviderMark } from "./egys-login-methods.js";
 import { useMenuPresence } from "./use-menu-presence.js";
 import "./account-menu.css";
 
@@ -184,8 +185,23 @@ export function AccountMenu({ locale }: { locale: Locale }) {
                   <GoogleButton locale={locale} onCredential={googleLogin} />
                 </Suspense>
               )}
-              <Link to="/lainnya?section=account">
-                WhatsApp · Apple <Icon name="chevronRight" size={16} />
+              {/* Same shape as Google's own button: one bordered row per
+                  provider, so WhatsApp and Apple are not a second-class link. */}
+              <Link
+                className="account-menu-provider"
+                to="/lainnya?section=account"
+                aria-label={translate(locale, "more.whatsappLogin")}
+              >
+                <ProviderMark provider="whatsapp" />
+                <span>WhatsApp</span>
+              </Link>
+              <Link
+                className="account-menu-provider"
+                to="/lainnya?section=account"
+                aria-label={translate(locale, "more.appleLogin")}
+              >
+                <ProviderMark provider="apple" />
+                <span>Apple</span>
               </Link>
             </div>
           )}

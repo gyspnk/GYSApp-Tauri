@@ -16,6 +16,33 @@ function copyWithSelection(text: string, done: () => void): void {
   if (copied) done();
 }
 
+export function ProviderMark({ provider }: { provider: "whatsapp" | "apple" }) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      {provider === "whatsapp" ? (
+        <>
+          <path
+            d="M20 11.5a8 8 0 0 1-12 7L3 20l1.5-5A8 8 0 1 1 20 11.5Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M8.5 7.5c-2 3 2 7 5 7l1.5-2-2-1-1 1c-1.5-.5-2.5-1.5-3-3l1-1-1.5-1Z"
+            fill="currentColor"
+          />
+        </>
+      ) : (
+        <path
+          d="M16.4 12.5c0-2 1.6-3 1.7-3.1-1-1.4-2.5-1.6-3.1-1.6-1.3-.1-2.5.8-3.2.8s-1.7-.8-2.8-.7c-1.5 0-2.9.9-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.6.7 1 1.5 2.1 2.6 2 .9 0 1.5-.7 2.8-.7s1.8.7 2.9.7 1.8-1 2.5-2c.8-1.2 1.2-2.3 1.2-2.4-.1 0-2.1-.8-2.1-3.7ZM14.3 6.4c.6-.8 1.1-1.9 1-3-.9 0-2 .6-2.7 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2-.5 2.7-1.3Z"
+          fill="currentColor"
+        />
+      )}
+    </svg>
+  );
+}
+
 /** Web providers sign in directly; native builds retain the secure login bridge. */
 export function EgysLoginMethods({
   locale,
@@ -78,33 +105,7 @@ export function EgysLoginMethods({
         {(["whatsapp", "apple"] as const).map((provider) => {
           const content = (
             <>
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                aria-hidden="true"
-              >
-                {provider === "whatsapp" ? (
-                  <>
-                    <path
-                      d="M20 11.5a8 8 0 0 1-12 7L3 20l1.5-5A8 8 0 1 1 20 11.5Z"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M8.5 7.5c-2 3 2 7 5 7l1.5-2-2-1-1 1c-1.5-.5-2.5-1.5-3-3l1-1-1.5-1Z"
-                      fill="currentColor"
-                    />
-                  </>
-                ) : (
-                  <path
-                    d="M16.4 12.5c0-2 1.6-3 1.7-3.1-1-1.4-2.5-1.6-3.1-1.6-1.3-.1-2.5.8-3.2.8s-1.7-.8-2.8-.7c-1.5 0-2.9.9-3.6 2.1-1.5 2.6-.4 6.5 1.1 8.6.7 1 1.5 2.1 2.6 2 .9 0 1.5-.7 2.8-.7s1.8.7 2.9.7 1.8-1 2.5-2c.8-1.2 1.2-2.3 1.2-2.4-.1 0-2.1-.8-2.1-3.7ZM14.3 6.4c.6-.8 1.1-1.9 1-3-.9 0-2 .6-2.7 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2-.5 2.7-1.3Z"
-                    fill="currentColor"
-                  />
-                )}
-              </svg>
+              <ProviderMark provider={provider} />
               <span className="egys-provider-label">
                 {provider === "whatsapp" ? "WhatsApp" : "Apple"}
               </span>

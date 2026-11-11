@@ -80,8 +80,7 @@
   border-top: 1px solid var(--line);
   padding-top: 8px;
 }
-.account-popover-actions > :is(a, button),
-.account-menu-login > a {
+.account-popover-actions > :is(a, button) {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -99,8 +98,7 @@
     background 150ms ease,
     color 150ms ease;
 }
-.account-popover-actions > :is(a, button):hover,
-.account-menu-login > a:hover {
+.account-popover-actions > :is(a, button):hover {
   background: color-mix(in srgb, var(--blue) 9%, var(--surface));
   color: var(--blue);
 }
@@ -108,14 +106,55 @@
   flex: 1;
   text-align: start;
 }
-.account-popover-actions svg,
-.account-menu-login svg {
+.account-popover-actions svg {
   flex-shrink: 0;
 }
 .account-menu-login {
   display: grid;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* Google draws its own button; these two are ours, so they copy its metrics
+   (40 px tall, 1 px border, 4 px corners, centred mark + label) instead of
+   reading as a secondary link. */
+.account-menu-provider {
+  display: grid;
+  grid-auto-flow: column;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.account-menu-provider:hover {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--ink) 4%, var(--surface));
+}
+
+.account-menu-provider:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-menu-provider {
+    transition: none;
+  }
 }
 .account-menu-login[aria-busy="true"] {
   pointer-events: none;
@@ -123,9 +162,6 @@
 }
 .account-menu-login .egys-google-button {
   width: 100%;
-}
-.account-menu-login > a {
-  justify-content: space-between;
 }
 .account-menu-error {
   margin: 8px 4px 0;
@@ -252,8 +288,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .account-popover-actions > :is(a, button),
-  .account-menu-login > a {
+  .account-popover-actions > :is(a, button) {
     transition: none;
   }
 }
