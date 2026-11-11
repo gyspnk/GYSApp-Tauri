@@ -14,6 +14,17 @@ test("back navigation cancels a link still waiting for a cold route", async ({
       value: { saveData: true },
     }),
   );
+  // A cold link only stays pending for PRELOAD_BUDGET_MS (180 ms, see
+  // route-transitions.ts). A Back issued from the driver must cross Node and
+  // CDP first; under load that outlasted the budget, the click committed to
+  // /iman, and the pop then walked back to /kidung. The shell's promise is
+  // conditional on ordering, not wall clock: a popstate that arrives while
+  // the link is still pending bumps the generation counter and the click
+  // never navigates. So hold time still around the click and the back, and
+  // wait for the popstate event itself: the cancellation has already run when
+  // the clock resumes and the held chunk is released. The clock is installed
+  // only now, after boot, because fake timers from document start disturb the
+  // deferred route-transitions import and the first navigation.
   let release: () => void = () => {};
   const pending = new Promise<void>((resolve) => {
     release = resolve;
@@ -23,17 +34,97 @@ test("back navigation cancels a link still waiting for a cold route", async ({
     await route.continue();
   });
   await page.goto("/GYSApp-Tauri/");
+  // The shell imports route-transitions.ts after boot; a click before that
+  // install gets the anchor's default full document navigation, which reloads
+  // /kidung cold and occasionally outruns the 5 s expect. The class is set
+  // synchronously by installRouteTransitions, so wait for it.
+  await expect(page.locator("html")).toHaveClass(/has-route-transitions/);
   await page.locator('.primary-nav a[href$="/kidung"]').click();
   await expect(page.locator(".hymn-page")).toBeVisible();
   await expect(page.locator("html")).not.toHaveClass(/is-reader-transition/);
+  await page.clock.pauseAt(Date.now() + 1_000);
   const loading = page.waitForRequest(/\/faith-[^/]+\.js$/);
-  await page.locator('.primary-nav a[href$="/iman"]').click();
+  // `locator.click()` waits on animation frames, which a paused clock never
+  // paints, so the link is activated from inside the page.
+  await page.evaluate(() => {
+    document
+      .querySelector<HTMLAnchorElement>('.primary-nav a[href$="/iman"]')!
+      .click();
+  });
   await loading;
+  await page.evaluate(() => {
+    (window as unknown as { __popped: Promise<string> }).__popped = new Promise(
+      (resolve) => {
+        addEventListener("popstate", () => resolve(location.pathname), {
+          once: true,
+        });
+      },
+    );
+  });
   await page.goBack();
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { __popped: Promise<string> }).__popped,
+    ),
+  ).toBe("/GYSApp-Tauri/");
+  await page.clock.resume();
   release();
   await expect(page.locator(".home-grid")).toBeVisible();
   await page.waitForTimeout(250);
   await expect(page).toHaveURL(/GYSApp-Tauri\/$/);
+});
+
+test("a cancelled pending navigation still lets the next click push history", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.addInitScript(() =>
+    Object.defineProperty(navigator, "connection", {
+      value: { saveData: true },
+    }),
+  );
+  // Same cancellation as the test above, then one more click. The shell used
+  // to keep its "navigation in flight" flag after a cancelled navigation, so
+  // the next click was issued with replace: true and silently overwrote the
+  // history entry instead of pushing a new one.
+  let release: () => void = () => {};
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route(/\/faith-[^/]+\.js$/, async (route) => {
+    await pending;
+    await route.continue();
+  });
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.locator("html")).toHaveClass(/has-route-transitions/);
+  await page.locator('.primary-nav a[href$="/kidung"]').click();
+  await expect(page.locator(".hymn-page")).toBeVisible();
+  await page.clock.pauseAt(Date.now() + 1_000);
+  const loading = page.waitForRequest(/\/faith-[^/]+\.js$/);
+  await page.evaluate(() => {
+    document
+      .querySelector<HTMLAnchorElement>('.primary-nav a[href$="/iman"]')!
+      .click();
+  });
+  await loading;
+  await page.goBack();
+  await expect(page).toHaveURL(/GYSApp-Tauri\/$/);
+  await page.clock.resume();
+  release();
+  await expect(page.locator(".home-grid")).toBeVisible();
+  // React Router records its entry index in history.state. history.length is
+  // not usable here: this driver's browsing context reports the same length
+  // for a push and a replace, while the index tells them apart — verified by
+  // removing the fix, which turned this assertion red with idx unchanged.
+  const entryIndex = () =>
+    page.evaluate(() => (history.state as { idx?: number } | null)?.idx ?? -1);
+  const before = await entryIndex();
+  await page.locator('.primary-nav a[href$="/bible"]').click();
+  await expect(page).toHaveURL(/GYSApp-Tauri\/bible/);
+  expect(
+    await entryIndex(),
+    "the next click pushes instead of replacing the history entry",
+  ).toBe(before + 1);
 });
 
 test("history arrivals keep the same page motion after multiple route changes", async ({

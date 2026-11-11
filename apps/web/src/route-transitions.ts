@@ -8,6 +8,10 @@ let navigationGeneration = 0;
  * quick double tap stacks two routes and Back walks through the abandoned one.
  */
 let navigationInFlight = false;
+/** Which navigation owns the flag. A cancelled one must not clear a newer
+ * navigation's claim, and must clear its own or the next click would replace
+ * the history entry it was supposed to push. */
+let navigationInFlightOwner = 0;
 
 /** One page entrance is owned by exactly one path. Snapshot transitions mark the
  * incoming view as already animated, so a later subtree change never replays a
@@ -53,6 +57,7 @@ export async function navigateSmooth(navigate: RouteNavigate, path: string) {
   const replace = navigationInFlight;
   navigationInFlight = true;
   const current = ++navigationGeneration;
+  navigationInFlightOwner = current;
   const origin = `${location.pathname}${location.search}`;
   let timer: ReturnType<typeof setTimeout> | undefined;
   if (isRouteWarm(path)) {
@@ -68,10 +73,15 @@ export async function navigateSmooth(navigate: RouteNavigate, path: string) {
     ]);
     clearTimeout(timer);
   }
-  if (current !== navigationGeneration) return;
+  if (current !== navigationGeneration) {
+    // A history move (or a newer click) superseded this navigation. Release the
+    // claim only if nobody newer holds it, so the next click still pushes.
+    if (navigationInFlightOwner === current) navigationInFlight = false;
+    return;
+  }
   // A history move or another navigation already left this page.
   if (`${location.pathname}${location.search}` !== origin) {
-    navigationInFlight = false;
+    if (navigationInFlightOwner === current) navigationInFlight = false;
     return;
   }
   // The incoming view fades in once it settles (MutationObserver below).
@@ -88,7 +98,7 @@ export async function navigateSmooth(navigate: RouteNavigate, path: string) {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     },
   ).finally(() => {
-    if (current === navigationGeneration) navigationInFlight = false;
+    if (navigationInFlightOwner === current) navigationInFlight = false;
   });
 }
 
@@ -135,6 +145,11 @@ export function installRouteTransitions(navigate: RouteNavigate) {
   // mutations (data arriving, toasts, lazy images) must never swallow a click.
   const cancelPendingNavigation = () => {
     navigationGeneration++;
+    // A history move supersedes every pending click, so release the claim too:
+    // the cancelled navigation is parked on a preload race and would otherwise
+    // still own the flag when the reader clicks the next link.
+    navigationInFlight = false;
+    navigationInFlightOwner = 0;
   };
   window.addEventListener("popstate", cancelPendingNavigation);
   document.documentElement.classList.add("has-route-transitions");
