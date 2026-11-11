@@ -173,3 +173,25 @@ jobs:
             gh release edit "$GYS_RELEASE_TAG" --draft=false
           fi
           gh release view "$GYS_RELEASE_TAG" --json url --jq .url >> "$GITHUB_STEP_SUMMARY"
+      - name: Record the cadence
+        if: ${{ !inputs.draft }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash origin main
+          apk_name=$(node scripts/release-asset-name.mjs --config apps/native/src-tauri/tauri.conf.json)
+          apk_bytes=$(gh release view "$GYS_RELEASE_TAG" --json assets \
+            --jq ".assets[] | select(.name == \"$apk_name\") | .size")
+          test -n "$apk_bytes"
+          node scripts/release-cadence-write.mjs \
+            --turn "${{ inputs.turn }}" \
+            --tag "$GYS_RELEASE_TAG" \
+            --commit "$GITHUB_SHA" \
+            --apk-bytes "$apk_bytes" \
+            --run "$GITHUB_RUN_ID" \
+            --url "$(gh release view "$GYS_RELEASE_TAG" --json url --jq .url)" \
+            --signing "Android debug identity"
+          git add .github/release-cadence.json
+          git commit -m "chore(release): record the turn-${{ inputs.turn }} cadence"
+          git push origin HEAD:main

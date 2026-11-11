@@ -11,6 +11,7 @@ Aturan pemilik (10 Nov 2026): **setiap 25 putaran goal, build APK Android dan ch
 | `.github/workflows/native-android.yml`  | Membangun APK arm64 (preview, signing debug), mengunggah APK + checksum + provenance ke release                              |
 | `scripts/release-notes.mjs`             | Membuat tag `v0.1.0-preview.<YYYYMMDD>.<n>` dan changelog dari `git log` sejak rilis terakhir                                |
 | `scripts/release-gate.mjs`              | Menolak dispatch sebelum `nextDueTurn` (kecuali `-f force=true`) dan mencetak basis changelog dari `lastTag`                 |
+| `scripts/release-cadence-write.mjs`     | Menulis `lastTurn`, `lastTag`, `nextDueTurn`, dan riwayat setelah rilis hijau; menolak entri yang tidak lengkap              |
 | `scripts/android-version-code.mjs`      | Menaikkan `versionCode` jadi `1000 + putaran` di `gen/android/app/tauri.properties` sebelum build                            |
 | `scripts/release-asset-name.mjs`        | Menurunkan nama APK dari `version` di `tauri.conf.json`, supaya naik versi tidak mematahkan workflow                         |
 | `scripts/release-notes.test.mjs`        | Unit test generator (dijalankan hosted lewat `pnpm test:scripts`)                                                            |
@@ -41,7 +42,13 @@ Aturan pemilik (10 Nov 2026): **setiap 25 putaran goal, build APK Android dan ch
    gh api repos/gyspnk/GYSApp-Tauri/actions/runs/<run-id>/jobs --jq '.jobs[]|"\(.name):\(.conclusion)"'
    ```
 
-4. Setelah hijau, catat di `history` (`turn`, `tag`, `run`, `url`), set `lastTurn`, `lastTag`, dan `nextDueTurn = turn + 25`; commit + push.
+4. Langkah "Record the cadence" menarik `main` lebih dulu, lalu menulis
+   `.github/release-cadence.json` otomatis lewat `scripts/release-cadence-write.mjs`
+   (`turn`, `tag`, `commit`, `apkBytes`, `run`, `url`, `signing`), commit, dan push
+   `chore(release): record the turn-<N> cadence`; `nextDueTurn` dihitung
+   `turn + intervalTurns`. Langkah ini dilewati saat `-f draft=true`.
+   Skrip menolak entri yang tidak lengkap, tag tanpa awalan `v`, angka bukan
+   bilangan bulat positif, dan `turn` yang tidak lebih besar dari `lastTurn`.
 5. Laporkan ke pemilik: tag, tautan release, ukuran APK, dan catatan bahwa APK bertanda tangan debug (hanya untuk pemasangan manual).
 
 ## Riwayat rilis
