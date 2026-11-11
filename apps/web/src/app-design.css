@@ -1801,7 +1801,7 @@
 }
 .bible-reader .verse-content {
   font-size: calc(
-    var(--bible-font-size, 1.125rem) * var(--reading-text-scale, 1)
+    var(--bible-font-size, 1.25rem) * var(--reading-text-scale, 1)
   );
 }
 .app-frame.is-reader-route .bible-reader {
@@ -1876,7 +1876,7 @@
   width: 24px;
   min-width: 24px;
   height: calc(
-    var(--bible-font-size, 18px) * var(--reading-text-scale, 1) *
+    var(--bible-font-size, 20px) * var(--reading-text-scale, 1) *
       var(--bible-line-height, 1.72)
   );
   min-height: 0;

@@ -3,28 +3,55 @@
   inset: 0;
   z-index: var(--z-modal);
   display: grid;
-  place-items: center;
-  padding: max(12px, env(safe-area-inset-top)) 12px
-    max(12px, env(safe-area-inset-bottom));
-  background: rgb(6 25 42 / 48%);
-  backdrop-filter: blur(6px);
+  place-items: stretch;
+  background: transparent;
+  /* The bundler adds the -webkit- alias; writing it by hand made the minifier
+     drop the standard property. */
+  backdrop-filter: blur(20px) saturate(1.08);
 }
 
+/* Quick navigation is a full-screen sheet, not a centred card: it fills the
+   viewport, keeps square corners, and lets the page show through a blurred
+   surface. The panel itself ignores pointers so taps on its padded rim reach
+   the backdrop; the controls opt back in. */
 .bible-address-picker {
-  width: min(420px, 100%);
-  max-height: calc(100dvh - 24px);
-  padding: 14px;
-  border: 1px solid var(--line-strong);
-  border-radius: 24px;
-  background: var(--surface);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  padding: max(14px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
   color: var(--ink);
-  box-shadow: var(--shadow-lift);
+  box-shadow: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bible-address-picker > * {
+  pointer-events: auto;
+}
+/* A full-screen sheet fades; scaling it would shrink the measured page during
+   entry and leave a visible card edge. */
+.bible-picker-backdrop[data-menu-open]
+  > .bible-picker-modal.bible-address-picker {
+  scale: 1;
+  transition: none;
 }
 
 .bible-picker-header {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
   margin-bottom: 14px;
   color: var(--blue);
 }
@@ -52,7 +79,16 @@
 }
 .bible-address-body {
   display: grid;
+  align-content: safe center;
   gap: 14px;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 760px;
+  min-height: 0;
+  margin-inline: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 .bible-address-fields {
   position: relative;
@@ -308,9 +344,6 @@
   }
 }
 @media (min-width: 560px) and (max-height: 520px) {
-  .bible-address-picker {
-    width: min(560px, 100%);
-  }
   .bible-address-body {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
@@ -465,9 +498,6 @@
 }
 
 @media (min-width: 900px) {
-  .bible-address-picker {
-    width: min(480px, 100%);
-  }
   .bible-picker-results {
     max-height: min(56dvh, 440px);
   }

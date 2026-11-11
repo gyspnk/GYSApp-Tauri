@@ -159,7 +159,7 @@
 .reader-heading h2 {
   margin: 0;
   font-family: var(--font-reading);
-  font-size: calc(var(--bible-font-size, 1.125rem) * 1.25);
+  font-size: calc(var(--bible-font-size, 1.25rem) * 1.25);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.35;
@@ -226,7 +226,7 @@
   background: transparent;
   color: var(--ink);
   font-family: var(--font-reading);
-  font-size: var(--bible-font-size, 1.125rem);
+  font-size: var(--bible-font-size, 1.25rem);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.45;
@@ -257,7 +257,7 @@
 .bible-pericope-title {
   text-align: center;
   font-family: var(--font-reading);
-  font-size: var(--bible-font-size, 1.125rem);
+  font-size: var(--bible-font-size, 1.25rem);
   font-weight: 700;
   color: var(--ink);
 }
@@ -278,7 +278,7 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface) 80%, var(--blue-soft));
   color: var(--blue);
-  font-size: calc(var(--bible-font-size, 1.125rem) * 0.61);
+  font-size: calc(var(--bible-font-size, 1.25rem) * 0.61);
   font-weight: 600;
   font-style: italic;
   cursor: pointer;
@@ -736,16 +736,18 @@
   text-align: left;
   cursor: pointer;
   font-family: var(--font-reading);
-  font-size: var(--bible-font-size, 1.125rem);
+  font-size: var(--bible-font-size, 1.25rem);
   line-height: var(--bible-line-height, 1.72);
 }
 .verse-content {
   min-width: 0;
-  /* 60-68 characters is the readable measure; wider lines lose the start of
-     the next line on a desktop page. */
-  max-width: 64ch;
+  /* The reader column owns the width: on a landscape phone or a small tablet
+     the text uses the whole page, while an 88ch ceiling keeps desktop lines
+     inside the readable measure. Capping in ch (not px) tracks the font size
+     the reader picks. */
+  max-width: min(100%, 88ch);
   font-family: var(--font-reading);
-  font-size: var(--bible-font-size, 1.125rem);
+  font-size: var(--bible-font-size, 1.25rem);
   line-height: var(--bible-line-height, 1.72);
 }
 .verse-content .verse-text {
@@ -1015,14 +1017,14 @@
 .verse-number {
   font-variant-numeric: tabular-nums;
   align-self: start;
-  width: calc(var(--bible-font-size, 18px) * 1.55);
-  height: calc(var(--bible-font-size, 18px) * 1.55);
+  width: calc(var(--bible-font-size, 20px) * 1.55);
+  height: calc(var(--bible-font-size, 20px) * 1.55);
   border: 0;
   border-radius: 50%;
   background: var(--surface-soft);
   color: var(--muted);
   cursor: pointer;
-  font-size: calc(var(--bible-font-size, 1.125rem) * 0.66);
+  font-size: calc(var(--bible-font-size, 1.25rem) * 0.66);
   font-weight: 650;
   line-height: 1;
 }
@@ -2380,7 +2382,7 @@
     padding: 22px 20px 14px;
   }
   .reader-heading h2 {
-    font-size: calc(var(--bible-font-size, 1.125rem) * 1.25);
+    font-size: calc(var(--bible-font-size, 1.25rem) * 1.25);
   }
   .verse-list {
     padding-inline: 20px;

@@ -59,9 +59,12 @@ test("the text keeps a readable measure and tabular verse numbers", async ({
   const metrics = await page.evaluate(() => {
     const content = document.querySelector(".verse-content") as HTMLElement;
     const number = document.querySelector(".verse-number") as HTMLElement;
+    const style = getComputedStyle(content);
     const probe = document.createElement("span");
     probe.style.cssText = "position:absolute;visibility:hidden;width:10ch";
-    probe.style.font = getComputedStyle(content).font;
+    probe.style.fontFamily = style.fontFamily;
+    probe.style.fontSize = style.fontSize;
+    probe.style.fontWeight = style.fontWeight;
     document.body.append(probe);
     const ch = probe.getBoundingClientRect().width / 10;
     probe.remove();
@@ -73,5 +76,7 @@ test("the text keeps a readable measure and tabular verse numbers", async ({
   });
 
   expect(metrics.numeric).toBe("tabular-nums");
-  expect(metrics.width / metrics.ch).toBeLessThanOrEqual(66);
+  // The reader column owns the width up to 88ch; this guards the ~90
+  // character ceiling rather than the old fixed 64ch card measure.
+  expect(metrics.width / metrics.ch).toBeLessThanOrEqual(90);
 });

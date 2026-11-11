@@ -219,3 +219,9 @@ kerja + objek>` dan `description` panggilan `subagent` memakai frasa yang sama
 4. **Selesai bukan berarti dibuang.** Sesi `inactive` tetap bisa dilanjutkan; yang
    dihapus hanya peran yang sudah mati tujuannya.
 5. **Builder tetap tidak commit.** Reuse tidak melonggarkan batas peran.
+
+### Peta mengisi dialognya (11 Nov)
+
+Panel sempat menggambar peta sebagai strip 2:1 di atas dialog yang tinggi, jadi separuh bidang tampak kosong. Sekarang `.kb-card.kb-brain` memegang tinggi body dialog (`display:flex; flex:1; min-height:0`), `.kb-brain-map` tumbuh dengan `flex:1 1 0`, dan `BrainPanel` mengukur kotak SVG lewat `ResizeObserver` lalu memakai viewBox `0 0 660 <tinggi sesuai aspect>`; koordinat node diskalakan (`y * mapH/340`) supaya sebaran ikut tinggi, dan roda/geser memakai skala 660 unit yang sama.
+
+Terukur dengan stylesheet plugin yang sama di halaman uji statis: peta menempati **0,44 → 0,70** tinggi dialog 780×840, dan **0,32 → 0,69** pada panel sempit (420×700). Batas jujur: belum ada verifikasi di GUI hidup (127.0.0.1:3080 menjawab 401 untuk sesi non-operator) dan repo plugin masih lokal (#13).

@@ -8,7 +8,7 @@ export type BibleTypography = {
 };
 
 export const DEFAULT_BIBLE_TYPOGRAPHY: BibleTypography = {
-  fontSize: 18,
+  fontSize: 20,
   lineHeight: 1.72,
 };
 
