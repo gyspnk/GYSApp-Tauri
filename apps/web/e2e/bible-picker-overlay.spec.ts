@@ -90,3 +90,35 @@ for (const viewport of [
     await expect(trigger).toBeFocused();
   });
 }
+
+test("the full-screen sheet still closes from the keyboard and the rim, and returns focus", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.addInitScript(() => {
+    localStorage.setItem("gys-bible-book", "43");
+    localStorage.setItem("gys-bible-chapter", "12");
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({ version: 1, locale: "id", theme: "light" }),
+    );
+  });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/bible");
+
+  const trigger = page.locator(".reader-context-book-picker");
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Pilih Kitab & Pasal" });
+  await expect(dialog).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  // The sheet covers the viewport, so the only reachable part of the backdrop
+  // is the padded rim: its pointer events pass through and close the sheet.
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await page.mouse.click(2, 2);
+  await expect(dialog).toBeHidden();
+});
