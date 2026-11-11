@@ -45,6 +45,22 @@ export function isFresh(distMtimeMs, newestSourceMs) {
   return Number.isFinite(distMtimeMs) && distMtimeMs >= newestSourceMs;
 }
 
+/**
+ * One line that says what the run covered and how long it took, so a local loop
+ * leaves a number behind instead of a feeling ("that felt slow").
+ */
+export function runSummary(argv, elapsedMs) {
+  const specs = argv.filter((arg) => arg.endsWith(".spec.ts"));
+  const seconds = (elapsedMs / 1000).toFixed(1);
+  const what =
+    specs.length === 0
+      ? "suite"
+      : specs.length === 1
+        ? specs[0].replace(/^e2e\//, "")
+        : `${specs.length} contracts`;
+  return `e2e:one: ${what} in ${seconds}s`;
+}
+
 const SKIP_DIRS = new Set([
   "node_modules",
   "dist",
@@ -132,11 +148,17 @@ function main() {
       env: build.env,
     });
   }
-  execFileSync("pnpm", playwrightArgs(argv), {
-    cwd: web,
-    stdio: "inherit",
-    env: { ...process.env, GYS_E2E_PREBUILT: "1" },
-  });
+  const startedAt = Date.now();
+  try {
+    execFileSync("pnpm", playwrightArgs(argv), {
+      cwd: web,
+      stdio: "inherit",
+      env: { ...process.env, GYS_E2E_PREBUILT: "1" },
+    });
+  } finally {
+    // Print on failure too: a red loop that hides its duration cannot be made faster.
+    console.log(runSummary(argv, Date.now() - startedAt));
+  }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) main();

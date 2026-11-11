@@ -5,6 +5,7 @@ import {
   changedFiles,
   isFresh,
   playwrightArgs,
+  runSummary,
 } from "./e2e-one.mjs";
 
 test("hands specs and flags to Playwright in a fixed project", () => {
@@ -52,4 +53,16 @@ test("changedFiles merges the branch diff with uncommitted paths", () => {
     "diff --name-only origin/main...HEAD",
     "status --porcelain",
   ]);
+});
+
+test("runSummary names the contract and the seconds", () => {
+  assert.equal(
+    runSummary(["e2e/faith-layers.spec.ts"], 12_340),
+    "e2e:one: faith-layers.spec.ts in 12.3s",
+  );
+  assert.equal(
+    runSummary(["e2e/a.spec.ts", "e2e/b.spec.ts", "-g", "title"], 5_000),
+    "e2e:one: 2 contracts in 5.0s",
+  );
+  assert.equal(runSummary(["--changed"], 2_000), "e2e:one: suite in 2.0s");
 });
