@@ -251,3 +251,5 @@ Panel sebelumnya hanya bisa menyatakan "sedang berjalan", padahal jendela event 
 Antrean putaran dibaca dengan `pnpm issue:next`, bukan dari ingatan: skrip `scripts/issue-queue.mjs` mengambil issue terbuka lewat `gh`, mengurutkan `bug` → `harness` → `release` → `blocked` → label lain, lalu menampilkan yang bisa dikerjakan lebih dulu. Alat ini read-only dan tidak menutup/membuka issue.
 
 Panel sekarang memetakan view model murni (`brainNodeView`) ke `h(...)` tanpa logika di markup; `test/brain-render.test.js` menguji model itu headless (26 tes di plugin), karena `react`/`react-dom/server` tidak dapat di-resolve dari Node. Kontrak browser tetap hilang sampai sesi non-operator bisa membuka 127.0.0.1:3080 (#12).
+
+`pnpm check:fast` ikut menjalankan gerbang dokumentasi (`node scripts/verify-documentation.mjs`) begitu ada berkas `docs/` atau `README.md` yang berubah, jadi tautan rusak dan catatan putaran yang belum ditulis ketahuan dalam hitungan detik, bukan di CI.
