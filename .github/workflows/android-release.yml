@@ -192,6 +192,15 @@ jobs:
             --run "$GITHUB_RUN_ID" \
             --url "$(gh release view "$GYS_RELEASE_TAG" --json url --jq .url)" \
             --signing "Android debug identity"
-          git add .github/release-cadence.json
+          node scripts/release-history-row.mjs \
+            --turn "${{ inputs.turn }}" \
+            --tag "$GYS_RELEASE_TAG" \
+            --apk-bytes "$apk_bytes" \
+            --run "$GITHUB_RUN_ID" \
+            --commit "$GITHUB_SHA" \
+            --note "putaran ${{ inputs.turn }}, signing debug" \
+            --file docs/plans/release-cadence.md \
+            --write
+          git add .github/release-cadence.json docs/plans/release-cadence.md
           git commit -m "chore(release): record the turn-${{ inputs.turn }} cadence"
           git push origin HEAD:main

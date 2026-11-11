@@ -15,6 +15,7 @@ Aturan pemilik (10 Nov 2026): **setiap 25 putaran goal, build APK Android dan ch
 | `scripts/android-version-code.mjs`      | Menaikkan `versionCode` jadi `1000 + putaran` di `gen/android/app/tauri.properties` sebelum build                            |
 | `scripts/release-asset-name.mjs`        | Menurunkan nama APK dari `version` di `tauri.conf.json`, supaya naik versi tidak mematahkan workflow                         |
 | `scripts/release-preflight.mjs`         | Satu perintah read-only yang memeriksa versi, nama aset, kadensi, tag basis, dan aset rilis sebelum dispatch                 |
+| `scripts/release-history-row.mjs`       | Menambah atau mengganti baris `Riwayat rilis` setelah APK terbit; dipanggil otomatis oleh workflow rilis                     |
 | `scripts/release-notes.test.mjs`        | Unit test generator (dijalankan hosted lewat `pnpm test:scripts`)                                                            |
 
 ## Prosedur tiap putaran
