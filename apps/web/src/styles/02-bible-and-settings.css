@@ -1343,12 +1343,6 @@
 .more-setting-copy > strong {
   min-width: 0;
 }
-.more-setting-hint {
-  color: var(--muted);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1.35;
-}
 .more-setting-summary {
   flex: none;
   color: var(--muted);
@@ -2619,7 +2613,7 @@
 
 .more-page .more-settings-group {
   grid-column: 1 / -1;
-  margin: 22px 0 0;
+  margin: 14px 0 0;
   color: var(--muted);
   font-size: 0.6875rem;
   font-weight: 700;
@@ -2630,8 +2624,10 @@
   margin-top: 0;
 }
 .more-page .more-setting-section > .more-setting-row {
-  /* Two lines of copy stay comfortable to touch. */
-  min-height: 64px;
+  /* One line with its value: still 44 px of touch, without the second line of
+     description that repeated what the row already said. */
+  min-height: 52px;
+  padding-block: 4px;
 }
 @media (min-width: 720px) {
   /* Two columns keep the settings page short without widening the text: a

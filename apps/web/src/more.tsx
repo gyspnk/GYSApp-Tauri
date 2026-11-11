@@ -1055,17 +1055,12 @@ export function MorePage({
 
   return (
     <div className="page more-page">
-      <section className="page-intro">
-        <div>
-          <h1>{translate(locale, "page.moreTitle")}</h1>
-        </div>
-      </section>
+      <h1 className="sr-only">{translate(locale, "page.moreTitle")}</h1>
 
       <nav
         className="more-library-hub"
         aria-label={translate(locale, "more.explore")}
       >
-        <h2>{translate(locale, "more.explore")}</h2>
         <div className="more-library-grid">
           {(
             [
@@ -1099,6 +1094,9 @@ export function MorePage({
         {translate(locale, "more.preferences")}
       </h2>
       <section className="more-settings-list">
+        <h3 className="more-settings-group">
+          {translate(locale, "more.groupAccount")}
+        </h3>
         <details
           className="more-setting-section more-account-section"
           data-setting="account"
@@ -1114,9 +1112,6 @@ export function MorePage({
                     translate(locale, "more.accountMember"))
                   : translate(locale, "more.accountEgys")}
               </h2>
-              <small className="more-setting-hint">
-                {translate(locale, "more.accountHint")}
-              </small>
             </span>
             {accountProfile || nativeShell ? (
               <span
@@ -1278,10 +1273,6 @@ export function MorePage({
           </article>
         </details>
 
-        <h3 className="more-settings-group">
-          {translate(locale, "more.categoryAppearance")}
-        </h3>
-
         <details className="more-setting-section" data-setting="appearance">
           <summary className="more-setting-row">
             <span className="more-setting-icon">
@@ -1289,9 +1280,6 @@ export function MorePage({
             </span>
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryAppearance")}</strong>
-              <small className="more-setting-hint">
-                {translate(locale, "more.appearanceHint")}
-              </small>
             </span>
             <span className="more-setting-summary">{themeSummary}</span>
             <Icon name="chevronDown" size={18} />
@@ -1427,9 +1415,6 @@ export function MorePage({
             </span>
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryAudio")}</strong>
-              <small className="more-setting-hint">
-                {translate(locale, "more.audioHint")}
-              </small>
             </span>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1453,9 +1438,6 @@ export function MorePage({
             </span>
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryHymns")}</strong>
-              <small className="more-setting-hint">
-                {translate(locale, "more.hymnsHint")}
-              </small>
             </span>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1520,9 +1502,6 @@ export function MorePage({
             </span>
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryOffline")}</strong>
-              <small className="more-setting-hint">
-                {translate(locale, "more.offlineHint")}
-              </small>
             </span>
             <span className="more-setting-summary">
               {manifest
@@ -1691,9 +1670,6 @@ export function MorePage({
             </span>
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryBackup")}</strong>
-              <small className="more-setting-hint">
-                {translate(locale, "more.backupHint")}
-              </small>
             </span>
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -1762,9 +1738,6 @@ export function MorePage({
             </span>
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryAbout")}</strong>
-              <small className="more-setting-hint">
-                {translate(locale, "more.aboutHint")}
-              </small>
             </span>
             <Icon name="chevronDown" size={18} />
           </summary>

@@ -1038,7 +1038,7 @@
 
 /* Collection discovery and settings have distinct visual hierarchy. */
 .more-library-hub {
-  margin-top: 20px;
+  margin-top: 12px;
 }
 .more-library-hub h2,
 .more-settings-heading {
@@ -1057,11 +1057,11 @@
 .more-library-link {
   display: flex;
   align-items: center;
-  gap: 14px;
-  min-height: 72px;
+  gap: 10px;
+  min-height: 56px;
   /* The three collection shortcuts looked like bare text on the full-width
      row; give each one the same card surface as the rest of the settings. */
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-control);
   background: var(--surface);
@@ -1081,7 +1081,7 @@
   flex: 1;
 }
 .more-library-sub {
-  display: block;
+  display: none;
   margin-top: 2px;
   color: var(--muted);
   font-size: 0.8125rem;
@@ -1101,7 +1101,7 @@
   background: var(--blue-soft);
 }
 .more-settings-heading {
-  margin-top: 24px;
+  margin-top: 14px;
 }
 .more-page .more-settings-list {
   width: 100%;
@@ -1167,30 +1167,28 @@
 }
 @media (max-width: 1199px) {
   .more-library-grid {
-    gap: 10px;
+    gap: 8px;
   }
   .more-library-link {
-    flex-direction: column;
-    /* The three tiles share one row, so a wrapped label must not push its icon
-       higher than the others. */
-    justify-content: flex-start;
-    text-align: center;
-    min-height: 88px;
-    padding: 12px 10px;
+    flex-direction: row;
+    text-align: start;
+    min-height: 52px;
+    padding: 8px 10px;
     gap: 8px;
   }
   .more-library-link strong {
     font-size: 0.875rem;
   }
   .more-library-link > span:nth-child(2) {
-    flex: none;
+    flex: 1;
+    min-width: 0;
   }
   .more-library-link > svg {
     display: none;
   }
   .more-library-icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 10px;
   }
 }
@@ -1204,9 +1202,9 @@
   .more-library-link {
     flex-direction: row;
     text-align: start;
-    min-height: 64px;
-    padding: 10px 14px;
-    gap: 12px;
+    min-height: 52px;
+    padding: 8px 12px;
+    gap: 10px;
   }
   .more-library-link > span:nth-child(2) {
     flex: 1;

@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
   await page.route(/^https:\/\//, (route) => route.abort());
 });
 
-test("settings read as three labelled groups with touch-sized rows", async ({
+test("settings read as three labelled groups with compact, touch-sized rows", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -15,7 +15,11 @@ test("settings read as three labelled groups with touch-sized rows", async ({
   const list = page.locator(".more-settings-list");
   await expect(list).toBeVisible();
 
-  for (const label of ["Tampilan", "Konten & unduhan", "Tentang & Bantuan"]) {
+  for (const label of [
+    "Akun & tampilan",
+    "Konten & unduhan",
+    "Tentang & Bantuan",
+  ]) {
     await expect(
       list.getByRole("heading", { name: label, exact: true }),
     ).toBeVisible();
@@ -23,7 +27,14 @@ test("settings read as three labelled groups with touch-sized rows", async ({
 
   const row = list.locator(".more-setting-row").first();
   const box = await row.boundingBox();
-  expect(box!.height).toBeGreaterThanOrEqual(64);
+  // Still a full touch target, no longer a two-line block.
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+
+  // The page explains itself with one line per row: no hero, no second line of
+  // description repeating the title.
+  await expect(page.locator(".page-intro")).toHaveCount(0);
+  await expect(page.locator("h1")).toHaveCount(1);
+  await expect(list.locator(".more-setting-hint")).toHaveCount(0);
 });
 
 test("desktop lays the settings out in two columns", async ({ page }) => {

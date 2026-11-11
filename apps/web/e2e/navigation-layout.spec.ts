@@ -602,9 +602,8 @@ test.describe("responsive reader navigation", () => {
 
       const rows = page.locator(".more-setting-section");
       await expect(rows).toHaveCount(7);
-      // Each row now carries a two-line copy block (title + hint) and some
-      // rows show a live value summary, so assert the title and the hint
-      // separately instead of the summary's full text.
+      // Each row is one line now: a title, some rows a live value, and no
+      // second line of description repeating the title.
       await expect(
         rows.locator(":scope > summary .more-setting-copy > :is(strong, h2)"),
       ).toHaveText([
@@ -618,7 +617,7 @@ test.describe("responsive reader navigation", () => {
       ]);
       await expect(
         rows.locator(":scope > summary .more-setting-hint"),
-      ).toHaveCount(7);
+      ).toHaveCount(0);
       await rows.locator(":scope > summary").last().scrollIntoViewIfNeeded();
       await expect(rows.locator(":scope > summary").last()).toBeInViewport();
       const rowBoxes = await rows
