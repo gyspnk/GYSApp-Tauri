@@ -386,3 +386,55 @@ test("content routes stay contained across every locale and theme at 200% text",
     }
   }
 });
+
+// The forest palette kept tinting every dark surface long after the accent was
+// fixed, so the tokens themselves are measured here, in the browser, per theme.
+test("dark surfaces stay cool slate under a Blue GYS accent", async ({
+  page,
+}) => {
+  await page.goto("/GYSApp-Tauri/");
+  for (const theme of ["dark", "amoled"] as const) {
+    // The versioned envelope wins over the legacy keys, so both are written.
+    await page.evaluate((next) => {
+      localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({ version: 1, locale: "id", theme: next }),
+      );
+      localStorage.setItem("gys-theme", next);
+    }, theme);
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    const tokens = await page.evaluate(() => {
+      const style = getComputedStyle(document.documentElement);
+      const read = (name: string) => style.getPropertyValue(name).trim();
+      return {
+        canvas: read("--canvas"),
+        surface: read("--surface"),
+        accent: read("--blue"),
+      };
+    });
+    const rgb = (value: string) => {
+      const hex =
+        value.length === 4
+          ? `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`
+          : value;
+      return [1, 3, 5].map((offset) =>
+        parseInt(hex.slice(offset, offset + 2), 16),
+      );
+    };
+    for (const name of ["canvas", "surface"] as const) {
+      const [red, green, blue] = rgb(tokens[name]);
+      expect(
+        blue,
+        `${theme}: ${name} ${tokens[name]} must stay cool, not green`,
+      ).toBeGreaterThanOrEqual(green!);
+      expect(green).toBeGreaterThanOrEqual(red!);
+    }
+    const [red, green, blue] = rgb(tokens.accent);
+    expect(
+      blue,
+      `${theme}: accent ${tokens.accent} must lead with blue`,
+    ).toBeGreaterThan(green!);
+    expect(green).toBeGreaterThan(red!);
+  }
+});

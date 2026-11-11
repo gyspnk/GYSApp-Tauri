@@ -54,6 +54,21 @@ describe("editorial palette", () => {
         contrast(palette["--on-accent"]!, palette["--blue"]!),
       ).toBeGreaterThanOrEqual(4.5);
       if (theme === "amoled") expect(palette["--canvas"]).toBe("#000000");
+      // A dark surface that leans green tints every control on it, which is how
+      // the forest palette kept "winning" after the accent was fixed.
+      if (theme !== "light" && theme !== "sepia") {
+        for (const surface of ["--canvas", "--surface", "--surface-soft"]) {
+          const hex = palette[surface]!.slice(1);
+          const [red, green, blue] = [0, 2, 4].map((offset) =>
+            parseInt(hex.slice(offset, offset + 2), 16),
+          ) as [number, number, number];
+          expect(
+            blue,
+            `${theme}: ${surface} ${palette[surface]} must stay cool, not green`,
+          ).toBeGreaterThanOrEqual(green);
+          expect(green).toBeGreaterThanOrEqual(red);
+        }
+      }
       // The accent is the church's identity, so every theme must stay in the
       // same blue family: a blue-dominant hue, never the green it drifted to.
       const accent = palette["--blue"]!.slice(1);
