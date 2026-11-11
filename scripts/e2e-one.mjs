@@ -10,6 +10,9 @@
  *   pnpm e2e:one e2e/kidung-confirm-delete.spec.ts
  *   pnpm e2e:one e2e/ui-polish.spec.ts -g "missing daily artwork"
  *
+ * `pnpm e2e:one --changed` asks the same selector CI uses which contracts a
+ * diff can affect, so a local run covers the same files as the hosted job.
+ *
  * The rebuild is skipped when `dist` is already newer than every source file,
  * which keeps a second run of the same contract at ~3 s instead of ~6 s. Pass
  * GYS_E2E_FORCE_BUILD=1 to rebuild anyway.
@@ -17,6 +20,7 @@
  * Hosted CI stays the source of truth; this is the ~10 s loop for one contract.
  */
 import { execFileSync } from "node:child_process";
+import { resolveSelectiveTestArgs } from "./test-e2e-selective-core.mjs";
 import { readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -63,6 +67,25 @@ export function newestSource(dir, read = readdirSync, stat = statSync) {
   return newest;
 }
 
+/** Files this checkout would change: committed on the branch plus uncommitted. */
+export function changedFiles(
+  run = (args) => execFileSync("git", args, { encoding: "utf8" }),
+) {
+  const read = (args, cut = 0) =>
+    run(args)
+      .split("\n")
+      // Porcelain prefixes the line (" M a.ts", "?? b.ts"); trim only after the
+      // prefix is gone, or the first character of the path is eaten.
+      .map((line) => line.slice(cut).trim())
+      .filter(Boolean);
+  return [
+    ...new Set([
+      ...read(["diff", "--name-only", "origin/main...HEAD"]),
+      ...read(["status", "--porcelain"], 3),
+    ]),
+  ];
+}
+
 export function buildCommand(env) {
   return {
     command: "pnpm",
@@ -72,9 +95,22 @@ export function buildCommand(env) {
 }
 
 function main() {
-  const argv = process.argv.slice(2);
+  let argv = process.argv.slice(2);
+  if (argv[0] === "--changed") {
+    const rest = argv.slice(1);
+    const { args, description } = resolveSelectiveTestArgs(
+      changedFiles(),
+      rest,
+    );
+    console.log(`e2e:one: ${description}`);
+    if (!args.some((arg) => /^e2e\/.*\.spec\.ts$/.test(arg))) {
+      console.log("e2e:one: the current diff maps to no browser contract");
+      return;
+    }
+    argv = args;
+  }
   if (argv.length === 0)
-    throw new Error("usage: pnpm e2e:one <spec…> [-g <title>]");
+    throw new Error("usage: pnpm e2e:one <spec…> | --changed, [-g <title>]");
 
   const web = join(root, "apps", "web");
   const distIndex = join(web, "dist", "index.html");
