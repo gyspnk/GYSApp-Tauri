@@ -7442,3 +7442,20 @@ Bukti: CI selektif `42769330591` **hijau** (sweep desain mencakup `menu-motion`,
 - **Kontrak:** `apps/web/src/media-session.test.ts` 3 tes gagal pada kode lama; `apps/web/e2e/media-dock.spec.ts` 12 tes hijau.
 - **Bukti:** sweep penuh `43086893166` hijau (4/4 shard, `perf-budget`, `verify`).
 - **Jebakan dokumen:** komentar penutup #27 menyebut `c4e5b16`; objek itu tidak ada di riwayat git repo ini, commit yang mendarat adalah `ec630ed3`.
+
+### Putaran 43 — Riwayat rilis menulis dirinya sendiri, audit empat permukaan, satu lantai panel ayat (11 Nov)
+
+- **Riwayat rilis ditulis workflow** (`6fb301e8`): `scripts/release-history-row.mjs` (164 baris, 7 uji) menyusun baris tabel dari `turn`, `tag`, `run`, `apk-bytes`, `commit`, dan `note`; `.github/workflows/android-release.yml` memanggilnya dengan `--write` sebelum commit kadensi. CLI default mencetak hasil (dry-run), hanya `--write` yang menyentuh berkas, dan putaran yang sama mengganti barisnya, bukan menambah duplikat.
+- **Empat permukaan baru diaudit** (`0163223e`): `apps/web/e2e/shell-a11y.spec.ts` menambah rail Kidung + listbox koleksi, dialog hapus playlist, kartu akun setelah masuk, dan banner pembaruan; 0 pelanggaran setelah satu perbaikan nyata — `role="status"` pada `<aside>` melanggar `aria-allowed-role`, banner menjadi `<div>` (`apps/web/src/service-worker-updates.ts`).
+- **Satu lantai tinggi panel ayat** (`4341fbb3`): skeleton, offline, dan terisi memakai lantai yang sama; skeleton → terisi **0 selisih** di 320/390/599/600/768/900/960–1199/1440 (≤0,7 px). CLS feed tertunda 1,5 dtk: 320 0,222 · 390 0,217 · 600 0,185 · 768 0,315 · 900 0,285 → **0**; 1440 0,059 → **0,020**.
+- **Tiga baseline + fast check** (`4cac0cd7`, `e0aefaa7`): tiga PNG diadopsi dari artefak hosted setelah diperiksa — satu pergeseran nyata (tombol "Baca Lebih Lanjut"), dua noise. `scripts/fast-check.mjs` kini menjalankan `scripts/x.test.mjs` saat `scripts/x.mjs` berubah, jadi CLI rusak tidak lolos lokal.
+- **Bukti:** CI `43100978843` hijau (verify, unit, e2e-selective, e2e) untuk `4cac0cd7`. Satu percobaan merah `43095029733`: `actions/upload-artifact@v4` gagal `Unexpected token '<', "<!DOCTYPE "...`, lalu retry `43099911262` hijau.
+
+### Putaran 44 — Geometri hero desktop, dua axe terukur, dan zod keluar dari grafik awal (11 Nov)
+
+- **Hero ≥960 px** (`57a411b2`): kartu ayat memakai geometri hero yang sama di semua keadaan; CLS feed tertunda 1,5 dtk: 960 0,0589 → **0,00001**, 1024 0,0559 → **0,00001**, 1199 0,0470 → **0,00001**, 1440 0,0201 → **0**. Kontrak `home-verse-reservation.spec.ts` mengulang 390/900/1024/1440 dan mengukur kotak isi (`|dTop| ≤ 8`, `|dH| ≤ 8`).
+- **Dua `incomplete` jadi terukur** (`1487c719`): `apps/web/src/contrast.ts` (119 baris) + 76 baris tes; kontras paragraf dialog per tema **5,506 / 9,023 / 9,743 / 9,349**, semuanya ≥4,5:1, tanpa mengubah warna. Kontrak kedua membuktikan `aria-controls` chip menunjuk listbox nyata (`role="listbox"`, `aria-hidden="false"`).
+- **Gladi kering rilis 276 dicatat** (`2b858cdc`, HEAD `4cac0cd7`): preflight 5/5, tag `v0.1.0-preview.20261111.1`, **117 commit**, changelog 141 baris / 7 475 B, empat aset, `versionCode` **1276**.
+- **Docs gate di fast check** (`e8391f22`): `scripts/fast-check.mjs` menjalankan `node scripts/verify-documentation.mjs` saat `docs/` atau `README.md` berubah.
+- **zod keluar dari grafik awal** (`9c9460ff`): zod 28,3 KiB masuk lewat `App.tsx` → media shell → `midi-playlist` → `@gys/contracts`. Validator tangan `packages/domain/src/midi-playlist-parse.ts` (143 baris) menggantikan skema; paritas dikunci tes terhadap `MidiPlaylistSchema.parse` pada payload sah + sepuluh payload salah. Initial graph **160,5 → 132,6 KiB gz** dari budget 180.
+- **Bukti:** CI `43106938848` hijau untuk `57a411b2`; `43111759150` hijau untuk `9c9460ff` (verify, unit, e2e-selective, e2e).
