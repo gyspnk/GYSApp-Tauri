@@ -21,6 +21,16 @@ on:
         required: false
         default: false
         type: boolean
+      turn:
+        description: "Goal round this release closes; the cadence gate refuses a release before nextDueTurn"
+        required: false
+        default: ""
+        type: string
+      force:
+        description: "Publish even when the cadence gate says the release is not due yet"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -45,12 +55,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Check the release cadence
+        run: |
+          set -euo pipefail
+          args=(--turn "${{ inputs.turn }}")
+          if [ "${{ inputs.force }}" = "true" ]; then args+=(--force); fi
+          node scripts/release-gate.mjs "${args[@]}"
       - name: Resolve the previous release and build the changelog
         id: notes
         run: |
           set -euo pipefail
           git fetch --tags --force
           from="${{ inputs.from }}"
+          if [ -z "$from" ]; then
+            # The cadence record is the base, not the newest release: the two once
+            # disagreed and the changelog re-listed a shipped commit.
+            from=$(node scripts/release-gate.mjs --base)
+          fi
           if [ -z "$from" ]; then
             from=$(gh release list --limit 1 --exclude-drafts --json tagName --jq '.[0].tagName // empty')
           fi
@@ -127,6 +148,11 @@ jobs:
             }
             if (provenance.signing !== 'Android debug identity') {
               throw new Error('Unexpected signing identity: ' + provenance.signing);
+            }
+            const { execFileSync } = require('node:child_process');
+            const tagCommit = execFileSync('git', ['rev-list', '-n', '1', process.env.GYS_RELEASE_TAG], { encoding: 'utf8' }).trim();
+            if (tagCommit !== provenance.commit) {
+              throw new Error('Tag ' + process.env.GYS_RELEASE_TAG + ' points at ' + tagCommit + ' but the APK came from ' + provenance.commit);
             }
           "
           if [ "${{ inputs.draft }}" = "true" ]; then
