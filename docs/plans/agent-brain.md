@@ -75,14 +75,21 @@ judul dok dan metadata locale); nama paket dan id plugin tetap `@local/kiss-brid
 supaya pemasangan `link:` di profil web tidak berubah. Menu keempat, **Agent Brain**,
 adalah panel peta delegasi:
 
-- membaca `ctx.get('sessions').list` (layanan klien resmi; tidak ada HTTP baru),
-  menerima snapshot berbentuk `{ byId }` maupun array, dan berlangganan perubahan;
-- akar = sesi tanpa `parentSessionId` (maksimal 4, terbaru dulu), anak =
-  `origin === 'subagent'` atau sesi yang induknya tampil (maksimal 14);
-- simpul berjalan berdenyut, tepi dari induk ke anak bergerak, label dari nama
-  folder kerja atau 6 karakter id; klik menyalin id sesi;
-- batas jujur: panel belum membaca fase workflow atau nama tool, hanya
-  sesi/subagent dan statusnya. Tidak ada polling: satu langganan, satu render.
+- membaca `ctx.get('sessions').list` (layanan klien resmi; tidak ada HTTP baru) dan
+  berlangganan perubahan. Snapshot-nya `{ ids, byId, phase, projectionsBySession }`,
+  dan baris `byId` memakai **`id`, `parentId`, `running`, `displayTitle`** — bukan
+  `sessionId`/`parentSessionId`; nama yang salah itu pernah membuat panel tampil
+  kosong padahal sesi ada (diperbaiki di plugin `6ab94ed`);
+- akar = sesi tanpa `parentId` (maksimal 4, terbaru dulu), anak = sesi yang
+  `parentId`-nya termasuk akar yang tampil (maksimal 14);
+- simpul berjalan berdenyut (`running === true`), tepi dari induk ke anak bergerak,
+  label dari `displayTitle` lalu nama folder kerja; klik **atau** Enter/Spasi
+  menyalin id sesi, dan peta diberi label `role="group"`;
+- batas jujur: panel belum membaca fase workflow atau nama tool. Jalur resminya
+  sudah ada — `sessions.binding(id).eventSource` membawa `turn/start`, `step/start`,
+  `tool/call`, `tool-workflow/*`, dan `projectionsBySession[id].values.subagentCatalog`
+  memberi hitungan anak yang berjalan — tetapi belum dipakai. Tidak ada polling:
+  satu langganan, satu render.
 
 ## Aturan swarm (supaya tidak membebani mesin)
 

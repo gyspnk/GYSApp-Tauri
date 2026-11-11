@@ -92,6 +92,18 @@ test("a refusing Edge relay speaks through the device voice without an error", a
 
   const media = page.locator("#persistent-media-player");
   await expect(media).toBeVisible({ timeout: 15_000 });
+  await expect
+    .poll(() => page.evaluate(() => (window as SpokenWindow).__spoken ?? []))
+    .toContain("1. Pada mulanya Allah menciptakan langit dan bumi.");
+  // The queue keeps moving after the refusal, so the fallback is not a
+  // one-verse accident: the Edge provider latches as unavailable.
+  await expect
+    .poll(
+      () => page.evaluate(() => (window as SpokenWindow).__spoken?.length ?? 0),
+      { timeout: 10_000 },
+    )
+    .toBeGreaterThanOrEqual(3);
+
   // "TTS sistem" is the player's own name for the device voice; the visible
   // verse progress proves the player is not in its error state.
   await expect(media.locator(".media-meta small")).toContainText("TTS sistem");
@@ -102,9 +114,5 @@ test("a refusing Edge relay speaks through the device voice without an error", a
     page.getByText("Gagal memutar audio", { exact: true }),
   ).toHaveCount(0);
   await expect(media).not.toContainText("503");
-
-  await expect
-    .poll(() => page.evaluate(() => (window as SpokenWindow).__spoken ?? []))
-    .toContain("1. Pada mulanya Allah menciptakan langit dan bumi.");
   expect(edgeAttempts).toBeGreaterThan(0);
 });
