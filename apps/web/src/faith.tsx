@@ -223,6 +223,11 @@ export function FaithPage({ locale }: { locale: Locale }) {
     );
   }, [items, query]);
   const active = items.find((item) => item.number === selected);
+  // The PDF position belongs to the sheet, next to the button that resumes it:
+  // in the row it competed with the statement for the reader's attention.
+  const activeProgress = active
+    ? readFaithPdfProgress(active.number)
+    : undefined;
 
   const noteKey = (number: string) => `gys-faith-note-${number}`;
   const savedNotes = useMemo(
@@ -456,7 +461,6 @@ export function FaithPage({ locale }: { locale: Locale }) {
             {filtered.map((item) => {
               const isActive = item.number === active?.number;
               const note = hasNote(item.number);
-              const progress = readFaithPdfProgress(item.number);
               return (
                 <div
                   className="faith-row-item"
@@ -487,26 +491,12 @@ export function FaithPage({ locale }: { locale: Locale }) {
                     </span>
                     <span className="faith-row-copy">
                       <span className="faith-statement">{item.text}</span>
-                      {(note || progress) && (
+                      {note && (
                         <span className="faith-row-status">
-                          {note && (
-                            <span className="faith-row-note">
-                              <Icon name="bookmark" size={14} />
-                              {translate(locale, "faith.hasNote")}
-                            </span>
-                          )}
-                          {progress && (
-                            <span
-                              className="faith-row-progress"
-                              title={translate(locale, "faith.progressTitle", {
-                                percent: progress.percent,
-                              })}
-                            >
-                              {translate(locale, "faith.progress", {
-                                page: progress.page,
-                              })}
-                            </span>
-                          )}
+                          <span className="faith-row-note">
+                            <Icon name="bookmark" size={14} />
+                            {translate(locale, "faith.hasNote")}
+                          </span>
                         </span>
                       )}
                     </span>
@@ -575,13 +565,26 @@ export function FaithPage({ locale }: { locale: Locale }) {
                       {hasNote(active.number) ? " ✓" : ""}
                     </button>
                     {DK_READ_MORE.has(active.number) && (
-                      <button
-                        className="primary-button faith-read-more"
-                        type="button"
-                        onClick={(event) => openReadMore(event.currentTarget)}
-                      >
-                        {translate(locale, "faith.readMore")}
-                      </button>
+                      <span className="faith-read-more-wrap">
+                        <button
+                          className="primary-button faith-read-more"
+                          type="button"
+                          onClick={(event) => openReadMore(event.currentTarget)}
+                        >
+                          {translate(locale, "faith.readMore")}
+                        </button>
+                        {activeProgress && (
+                          <span className="faith-read-more-progress">
+                            {translate(locale, "faith.progress", {
+                              page: activeProgress.page,
+                            })}{" "}
+                            ·{" "}
+                            {translate(locale, "faith.progressTitle", {
+                              percent: activeProgress.percent,
+                            })}
+                          </span>
+                        )}
+                      </span>
                     )}
                   </div>
                 </div>

@@ -337,15 +337,21 @@
 }
 
 .faith-modal-actions .faith-read-more {
-  margin-left: auto;
+  margin-left: 0;
 }
 
-.faith-row-progress {
-  color: var(--blue);
+.faith-read-more-wrap {
+  margin-left: auto;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.faith-read-more-progress {
+  color: var(--muted);
   font-size: max(var(--text-meta), 0.6875rem);
-  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  line-height: 1.4;
   white-space: nowrap;
 }
 
@@ -1164,10 +1170,6 @@
   .faith-row {
     grid-template-columns: 34px minmax(0, 1fr);
     column-gap: 12px;
-  }
-
-  .faith-row-progress {
-    font-size: max(var(--text-meta), 0.6875rem);
   }
 }
 

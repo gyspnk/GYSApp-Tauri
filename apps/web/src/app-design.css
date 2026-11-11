@@ -774,9 +774,10 @@
 .faith-page .faith-statement {
   margin: 0;
   text-align: justify;
-  /* A justified paragraph on a 1920 px window runs past 110 characters; the
-     doctrine text is read, not scanned, so it keeps a reading measure. */
-  max-width: 68ch;
+  /* The owner reads this page as one column of the page itself: the statement
+     spans the row's copy column instead of stopping at a measure, so nothing
+     sits unused on the right while the rows run full width. */
+  max-width: none;
   font-family: var(--font-reading);
   font-size: calc(
     var(--faith-font-size, clamp(1.125rem, 1.4vw, 1.25rem)) *
