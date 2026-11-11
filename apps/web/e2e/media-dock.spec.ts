@@ -108,7 +108,11 @@ async function openSpeechPlayerAtDesktop(
     };
     let active: { onend?: () => void } | undefined;
     let timer: number | undefined;
-    let remaining = 1_200;
+    // A verse must outlast the test. At 1.2 s per verse a busy CI shard
+    // auto-advanced five verses between a media action and its assertion
+    // (issue #27); the assertions compare absolute verse numbers.
+    const VERSE_MS = 60_000;
+    let remaining = VERSE_MS;
     let started = 0;
     const schedule = () => {
       started = performance.now();
@@ -124,7 +128,7 @@ async function openSpeechPlayerAtDesktop(
       speak: (utterance: { onend?: () => void }) => {
         window.clearTimeout(timer);
         active = utterance;
-        remaining = 1_200;
+        remaining = VERSE_MS;
         schedule();
       },
       cancel: () => {
@@ -377,6 +381,28 @@ test("system media controls follow speech and disable unsupported seeking", asyn
   await expect.poll(() => readMediaPlaybackState(page)).toBe("paused");
   await triggerMediaAction(page, "play");
   await expect.poll(() => readMediaPlaybackState(page)).toBe("playing");
+});
+
+test("system media controls keep one verse step through a slow shard", async ({
+  page,
+}) => {
+  await openSpeechPlayerAtDesktop(page);
+  const title = page.locator(".media-context-link strong");
+  const firstVerse = await title.textContent();
+  await triggerMediaAction(page, "nexttrack");
+  // Issue #27: a loaded CI shard can spend seconds between an action and the
+  // assertion. The fake verse used to end every 1.2 s, so five auto-advances
+  // turned the expected 1:2 into 1:6 while the action itself ran once.
+  const step = /^(.*) (\d+):(\d+)$/.exec(firstVerse ?? "");
+  if (!step) throw new Error(`unexpected verse title: ${firstVerse}`);
+  const nextVerse = `${step[1]} ${step[2]}:${Number(step[3]) + 1}`;
+  await page.waitForTimeout(5_000);
+  // One action, one verse: if the fake verse window were short, five ticks
+  // would land here instead.
+  await expect(title).toHaveText(nextVerse);
+  await triggerMediaAction(page, "previoustrack");
+  await page.waitForTimeout(1_000);
+  await expect(title).toHaveText(firstVerse!);
 });
 
 test("shared speech dock localizes its semantic chrome for every locale", async ({
