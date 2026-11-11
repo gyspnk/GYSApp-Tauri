@@ -658,12 +658,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "faith.shareDone": "Pokok iman disalin untuk dibagikan.",
     "faith.shareCancelled": "Berbagi dibatalkan.",
     "faith.note": "Catatan pribadi",
-    "faith.noteShort": "Catatan",
     "faith.notePlaceholder": "Tambahkan refleksi…",
     "faith.noNotes":
       "Belum ada catatan. Pilih pokok iman lalu tekan tombol Catatan.",
     "faith.pdfTitle": "{title} (PDF)",
-    "faith.pdfLabel": "Buka PDF pokok iman {number}",
     "faith.noteLabel": "Buka catatan pokok iman {number}",
     "faith.hasNote": "Ada catatan",
     "faith.progressTitle": "Progres {percent}%",

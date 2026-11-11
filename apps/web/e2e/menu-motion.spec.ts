@@ -579,7 +579,8 @@ test("faith PDF source menu fades without clipping its floating content", async 
 }) => {
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/iman");
-  await page.locator('button[aria-label*="PDF"]').first().click();
+  await page.locator(".faith-row").first().click();
+  await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
   // Sample disclosure frames after the first PDF render, so CPU-heavy decoding
   // does not consume the complete close transition between sampled frames.
   await expect(

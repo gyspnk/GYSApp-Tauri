@@ -117,7 +117,8 @@ test("branded PDF loading stays compact and indeterminate before response bytes 
     await route.fulfill({ response: await route.fetch() });
   });
   await page.goto("/GYSApp-Tauri/iman");
-  await page.locator('button[aria-label*="PDF"]').first().click();
+  await page.locator(".faith-row").first().click();
+  await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
   const loading = page.locator(".faith-pdf-overlay .pdf-loading");
   await expect(loading).toBeVisible();
   const bar = loading.getByRole("progressbar");

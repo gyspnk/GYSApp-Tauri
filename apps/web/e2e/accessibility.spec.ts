@@ -438,9 +438,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
 
     await page.getByRole("combobox", { name: "Bahasa", exact: true }).click();
     await page.getByRole("option", { name: "EN", exact: true }).click();
-    await expect(
-      page.getByRole("button", { name: "Open faith topic 1 PDF" }),
-    ).toBeVisible();
+    // The row itself is the one trigger now: no separate per-row PDF button.
     await expect(
       page.getByRole("button", { name: "Open note for faith topic 1" }),
     ).toBeVisible();
@@ -476,9 +474,6 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
 
     await page.getByRole("combobox", { name: "Language", exact: true }).click();
     await page.getByRole("option", { name: "中文", exact: true }).click();
-    await expect(
-      page.getByRole("button", { name: "打开信仰要点 1 PDF" }),
-    ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "打开信仰要点 1笔记" }),
     ).toBeVisible();

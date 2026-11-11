@@ -8,7 +8,8 @@ export async function openSharedReader(
   await page.route(/^https:\/\//, (route) => route.abort());
   if (kind === "faith") {
     await page.goto("/GYSApp-Tauri/iman");
-    await page.locator('button[aria-label*="PDF"]').first().click();
+    await page.locator(".faith-row").first().click();
+    await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
   } else {
     await page.route("**/offline/literature.json", (route) =>
       route.fulfill({

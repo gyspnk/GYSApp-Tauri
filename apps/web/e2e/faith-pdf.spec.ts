@@ -7,10 +7,8 @@ for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.route(/^https:\/\//, (route) => route.abort());
     await page.goto("/GYSApp-Tauri/iman");
-    await page
-      .locator('.faith-pdf-open, button[aria-label*="PDF"]')
-      .first()
-      .click();
+    await page.locator(".faith-row").first().click();
+    await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
     const dialog = page.locator(".faith-pdf-overlay");
     await expect(dialog).toBeVisible();
     const canvas = dialog.locator(".pdf-pages canvas").first();
@@ -55,10 +53,11 @@ test("all ten official doctrine PDFs render without external requests", async ({
 }) => {
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/iman");
-  const buttons = page.locator('button[aria-label*="PDF"]');
-  await expect(buttons).toHaveCount(10);
+  const rows = page.locator(".faith-row");
+  await expect(rows).toHaveCount(10);
   for (let index = 0; index < 10; index++) {
-    await buttons.nth(index).click();
+    await rows.nth(index).click();
+    await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
     const dialog = page.locator(".faith-pdf-overlay");
     await expect(dialog.locator(".pdf-page-jump input")).toBeVisible();
     await expect(dialog.locator(".pdf-loading")).toBeHidden();
