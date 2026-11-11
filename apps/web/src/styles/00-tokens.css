@@ -49,8 +49,9 @@
   /* The default theme is GYS blue: the church identity and the reader's
      recognition of the app both live in this hue, so it must not drift to
      another accent (an editorial palette can arrive through the theme or
-     accent switcher instead). Dark, sepia and amoled keep their own tuned
-     sets below. */
+     accent switcher instead). Every theme keeps the accent in that same blue
+     family — dark and amoled lighten it for contrast, sepia deepens it — so a
+     reader who switches theme never sees the church hue turn green. */
   --canvas: #f3f6fa;
   --surface: #ffffff;
   --surface-rgb: 255, 255, 255;
@@ -146,15 +147,15 @@
   --muted: #c0beb3;
   --line: #5e6d63;
   --line-strong: #7c8b80;
-  --blue: #9ecc9e;
-  --on-accent: #111813;
+  --blue: #7fc6e8;
+  --on-accent: #06181f;
   --success: #8ed39a;
-  --blue-soft: #29432e;
+  --blue-soft: #14313d;
   --success: #8ed39a;
   --danger: #ffb4ab;
   --gold: #e8c46a;
-  --blue-soft: #29432e;
-  --navy: #bde0bd;
+  --blue-soft: #14313d;
+  --navy: #a9d8ef;
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
   --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.6);
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
@@ -172,14 +173,14 @@
   --muted: #bbb1a1;
   --line: #555555;
   --line-strong: #777777;
-  --blue: #a9d5b3;
-  --on-accent: #101810;
+  --blue: #7fc6e8;
+  --on-accent: #04161d;
   --success: #8ed39a;
-  --blue-soft: #1a3020;
+  --blue-soft: #10242c;
   --success: #8ed39a;
   --danger: #ffb4ab;
   --gold: #e8c46a;
-  --blue-soft: #1a3020;
+  --blue-soft: #10242c;
   --navy: #c4e5ca;
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.7);
   --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.85);
@@ -198,13 +199,13 @@
   --muted: #4c3926;
   --line: #bbab96;
   --line-strong: #96836b;
-  --blue: #53320b;
+  --blue: #0b5c80;
   --on-accent: #ffffff;
   --success: #24562a;
   --danger: #a4342a;
   --gold: #8a6a2a;
-  --blue-soft: #e5d5b8;
-  --navy: #53320b;
+  --blue-soft: #dde9ef;
+  --navy: #12455e;
   --shadow: 0 14px 40px rgba(92, 64, 51, 0.12);
   --shadow-lift: 0 18px 42px rgba(92, 64, 51, 0.18);
   --shadow-xs: 0 1px 2px rgba(92, 64, 51, 0.08);
@@ -223,15 +224,15 @@
     --muted: #c0beb3;
     --line: #5e6d63;
     --line-strong: #7c8b80;
-    --blue: #9ecc9e;
-    --on-accent: #111813;
+    --blue: #7fc6e8;
+    --on-accent: #06181f;
     --success: #8ed39a;
-    --blue-soft: #29432e;
+    --blue-soft: #14313d;
     --success: #8ed39a;
     --danger: #ffb4ab;
     --gold: #e8c46a;
-    --blue-soft: #29432e;
-    --navy: #bde0bd;
+    --blue-soft: #14313d;
+    --navy: #a9d8ef;
     --shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
     --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.6);
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);

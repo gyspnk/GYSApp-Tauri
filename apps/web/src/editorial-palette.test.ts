@@ -54,6 +54,20 @@ describe("editorial palette", () => {
         contrast(palette["--on-accent"]!, palette["--blue"]!),
       ).toBeGreaterThanOrEqual(4.5);
       if (theme === "amoled") expect(palette["--canvas"]).toBe("#000000");
+      // The accent is the church's identity, so every theme must stay in the
+      // same blue family: a blue-dominant hue, never the green it drifted to.
+      const accent = palette["--blue"]!.slice(1);
+      const [red, green, blue] = [0, 2, 4].map((offset) =>
+        parseInt(accent.slice(offset, offset + 2), 16),
+      ) as [number, number, number];
+      expect(
+        blue,
+        `${theme}: accent ${palette["--blue"]} must lead with blue`,
+      ).toBeGreaterThan(green);
+      expect(
+        green,
+        `${theme}: accent ${palette["--blue"]} must not be red-shifted`,
+      ).toBeGreaterThan(red);
     });
   }
 });
