@@ -3230,8 +3230,13 @@ body:has(.hymn-detail-page.is-text-viewer)
 .home-grid {
   gap: 18px;
 }
+/* The offline card must fill the same reserved box as the skeleton; the base
+   `margin-top: auto` otherwise bottom-anchors the shorter text and it jumps
+   19–49 px when the feed fails. */
 .home-grid .verse-panel:has(.sauh-offline-state) .sauh-card-content {
   padding-block: 12px;
+  flex: 1 0 auto;
+  justify-content: center;
 }
 .home-grid .sauh-offline-state {
   margin: 0;
@@ -6011,23 +6016,30 @@ body:has(.hymn-detail-page.is-text-viewer)
  * reservation was 111–159 px taller than the loaded card on every breakpoint,
  * so the sections below jumped up as the verse arrived (CLS 0.13–0.14 in the
  * hosted perf run). Keeping the reservation equal to the painted height
- * removes the jump without reserving space the page never uses.
+ * removes the jump without reserving space the page never uses. The offline
+ * card ("Sauh hari ini belum tersedia") lands in the same slot when the feed
+ * cannot resolve, so it must own the same box; it used to be 19–48 px shorter
+ * and pulled the sections below it up (CLS 0.0094 phone / 0.0085 tablet /
+ * 0.0134 desktop in the hosted perf run).
  */
 @media (max-width: 599px) {
-  .home-grid .verse-panel:has(.sauh-skeleton) {
+  .home-grid .verse-panel:has(.sauh-skeleton),
+  .home-grid .verse-panel:has(.sauh-offline-state) {
     min-height: 180px;
   }
 }
 
 @media (min-width: 600px) and (max-width: 899px) {
-  .home-grid .verse-panel:has(.sauh-skeleton) {
+  .home-grid .verse-panel:has(.sauh-skeleton),
+  .home-grid .verse-panel:has(.sauh-offline-state) {
     min-height: 182px;
   }
 }
 
 @media (min-width: 900px) {
-  .home-grid .verse-panel:has(.sauh-skeleton) {
-    min-height: 132px;
+  .home-grid .verse-panel:has(.sauh-skeleton),
+  .home-grid .verse-panel:has(.sauh-offline-state) {
+    min-height: 180px;
   }
 
   /* The flex children kept their phone padding, so the card still grew to
