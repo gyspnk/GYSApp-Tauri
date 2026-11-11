@@ -60,3 +60,8 @@ test("a stylesheet edit pulls in the stylesheet-wide policy suites", () => {
     );
   }
 });
+
+test("a locale edit pulls in the key-set contract", () => {
+  const { tests } = collectChecks(["apps/web/src/i18n-en.ts"]);
+  assert.deepEqual(tests, ["apps/web/src/i18n.test.ts"]);
+});

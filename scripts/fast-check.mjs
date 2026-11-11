@@ -62,6 +62,17 @@ export function collectChecks(files) {
       if (existsSync(policy)) tests.push(policy);
     }
   }
+  // The three locale files must stay in sync, and only i18n.test.ts says so.
+  // Changing i18n-en.ts alone has no sibling test, so the key-set mismatch used
+  // to wait for CI twice (rounds 4x). Pull the contract in with the locale.
+  if (
+    changed.some(
+      (file) => file.startsWith("apps/web/src/i18n") && file.endsWith(".ts"),
+    )
+  ) {
+    const contract = "apps/web/src/i18n.test.ts";
+    if (existsSync(contract)) tests.push(contract);
+  }
   const typechecks = [...new Set([...sources, ...tests].map(ownerOf))].filter(
     Boolean,
   );
