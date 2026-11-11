@@ -40,6 +40,7 @@ yang benar-benar berbeda permukaan.
 | `Home — cadangan CLS`        | `aa7fe12e-e1e9-490e-b4c0-1f8568d1b774` | blok yang menyusut 650 ms di beranda, cadangan tinggi    |
 | `Media — balapan nexttrack`  | `cf7d882b-efd5-4327-a24e-06dac3e6c3af` | aksi media ganda, shard sibuk, `media-dock.spec.ts`      |
 | `A11y — rute tersisa`        | `50b0904c-e247-4b68-891e-278b7ca89b8d` | axe enam tag untuk beranda, Alkitab, Suara, Lainnya      |
+| `Docs — ekor ledger`         | `0d67ec2e-e69d-4ec2-8d8a-c7669bdb6b40` | ledger panjang `2026-10-30`, catatan putaran, gaya entri |
 
 Panel otak di GB Tools menampilkan `displayTitle` tiap sesi dan menyalin id ke
 clipboard saat simpul diklik, jadi id untuk `send_message` diambil langsung dari
