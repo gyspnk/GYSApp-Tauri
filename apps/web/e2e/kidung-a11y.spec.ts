@@ -2,13 +2,21 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 const PLAYLIST_ROUTE = "/GYSApp-Tauri/kidung?section=playlist";
+// The route audit used to stop at wcag2aa; the newer WCAG tags also cover
+// target size, focus appearance and the A-level rules the old pass missed.
+const AUDIT_TAGS = [
+  "wcag2a",
+  "wcag2aa",
+  "wcag21a",
+  "wcag21aa",
+  "wcag22aa",
+  "best-practice",
+];
 
 async function expectNoAxeViolations(page: Page) {
   // `options()` replaces the whole axe config, so tags go through `withTags()`
   // on the builder rather than an options object.
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa"])
-    .analyze();
+  const results = await new AxeBuilder({ page }).withTags(AUDIT_TAGS).analyze();
   // Soft so a second contract failure in the same scenario (focus return)
   // is reported alongside the audit instead of masking it.
   expect
@@ -64,6 +72,10 @@ test("desktop Kidung reader rail is axe clean and marks one current song", async
   await expect(rail).toBeVisible({ timeout: 20_000 });
   await expect(rail.locator(".kidung-rail-row").first()).toBeVisible();
 
+  await expect(
+    page.getByRole("heading", { name: "Pujilah Allah Yang Maha Esa" }),
+  ).toBeVisible({ timeout: 20_000 });
+
   const current = rail.locator('[aria-current="page"]');
   await expect(current).toHaveCount(1);
   await expect(current).toHaveClass(/kidung-rail-row/);
@@ -95,6 +107,33 @@ test("mobile Kidung catalogue keeps the rail out and stays axe clean", async ({
   });
 
   await expect(page.locator(".kidung-reader-rail")).toHaveCount(0);
+  await expectNoAxeViolations(page);
+});
+
+test("desktop Kidung catalogue is axe clean", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/GYSApp-Tauri/kidung");
+  await expect(
+    page.getByRole("heading", { name: "Kidung", exact: true }),
+  ).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(".pujian-list > li").first()).toBeVisible({
+    timeout: 20_000,
+  });
+
+  await expectNoAxeViolations(page);
+});
+
+test("saved playlist menu panel is axe clean", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const row = await importPlaylist(page);
+  await row.locator("details.kidung-row-menu > summary").first().click();
+  await expect(row.locator(".kidung-row-menu-panel")).toBeVisible();
+  const manage = row.locator("details.kidung-manage-saved-items");
+  await manage.locator("summary").click();
+  await expect(manage.locator(".kidung-saved-playlist-item")).toBeVisible();
+
   await expectNoAxeViolations(page);
 });
 
