@@ -3230,13 +3230,35 @@ body:has(.hymn-detail-page.is-text-viewer)
 .home-grid {
   gap: 18px;
 }
-/* The offline card must fill the same reserved box as the skeleton; the base
-   `margin-top: auto` otherwise bottom-anchors the shorter text and it jumps
-   19–49 px when the feed fails. */
+/* Center the no-verse content inside the reserved card box. The base
+   `margin-top: auto` otherwise bottom-anchors the shorter offline text and it
+   jumps 19–49 px when the feed fails; the skeleton needs the same fill so it
+   sits in the middle of the card it is standing in for. */
+.home-grid .verse-panel:has(.sauh-skeleton) .sauh-card-content,
 .home-grid .verse-panel:has(.sauh-offline-state) .sauh-card-content {
   padding-block: 12px;
   flex: 1 0 auto;
   justify-content: center;
+}
+/* Stacked layouts put the artwork above the copy. The no-verse states have no
+   image, so reserve the same 16:9 block; without it the loading card was a
+   section shorter than the loaded one and the whole grid moved when the verse
+   arrived (CLS 0.22–0.32 on a 1.5 s feed). */
+@media (max-width: 959px) {
+  .home-grid .verse-panel:has(.sauh-skeleton)::before,
+  .home-grid .verse-panel:has(.sauh-offline-state)::before {
+    content: "";
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    background: var(--surface-soft);
+  }
+  .home-grid .verse-panel:has(.sauh-skeleton) .sauh-card-content,
+  .home-grid .verse-panel:has(.sauh-offline-state) .sauh-card-content {
+    flex: 1 0 auto;
+  }
 }
 .home-grid .sauh-offline-state {
   margin: 0;
@@ -4639,10 +4661,10 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 
 /* A loading logo/label must define the card height instead of flex shrinking
-   inside the old image-less hero geometry. */
+   inside the old image-less hero geometry. The panel height itself comes from
+   the reservation floor above, so every state of the card shares one box. */
 .home-grid .verse-panel:has(.sauh-skeleton) {
   height: auto;
-  min-height: 120px;
 }
 .home-grid .sauh-card-content:has(.sauh-skeleton) {
   height: auto;
@@ -5756,18 +5778,38 @@ body:has(.hymn-detail-page.is-text-viewer)
 /* The verse panel and the literature shelf grow when their data lands (verse
    185 -> 460 px, literature 249 -> 359 px at 390 px on a 400 kbps link), which
    shifted the whole grid: CLS 0.0845. Reserve the measured resting height so
-   the first frame already owns the row; the offline/empty states keep their
-   own size. */
-.home-grid .verse-panel:not(:has(.sauh-offline-state)) {
+   the first frame already owns the row. One floor covers every state of the
+   panel — skeleton, offline card and loaded card — because the swap between
+   them happens after first paint; a floor on only one side moved the jump to
+   the other transition. Loaded-height measurements at 320–1440 px: 489–699 px
+   below 960 (the 16:9 artwork dominates), 400 px at 960–1199, 340 px above.
+   The formula tracks the artwork; the <=30 px of slack at some widths is the
+   price of keeping the sections below still on a slow first visit. */
+.home-grid .verse-panel,
+.home-grid .verse-panel:has(.sauh-skeleton),
+.home-grid .verse-panel:has(.sauh-offline-state) {
   min-height: 340px;
 }
 .home-grid .home-literature-section:not(:has(.error-panel, .empty-inline)) {
   min-height: 337px;
 }
 
-@media (max-width: 959px) {
-  .home-grid .verse-panel:not(:has(.sauh-offline-state)) {
-    min-height: 460px;
+@media (max-width: 599px) {
+  .home-grid .verse-panel,
+  .home-grid .verse-panel:has(.sauh-skeleton),
+  .home-grid .verse-panel:has(.sauh-offline-state) {
+    min-height: max(510px, 56.25vw + 220px);
+  }
+  .home-grid .home-literature-section:not(:has(.error-panel, .empty-inline)) {
+    min-height: 359px;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 959px) {
+  .home-grid .verse-panel,
+  .home-grid .verse-panel:has(.sauh-skeleton),
+  .home-grid .verse-panel:has(.sauh-offline-state) {
+    min-height: calc(56.25vw + 190px);
   }
   .home-grid .home-literature-section:not(:has(.error-panel, .empty-inline)) {
     min-height: 359px;
@@ -5775,7 +5817,9 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 
 @media (min-width: 960px) and (max-width: 1199px) {
-  .home-grid .verse-panel:not(:has(.sauh-offline-state)) {
+  .home-grid .verse-panel,
+  .home-grid .verse-panel:has(.sauh-skeleton),
+  .home-grid .verse-panel:has(.sauh-offline-state) {
     min-height: 400px;
   }
   .home-grid .home-literature-section:not(:has(.error-panel, .empty-inline)) {
@@ -5809,12 +5853,14 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
   .home-grid .verse-panel:has(.sauh-card-media) .sauh-card-content {
     /* The shared grid layout gives this block height:100%, which made it
-       overlap the photo band it was meant to sit under. */
+       overlap the photo band it was meant to sit under. Grow into the small
+       remainder instead (flex-grow, not height) so the loaded box matches the
+       skeleton box exactly; a fixed 0 0 auto left it 20–30 px lower. */
     height: auto !important;
     min-height: 0 !important;
     inset: auto !important;
     margin-top: 0 !important;
-    flex: 0 0 auto;
+    flex: 1 0 auto;
     background: var(--surface) !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -6012,49 +6058,11 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 
 /*
- * Home skeleton height follows the card it replaces. The old 290 px
- * reservation was 111–159 px taller than the loaded card on every breakpoint,
- * so the sections below jumped up as the verse arrived (CLS 0.13–0.14 in the
- * hosted perf run). Keeping the reservation equal to the painted height
- * removes the jump without reserving space the page never uses. The offline
- * card ("Sauh hari ini belum tersedia") lands in the same slot when the feed
- * cannot resolve, so it must own the same box; it used to be 19–48 px shorter
- * and pulled the sections below it up (CLS 0.0094 phone / 0.0085 tablet /
- * 0.0134 desktop in the hosted perf run).
+ * The no-verse states (skeleton, offline card) no longer need their own
+ * height: the reservation block above puts the same floor on every
+ * `.verse-panel` state, so neither the swap to the loaded card nor a failed
+ * feed changes the grid row.
  */
-@media (max-width: 599px) {
-  .home-grid .verse-panel:has(.sauh-skeleton),
-  .home-grid .verse-panel:has(.sauh-offline-state) {
-    min-height: 180px;
-  }
-}
-
-@media (min-width: 600px) and (max-width: 899px) {
-  .home-grid .verse-panel:has(.sauh-skeleton),
-  .home-grid .verse-panel:has(.sauh-offline-state) {
-    min-height: 182px;
-  }
-}
-
-@media (min-width: 900px) {
-  .home-grid .verse-panel:has(.sauh-skeleton),
-  .home-grid .verse-panel:has(.sauh-offline-state) {
-    min-height: 180px;
-  }
-
-  /* The flex children kept their phone padding, so the card still grew to
-     194 px before the verse arrived and pushed everything below it up by
-     64 px (hosted desktop shift 0.022). Compact them to the painted height. */
-  .home-grid .sauh-card-content:has(.sauh-skeleton) {
-    min-height: 0;
-    padding: 6px 12px;
-  }
-
-  .home-grid .verse-panel:has(.sauh-skeleton) .sauh-skeleton {
-    min-height: 0;
-    padding: 4px 0;
-  }
-}
 
 /* The queue page is also a `.hymn-page`, and the catalogue's flex tabs would
    otherwise win by source order. Both queue tabs are one control, so they must

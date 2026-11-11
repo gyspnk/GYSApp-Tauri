@@ -189,3 +189,8 @@ Pergeseran 10 px serentak ~650 ms adalah animasi `soft-rise` pada `.home-grid > 
 ### Audit axe permukaan baru (11 Nov)
 
 Empat permukaan diaudit dengan enam tag di `apps/web/e2e/shell-a11y.spec.ts`: rail Kidung + chip koleksi (listbox), dialog hapus playlist, kartu akun (login palsu), dan banner pembaruan (service worker palsu). Hasil: 0 pelanggaran setelah satu perbaikan — `role="status"` dipasang pada `<aside>` melanggar `aria-allowed-role`, jadi banner memakai `<div>` (`apps/web/src/service-worker-updates.ts:12`). Dua `incomplete` dibiarkan dan dicatat: `aria-valid-attr-value` pada chip karena axe tidak bisa menelusuri `aria-controls` saat `aria-haspopup`, dan `color-contrast` pada paragraf dialog karena latar overlay.
+
+### Beranda: satu lantai tinggi untuk semua keadaan panel ayat (11 Nov)
+
+Skeleton, kartu offline, dan kartu terisi kini memakai satu lantai `min-height`: 340 px dasar, 400 px di 960–1199, `max(510px, 56.25vw + 220px)` di bawah 600, dan `calc(56.25vw + 190px)` di 600–959. Di bawah 960 skeleton/offline juga mendapat placeholder media 16:9 supaya kotak isinya sama dengan kartu terisi.
+Tinggi terukur skeleton → loaded: 320/390 510→510, 599 557→557, 600 528→528, 768 622→622, 900 696→696, 960–1199 400→400, 1440 340→340 (selisih ≤0,7 px). CLS dengan feed nyata tertunda 1,5 detik: 320 0,222 → 0; 390 0,217 → 0; 600 0,185 → 0; 768 0,315 → 0; 900 0,285 → 0; 1440 0,059 → 0,020 (reflow di dalam panel yang sudah tetap). Kontrak `apps/web/e2e/home-verse-reservation.spec.ts` gagal di CSS lama (280 px @390, 458,8 px @900) dan lulus sesudahnya.
