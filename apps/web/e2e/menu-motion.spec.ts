@@ -222,6 +222,12 @@ for (const width of [390, 1440]) {
     await expect
       .poll(() => menu.evaluate((node) => getComputedStyle(node).opacity))
       .toBe("1");
+    // The rise animation scales the menu to 0.98 for 200 ms, and opacity reaches
+    // 1 well before that. Sampling mid-animation made the rect look 2 px off its
+    // trigger on a loaded shard. Sample the settled surface instead.
+    await menu.evaluate((node) =>
+      Promise.all(node.getAnimations().map((animation) => animation.finished)),
+    );
     const opensUp = (await menu.getAttribute("class"))!.includes("is-open-up");
     await menu.evaluate((node) =>
       node.setAttribute("data-menu-probe", "retained"),
