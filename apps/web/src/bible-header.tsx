@@ -123,6 +123,18 @@ export function BibleHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [hamburgerOpen]);
 
+  // The drawer is a dialog: moving focus inside it is what makes Escape and the
+  // tab order reach it at all, since focus otherwise stays on the trigger.
+  useEffect(() => {
+    if (!hamburgerOpen) return;
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+    const first = drawer.querySelector<HTMLElement>(
+      "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])",
+    );
+    (first ?? drawer).focus({ preventScroll: true });
+  }, [hamburgerOpen]);
+
   useEffect(() => {
     if (shouldOpenAudioSettings && bibleHeader) setHamburgerOpen(true);
   }, [bibleHeader, shouldOpenAudioSettings]);
@@ -254,7 +266,18 @@ export function BibleHeader({
               )}
 
               {/* Hamburger menu di paling kanan */}
-              <div className="reader-hamburger-wrapper" ref={hamburgerRef}>
+              <div
+                className="reader-hamburger-wrapper"
+                ref={hamburgerRef}
+                onKeyDown={(event) => {
+                  if (event.key !== "Escape" || event.defaultPrevented) return;
+                  event.preventDefault();
+                  setHamburgerOpen(false);
+                  hamburgerRef.current
+                    ?.querySelector<HTMLButtonElement>(".reader-hamburger-btn")
+                    ?.focus({ preventScroll: true });
+                }}
+              >
                 <button
                   className={`reader-context-button reader-hamburger-btn${hamburgerOpen ? " is-active" : ""}`}
                   type="button"
@@ -284,17 +307,7 @@ export function BibleHeader({
                       inert={!hamburgerOpen}
                       aria-hidden={!hamburgerOpen}
                       role="dialog"
-                      onKeyDown={(event) => {
-                        if (event.key !== "Escape" || event.defaultPrevented)
-                          return;
-                        event.preventDefault();
-                        setHamburgerOpen(false);
-                        hamburgerRef.current
-                          ?.querySelector<HTMLButtonElement>(
-                            ".reader-hamburger-btn",
-                          )
-                          ?.focus({ preventScroll: true });
-                      }}
+                      tabIndex={-1}
                       aria-label={translate(locale, "bible.menuTitle")}
                     >
                       <div className="hamburger-drawer-header">
