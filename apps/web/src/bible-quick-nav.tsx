@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { BibleBook } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 export { BiblePickerModal } from "./bible-picker.js";
@@ -88,6 +88,26 @@ export function BibleQuickNavOverlay({
   locale: Locale;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const [box, setBox] = useState({ width: 0, height: 0 });
+
+  // The sheet takes the whole screen now, so the column count has to follow the
+  // box it actually got instead of guessing from window.innerHeight.
+  useEffect(() => {
+    const element = boxRef.current;
+    if (!element || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      const rect = element.getBoundingClientRect();
+      setBox((previous) =>
+        Math.abs(previous.width - rect.width) < 1 &&
+        Math.abs(previous.height - rect.height) < 1
+          ? previous
+          : { width: rect.width, height: rect.height },
+      );
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   // Auto-scroll the active column to keep the selected item in view
   useEffect(() => {
@@ -134,13 +154,34 @@ export function BibleQuickNavOverlay({
       : dragState.activeColumn === "chapter"
         ? dragState.chapter
         : dragState.verse;
-  const availableRows = Math.max(
-    4,
-    Math.floor(
-      ((typeof window === "undefined" ? 800 : window.innerHeight) - 210) / 34,
+  const compact =
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-height: 540px) and (orientation: landscape)")
+      .matches;
+  const usableHeight = Math.max(
+    140,
+    (box.height ||
+      (typeof window === "undefined" ? 560 : window.innerHeight - 140)) -
+      (compact ? 100 : 150),
+  );
+  const usableWidth = Math.max(
+    260,
+    (box.width || (typeof window === "undefined" ? 800 : window.innerWidth)) -
+      32,
+  );
+  const rowPitch = compact ? 25 : 30;
+  const minColumn = compact ? 78 : 96;
+  const fitRows = Math.max(3, Math.floor(usableHeight / rowPitch));
+  // A column narrower than the minimum breaks book names into three lines, so
+  // the column count is capped by width first and only then by height.
+  const columns = Math.max(
+    1,
+    Math.min(
+      Math.ceil(items.length / fitRows),
+      Math.floor(usableWidth / minColumn),
     ),
   );
-  const columns = Math.max(1, Math.ceil(items.length / availableRows));
+  const rows = Math.max(1, Math.ceil(items.length / columns));
 
   return (
     <div
@@ -168,7 +209,7 @@ export function BibleQuickNavOverlay({
         </small>
       </div>
 
-      <div className="quick-nav-columns-container">
+      <div className="quick-nav-columns-container" ref={boxRef}>
         <div className="quick-nav-column is-active-column">
           <div className="quick-nav-column-header">{columnLabel}</div>
           <div
@@ -176,7 +217,7 @@ export function BibleQuickNavOverlay({
             ref={listRef}
             style={{
               gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-              gridTemplateRows: `repeat(${availableRows}, minmax(28px, auto))`,
+              gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
               gridAutoFlow: "column",
             }}
           >

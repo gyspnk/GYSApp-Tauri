@@ -2534,7 +2534,8 @@ body.is-resizing-bible {
   justify-content: flex-start;
   padding: max(0.75rem, env(safe-area-inset-top)) 0
     max(0rem, env(safe-area-inset-bottom));
-  background: transparent;
+  background: color-mix(in srgb, var(--canvas) 34%, transparent);
+  backdrop-filter: blur(7px);
   pointer-events: none;
   animation: quick-nav-in var(--motion-fast) var(--ease-out);
 }
@@ -2555,6 +2556,20 @@ body.is-resizing-bible {
   text-align: center;
   pointer-events: none;
   animation: quick-nav-in var(--motion-fast) var(--ease-out);
+}
+
+@media (max-height: 540px) and (orientation: landscape) {
+  .quick-nav-floater {
+    margin-bottom: 8px;
+    padding: 6px 14px;
+    min-width: 0;
+  }
+  .quick-nav-floater strong {
+    font-size: 1rem;
+  }
+  .quick-nav-floater small {
+    display: none;
+  }
 }
 
 .quick-nav-floater strong {
@@ -2579,8 +2594,8 @@ body.is-resizing-bible {
   width: 100%;
   height: auto;
   padding: max(14px, env(safe-area-inset-top))
-    max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom))
-    max(16px, env(safe-area-inset-left));
+    max(16px, env(safe-area-inset-right))
+    max(104px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   border: 0;
   border-radius: 0;
   background: color-mix(in srgb, var(--surface) 86%, transparent);
@@ -2646,25 +2661,28 @@ body.is-resizing-bible {
 .quick-nav-column-list {
   flex: 1;
   overflow: auto;
-  padding: 6px;
+  padding: 4px;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-rows: minmax(28px, auto);
-  align-content: start;
-  gap: 6px;
+  grid-auto-rows: minmax(24px, auto);
+  align-content: stretch;
+  gap: 4px;
 }
 
 .quick-nav-item {
   display: grid;
   place-items: center;
-  padding: 8px 10px;
+  padding: 4px 8px;
   font-size: 0.8125rem;
+  line-height: 1.2;
   text-align: center;
   border-radius: 6px;
   color: var(--ink);
   font-weight: 500;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: all var(--motion-fast);
 }
 
@@ -2673,4 +2691,31 @@ body.is-resizing-bible {
   color: var(--on-accent);
   font-weight: 700;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--blue) 40%, transparent);
+}
+
+/* Short landscape keeps the sheet geometry above the source order of the base
+   rules: the bottom pill hides (the readout already carries the step hint) and
+   the sheet keeps the 390 px of height it has. */
+@media (max-height: 540px) and (orientation: landscape) {
+  .quick-nav-columns-container {
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+  .quick-nav-multistep {
+    display: none;
+  }
+  .quick-nav-item {
+    padding: 2px 6px;
+    font-size: 0.6875rem;
+  }
+  .quick-nav-floater {
+    margin-bottom: 8px;
+    padding: 6px 14px;
+    min-width: 0;
+  }
+  .quick-nav-floater strong {
+    font-size: 1rem;
+  }
+  .quick-nav-floater small {
+    display: none;
+  }
 }
