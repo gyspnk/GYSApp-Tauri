@@ -67,6 +67,25 @@ describe("readBibleTypography", () => {
     });
   });
 
+  it("migrates the legacy 18 px default once and keeps deliberate sizes", () => {
+    const storage = createStorage();
+    stubWindow(storage);
+    storage.setItem(KEY, JSON.stringify({ fontSize: 18, lineHeight: 1.72 }));
+    expect(readBibleTypography().fontSize).toBe(
+      DEFAULT_BIBLE_TYPOGRAPHY.fontSize,
+    );
+    expect(JSON.parse(storage.getItem(KEY) ?? "{}").version).toBe(2);
+
+    storage.setItem(KEY, JSON.stringify({ fontSize: 22, lineHeight: 1.72 }));
+    expect(readBibleTypography().fontSize).toBe(22);
+
+    storage.setItem(
+      KEY,
+      JSON.stringify({ version: 2, fontSize: 18, lineHeight: 1.72 }),
+    );
+    expect(readBibleTypography().fontSize).toBe(18);
+  });
+
   it("falls back for malformed or non-numeric payloads", () => {
     const storage = createStorage();
     stubWindow(storage);
@@ -103,6 +122,7 @@ describe("writeBibleTypography", () => {
     const next = writeBibleTypography({ fontSize: 20 });
     expect(next).toEqual({ fontSize: 20, lineHeight: 1.72 });
     expect(JSON.parse(storage.getItem(KEY) ?? "null")).toEqual({
+      version: 2,
       fontSize: 20,
       lineHeight: 1.72,
     });

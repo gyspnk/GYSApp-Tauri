@@ -19,6 +19,11 @@ export const BIBLE_LINE_HEIGHT_MIN = 1.4;
 export const BIBLE_LINE_HEIGHT_MAX = 2.2;
 
 const STORAGE_KEY = "gys-bible-typography-v1";
+// Version 2 moved the default from 18 px to 20 px. A stored value without a
+// version is a legacy default, so 18 is migrated once; any other stored size was
+// a deliberate choice and is left alone.
+const STORAGE_VERSION = 2;
+const LEGACY_DEFAULT_FONT_SIZE = 18;
 const CHANGE_EVENT = "gys-bible-typography-change";
 
 function storage(): Storage | undefined {
@@ -62,13 +67,33 @@ export function readBibleTypography(): BibleTypography {
     const parsed: unknown = JSON.parse(target.getItem(STORAGE_KEY) ?? "null");
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
       return DEFAULT_BIBLE_TYPOGRAPHY;
-    const candidate = parsed as { fontSize?: unknown; lineHeight?: unknown };
+    const candidate = parsed as {
+      version?: unknown;
+      fontSize?: unknown;
+      lineHeight?: unknown;
+    };
     if (!finite(candidate.fontSize) || !finite(candidate.lineHeight))
       return DEFAULT_BIBLE_TYPOGRAPHY;
-    return clampTypography({
-      fontSize: candidate.fontSize,
+    const legacy = candidate.version !== STORAGE_VERSION;
+    const migrated =
+      legacy && candidate.fontSize === LEGACY_DEFAULT_FONT_SIZE
+        ? DEFAULT_BIBLE_TYPOGRAPHY.fontSize
+        : candidate.fontSize;
+    const nextValue = clampTypography({
+      fontSize: migrated,
       lineHeight: candidate.lineHeight,
     });
+    if (legacy) {
+      try {
+        target.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ ...nextValue, version: STORAGE_VERSION }),
+        );
+      } catch {
+        // A read must still succeed when storage is read-only.
+      }
+    }
+    return nextValue;
   } catch {
     return DEFAULT_BIBLE_TYPOGRAPHY;
   }
@@ -81,7 +106,10 @@ export function writeBibleTypography(
   const target = storage();
   if (target) {
     try {
-      target.setItem(STORAGE_KEY, JSON.stringify(nextValue));
+      target.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ ...nextValue, version: STORAGE_VERSION }),
+      );
     } catch {
       // Private browsing and quota failures must not block reading.
     }
