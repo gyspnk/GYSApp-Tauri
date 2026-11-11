@@ -25,6 +25,23 @@ const transparentPixel = Buffer.from(
 
 async function prepare(page: Page): Promise<void> {
   await page.clock.setFixedTime(new Date("2026-09-12T06:00:00+07:00"));
+  // Backdrop blur samples the compositor, so identical runs can differ by a
+  // few pixels. Pin blur off in the fixture only; the product keeps it.
+  await page.addInitScript(() => {
+    const freeze = () => {
+      if (document.getElementById("visual-freeze-backdrop")) return;
+      const style = document.createElement("style");
+      style.id = "visual-freeze-backdrop";
+      style.textContent =
+        "*, *::before, *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }";
+      document.head.appendChild(style);
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", freeze, { once: true });
+    } else {
+      freeze();
+    }
+  });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.route("https://raw.githubusercontent.com/**", (route) =>
     route.abort(),

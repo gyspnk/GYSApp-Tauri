@@ -91,6 +91,24 @@ const sauhFeed = [
 
 async function prepare(page: Page): Promise<void> {
   await page.clock.setFixedTime(new Date("2026-09-28T10:00:00Z"));
+  // Backdrop blur samples the compositor, so the notes modal and the reader
+  // settings panel can differ by a few pixels between identical runs. Pin blur
+  // off in the fixture only; the product keeps it.
+  await page.addInitScript(() => {
+    const freeze = () => {
+      if (document.getElementById("visual-freeze-backdrop")) return;
+      const style = document.createElement("style");
+      style.id = "visual-freeze-backdrop";
+      style.textContent =
+        "*, *::before, *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }";
+      document.head.appendChild(style);
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", freeze, { once: true });
+    } else {
+      freeze();
+    }
+  });
   // The offline row prints the device's real storage estimate, so the number —
   // and whether the line renders at all — changed between CI runners. Pin both.
   await page.addInitScript(() => {
