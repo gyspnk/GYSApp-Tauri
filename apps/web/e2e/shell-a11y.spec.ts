@@ -331,6 +331,28 @@ async function readDialogColors(
   }, theme);
 }
 
+/** The Suara shelf only fills when the fixture feed parses; see suaraFeed. */
+async function openSuara(
+  page: Page,
+  viewport: { width: number; height: number },
+) {
+  await page.setViewportSize(viewport);
+  await page.route("**/offline/suara-sejati.json", (route) =>
+    route.fulfill({ json: suaraFeed }),
+  );
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/suara");
+
+  await expect(page.getByTestId("suara-page")).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.locator(".catalog-search")).toBeVisible();
+  await expect(
+    page.getByRole("searchbox", { name: "Cari kesaksian" }),
+  ).toBeVisible();
+  await expect(page.locator(".suara-library-item").first()).toBeVisible();
+}
+
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
@@ -387,21 +409,15 @@ for (const viewport of [
 test("Suara list and search field are axe clean on a phone", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.route("**/offline/suara-sejati.json", (route) =>
-    route.fulfill({ json: suaraFeed }),
-  );
-  await page.route(/^https:\/\//, (route) => route.abort());
-  await page.goto("/GYSApp-Tauri/suara");
+  await openSuara(page, { width: 390, height: 844 });
 
-  await expect(page.getByTestId("suara-page")).toBeVisible({
-    timeout: 30_000,
-  });
-  await expect(page.locator(".catalog-search")).toBeVisible();
-  await expect(
-    page.getByRole("searchbox", { name: "Cari kesaksian" }),
-  ).toBeVisible();
-  await expect(page.locator(".suara-library-item").first()).toBeVisible();
+  await expectNoAxeViolations(page);
+});
+
+test("Suara list and search field are axe clean at 1440x900", async ({
+  page,
+}) => {
+  await openSuara(page, { width: 1440, height: 900 });
 
   await expectNoAxeViolations(page);
 });
@@ -427,6 +443,26 @@ test("Lainnya settings groups and one open panel are axe clean on a phone", asyn
   const appearance = page.locator('[data-setting="appearance"]');
   await appearance.locator("> summary").click();
   await expect(appearance.locator(".appearance-card")).toBeVisible();
+
+  await expectNoAxeViolations(page);
+});
+
+test("Lainnya offline storage panel is axe clean at 1440x900", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/lainnya?section=offline");
+
+  await expect(page.locator(".more-page")).toBeVisible({ timeout: 30_000 });
+  const offline = page.locator('[data-setting="offline"]');
+  // `section=offline` is not one of the mapped shortcuts, so open the row.
+  if (
+    !(await offline.evaluate((element) => (element as HTMLDetailsElement).open))
+  ) {
+    await offline.locator("> summary").click();
+  }
+  await expect(offline.locator(".more-storage-note")).toBeVisible();
 
   await expectNoAxeViolations(page);
 });
