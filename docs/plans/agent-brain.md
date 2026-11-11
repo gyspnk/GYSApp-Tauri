@@ -67,3 +67,37 @@ salah satunya tanpa alasan dicabut.
 - Putaran 33: dua subagent paralel dijalankan (diagnosis scroll Kidung, spesifikasi
   plugin diagram) dan satu builder (pemangkasan CSS mati). Hasilnya diperiksa pada
   putaran yang sama.
+
+## Panel otak di GB Tools (10 November 2026)
+
+Plugin sidebar `@local/kiss-bridge` sekarang tampil sebagai **GB Tools** (judul dock,
+judul dok dan metadata locale); nama paket dan id plugin tetap `@local/kiss-bridge`
+supaya pemasangan `link:` di profil web tidak berubah. Menu keempat, **Agent Brain**,
+adalah panel peta delegasi:
+
+- membaca `ctx.get('sessions').list` (layanan klien resmi; tidak ada HTTP baru),
+  menerima snapshot berbentuk `{ byId }` maupun array, dan berlangganan perubahan;
+- akar = sesi tanpa `parentSessionId` (maksimal 4, terbaru dulu), anak =
+  `origin === 'subagent'` atau sesi yang induknya tampil (maksimal 14);
+- simpul berjalan berdenyut, tepi dari induk ke anak bergerak, label dari nama
+  folder kerja atau 6 karakter id; klik menyalin id sesi;
+- batas jujur: panel belum membaca fase workflow atau nama tool, hanya
+  sesi/subagent dan statusnya. Tidak ada polling: satu langganan, satu render.
+
+## Aturan swarm (supaya tidak membebani mesin)
+
+1. Pecah pekerjaan hanya bila bagiannya benar-benar independen; dua subagent
+   untuk pekerjaan yang saling menunggu lebih lambat daripada satu.
+2. Maksimal tiga subagent berjalan bersamaan di mesin ini; verifier dijalankan
+   terpisah dari builder supaya tidak menilai pekerjaannya sendiri.
+3. Setiap brief memuat lingkup berkas, larangan (mis. jangan commit), bentuk
+   keluaran, dan cara memverifikasi. Builder tidak pernah commit.
+4. Otak memantau lewat panel dan menutup subagent yang selesai; plugin atau
+   subagent yang tidak lagi dipakai dihapus, bukan dibiarkan.
+
+## Lingkup
+
+Otak ini bekerja untuk seluruh harness, bukan hanya GYSApp-Tauri: repositori
+aplikasi, plugin sidebar, skrip harian, dan dokumen rencana. Putaran aplikasi
+tetap berjalan lewat `docs/plans/ui-spec-loop.md`; pekerjaan harness lewat
+panel GB Tools dan `docs/plans/agent-brain.md`.
