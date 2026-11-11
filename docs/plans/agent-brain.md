@@ -175,3 +175,29 @@ event terpaginasi di atas `agent-start` lama, jumlah agen adalah batas bawah —
 status buka/selesai tetap benar karena event agen yang lebih baru dari `run-end`
 membuktikan run masih terbuka. Panel belum punya kontrak browser; verifikasinya
 `node --check`, `node test/smoke.js`, cakupan kunci locale, dan urutan event sintetis.
+
+## Alur kerja seperti developer: issue tracking (11 Nov)
+
+Otak bekerja seperti developer pada umumnya: masalah, pekerjaan yang belum
+selesai, dan keputusan yang menunggu tinggal di GitHub issue repo ini, bukan di
+catatan percakapan yang hilang.
+
+1. **Satu masalah, satu issue.** `gh issue create` dengan judul yang menyebut
+   lingkup (`[harness]`, `[release]`, `[data]`, `[bug]`) dan badan berisi apa yang
+   salah, bukti yang sudah ada, dan apa yang akan menutupnya. Label: `bug`,
+   `harness`, `release`, `blocked`.
+2. **Antrean putaran dibaca dari issue terbuka lebih dulu**, baru dari dokumen
+   rencana. Issue yang sudah ditutup tidak dikerjakan ulang.
+3. **Commit menyebut issue** (`Refs #12`) supaya riwayat git dan papan issue
+   saling menunjuk.
+4. **Penutupan wajib berbukti**: komentar berisi run id + hasil hosted, lalu
+   `gh issue close`. Issue yang ternyata tidak dikerjakan ditutup dengan alasan,
+   bukan dibiarkan menggantung.
+5. **Jangan membuat issue untuk hal yang sudah selesai**; kalau sebuah issue
+   ternyata salah (mis. masalahnya bukan di tempat yang ditulis), perbaiki badan
+   issue sebelum menutupnya.
+
+Antrean terbuka saat aturan ini ditulis: #12 panel Agent Brain belum punya
+kontrak browser, #13 commit plugin GB Tools belum dipisah/didorong, #14 rilis
+putaran 276, #15 Suara butuh data audio sebelum kartu 16:9 dan tombol putar bisa
+jujur.
