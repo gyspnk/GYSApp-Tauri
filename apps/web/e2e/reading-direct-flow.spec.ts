@@ -385,8 +385,10 @@ test("faith row opens its sheet and the sheet opens the PDF at the resume page",
 
   await page.goto("/GYSApp-Tauri/iman");
   const row = page.locator(".faith-row").first();
-  await expect(row).toContainText(/Lanjut.*4/i);
   await row.click();
+  await expect(page.locator(".faith-read-more-progress")).toContainText(
+    /Lanjut.*4/i,
+  );
   await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
 
   await expect(page.locator(".faith-pdf-backdrop")).toBeVisible();

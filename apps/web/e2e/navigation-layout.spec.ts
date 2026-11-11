@@ -385,7 +385,8 @@ test.describe("responsive reader navigation", () => {
       );
       await expect(row).toHaveAttribute("aria-haspopup", "dialog");
       await expect(row).toHaveAttribute("aria-expanded", "false");
-      await expect(row).toContainText("Lanjut · halaman 4");
+      // The PDF position belongs to the sheet now; the row keeps the statement.
+      await expect(row).not.toContainText("Lanjut · halaman 4");
 
       const rows = await page.locator(".faith-row").evaluateAll((elements) =>
         elements.slice(0, 6).map((element) => {
