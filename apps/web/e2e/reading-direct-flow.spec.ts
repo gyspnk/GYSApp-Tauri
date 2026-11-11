@@ -392,7 +392,7 @@ test("faith row opens its sheet and the sheet opens the PDF at the resume page",
   await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
 
   await expect(page.locator(".faith-pdf-backdrop")).toBeVisible();
-  await expect(page.locator(".faith-modal-backdrop")).toHaveCount(0);
+  await expect(page.locator(".faith-modal-backdrop")).toBeVisible();
   await expect(page.locator(".faith-pdf-stats")).toContainText(/Halaman 4\/10/);
   await expect(page.locator(".faith-pdf-progress")).toHaveAttribute(
     "value",

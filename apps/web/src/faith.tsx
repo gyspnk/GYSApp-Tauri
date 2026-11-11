@@ -303,7 +303,6 @@ export function FaithPage({ locale }: { locale: Locale }) {
     if (!entry) return;
     rememberDialogOpener(pdfOpenerRef, trigger);
     transitionReader(() => {
-      setSelected("");
       setPdfProgress(readFaithPdfProgress(item.number));
       setPdfRead({
         number: item.number,
@@ -319,9 +318,9 @@ export function FaithPage({ locale }: { locale: Locale }) {
     });
   };
   const openReadMore = (trigger?: HTMLElement | null) => {
-    // The sheet closes when the reader opens, so its own trigger disappears;
-    // focus returns to the row that opened the sheet once the reader closes.
-    if (active) openFaithPdf(active, faithOpenerRef.current ?? trigger);
+    // The sheet stays underneath the reader, so its own trigger remains the
+    // place to return to when the reader closes.
+    if (active) openFaithPdf(active, trigger);
   };
   const closeReadMore = () => {
     transitionReader(() => {

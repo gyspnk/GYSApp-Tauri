@@ -51,6 +51,8 @@ for (const width of [390, 768, 1440]) {
 test("all ten official doctrine PDFs render without external requests", async ({
   page,
 }) => {
+  // Ten documents plus the sheet hand-back need more than the default 40 s.
+  test.slow();
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/iman");
   const rows = page.locator(".faith-row");
@@ -74,5 +76,8 @@ test("all ten official doctrine PDFs render without external requests", async ({
     ).toBe(255);
     await dialog.locator(".faith-pdf-close").click();
     await expect(dialog).toBeHidden();
+    // The topic sheet stays under the reader; close it before the next row.
+    await page.locator(".faith-selection-close").click();
+    await expect(page.locator(".faith-modal-backdrop")).toHaveCount(0);
   }
 });

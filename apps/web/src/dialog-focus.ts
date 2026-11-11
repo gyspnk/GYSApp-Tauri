@@ -12,6 +12,14 @@ export const DIALOG_FOCUSABLE_SELECTOR = [
 
 type FocusTargetRef = { current: HTMLElement | null };
 
+// Dialogs can stack: the belief sheet keeps the PDF reader on top. Escape must
+// go to the last dialog opened, not to whichever keydown listener runs first.
+const dialogLayers: HTMLElement[] = [];
+
+function isTopDialog(dialog: HTMLElement): boolean {
+  return dialogLayers[dialogLayers.length - 1] === dialog;
+}
+
 function focusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(
     container.querySelectorAll<HTMLElement>(DIALOG_FOCUSABLE_SELECTOR),
@@ -92,6 +100,8 @@ export function useDialogFocus({
     if (!open) return;
     if (!openerRef.current) openerRef.current = activeFocusTarget();
     wasOpenRef.current = true;
+    const dialogLayer = dialogRef.current;
+    if (dialogLayer) dialogLayers.push(dialogLayer);
 
     const focusFrame = window.requestAnimationFrame(() => {
       const dialog = dialogRef.current;
@@ -103,15 +113,17 @@ export function useDialogFocus({
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
       if (event.key === "Escape") {
+        if (!isTopDialog(dialog)) return;
         event.preventDefault();
         onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
+      if (!isTopDialog(dialog)) return;
 
-      const dialog = dialogRef.current;
-      if (!dialog) return;
       const focusable = focusableElements(dialog);
       if (!focusable.length) {
         event.preventDefault();
@@ -139,6 +151,10 @@ export function useDialogFocus({
     return () => {
       window.cancelAnimationFrame(focusFrame);
       document.removeEventListener("keydown", onKeyDown);
+      const layerIndex = dialogLayer
+        ? dialogLayers.lastIndexOf(dialogLayer)
+        : -1;
+      if (layerIndex >= 0) dialogLayers.splice(layerIndex, 1);
       // StrictMode replays effects while the dialog is still mounted.
       if (dialogRef.current || !wasOpenRef.current) return;
       wasOpenRef.current = false;

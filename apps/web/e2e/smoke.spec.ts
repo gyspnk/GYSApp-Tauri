@@ -342,7 +342,7 @@ test("faith row opens its sheet and the sheet opens the PDF viewer", async ({
   await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
   const pdfOverlay = page.locator(".faith-pdf-backdrop");
   await expect(pdfOverlay).toBeVisible();
-  await expect(page.locator(".faith-modal-backdrop")).toHaveCount(0);
+  await expect(page.locator(".faith-modal-backdrop")).toBeVisible();
   await expect(pdfOverlay.locator(".faith-pdf-head")).toBeVisible();
   await expect(pdfOverlay.locator(".faith-pdf-body")).toBeVisible();
   await expect(
@@ -350,6 +350,7 @@ test("faith row opens its sheet and the sheet opens the PDF viewer", async ({
   ).toBeVisible();
   await pdfOverlay.getByRole("button", { name: "Tutup bacaan" }).click();
   await expect(pdfOverlay).toBeHidden();
+  await expect(page.locator(".faith-modal-backdrop")).toBeVisible();
 });
 
 test("offline pack manager keeps one update action and version check", async ({
