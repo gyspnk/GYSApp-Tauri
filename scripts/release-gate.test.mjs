@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { cadenceBase, checkCadence } from "./release-gate.mjs";
+import { cadenceBase, checkCadence, dueTurn } from "./release-gate.mjs";
 
 const cadence = {
   lastTurn: 251,
@@ -35,4 +35,20 @@ test("only a version-shaped lastTag becomes the changelog base", () => {
   assert.equal(cadenceBase(cadence), "v0.1.0-preview.20261110.2");
   assert.equal(cadenceBase({ lastTag: "latest" }), "");
   assert.equal(cadenceBase({}), "");
+});
+
+test("reports the due turn for workflows without a turn input", () => {
+  assert.equal(dueTurn(cadence), 276);
+});
+
+test("refuses a due turn that is missing or already behind lastTurn", () => {
+  assert.throws(() => dueTurn({}), /no usable nextDueTurn/);
+  assert.throws(
+    () => dueTurn({ nextDueTurn: "soon" }),
+    /no usable nextDueTurn/,
+  );
+  assert.throws(
+    () => dueTurn({ lastTurn: 301, nextDueTurn: 276 }),
+    /nextDueTurn 276 is not after lastTurn 301/,
+  );
 });

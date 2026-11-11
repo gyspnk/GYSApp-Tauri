@@ -74,6 +74,9 @@ sebelum rilis diterbitkan, dan APK hanya berbeda 1 504 byte dari rilis sebelumny
 
 - **Signing debug**: APK tidak bisa dipakai untuk pembaruan Play Store; butuh keystore stabil milik pemilik. Selama itu, rilis diberi label **pre-release** dan catatan signing ditulis di changelog.
 - **Rilis Windows** memakai alur terpisah (`native-windows.yml` / `release-request.yml`) dan tidak termasuk dalam kadensi ini kecuali diminta. Berkas `.github/release-request.json` adalah pemicu satu kali: menyentuhnya (termasuk menghapusnya) menjalankan `release-request.yml` dengan tag yang tertulis di dalamnya, jadi jangan diedit sebagai bagian dari rilis Android.
+- Jalur `release-request.yml` tidak lagi melewati kadensi: ia membaca `nextDueTurn` dari
+  `.github/release-cadence.json`, meneruskan angka itu sebagai `turn` ke `native-android.yml`,
+  dan menjadi no-op bila tag yang diminta sudah terbit atau tidak lebih baru dari `lastTag`.
 - APK hanya arm64 (perangkat Android modern). Bila perlu armv7/x86_64, itu keputusan terpisah dengan biaya build lebih besar.
 - Kadensi mengikuti **putaran goal**, bukan tanggal: bila goal berhenti, tidak ada rilis baru sampai goal aktif lagi.
 

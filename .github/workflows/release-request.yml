@@ -24,6 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate the explicit release request
+        id: request
         run: |
           node - <<'NODE'
           const fs = require('node:fs');
@@ -33,6 +34,24 @@ jobs:
           fs.writeFileSync('release-notes.md', request.notes);
           NODE
           GYS_RELEASE_TAG=$(node -p "JSON.parse(require('node:fs').readFileSync('.github/release-request.json', 'utf8')).tag")
+          turn=$(node scripts/release-gate.mjs --due)
+          echo "GYS_RELEASE_TURN=$turn" >> "$GITHUB_ENV"
+          if state=$(gh release view "$GYS_RELEASE_TAG" --json isDraft --jq '.isDraft' 2>/dev/null); then
+            if [ "$state" = "false" ]; then
+              echo "::notice::$GYS_RELEASE_TAG is already published; the request is a no-op."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          base=$(node scripts/release-gate.mjs --base)
+          if [ -n "$base" ] && [ "$(printf '%s\n%s\n' "$base" "$GYS_RELEASE_TAG" | LC_ALL=C sort | head -n 1)" = "$GYS_RELEASE_TAG" ]; then
+            echo "::notice::$GYS_RELEASE_TAG is not after the cadence's last release $base; the request is a no-op."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # This path has no turn input, so it uses the due turn from the cadence
+          # rather than building an APK whose versionCode was never raised.
+          node scripts/release-gate.mjs --turn "$turn"
           if ! gh release view "$GYS_RELEASE_TAG" --json isDraft > release-state.json; then
             gh release create "$GYS_RELEASE_TAG" --draft --prerelease --target "$GITHUB_SHA" --title "$GYS_RELEASE_TAG" --notes-file release-notes.md
             gh release view "$GYS_RELEASE_TAG" --json isDraft > release-state.json
@@ -40,11 +59,13 @@ jobs:
           node -e "if (JSON.parse(require('node:fs').readFileSync('release-state.json', 'utf8')).isDraft !== true) throw new Error('Refusing to overwrite a published release')"
           gh release edit "$GYS_RELEASE_TAG" --target "$GITHUB_SHA"
       - name: Dispatch both builds from this exact commit
+        if: steps.request.outputs.skip != 'true'
         run: |
           test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
-          gh workflow run native-android.yml --ref main -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG"
+          gh workflow run native-android.yml --ref main -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG" -f turn="$GYS_RELEASE_TURN"
           gh workflow run native-windows.yml --ref main -f ref="$GITHUB_SHA" -f signed=false -f release_tag="$GYS_RELEASE_TAG"
       - name: Wait for native packaging, Android runtime, and CI
+        if: steps.request.outputs.skip != 'true'
         run: |
           set -euo pipefail
           for workflow in native-android.yml native-windows.yml ci.yml; do
@@ -58,6 +79,7 @@ jobs:
             gh run watch "$run_id" --interval 20 --exit-status
           done
       - name: Verify the downloaded release assets and publish
+        if: steps.request.outputs.skip != 'true'
         run: |
           set -euo pipefail
           gh release download "$GYS_RELEASE_TAG" --dir release-assets

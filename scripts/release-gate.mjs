@@ -43,13 +43,26 @@ export function cadenceBase(cadence) {
   return /^v[0-9]/.test(tag) ? tag : "";
 }
 
+/** The turn the next release closes; throws when the cadence cannot say. */
+export function dueTurn(cadence) {
+  const due = Number(cadence?.nextDueTurn);
+  if (!Number.isInteger(due) || due <= 0) {
+    throw new Error("cadence file has no usable nextDueTurn");
+  }
+  const last = Number(cadence?.lastTurn);
+  if (Number.isInteger(last) && due <= last) {
+    throw new Error(`cadence nextDueTurn ${due} is not after lastTurn ${last}`);
+  }
+  return due;
+}
+
 function main(argv) {
   const args = {};
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     if (!token.startsWith("--")) continue;
     const [flag, inline] = token.slice(2).split("=");
-    if (flag === "force" || flag === "base") {
+    if (flag === "force" || flag === "base" || flag === "due") {
       args[flag] = true;
       continue;
     }
@@ -62,6 +75,17 @@ function main(argv) {
     // newest release, which once picked the wrong commit range.
     const base = cadenceBase(cadence);
     if (base) console.log(base);
+    return;
+  }
+  if (args.due) {
+    // The requested-release workflow has no turn input, so it reads the due
+    // turn instead of guessing one.
+    try {
+      console.log(dueTurn(cadence));
+    } catch (error) {
+      console.error(`release gate: ${error.message}`);
+      process.exit(1);
+    }
     return;
   }
   const check = checkCadence(cadence, args.turn);
