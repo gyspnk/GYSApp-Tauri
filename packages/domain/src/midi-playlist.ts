@@ -1,11 +1,8 @@
-import {
-  MidiPlaylistSchema,
-  type MidiPlaylist,
-  type MidiPlaylistItem,
-} from "@gys/contracts";
+import type { MidiPlaylist, MidiPlaylistItem } from "@gys/contracts";
+import { parseMidiPlaylist } from "./midi-playlist-parse.js";
 
 export class MidiPlaylistController {
-  private state: MidiPlaylist = MidiPlaylistSchema.parse({
+  private state: MidiPlaylist = parseMidiPlaylist({
     version: 1,
     items: [],
   });
@@ -70,7 +67,7 @@ export class MidiPlaylistController {
   public setOptions(
     options: Partial<Omit<MidiPlaylist, "version" | "items" | "currentIndex">>,
   ): void {
-    this.state = MidiPlaylistSchema.parse({ ...this.state, ...options });
+    this.state = parseMidiPlaylist({ ...this.state, ...options });
   }
 
   public current(): MidiPlaylistItem | undefined {
@@ -120,6 +117,6 @@ export class MidiPlaylistController {
 
   public import(serialized: string): void {
     const parsed: unknown = JSON.parse(serialized);
-    this.state = MidiPlaylistSchema.parse(parsed);
+    this.state = parseMidiPlaylist(parsed);
   }
 }

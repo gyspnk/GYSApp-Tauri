@@ -203,3 +203,5 @@ Tinggi terukur skeleton → loaded: 320/390 510→510, 599 557→557, 600 528→
 
 Tinggi panel sudah tetap, tetapi isi kartu masih melompat: state skeleton/offline memakai padding bertumpuk sementara kartu terisi ≥960 px adalah hero gabungan (panel padding 0, media absolut, salinan di scrim bawah). Satu blok `@media (min-width: 960px)` di `apps/web/src/app-design.css` menyamakan strukturnya — panel `position: relative; padding: 0`, piring `::before` inset 0, salinan `margin-top: auto` dengan lantai 221 px untuk tiga keadaan (tiga selector `:has()` wajib agar menang atas `min-height: 96px` di baris 4709).
 CLS feed nyata tertunda 1,5 detik: 960 0,0589 → 0,00001; 1024 0,0559 → 0,00001; 1199 0,0470 → 0,00001; 1440 0,0201 → 0. Kontrak `home-verse-reservation.spec.ts` kini mengulang 390/900/1024/1440 dan menambahkan `|dTop| ≤ 8` serta `|dH| ≤ 8` untuk `.sauh-card-content`; dengan CSS lama 2 dari 4 gagal (1024 `Received: 205.359375`, 1440 `Received: 129.5625`).
+
+Catatan performa (bukan UI): grafik awal turun 160,5 → 132,6 KiB gz setelah skema zod playlist keluar dari jalur first paint; angka resmi ada di `node scripts/check-bundle-budget.mjs`, bukan catatan lama.
