@@ -48,35 +48,45 @@ test("phones keep both chapter doors stacked and reachable", async ({
   for (const height of boxes) expect(height).toBeGreaterThanOrEqual(44);
 });
 
-test("the text keeps a readable measure and tabular verse numbers", async ({
+test("the text keeps a readable measure in portrait and spans a landscape page", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
   await page.route(/^https:\/\//, (route) => route.abort());
-  await page.goto("/GYSApp-Tauri/bible");
-  await expect(page.locator(".verse-content").first()).toBeVisible();
 
-  const metrics = await page.evaluate(() => {
-    const content = document.querySelector(".verse-content") as HTMLElement;
-    const number = document.querySelector(".verse-number") as HTMLElement;
-    const style = getComputedStyle(content);
-    const probe = document.createElement("span");
-    probe.style.cssText = "position:absolute;visibility:hidden;width:10ch";
-    probe.style.fontFamily = style.fontFamily;
-    probe.style.fontSize = style.fontSize;
-    probe.style.fontWeight = style.fontWeight;
-    document.body.append(probe);
-    const ch = probe.getBoundingClientRect().width / 10;
-    probe.remove();
-    return {
-      width: content.clientWidth,
-      ch,
-      numeric: getComputedStyle(number).fontVariantNumeric,
-    };
-  });
+  const measure = async (viewport: { width: number; height: number }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/GYSApp-Tauri/bible");
+    await expect(page.locator(".verse-content").first()).toBeVisible();
+    return page.evaluate(() => {
+      const content = document.querySelector(".verse-content") as HTMLElement;
+      const number = document.querySelector(".verse-number") as HTMLElement;
+      const style = getComputedStyle(content);
+      const probe = document.createElement("span");
+      probe.style.cssText = "position:absolute;visibility:hidden;width:10ch";
+      probe.style.fontFamily = style.fontFamily;
+      probe.style.fontSize = style.fontSize;
+      probe.style.fontWeight = style.fontWeight;
+      document.body.append(probe);
+      const ch = probe.getBoundingClientRect().width / 10;
+      probe.remove();
+      return {
+        width: content.clientWidth,
+        ch,
+        numeric: getComputedStyle(number).fontVariantNumeric,
+        page: document.querySelector("main")?.clientWidth ?? 0,
+      };
+    });
+  };
 
-  expect(metrics.numeric).toBe("tabular-nums");
-  // The reader column owns the width up to 88ch; this guards the ~90
-  // character ceiling rather than the old fixed 64ch card measure.
-  expect(metrics.width / metrics.ch).toBeLessThanOrEqual(90);
+  // Portrait keeps the 90-character ceiling: a full-width column would be
+  // unreadable on a tall phone.
+  const portrait = await measure({ width: 768, height: 1024 });
+  expect(portrait.numeric).toBe("tabular-nums");
+  expect(portrait.width / portrait.ch).toBeLessThanOrEqual(90);
+
+  // Landscape is the owner's full-width reading mode, so the column must own
+  // the page instead of the old centred 46rem card.
+  const landscape = await measure({ width: 1440, height: 900 });
+  expect(landscape.numeric).toBe("tabular-nums");
+  expect(landscape.width / landscape.page).toBeGreaterThanOrEqual(0.85);
 });

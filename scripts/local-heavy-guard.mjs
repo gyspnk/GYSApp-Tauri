@@ -25,6 +25,7 @@ console.error(
     "",
     "Owner policy (10 Nov): local runs are fine when they are the fast path.",
     "Fast local check:  pnpm check:fast     (format + typecheck + touched units)",
+    "One browser spec:  pnpm e2e:one e2e/x.spec.ts   (rebuilds only when src is newer)",
     "  • see what Actions will run for HEAD:  pnpm verify",
     "  • wait for that run:                    pnpm verify --wait",
     "  • request the screenshot/audit matrix:  pnpm verify:qa",

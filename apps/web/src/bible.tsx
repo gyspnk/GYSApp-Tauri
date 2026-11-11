@@ -154,6 +154,14 @@ function findNextTarget(
 const EMPTY_BOOKMARKS = new Set<string>();
 const EMPTY_HIGHLIGHTS: Record<string, string> = {};
 
+// Fixed overlays belong inside the app's main landmark: axe's `region` rule
+// reports page content that sits outside every landmark, and a body portal is
+// exactly that. The shell is mounted before the interactions that open these
+// layers; the body fallback keeps standalone renders working.
+function fixedOverlayRoot(): HTMLElement {
+  return document.getElementById("main-content") ?? document.body;
+}
+
 export function BiblePage({ locale }: { locale: Locale }) {
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -1900,7 +1908,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
                     : translate(locale, "bible.quickContinue")}
                 </span>
               </div>,
-              document.body,
+              fixedOverlayRoot(),
             )}
           <div className="reader-pagination">
             <button
@@ -2134,7 +2142,7 @@ export function BiblePage({ locale }: { locale: Locale }) {
               </button>
             </div>
           </div>,
-          document.body,
+          fixedOverlayRoot(),
         )}
       {selectionToolbar && (
         <div

@@ -35,6 +35,18 @@ async function expectNoAxeViolations(page: Page) {
   ).toEqual([]);
 }
 
+// `region` is best-practice, not WCAG: it only fires when fixed layers sit
+// outside the page landmarks. Both drag states have to stay clean.
+async function expectNoBestPracticeViolations(page: Page) {
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "best-practice"])
+    .analyze();
+  expect(
+    results.violations,
+    JSON.stringify(results.violations, null, 2),
+  ).toEqual([]);
+}
+
 async function startQuickNav(page: Page) {
   const handle = page.locator(".quick-nav-handle");
   const handleBox = await handle.boundingBox();
@@ -95,9 +107,11 @@ for (const viewport of [
     });
 
     await expectNoAxeViolations(page);
+    await expectNoBestPracticeViolations(page);
 
     await page.mouse.up();
     await expect(page.locator(".quick-nav-drag-overlay")).toBeHidden();
     await expectNoAxeViolations(page);
+    await expectNoBestPracticeViolations(page);
   });
 }
