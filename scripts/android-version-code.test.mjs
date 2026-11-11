@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { applyVersionCode, codeForTurn } from "./android-version-code.mjs";
 
-const PROPERTIES = 'versionCode=1\nversionName="0.1.0"\n';
+const PROPERTIES = 'tauri.android.versionCode=1\nversionName="0.1.0"\n';
 
 test("a release turn maps to a version code that always grows", () => {
   assert.equal(codeForTurn(251), 1251);
@@ -14,7 +14,7 @@ test("a release turn maps to a version code that always grows", () => {
 test("the version code is written into the properties", () => {
   const { text, previous } = applyVersionCode(PROPERTIES, 1276);
   assert.equal(previous, 1);
-  assert.match(text, /^versionCode=1276$/m);
+  assert.match(text, /^tauri.android.versionCode=1276$/m);
   assert.match(text, /^versionName="0\.1\.0"$/m);
 });
 
@@ -27,7 +27,12 @@ test("a properties file without a version code is refused", () => {
 
 test("a code that would go backwards is refused", () => {
   assert.throws(
-    () => applyVersionCode("versionCode=1300\n", 1276),
+    () => applyVersionCode("tauri.android.versionCode=1300\n", 1276),
     /must only grow/,
   );
+});
+
+test("an older bare key is rewritten without renaming it", () => {
+  const { text } = applyVersionCode("versionCode=7\n", 1276);
+  assert.match(text, /^versionCode=1276$/m);
 });

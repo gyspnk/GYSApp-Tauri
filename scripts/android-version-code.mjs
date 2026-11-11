@@ -18,19 +18,23 @@ export function applyVersionCode(text, code) {
   if (!Number.isInteger(code) || code <= 0) {
     throw new Error(`version code must be a positive integer, got ${code}`);
   }
-  const pattern = /^versionCode=(\d+)$/m;
+  // Tauri writes `tauri.android.versionCode=1`; older generated files used the
+  // bare `versionCode=1`. Match the real key and keep it, so Gradle keeps reading
+  // the property it asks for (`getProperty("tauri.android.versionCode", "1")`).
+  const pattern = /^(tauri\.android\.)?versionCode=(\d+)$/m;
   const match = pattern.exec(text);
   if (!match) {
     throw new Error("tauri.properties has no versionCode line to raise");
   }
-  if (Number(match[1]) > code) {
+  const key = match[1] ?? "";
+  if (Number(match[2]) > code) {
     throw new Error(
-      `the properties already say versionCode=${match[1]}, above ${code}; the code must only grow`,
+      `the properties already say ${key}versionCode=${match[2]}, above ${code}; the code must only grow`,
     );
   }
   return {
-    text: text.replace(pattern, `versionCode=${code}`),
-    previous: Number(match[1]),
+    text: text.replace(pattern, `${key}versionCode=${code}`),
+    previous: Number(match[2]),
   };
 }
 

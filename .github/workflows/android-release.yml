@@ -23,7 +23,7 @@ on:
         type: boolean
       turn:
         description: "Goal round this release closes; the cadence gate refuses a release before nextDueTurn"
-        required: false
+        required: true
         default: ""
         type: string
       force:
@@ -128,7 +128,15 @@ jobs:
           done
           test -n "$run_id"
           echo "APK build: $run_id"
-          gh run watch "$run_id" --interval 20 --exit-status
+          for attempt in $(seq 1 90); do
+            status=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" --jq '.status + " " + (.conclusion // "")')
+            case "$status" in
+              "completed success") break ;;
+              "completed "*) echo "APK build ended: $status"; exit 1 ;;
+            esac
+            sleep 20
+          done
+          test "$status" = "completed success"
       - name: Verify the release assets and publish
         run: |
           set -euo pipefail
@@ -142,6 +150,8 @@ jobs:
             "CHANGELOG-${GYS_RELEASE_TAG}.md"; do
             grep -Fxq "$required" <<< "$assets" || { echo "Missing asset: $required"; exit 1; }
           done
+          # The tag was created on the server moments ago by `gh release create`.
+          git fetch --quiet --tags --force origin
           gh release download "$GYS_RELEASE_TAG" --pattern 'native-provenance-android.json' --dir verify-assets
           node -e "
             const provenance = require('./verify-assets/native-provenance-android.json');

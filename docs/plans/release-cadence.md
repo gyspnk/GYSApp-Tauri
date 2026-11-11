@@ -94,3 +94,10 @@ Permintaan pemilik (11 Nov): dokumentasi tidak boleh tertinggal.
 ## versionCode
 
 Android menolak memasang APK dengan `versionCode` yang tidak lebih besar. Kode diturunkan dari putaran rilis (`1000 + turn`) oleh `scripts/android-version-code.mjs` di `native-android.yml`, sehingga setiap rilis preview bisa dipasang menimpa yang lama tanpa langkah manual. Skrip menolak properties tanpa baris `versionCode` dan menolak kode yang mundur.
+
+## Jebakan yang sudah diperbaiki (11 Nov)
+
+- `versionCode` ada di kunci `tauri.android.versionCode=…` (Tauri 2.x), bukan `versionCode=…`. Skrip kini membaca/menulis kunci aslinya dan menolak berkas yang tidak punya baris itu; unit test memakai bentuk nyata plus bentuk lama.
+- `android-release.yml` membuat tag di server lewat `gh release create`, sedangkan `git fetch` terakhir terjadi sebelumnya — verifikasi provenance kini menjalankan `git fetch --quiet --tags --force origin` sebelum `git rev-list`.
+- Input `turn` wajib (`required: true`): tanpa angka putaran, gerbang kadensi tidak bisa memeriksa apa pun dan `versionCode` tetap 1.
+- Langkah menunggu APK memakai polling `gh api …/actions/runs/<id>` seperti aturan handoff, bukan `gh run watch`.
