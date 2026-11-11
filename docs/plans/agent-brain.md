@@ -201,3 +201,21 @@ Antrean terbuka saat aturan ini ditulis: #12 panel Agent Brain belum punya
 kontrak browser, #13 commit plugin GB Tools belum dipisah/didorong, #14 rilis
 putaran 276, #15 Suara butuh data audio sebelum kartu 16:9 dan tombol putar bisa
 jujur.
+
+## Sesi subagent dipakai ulang (11 Nov)
+
+Context window subagent adalah aset: sesi yang sudah memegang berkas, keputusan, dan
+angka pengukuran lebih murah dilanjutkan daripada membangun sesi baru dari nol.
+
+1. **Cek register sebelum membuat sesi.** `docs/plans/subagents.md` memetakan nama →
+   id → permukaan. Tujuan atau konteks yang sama berarti `send_message` ke sesi lama,
+   bukan `subagent` baru.
+2. **Nama jelas lebih dulu.** Baris pertama brief selalu `Nama: <permukaan> — <kata
+kerja + objek>` dan `description` panggilan `subagent` memakai frasa yang sama
+   (3–5 kata), karena itulah yang muncul sebagai judul chat di harness dan label di
+   panel otak. "builder" atau "task" bukan nama.
+3. **Satu sesi satu permukaan.** Jangan mencampur Kidung dengan Iman atau rilis
+   dengan panel otak hanya karena sesinya masih hidup.
+4. **Selesai bukan berarti dibuang.** Sesi `inactive` tetap bisa dilanjutkan; yang
+   dihapus hanya peran yang sudah mati tujuannya.
+5. **Builder tetap tidak commit.** Reuse tidak melonggarkan batas peran.
