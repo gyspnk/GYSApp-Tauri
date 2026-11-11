@@ -105,7 +105,9 @@ adalah panel peta delegasi:
 
 1. Pecah pekerjaan hanya bila bagiannya benar-benar independen; dua subagent
    untuk pekerjaan yang saling menunggu lebih lambat daripada satu.
-2. Maksimal tiga subagent berjalan bersamaan di mesin ini; verifier dijalankan
+2. Batch besar adalah default (pemilik, 11 Nov): empat subagent paralel, dan
+   sampai enam bila berkas/repo-nya benar-benar terpisah serta mesin terukur
+   ringan (CPU, RAM, dan waktu tunggu tidak memburuk). Verifier dijalankan
    terpisah dari builder supaya tidak menilai pekerjaannya sendiri.
 3. Setiap brief memuat lingkup berkas, larangan (mis. jangan commit), bentuk
    keluaran, dan cara memverifikasi. Builder tidak pernah commit.
@@ -142,3 +144,22 @@ menjawab `401` untuk sesi non-operator, jadi verifikasi yang dijalankan baru
 `t()` di panel ada di kedua kamus (`en` dan `id`). Kepemilikan tetap: peta
 hanya membaca `sessions.list` dan `binding(id).eventSource`; ia tidak
 mengarang fase workflow atau nama alat yang tidak ada di event.
+
+## Batch besar yang efisien (11 Nov)
+
+Supaya banyak pekerjaan selesai simultan tanpa saling merusak:
+
+1. **Satu berkas, satu pemilik.** Dua subagent tidak boleh menulis berkas yang
+   sama. Peta kepemilikan ditulis di brief ("hanya berkas ini"); otak menolak
+   brief yang tumpang tindih sebelum dikirim.
+2. **Brief = kontrak.** Setiap brief memuat: konteks yang berubah, lingkup berkas,
+   larangan (jangan commit/push, jangan jalankan suite penuh), bentuk keluaran,
+   dan cara verifikasi yang boleh dipakai.
+3. **Kerja yang saling menunggu tidak didelegasikan.** Kalau B butuh hasil A,
+   otak mengerjakan urutannya sendiri; subagent hanya untuk cabang independen.
+4. **Ukur bebannya, bukan menebak.** Sebelum menaikkan jumlah subagent, baca
+   `uptime`, `free -m`, dan waktu tunggu; kalau load rata-rata mendekati jumlah
+   inti atau RAM tersisa di bawah ~15%, batch dikurangi.
+5. **Hasil batch diverifikasi otak**, bukan dipercaya: `pnpm check:fast` untuk
+   tipe/format, `pnpm e2e:one` untuk kontrak yang tersentuh, lalu hosted run untuk
+   bukti. Subagent yang gagal dilaporkan apa adanya, bukan ditutupi.
