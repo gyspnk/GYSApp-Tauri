@@ -52,10 +52,35 @@ for (const viewport of [
       .map((part) => part.trim())[3];
     expect(alpha === undefined || Number(alpha) === 0).toBe(true);
 
-    // The controls stay readable inside the sheet.
+    // The testament pills belong to search mode: they only mount once the
+    // query reaches React state, so assert the typed value before them.
     await expect(page.locator(".bible-picker-search")).toBeVisible();
-    await expect(page.locator(".bible-picker-testament-pills")).toBeVisible();
-    await expect(page.locator('[data-picker-field="book"]')).toBeVisible();
+    await page.locator(".bible-picker-search").fill("Yoh");
+    await expect(page.locator(".bible-picker-search")).toHaveValue("Yoh");
+    await expect(page.locator(".bible-picker-testament-pills")).toBeVisible({
+      timeout: 10_000,
+    });
+    const results = page.locator(".bible-picker-results");
+    await expect(results).toBeVisible();
+    const resultsBox = await results.boundingBox();
+    expect(resultsBox!.x).toBeGreaterThanOrEqual(0);
+    expect(resultsBox!.x + resultsBox!.width).toBeLessThanOrEqual(
+      viewport.width + 1,
+    );
+
+    // Clearing the search restores the book list, which scrolls in place.
+    await page.locator(".bible-picker-search-clear").click();
+    await page.locator('[data-picker-field="book"]').click();
+    const menu = page.locator(".bible-address-menu");
+    await expect(menu).toBeVisible();
+    const menuBox = await menu.boundingBox();
+    expect(menuBox!.x).toBeGreaterThanOrEqual(0);
+    expect(menuBox!.x + menuBox!.width).toBeLessThanOrEqual(viewport.width + 1);
+    expect(
+      await menu
+        .locator(".bible-address-options")
+        .evaluate((element) => getComputedStyle(element).overflowY),
+    ).toBe("auto");
 
     // The padded rim of the sheet is still backdrop, so an edge tap dismisses.
     await page
