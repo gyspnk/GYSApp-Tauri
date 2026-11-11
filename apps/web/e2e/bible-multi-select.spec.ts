@@ -188,4 +188,34 @@ test.describe("Bible multi-verse selection", () => {
     await expect(page.locator(".verse-row.is-selected")).toHaveCount(0);
     await expect(toolbar).toHaveCount(0);
   });
+
+  test("a combined note reads ascending even when the reader clicked backwards", async ({
+    page,
+  }) => {
+    await openReader(page);
+    const verses = page.locator(".verse-text");
+    const toolbar = page.getByTestId("selected-verse-toolbar");
+
+    // Click 3, 2, 1: the selection order is a click order, but the label and
+    // the combined note must always start at the lowest verse.
+    await verses.nth(2).click();
+    await verses.nth(1).click();
+    await verses.nth(0).click();
+    await expect(
+      toolbar.locator(".selected-verse-context span").first(),
+    ).toHaveText("Kejadian 1:1–3");
+
+    await toolbar.getByRole("button", { name: "Catatan" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toContainText("Kejadian 1:1–3");
+    await expect(dialog).not.toContainText("1:3–1");
+    const preview = await dialog
+      .locator(".bible-selection-panel > p")
+      .first()
+      .innerText();
+    expect(preview.startsWith("1. ")).toBe(true);
+    expect(preview.lastIndexOf(" 3. ")).toBeGreaterThan(
+      preview.indexOf(" 2. "),
+    );
+  });
 });

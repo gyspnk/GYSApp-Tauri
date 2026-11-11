@@ -1,5 +1,5 @@
 import { createChapterSwipe } from "./chapter-swipe.js";
-import { formatVerseNumbers } from "./verse-selection.js";
+import { formatVerseNumbers, sortByVerseNumber } from "./verse-selection.js";
 import { installReadingZoom } from "./reading-zoom.js";
 import { BibleNotesPopup } from "./bible-notes-popup.js";
 import { useDialogFocus } from "./dialog-focus.js";
@@ -1601,12 +1601,14 @@ export function BiblePage({ locale }: { locale: Locale }) {
       ),
     [packState, hasSavedNotes],
   );
-  const noteRange = multiSelectedVerses.filter((verse) =>
-    noteTargetIds.includes(verse.id),
+  const noteRange = sortByVerseNumber(
+    multiSelectedVerses.filter((verse) => noteTargetIds.includes(verse.id)),
   );
   const noteRangeLabel =
     noteRange.length > 1
-      ? `${book?.name ?? ""} ${chapter}:${noteRange[0]?.verse}–${noteRange.at(-1)?.verse}`
+      ? `${book?.name ?? ""} ${chapter}:${formatVerseNumbers(
+          noteRange.map((verse) => verse.verse),
+        )}`
       : undefined;
   const noteRangePreview =
     noteRange.length > 1

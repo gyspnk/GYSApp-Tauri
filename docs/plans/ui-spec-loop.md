@@ -72,6 +72,12 @@ Butir yang menunggu data sebelum bisa dikerjakan: chip kategori Suara (feed hany
 punya `source: "tjc.org"`), dock audio Suara (`audioUrl`, `durationSec`), penanda
 "Baru" (`publishedAt` tertua 2025-03, snapshot 2026-09).
 
+### Alkitab: catatan gabungan selalu menaik (11 Nov)
+
+| Butir                                                             | Alasan                                                                                                                                                     | Kontrak                                                                                                                                                                                   |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Label dan pratinjau catatan gabungan diurutkan dari ayat terkecil | Urutan pilih adalah urutan klik; memilih 3 lalu 1 menghasilkan label "1:3–1" dan pratinjau terbalik, padahal catatan gabungan dibaca sebagai rentang naik. | `apps/web/src/verse-selection.ts` `sortByVerseNumber` (unit) dan `apps/web/e2e/bible-multi-select.spec.ts` memilih 3-2-1 lalu menuntut "Kejadian 1:1–3" serta penanda "1. " sebelum "3. " |
+
 ### Lainnya: pengaturan pada landscape (diterapkan 11 Nov)
 
 | Butir                                                        | Alasan                                                                                                                                    | Kontrak                                                                                                                                                                               |

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatVerseNumbers } from "./verse-selection.js";
+import { formatVerseNumbers, sortByVerseNumber } from "./verse-selection.js";
 
 describe("formatVerseNumbers", () => {
   it.each([
@@ -12,5 +12,21 @@ describe("formatVerseNumbers", () => {
     [[], ""],
   ] as const)("formats %j as %s", (verses, expected) => {
     expect(formatVerseNumbers(verses)).toBe(expected);
+  });
+});
+
+describe("sortByVerseNumber", () => {
+  it("orders a selection the reader clicked backwards", () => {
+    expect(
+      sortByVerseNumber([{ verse: 5 }, { verse: 3 }, { verse: 12 }]).map(
+        (item) => item.verse,
+      ),
+    ).toEqual([3, 5, 12]);
+  });
+
+  it("keeps the input array untouched", () => {
+    const input = [{ verse: 2 }, { verse: 1 }];
+    sortByVerseNumber(input);
+    expect(input.map((item) => item.verse)).toEqual([2, 1]);
   });
 });

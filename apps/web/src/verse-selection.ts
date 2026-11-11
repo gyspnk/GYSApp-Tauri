@@ -28,3 +28,11 @@ export function formatVerseNumbers(verses: readonly number[]): string {
   flush();
   return parts.join(", ");
 }
+
+/** Ascending copy of a verse selection. A click order is not a reading order:
+ * the toolbar and the note sheet must always show the lowest verse first. */
+export function sortByVerseNumber<T extends { verse: number }>(
+  verses: readonly T[],
+): T[] {
+  return [...verses].sort((left, right) => left.verse - right.verse);
+}
