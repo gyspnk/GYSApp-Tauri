@@ -3280,6 +3280,16 @@ body:has(.hymn-detail-page.is-text-viewer)
     justify-content: flex-end;
     overflow: hidden;
   }
+  /* The copy slot is bottom-aligned on purpose, but the loading indicator belongs
+     to the card surface, not to that slot: keep it centred over the whole plate so
+     the wait looks the same whatever the text below will be. */
+  .home-page .verse-panel:has(.sauh-skeleton) .sauh-skeleton {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    z-index: 2;
+  }
   .home-page .verse-panel:has(.sauh-skeleton)::before,
   .home-page .verse-panel:has(.sauh-offline-state)::before {
     content: "";
@@ -3296,6 +3306,11 @@ body:has(.hymn-detail-page.is-text-viewer)
     padding: 22px 20px 20px;
     flex: 0 0 auto;
     justify-content: flex-end;
+  }
+  .home-page .verse-panel:has(.sauh-skeleton) .sauh-card-content {
+    /* the slot stays bottom-aligned for the loaded card, but for the wait it must
+       not become the containing block of the absolutely centred indicator */
+    position: static;
   }
   /* The copy slot is the last piece sized by its text (206-221 px measured), so
      without this the placeholder and the loaded card still differ by 47-62 px.
@@ -4718,16 +4733,21 @@ body:has(.hymn-detail-page.is-text-viewer)
   margin: 0;
   padding: 12px;
   justify-content: center;
+  /* the slot must not become the containing block below: the indicator is
+     centred over the whole plate, not over the copy slot */
+  position: static;
 }
 .home-grid .verse-panel:has(.sauh-skeleton) .sauh-skeleton {
-  position: static;
-  inset: auto;
+  /* absolute over the plate keeps the wait centred even though the copy slot
+     itself is bottom-aligned for the loaded state */
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: grid;
   place-items: center;
   width: 100%;
   height: auto;
   min-height: 64px;
-  flex: 1 0 auto;
   padding: 12px 0;
 }
 .loading-progress-label {
