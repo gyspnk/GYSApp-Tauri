@@ -85,11 +85,21 @@ adalah panel peta delegasi:
 - simpul berjalan berdenyut (`running === true`), tepi dari induk ke anak bergerak,
   label dari `displayTitle` lalu nama folder kerja; klik **atau** Enter/Spasi
   menyalin id sesi, dan peta diberi label `role="group"`;
-- batas jujur: panel belum membaca fase workflow atau nama tool. Jalur resminya
-  sudah ada — `sessions.binding(id).eventSource` membawa `turn/start`, `step/start`,
-  `tool/call`, `tool-workflow/*`, dan `projectionsBySession[id].values.subagentCatalog`
-  memberi hitungan anak yang berjalan — tetapi belum dipakai. Tidak ada polling:
-  satu langganan, satu render.
+- detail hidup per simpul (plugin `738672b`): untuk tiap sesi yang tampil, panel
+  membaca `sessions.binding(id).eventSource` dan memindai entri terakhir untuk
+  `turn/start` dan `tool/call` (payload `{turn, step, callId, name, arguments}`),
+  lalu menulis `T<turn> · <tool>` di bawah nama. Hanya perubahan turn/tool yang
+  memicu render — tiap chunk streaming menerbitkan entri `transient`, jadi tanpa
+  pembanding itu panel akan render ratusan kali per detik;
+- semua akses ke `binding` dibungkus `try/catch` dan dianggap "tidak ada detail"
+  bila bentuknya berbeda, supaya panel tidak pernah kosong total karena satu API
+  bergeser;
+- batas jujur: belum ada status fase workflow (`tool-workflow/*`) dan belum ada
+  kontrak tes otomatis untuk panel — plugin tidak punya harness browser, jadi
+  pembuktiannya hanya `node --check` + `node test/smoke.js` + pembacaan tipe. Jangan
+  menulis "sudah teruji di browser" untuk panel ini;
+- masih tersedia tetapi belum dipakai: `projectionsBySession[id].values.subagentCatalog`
+  untuk hitungan anak yang berjalan (sekarang memakai `byId[child].running`).
 
 ## Aturan swarm (supaya tidak membebani mesin)
 
