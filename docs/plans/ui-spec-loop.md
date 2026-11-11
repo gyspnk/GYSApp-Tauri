@@ -59,10 +59,10 @@ berikutnya, spec yang ditulis dari kode yang ada lebih cepat dan lebih jujur.
 
 | Permukaan | Status   | Bukti terakhir                                                           |
 | --------- | -------- | ------------------------------------------------------------------------ |
-| Kidung    | sebagian | chip + rail `2e6af9c`, `42829604489`                                     |
+| Kidung    | sebagian | rail `2e6af9c`; kontrol koleksi kembali dropdown (lihat bawah)           |
 | Beranda   | sebagian | cover 2:3 `d50437a`, pita kosong `f0663995`, panel ayat datar `d490a440` |
 | Alkitab   | sebagian | `3be29a6`, `42837850897`                                                 |
-| Iman      | sebagian | ukuran baca 68ch (putaran 23, kontrak baru)                              |
+| Iman      | sebagian | ukuran baca 68ch; baris -> panel catatan (putaran 48)                    |
 | Literatur | sebagian | chip + 3 kolom `c1b044d`, CLS 0 `42878292349`                            |
 | Suara     | sebagian | urutan arsip `5e5ebdf`; salinan kosong sendiri                           |
 | Lainnya   | sebagian | grup pengaturan `60a5d60`                                                |
