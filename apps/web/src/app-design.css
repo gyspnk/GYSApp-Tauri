@@ -1139,9 +1139,6 @@
   margin: 0;
   font-size: 1rem;
 }
-.more-page .egys-member-badge {
-  overflow-wrap: anywhere;
-}
 .more-page .more-setting-row {
   padding: 16px 20px;
   min-height: 60px;

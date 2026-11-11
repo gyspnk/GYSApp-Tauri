@@ -1413,78 +1413,6 @@
     color-mix(in srgb, var(--gold) 5%, var(--surface)) 100%
   );
 }
-.egys-member-badge {
-  margin-top: 14px;
-  padding: 18px;
-  border: 1px solid color-mix(in srgb, var(--gold) 60%, var(--line));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--gold) 8%, var(--surface));
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-}
-.member-badge-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed color-mix(in srgb, var(--gold) 40%, var(--line));
-}
-.member-church-title {
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-.member-status-pill {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 12px;
-  background: #2e7d32;
-  color: #ffffff;
-}
-.member-info-row {
-  margin-bottom: 12px;
-}
-.member-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.info-label {
-  display: block;
-  font-size: 0.625rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-.info-value {
-  display: block;
-  font-size: 0.875rem;
-  color: var(--ink);
-}
-.member-name {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--navy);
-}
-.info-value-text {
-  font-size: 0.8125rem;
-  color: var(--ink);
-}
-.member-badge-actions {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid color-mix(in srgb, var(--gold) 25%, var(--line));
-}
-.account-signout {
-  color: var(--danger);
-}
-
 /* e-GYS Login Box */
 .egys-login-box {
   margin-top: 12px;
@@ -2713,30 +2641,13 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 24px;
   }
-  .more-page .more-settings-content,
-  .more-page .account-card {
+  .more-page .more-settings-content {
     max-width: 72ch;
   }
   /* An expanded panel holds a form, a list or a paragraph, not a setting
      label: half a column squeezes it into narrow wrapped lines. */
   .more-page .more-setting-section[open] {
     grid-column: 1 / -1;
-  }
-  /* A full-width panel would otherwise put one short value on a 640 px line
-     and leave the rest of the row blank; the member fields pair up instead. */
-  .more-page .member-badge-body {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 28px;
-    align-items: start;
-  }
-  .more-page .member-badge-body > .member-info-row:first-child,
-  .more-page .member-badge-body > .egys-login-trace {
-    grid-column: 1 / -1;
-  }
-  .more-page .member-badge-body .member-info-row,
-  .more-page .member-badge-body .member-info-grid {
-    margin-bottom: 0;
   }
 }
 @media (max-height: 540px) and (orientation: landscape) {

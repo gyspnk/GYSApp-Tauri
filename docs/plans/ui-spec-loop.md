@@ -72,6 +72,14 @@ Butir yang menunggu data sebelum bisa dikerjakan: chip kategori Suara (feed hany
 punya `source: "tjc.org"`), dock audio Suara (`audioUrl`, `durationSec`), penanda
 "Baru" (`publishedAt` tertua 2025-03, snapshot 2026-09).
 
+### Lainnya: kartu akun (diterapkan 11 Nov)
+
+| Butir                                                  | Alasan                                                                                                                                            | Kontrak                                                                                                                                          |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Foto profil bulat 56 px, nama dan status di sebelahnya | Kartu lama menaruh avatar kecil, tulisan "Gereja Yesus Sejati", dan pil status dalam satu baris yang berdesakan; nama baru muncul di badan kartu. | `apps/web/e2e/account-card.spec.ts` menuntut `img` di avatar (dengan `naturalWidth > 0`) dan tidak ada lagi teks "Gereja Yesus Sejati" di kartu. |
+| Detail jadi kisi label/nilai yang mengisi lebar        | Nilai pendek pada baris 640 px menyisakan separuh kanan kosong; kisi `auto-fit minmax(200px, 1fr)` memberi 1 kolom di ponsel dan 3-4 di desktop.  | kontrak yang sama menghitung kolom kisi >= 2 di 1440 px dan kartu mengisi panel (> 700 px).                                                      |
+| Tombol keluar punya baris sendiri                      | `padding: 0 14px 14px` membuat garis pemisah menempel pada tepi atas tombol; sekarang baris aksi punya `padding-top` dan tombol pil 44 px.        | jarak atas tombol ke baris aksi >= 12 px dan tinggi tombol >= 44 px; kontrol negatif (padding 0) membuat kontrak merah.                          |
+
 ### Alkitab: catatan gabungan selalu menaik (11 Nov)
 
 | Butir                                                             | Alasan                                                                                                                                                     | Kontrak                                                                                                                                                                                   |

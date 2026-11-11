@@ -1137,84 +1137,64 @@ export function MorePage({
                 <p>{translate(locale, "more.checkingAccount")}</p>
               </div>
             ) : accountProfile ? (
-              <div className="egys-member-badge">
-                <div className="member-badge-header">
-                  <span className="profile-card-avatar">
+              <div className="member-card">
+                <div className="member-card-head">
+                  <span className="profile-card-avatar member-card-avatar">
                     <AccountAvatar />
                   </span>
-                  <span className="member-church-title">
-                    Gereja Yesus Sejati
-                  </span>
-                  <span className="member-status-pill">
-                    {accountProfile.isMember === true
-                      ? translate(locale, "more.memberOfficial")
-                      : translate(locale, "more.memberRegistered")}
-                  </span>
-                </div>
-                <div className="member-badge-body">
-                  <div className="member-info-row">
-                    <span className="info-label">
-                      {translate(locale, "more.fullName")}
-                    </span>
-                    <strong className="info-value member-name">
+                  <div className="member-card-identity">
+                    <strong className="member-card-name">
                       {accountProfile.displayName}
                     </strong>
+                    <span className="member-card-status">
+                      {accountProfile.isMember === true
+                        ? translate(locale, "more.memberOfficial")
+                        : translate(locale, "more.memberRegistered")}
+                    </span>
                   </div>
-                  <div className="member-info-grid">
-                    <div>
-                      <span className="info-label">
-                        {translate(locale, "more.branch")}
-                      </span>
-                      <strong className="info-value">
-                        {accountProfile.branchName ??
-                          accountProfile.branchCode ??
-                          translate(locale, "more.center")}
-                      </strong>
+                </div>
+                <dl className="member-card-fields">
+                  <div className="member-card-field">
+                    <dt>{translate(locale, "more.branch")}</dt>
+                    <dd>
+                      {accountProfile.branchName ??
+                        accountProfile.branchCode ??
+                        translate(locale, "more.center")}
+                    </dd>
+                  </div>
+                  {accountProfile.membershipNo && (
+                    <div className="member-card-field">
+                      <dt>{translate(locale, "more.memberNumber")}</dt>
+                      <dd>{accountProfile.membershipNo}</dd>
                     </div>
-                    {accountProfile.membershipNo && (
-                      <div>
-                        <span className="info-label">
-                          {translate(locale, "more.memberNumber")}
-                        </span>
-                        <strong className="info-value">
-                          {accountProfile.membershipNo}
-                        </strong>
-                      </div>
-                    )}
-                  </div>
+                  )}
                   {accountProfile.memberStatus && (
-                    <div className="member-info-row">
-                      <span className="info-label">
-                        {translate(locale, "more.membershipStatus")}
-                      </span>
-                      <span className="info-value-text">
-                        {accountProfile.memberStatus}
-                      </span>
+                    <div className="member-card-field">
+                      <dt>{translate(locale, "more.membershipStatus")}</dt>
+                      <dd>{accountProfile.memberStatus}</dd>
                     </div>
                   )}
                   {accountProfile.email && (
-                    <div className="member-info-row">
-                      <span className="info-label">Email</span>
-                      <span className="info-value-text">
-                        {accountProfile.email}
-                      </span>
+                    <div className="member-card-field">
+                      <dt>Email</dt>
+                      <dd>{accountProfile.email}</dd>
                     </div>
                   )}
-                  {egysSession?.userId === accountProfile.id && (
-                    <small className="egys-login-trace">
-                      {translate(locale, "more.lastLogin")}{" "}
-                      {new Date(egysSession.lastSeenAt).toLocaleString(locale)}{" "}
-                      ·{translate(locale, "more.detectedSince")}{" "}
-                      {new Date(egysSession.firstLoginAt).toLocaleDateString(
-                        locale,
-                      )}
-                    </small>
-                  )}
-                </div>
-                <div className="member-badge-actions">
+                </dl>
+                {egysSession?.userId === accountProfile.id && (
+                  <small className="member-card-trace">
+                    {translate(locale, "more.lastLogin")}{" "}
+                    {new Date(egysSession.lastSeenAt).toLocaleString(locale)} ·{" "}
+                    {translate(locale, "more.detectedSince")}{" "}
+                    {new Date(egysSession.firstLoginAt).toLocaleDateString(
+                      locale,
+                    )}
+                  </small>
+                )}
+                <div className="member-card-actions">
                   <button
                     type="button"
-                    className="quiet-button account-signout"
+                    className="member-card-signout"
                     onClick={() => {
                       void signOutEgys().then(() => {
                         setAccountProfile(undefined);

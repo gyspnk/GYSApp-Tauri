@@ -73,10 +73,6 @@
 .account-loading-box p {
   margin: 0;
 }
-.member-badge-body {
-  display: grid;
-  gap: 12px;
-}
 .pack-badge.is-verified {
   border-color: color-mix(in srgb, var(--success) 45%, var(--line-strong));
   color: var(--success);
