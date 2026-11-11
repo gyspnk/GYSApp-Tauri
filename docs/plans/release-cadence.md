@@ -115,3 +115,13 @@ Android menolak memasang APK dengan `versionCode` yang tidak lebih besar. Kode d
 - Langkah menunggu APK memakai polling `gh api …/actions/runs/<id>` seperti aturan handoff, bukan `gh run watch`.
 
 Putaran rilis kini memverifikasi `versionCode` **di dalam APK**, bukan hanya di `tauri.properties`: setelah `aapt dump badging`, langkah "Verify and collect APK" menolak build yang tidak memuat `versionCode='<1000+putaran>'` (memakai `codeForTurn` dari `scripts/android-version-code.mjs`, satu sumber angka). Tanpa ini, APK dengan kode 1 bisa lolos hijau bila Gradle mengabaikan properti.
+
+### Gladi kering putaran 276 (11 Nov, HEAD `4cac0cd7`)
+
+`node scripts/release-preflight.mjs --turn 276` → 5/5 ok (versi `0.1.0`, nama APK `GYSApp-0.1.0-android-arm64-preview.apk` dipakai tiga workflow, kadensi lulus, base `v0.1.0-preview.20261110.2`, dua aset checksum/provenance ada). Changelog yang akan dibangun: tag `v0.1.0-preview.20261111.1`, **117 commit**, 141 baris, 7 475 byte (feat 19, fix 30, test 32, docs 28, refactor 2, style 3, build 1, chore 1, other 1). Simulasi kadensi: `lastTurn 276`, `nextDueTurn 301`, history 2→3, baris riwayat enam kolom cocok header.
+
+Rilis ini mengunggah **empat** aset (APK, `SHA256SUMS-android.txt`, `native-provenance-android.json`, `CHANGELOG-*.md`), bukan delapan — jalur Windows tidak dipanggil `android-release.yml`.
+
+Perintah: `gh workflow run android-release.yml --ref main -f turn=276`, lalu poll `gh api …/actions/runs/<id>`. Sesudah rilis: cek log `APK versionCode 1276 verified`, rilis bukan draft, empat aset lengkap, `lastTurn/nextDueTurn` = 276/301, baris 276 ada di tabel ini, tutup #14.
+
+Risiko yang tetap terbuka: tag/draft dibuat sebelum build (build gagal meninggalkan draft + tag, run ulang memakai `.2`), langkah kadensi berjalan sesudah rilis publik sehingga bisa kalah balapan dengan proteksi branch, dan prefiks `v0.1.0-preview.` masih hardcoded di `scripts/release-notes.mjs:133`.
