@@ -507,6 +507,10 @@ function Shell({
   // already changed, so the URL cannot say which route the reader was on. Keep
   // the last value and let the route commit credit it to the outgoing key.
   const lastScrollRef = useRef(0);
+  // A route transition scrolls to the top *after* the URL has already changed,
+  // so the zero that follows a tap must not overwrite where the reader was.
+  // Remember the last non-zero position and credit it to the route being left.
+  const lastNonZeroRef = useRef(0);
   const scrollKeyRef = useRef(scrollKey);
   const restoredOffsetRef = useRef(0);
   // While a pop is being restored the incoming route legitimately scrolls to
@@ -519,17 +523,34 @@ function Shell({
   useLayoutEffect(() => {
     const previous = scrollKeyRef.current;
     if (previous !== scrollKey && seenKeys.current.has(previous)) {
-      scrollOffsets.current.set(previous, lastScrollRef.current);
+      scrollOffsets.current.set(
+        previous,
+        lastNonZeroRef.current || lastScrollRef.current,
+      );
     }
     scrollKeyRef.current = scrollKey;
   }, [scrollKey]);
   useEffect(() => {
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    const keyAt = () =>
+      window.location.pathname.replace(base, "").replace(/\/$/, "") || "/";
     const save = () => {
-      lastScrollRef.current = window.scrollY;
+      const y = window.scrollY;
+      lastScrollRef.current = y;
+      if (y > 0) lastNonZeroRef.current = y;
       if (restoringRef.current) return;
       const key = scrollKeyRef.current;
       if (!seenKeys.current.has(key)) return;
-      scrollOffsets.current.set(key, window.scrollY);
+      if (keyAt() !== key) {
+        // The URL moved before the transition finished scrolling: this value
+        // belongs to the route we are leaving, not the one being opened.
+        scrollOffsets.current.set(key, lastNonZeroRef.current || y);
+        return;
+      }
+      // A transition's own scroll-to-top lands as 0 for the incoming route;
+      // storing it would make the next Back jump there. Only a real reading
+      // position (or an offset we already own) is worth remembering.
+      if (y > 0) scrollOffsets.current.set(key, y);
     };
     window.addEventListener("scroll", save, { passive: true });
     return () => window.removeEventListener("scroll", save);
