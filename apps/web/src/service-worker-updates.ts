@@ -38,7 +38,10 @@ export function installServiceWorkerUpdates(): () => void {
             focused.isContentEditable)),
       Boolean(
         document.querySelector(
-          '.pdf-reader, [role="dialog"][aria-modal="true"]',
+          // Only a reader is torn away by a reload. A sheet or a picker loses
+          // nothing, and holding the update behind every dialog meant the app
+          // kept asking the reader to leave a surface that has no draft.
+          ".pdf-reader",
         ),
       ),
     );
