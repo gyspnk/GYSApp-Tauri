@@ -22,12 +22,17 @@ test("tablet literature shelves keep readable titles and reachable last cards", 
     await page.goto("/GYSApp-Tauri/literatur");
     const cards = page.locator(".literature-shelf-item");
     await expect(cards.first()).toBeVisible();
-    const title = (await cards.first().locator("strong").boundingBox())!;
-    expect(title.width).toBeGreaterThanOrEqual(130);
+    // Wait for the real catalogue, not the reserved shelf: the count line only
+    // exists once the items are in, and measuring a skeleton reports no box.
+    await expect(page.locator(".catalog-filter-status")).toContainText(/\d/);
+    const title = await cards.first().locator("strong").boundingBox();
+    expect(title, "the first cover keeps a title box").not.toBeNull();
+    expect(title!.width).toBeGreaterThanOrEqual(130);
     await cards.last().scrollIntoViewIfNeeded();
-    const last = (await cards.last().boundingBox())!;
-    expect(last.x).toBeGreaterThanOrEqual(0);
-    expect(last.x + last.width).toBeLessThanOrEqual(width);
+    const last = await cards.last().boundingBox();
+    expect(last, "the last card keeps a box").not.toBeNull();
+    expect(last!.x).toBeGreaterThanOrEqual(0);
+    expect(last!.x + last!.width).toBeLessThanOrEqual(width);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
