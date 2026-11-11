@@ -4053,6 +4053,12 @@ body:has(.hymn-detail-page.is-text-viewer)
   padding: clamp(12px, 1.3vw, 18px);
   border-radius: 16px;
 }
+/* The verse is the page's reading surface: it sits flat on the canvas instead of
+   floating on a card shadow, so the eye lands on the words first. */
+.home-grid .verse-panel,
+.home-grid .verse-panel:hover {
+  box-shadow: none;
+}
 .home-grid :is(.verse-panel, .continue-panel):hover {
   background: color-mix(in srgb, var(--blue-soft) 25%, var(--surface));
 }

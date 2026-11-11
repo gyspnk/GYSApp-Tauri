@@ -134,6 +134,26 @@ test("search entrance motion preserves its 44px close target", async ({
   await expect(page.locator(".search-trigger")).toBeFocused();
 });
 
+test("the home verse sits flat on the canvas, with or without a pointer", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/");
+  const panel = page.locator(".verse-panel").first();
+  await expect(panel).toBeVisible();
+  await expect
+    .poll(() => panel.evaluate((el) => getComputedStyle(el).boxShadow))
+    .toBe("none");
+  const surface = await panel.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  expect(surface).not.toBe("rgba(0, 0, 0, 0)");
+  await panel.hover();
+  await expect
+    .poll(() => panel.evaluate((el) => getComputedStyle(el).boxShadow))
+    .toBe("none");
+});
+
 test("missing daily artwork stays compact while keeping the reading action", async ({
   page,
 }) => {
