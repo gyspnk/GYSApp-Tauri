@@ -7419,3 +7419,26 @@ Bukti: CI selektif `42769330591` **hijau** (sweep desain mencakup `menu-motion`,
 - **Determinisme screenshot:** `apps/web/playwright.config.ts` mendeklarasikan kunci `expect` dua kali; kunci terakhir menimpa yang pertama, sehingga `toHaveScreenshot.animations: "disabled"` dari putaran 223 tidak pernah berlaku. Digabung dalam satu blok.
 - **Warna di e2e:** palet editorial memindahkan `--blue` dan `--ink`, dan tiga spec memaku hex lama (22 kegagalan). `apps/web/e2e/theme-tokens.ts` menyediakan `tokenColor(page, "--blue")`; spec sekarang menguji "permukaan memakai token merek", sementara kontras tetap dijaga `editorial-palette.test.ts` dan axe. `090ffd9` hijau.
 - **Sisa merah yang jujur:** sapuan `42823812789` masih gagal pada 60 baseline visual (`visual.spec.ts` 36, `visual-reading.spec.ts` 24), geometri menu 6 px vs 4,5 px, dan dua uji waktu (`sidebar-motion` 161,9 ms dari batas 120, `page-transitions` yang tidak kembali ke beranda dalam 5 dtk). Semuanya berasal dari perubahan palet sesi lain (`f1ed51e`) dan harus diselesaikan pemilik redesain setelah permukaannya mendarat; baseline tidak diadopsi dari run yang merah.
+
+### Putaran 40 — Audit axe empat rute, fokus menu bacaan, dan CLS beranda (11 Nov)
+
+- **Empat rute terakhir diaudit** (`6ba25b4e`): `apps/web/e2e/shell-a11y.spec.ts` menutup Beranda, Alkitab (pembaca, drawer, pemilih drag), Suara, dan Lainnya dengan enam tag axe; 0 pelanggaran, dan kontrol negatif tetap menangkap `image-alt` serta `button-name`.
+- **Menu Bacaan memindahkan fokus** (`6ba25b4e`): drawer sebelumnya terbuka dengan fokus di tombol pemicu, jadi Escape tidak pernah sampai; sekarang fokus masuk ke kontrol pertama dan kembali ke pemicu pada Escape atau klik luar (issue #28).
+- **CLS beranda** (`5697dd04`): kartu offline 19–48 px lebih pendek dari skeleton. Kotak cadangan 180/182/180 disamakan dan teks mengisi kotaknya; probe lokal 390×844/768/1440 **0,00938/0,00855/0,01336 → 0,00004/0,00001/0,00099**, sisa desktop dari rak Literatur.
+- **Kontrak media** (`2397fb5d`): stub 1,2 dtk → `VERSE_MS = 60_000`, tes shard lambat menurunkan ayat dari judul pertama. Jebakan lama: poll 5 dtk + 4–5 auto-advance mendaratkan `previoustrack` di 1:6.
+- **Bukti:** CI `43080057375` hijau (verify, unit, e2e-selective, e2e) untuk `6ba25b4e`.
+
+### Putaran 41 — Antrean putaran dari issue dan preflight rilis (11 Nov)
+
+- **Antrean tidak lagi dari ingatan** (`2fe8e8a6`): `scripts/issue-queue.mjs` membaca issue terbuka, mengurutkan `bug` → `harness` → `release` → `blocked` → label lain, dan hanya mencetak yang bisa dikerjakan lebih dulu; read-only, empat uji node, dipanggil `pnpm issue:next` (`Refs #12`).
+- **Rilis yang belum siap ditolak** (`c9514870`): `scripts/release-preflight.mjs` memeriksa lima hal — versi native, nama APK yang benar-benar dipakai workflow, putaran kadensi, tag basis changelog ada di git, dan dua aset rilis terunggah — lalu mencetak nilai yang dibandingkan (`Refs #14`).
+- **Jebakan tag server:** `gh release create` membuat tag di server, jadi preflight bisa melaporkan tag basis tidak ada sampai `git fetch --tags --force` dijalankan.
+- **Bukti:** CI `43084362080` hijau (verify, unit, e2e-selective, e2e) untuk `c9514870`.
+
+### Putaran 42 — Aksi Media Session punya satu pemilik (11 Nov)
+
+- **Akar balapan** (`ec630ed3`): surface juga mendaftarkan `nexttrack`, sehingga registrasi terakhir menang dan cleanup-nya mengosongkan semua aksi pada tiap perubahan status — ada jendela tanpa handler.
+- **Satu pemilik:** `MediaSessionBridge` di `apps/web/src/media-session.ts` mendaftarkan delapan aksi sekali lewat `syncActionHandlers()`, hanya `seek*` didaftar ulang saat `setSpeechActive`, dan `dispose()` melepas persis yang tercatat; `apps/web/src/media-surface.tsx` −121 baris dan tidak lagi memanggil `setActionHandler`.
+- **Kontrak:** `apps/web/src/media-session.test.ts` 3 tes gagal pada kode lama; `apps/web/e2e/media-dock.spec.ts` 12 tes hijau.
+- **Bukti:** sweep penuh `43086893166` hijau (4/4 shard, `perf-budget`, `verify`).
+- **Jebakan dokumen:** komentar penutup #27 menyebut `c4e5b16`; objek itu tidak ada di riwayat git repo ini, commit yang mendarat adalah `ec630ed3`.
