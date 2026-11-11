@@ -108,3 +108,5 @@ Android menolak memasang APK dengan `versionCode` yang tidak lebih besar. Kode d
 - `android-release.yml` membuat tag di server lewat `gh release create`, sedangkan `git fetch` terakhir terjadi sebelumnya — verifikasi provenance kini menjalankan `git fetch --quiet --tags --force origin` sebelum `git rev-list`.
 - Input `turn` wajib (`required: true`): tanpa angka putaran, gerbang kadensi tidak bisa memeriksa apa pun dan `versionCode` tetap 1.
 - Langkah menunggu APK memakai polling `gh api …/actions/runs/<id>` seperti aturan handoff, bukan `gh run watch`.
+
+Putaran rilis kini memverifikasi `versionCode` **di dalam APK**, bukan hanya di `tauri.properties`: setelah `aapt dump badging`, langkah "Verify and collect APK" menolak build yang tidak memuat `versionCode='<1000+putaran>'` (memakai `codeForTurn` dari `scripts/android-version-code.mjs`, satu sumber angka). Tanpa ini, APK dengan kode 1 bisa lolos hijau bila Gradle mengabaikan properti.
