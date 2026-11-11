@@ -210,23 +210,76 @@ button.text-button {
   position: fixed;
   inset: auto 12px 84px;
   z-index: 1000;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
-  padding: 12px;
+  gap: 4px 10px;
+  padding: 12px 14px;
   background: var(--surface, white);
   color: var(--ink, #172a4d);
   border: 1px solid var(--line, #c9d5e8);
   border-radius: 12px;
-  box-shadow: 0 4px 24px rgb(0 0 0 / 15%);
+  box-shadow: 0 6px 28px rgb(0 0 0 / 16%);
+  animation: app-update-in 220ms var(--motion-ease-entrance, ease-out) backwards;
 }
-.app-update-banner span {
-  flex: 1 1 240px;
+.app-update-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid color-mix(in srgb, var(--blue) 28%, transparent);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: app-update-spin 900ms linear infinite;
 }
-.app-update-banner button {
-  min-height: 44px;
-  padding: 8px 12px;
+.app-update-text {
+  font-size: 0.8125rem;
+  font-weight: 550;
+  line-height: 1.4;
+}
+.app-update-track {
+  grid-column: 1 / -1;
+  height: 3px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+}
+.app-update-bar {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--blue);
+  animation: app-update-sweep 1.4s var(--motion-ease-entrance, ease-in-out)
+    infinite;
+}
+@keyframes app-update-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes app-update-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes app-update-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-update-banner,
+  .app-update-spinner,
+  .app-update-bar {
+    animation: none;
+  }
+  .app-update-bar {
+    width: 100%;
+  }
 }
 /* Keep the app viewport anchored at both scroll boundaries. Native Android
    also disables WebView edge stretch; this covers browser/WebView scrolling. */

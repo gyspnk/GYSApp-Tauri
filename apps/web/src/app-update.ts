@@ -1,4 +1,8 @@
-/** Activation is explicit; another tab cannot reload a reader or an editor. */
+/**
+ * Updates apply themselves: the waiting worker is activated as soon as the page
+ * is idle, and the reload follows the same rule. Nothing waits for a button —
+ * a reader or an unsaved note only delays the moment, never cancels it.
+ */
 export class AppUpdateController {
   private waiting: Pick<ServiceWorker, "postMessage"> | undefined;
   private reloadPending = false;
@@ -25,14 +29,19 @@ export class AppUpdateController {
     if (this.waiting !== worker) this.activating = false;
     this.waiting = worker;
     this.changed();
+    this.tick();
   }
-  public activate(): boolean {
-    if (!this.pending || this.activating || this.busy()) return false;
-    if (this.reloadPending) this.reload();
-    else {
-      this.activating = true;
-      this.waiting?.postMessage({ type: "SKIP_WAITING" });
+  /** Applies the update when the page is idle; call it on a short interval. */
+  public tick(): boolean {
+    if (!this.pending || this.busy()) return false;
+    if (this.reloadPending) {
+      this.finish();
+      return true;
     }
+    if (this.activating) return false;
+    this.activating = true;
+    this.waiting?.postMessage({ type: "SKIP_WAITING" });
+    this.changed();
     return true;
   }
   public controllerChanged(): void {
@@ -44,8 +53,14 @@ export class AppUpdateController {
     this.reloadPending = true;
     const requested = this.activating;
     this.activating = false;
-    if (requested && !this.busy()) this.reload();
+    if (requested && !this.busy()) this.finish();
     else this.changed();
+  }
+  /** Reloads at most once: the pending flags clear before the page goes away. */
+  private finish(): void {
+    this.reloadPending = false;
+    this.waiting = undefined;
+    this.reload();
   }
 }
 

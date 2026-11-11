@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { AppUpdateController, isUpdateBusy } from "./app-update.js";
 
-describe("safe app update activation", () => {
+const install = (busy: () => boolean = () => false, reload = vi.fn()) => ({
+  reload,
+  controller: new AppUpdateController(true, busy, reload, vi.fn()),
+});
+
+describe("self-applying app updates", () => {
   it("withdraws a superseded worker without removing a newer offer", () => {
-    const controller = new AppUpdateController(
-      true,
-      () => false,
-      vi.fn(),
-      vi.fn(),
-    );
+    const { controller } = install();
     const old = { postMessage: vi.fn() },
       next = { postMessage: vi.fn() };
     controller.offer(old);
@@ -17,60 +17,56 @@ describe("safe app update activation", () => {
     expect(controller.pending).toBe(true);
     controller.withdraw(next);
     expect(controller.pending).toBe(false);
-    expect(controller.activate()).toBe(false);
   });
-  it("requests activation only once and clears its progress after controller change", () => {
+  it("activates the waiting worker as soon as the page is idle", () => {
     const worker = { postMessage: vi.fn() };
-    const controller = new AppUpdateController(
-      true,
-      () => false,
-      vi.fn(),
-      vi.fn(),
-    );
+    const { controller } = install();
     controller.offer(worker);
-    expect(controller.activate()).toBe(true);
+    expect(worker.postMessage).toHaveBeenCalledWith({ type: "SKIP_WAITING" });
     expect(controller.updating).toBe(true);
-    expect(controller.activate()).toBe(false);
+    controller.tick();
     expect(worker.postMessage).toHaveBeenCalledOnce();
-    controller.controllerChanged();
-    expect(controller.updating).toBe(false);
   });
-  it("keeps an installed update waiting while reading or editing", () => {
-    const worker = { postMessage: vi.fn() },
-      reload = vi.fn();
+  it("delays the activation while reading or editing, then applies it", () => {
+    const worker = { postMessage: vi.fn() };
     let busy = true;
-    const controller = new AppUpdateController(
-      true,
-      () => busy,
-      reload,
-      vi.fn(),
-    );
+    const { controller } = install(() => busy);
     controller.offer(worker);
     expect(controller.pending).toBe(true);
-    expect(controller.activate()).toBe(false);
+    expect(controller.updating).toBe(false);
     expect(worker.postMessage).not.toHaveBeenCalled();
+    expect(controller.tick()).toBe(false);
     busy = false;
-    expect(controller.activate()).toBe(true);
+    expect(controller.tick()).toBe(true);
     expect(worker.postMessage).toHaveBeenCalledWith({ type: "SKIP_WAITING" });
-    expect(reload).not.toHaveBeenCalled();
+  });
+  it("reloads once the new controller arrives and the page is idle", () => {
+    const { controller, reload } = install();
+    controller.offer({ postMessage: vi.fn() });
     controller.controllerChanged();
+    expect(controller.updating).toBe(false);
+    expect(reload).toHaveBeenCalledOnce();
+    controller.tick();
+    expect(reload).toHaveBeenCalledOnce();
+  });
+  it("holds the reload until the reader or editor is finished", () => {
+    let busy = true;
+    const { controller, reload } = install(() => busy);
+    controller.offer({ postMessage: vi.fn() });
+    controller.controllerChanged();
+    expect(reload).not.toHaveBeenCalled();
+    busy = false;
+    expect(controller.tick()).toBe(true);
     expect(reload).toHaveBeenCalledOnce();
   });
   it("does not reload a reader when another tab activates the update", () => {
-    const reload = vi.fn();
     let busy = true;
-    const controller = new AppUpdateController(
-      true,
-      () => busy,
-      reload,
-      vi.fn(),
-    );
+    const { controller, reload } = install(() => busy);
     controller.controllerChanged();
     expect(reload).not.toHaveBeenCalled();
-    expect(controller.activate()).toBe(false);
+    expect(controller.updating).toBe(false);
     busy = false;
-    expect(reload).not.toHaveBeenCalled();
-    controller.activate();
+    expect(controller.tick()).toBe(true);
     expect(reload).toHaveBeenCalledOnce();
   });
   it("first install claims the page without reloading it", () => {
@@ -83,7 +79,7 @@ describe("safe app update activation", () => {
     ).controllerChanged();
     expect(reload).not.toHaveBeenCalled();
   });
-  it("reloads an uncontrolled tab when its user explicitly activates a waiting update", () => {
+  it("still reloads an uncontrolled tab after its update activates", () => {
     const reload = vi.fn();
     const controller = new AppUpdateController(
       false,
@@ -92,25 +88,9 @@ describe("safe app update activation", () => {
       vi.fn(),
     );
     controller.offer({ postMessage: vi.fn() });
-    expect(controller.activate()).toBe(true);
     controller.controllerChanged();
     expect(controller.updating).toBe(false);
     expect(reload).toHaveBeenCalledOnce();
-  });
-  it("rechecks activity after activation before reloading", () => {
-    let busy = false;
-    const reload = vi.fn();
-    const controller = new AppUpdateController(
-      true,
-      () => busy,
-      reload,
-      vi.fn(),
-    );
-    controller.offer({ postMessage: vi.fn() });
-    controller.activate();
-    busy = true;
-    controller.controllerChanged();
-    expect(reload).not.toHaveBeenCalled();
   });
   it("protects reader routes, paused audio and dirty editors", () => {
     for (const path of [

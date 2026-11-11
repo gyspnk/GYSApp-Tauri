@@ -33,11 +33,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "more.collectionSauh": "Renungan harian",
     "more.explore": "Jelajahi koleksi",
     "more.preferences": "Pengaturan & perangkat",
-    "update.ready": "Pembaruan siap.",
-    "update.activating": "Memasang pembaruan…",
-    "update.busy":
-      "Pembaruan siap. Selesaikan bacaan, edit, dan audio, lalu kembali ke Beranda.",
-    "update.reload": "Muat ulang untuk memperbarui",
+    "update.waiting":
+      "Pembaruan dipasang sebentar lagi. Selesaikan membaca atau menulis dulu.",
+    "update.activating": "Memperbarui aplikasi…",
     "home.title": "Bacaan & nyanyian",
     "image.previewError": "Gagal memuat pratinjau: {title}",
     "image.previewMissing": "Pratinjau tidak tersedia: {title}",

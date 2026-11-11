@@ -658,12 +658,6 @@
   border-radius: var(--radius-card);
   font-size: 0.875rem;
 }
-.app-update-banner button {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--blue-soft);
-  color: var(--ink);
-}
 :is(.primary-button, .quiet-button, .secondary-button) {
   border-radius: var(--radius-control);
   padding-inline: 14px;

@@ -12,10 +12,18 @@ export function installServiceWorkerUpdates(): () => void {
   const banner = document.createElement("aside");
   banner.className = "app-update-banner";
   banner.setAttribute("role", "status");
+  const spinner = document.createElement("span");
+  spinner.className = "app-update-spinner";
+  spinner.setAttribute("aria-hidden", "true");
   const message = document.createElement("span");
-  const button = document.createElement("button");
-  button.type = "button";
-  banner.append(message, button);
+  message.className = "app-update-text";
+  const track = document.createElement("span");
+  track.className = "app-update-track";
+  track.setAttribute("aria-hidden", "true");
+  const bar = document.createElement("span");
+  bar.className = "app-update-bar";
+  track.append(bar);
+  banner.append(spinner, message, track);
   const dirtyEditors = new Set<HTMLElement>();
   const busy = () => {
     for (const editor of dirtyEditors)
@@ -41,15 +49,16 @@ export function installServiceWorkerUpdates(): () => void {
       return;
     }
     const locale = readShellSettings(localStorage).locale;
-    const blocked = busy();
-    message.textContent = controller.updating
+    const updating = controller.updating || (controller.pending && !busy());
+    message.textContent = updating
       ? translate(locale, "update.activating")
-      : blocked
-        ? translate(locale, "update.busy")
-        : translate(locale, "update.ready");
-    button.textContent = translate(locale, "update.reload");
-    button.disabled = blocked || controller.updating;
+      : translate(locale, "update.waiting");
+    banner.dataset.state = updating ? "updating" : "waiting";
     if (!banner.isConnected) document.body.append(banner);
+  };
+  const pump = () => {
+    controller.tick();
+    render();
   };
   const controller = new AppUpdateController(
     Boolean(navigator.serviceWorker.controller),
@@ -75,29 +84,25 @@ export function installServiceWorkerUpdates(): () => void {
         target.isContentEditable)
     )
       dirtyEditors.add(target);
-    render();
+    pump();
   });
   listen(document, "submit", (event) => {
     if (event.target instanceof HTMLFormElement)
       for (const editor of dirtyEditors)
         if (event.target.contains(editor)) dirtyEditors.delete(editor);
-    queueMicrotask(render);
-  });
-  listen(button, "click", () => {
-    controller.activate();
-    render();
+    queueMicrotask(pump);
   });
   listen(navigator.serviceWorker, "controllerchange", () =>
     controller.controllerChanged(),
   );
-  listen(window, "popstate", render);
-  listen(document, "focusin", render);
-  listen(document, "focusout", () => queueMicrotask(render));
+  listen(window, "popstate", pump);
+  listen(document, "focusin", pump);
+  listen(document, "focusout", () => queueMicrotask(pump));
   disposers.push(midiPlayer.subscribe(render), speechPlayer.subscribe(render));
   // Router pushes don't emit popstate; observe location cheaply only while pending.
   const timer = window.setInterval(() => {
-    if (controller.pending) render();
-  }, 1000);
+    if (controller.pending) pump();
+  }, 500);
   disposers.push(() => clearInterval(timer));
   const offer = (worker: ServiceWorker | null) => {
     if (!worker) return;

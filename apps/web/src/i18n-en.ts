@@ -17,11 +17,9 @@ export const enMessages: Record<string, string> = {
   "more.collectionSauh": "Daily devotion",
   "more.explore": "Explore the collection",
   "more.preferences": "Settings & device",
-  "update.ready": "An update is ready.",
-  "update.activating": "Installing the update…",
-  "update.busy":
-    "An update is ready. Finish reading, editing and audio, then return Home.",
-  "update.reload": "Reload to update",
+  "update.waiting":
+    "The update installs itself in a moment. Finish reading or writing first.",
+  "update.activating": "Updating the app…",
   "home.title": "Readings & hymns",
   "image.previewError": "Preview could not load: {title}",
   "image.previewMissing": "Preview unavailable: {title}",
