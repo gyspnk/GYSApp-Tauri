@@ -2705,11 +2705,80 @@
   /* Two lines of copy stay comfortable to touch. */
   min-height: 64px;
 }
-@media (min-width: 1200px) {
-  /* Two columns keep the settings page short without widening the text. */
+@media (min-width: 720px) {
+  /* Two columns keep the settings page short without widening the text: a
+     single column left half of a landscape window empty and stretched every
+     expanded panel past a readable line length. */
   .more-page .more-settings-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 28px;
+    column-gap: 24px;
+  }
+  .more-page .more-settings-content,
+  .more-page .account-card {
+    max-width: 72ch;
+  }
+  /* An expanded panel holds a form, a list or a paragraph, not a setting
+     label: half a column squeezes it into narrow wrapped lines. */
+  .more-page .more-setting-section[open] {
+    grid-column: 1 / -1;
+  } /* Three provider buttons across 640 px pushed each label away from its icon. */
+  .more-page .egys-provider-all {
+    max-width: 480px;
+  }
+  /* A full-width panel would otherwise put one short value on a 640 px line
+     and leave the rest of the row blank; the member fields pair up instead. */
+  .more-page .member-badge-body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 28px;
+    align-items: start;
+  }
+  .more-page .member-badge-body > .member-info-row:first-child,
+  .more-page .member-badge-body > .egys-login-trace {
+    grid-column: 1 / -1;
+  }
+  .more-page .member-badge-body .member-info-row,
+  .more-page .member-badge-body .member-info-grid {
+    margin-bottom: 0;
+  }
+}
+@media (max-height: 540px) and (orientation: landscape) {
+  /* A landscape phone has width but almost no height; tighten the rhythm
+     without dropping any control below the 44 px touch target. */
+  .more-page > .page-intro {
+    padding-bottom: 8px;
+  }
+  .more-page .more-settings-group {
+    margin-top: 12px;
+  }
+  .more-page .more-setting-section > .more-setting-row {
+    min-height: 56px;
+  }
+  .more-page .more-settings-content {
+    padding-bottom: 8px;
+  }
+  /* Landscape: the stacked tiles cost 139 px above the settings; a compact
+     inline row keeps the icon, name and hint while giving the list the space. */
+  .more-page .more-library-grid .more-library-link {
+    flex-direction: row;
+    min-height: 48px;
+    padding: 6px 10px;
+    gap: 8px;
+    text-align: start;
+  }
+  .more-page .more-library-grid .more-library-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+  .more-page .more-library-grid .more-library-link strong {
+    font-size: 0.8125rem;
+  }
+  .more-page .more-library-grid .more-library-sub {
+    font-size: 0.6875rem;
+  }
+  .more-page .more-library-grid .more-library-link > svg {
+    display: none;
   }
 }
 .more-page .more-settings-content {

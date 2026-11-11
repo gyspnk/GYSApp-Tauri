@@ -71,3 +71,13 @@ berikutnya, spec yang ditulis dari kode yang ada lebih cepat dan lebih jujur.
 Butir yang menunggu data sebelum bisa dikerjakan: chip kategori Suara (feed hanya
 punya `source: "tjc.org"`), dock audio Suara (`audioUrl`, `durationSec`), penanda
 "Baru" (`publishedAt` tertua 2025-03, snapshot 2026-09).
+
+### Lainnya: pengaturan pada landscape (diterapkan 11 Nov)
+
+| Butir                                                        | Alasan                                                                                                                                 | Kontrak                                                                          |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Dua kolom mulai 720 px, bukan 1200 px                        | Di 844x390 dan 1024x600 daftar pengaturan masih satu kolom selebar jendela: separuh lebar kosong dan setiap baris mencapai 80 px.      | `apps/web/e2e/more-landscape.spec.ts` menghitung 2 kolom di 844x390 dan 1024x600 |
+| Panel yang terbuka memakai lebar penuh                       | Panel akun selebar setengah kolom memaksa paragraf 40 karakter dan tiga tombol penyedia berdempet.                                     | kontrak yang sama membandingkan lebar panel dengan lebar daftar                  |
+| Ritme rapat di jendela pendek (`max-height: 540px`)          | Landscape ponsel hanya punya 390 px tinggi; padding 22 px dan baris 80 px memakan layar. Baris tetap 44-56 px agar target sentuh aman. | semua `.more-setting-row` >= 44 px                                               |
+| Tile koleksi jadi baris ringkas di landscape                 | Tiga tile bertumpuk memakan 139 px sebelum daftar dimulai; sekarang 82 px.                                                             | diukur lokal: `scrollHeight` 1130 -> 880 px pada 844x390                         |
+| Kolom anggota berpasangan dan baris penyedia dibatasi 480 px | Nilai pendek pada baris 640 px menyisakan separuh kanan kosong.                                                                        | dilihat pada tangkapan lokal 844x390 (masuk dan keluar)                          |
