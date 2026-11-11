@@ -189,6 +189,7 @@ export function HymnPlaylistPage({
             className="sr-only"
             type="file"
             accept="application/json,.json"
+            aria-label={translate(locale, "kidung.import")}
             onChange={(event) => {
               void importPlaylist(event.target.files?.[0]);
               event.currentTarget.value = "";
