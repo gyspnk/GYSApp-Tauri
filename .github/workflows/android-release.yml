@@ -132,10 +132,11 @@ jobs:
       - name: Verify the release assets and publish
         run: |
           set -euo pipefail
+          apk_name=$(node scripts/release-asset-name.mjs --config apps/native/src-tauri/tauri.conf.json)
           assets=$(gh release view "$GYS_RELEASE_TAG" --json assets --jq '.assets[].name')
           echo "$assets"
           for required in \
-            GYSApp-0.1.0-android-arm64-preview.apk \
+            "$apk_name" \
             SHA256SUMS-android.txt \
             native-provenance-android.json \
             "CHANGELOG-${GYS_RELEASE_TAG}.md"; do

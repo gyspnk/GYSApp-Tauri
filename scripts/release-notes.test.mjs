@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
+import { androidApkName, readNativeVersion } from "./release-asset-name.mjs";
 import {
   buildChangelog,
   groupCommits,
@@ -46,12 +48,22 @@ test("builds a changelog with counts, capped lists, and artifact notes", () => {
     tag: "v0.1.0-preview.20261110.1",
     date: "2026-11-10",
     limitPerGroup: 2,
+    version: "2.5.0",
   });
   assert.equal(counts.fix, 30);
   assert.match(notes, /# v0\.1\.0-preview\.20261110\.1/);
   assert.match(notes, /Total 30 perubahan: 30 perbaikan\./);
   assert.match(notes, /…dan 28 perubahan lain\./);
-  assert.match(notes, /GYSApp-0\.1\.0-android-arm64-preview\.apk/);
+  assert.match(notes, /GYSApp-2\.5\.0-android-arm64-preview\.apk/);
+});
+
+test("names the APK from the native version by default", () => {
+  const config = readFileSync(
+    new URL("../apps/native/src-tauri/tauri.conf.json", import.meta.url),
+    "utf8",
+  );
+  const { notes } = buildChangelog([], { tag: "v1", date: "2026-11-10" });
+  assert.ok(notes.includes(androidApkName(readNativeVersion(config))));
 });
 
 test("picks the next tag for the day", () => {

@@ -6,7 +6,14 @@
 //     --existing v0.1.0-preview.20261110.1,v0.1.0-preview.20261110.2
 // Prints JSON: { tag, notes, counts, commits }.
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+import { androidApkName, readNativeVersion } from "./release-asset-name.mjs";
+
+const NATIVE_CONFIG = new URL(
+  "../apps/native/src-tauri/tauri.conf.json",
+  import.meta.url,
+);
 
 const GROUPS = [
   ["feat", "Fitur"],
@@ -65,7 +72,7 @@ export function groupCommits(commits) {
 /** Formats the changelog markdown, capped per group so notes stay readable. */
 export function buildChangelog(
   commits,
-  { tag, date, limitPerGroup = MAX_PER_GROUP } = {},
+  { tag, date, limitPerGroup = MAX_PER_GROUP, version } = {},
 ) {
   const groups = groupCommits(commits);
   const counts = Object.fromEntries(
@@ -98,11 +105,14 @@ export function buildChangelog(
       );
     }
   }
+  const apkName = androidApkName(
+    version ?? readNativeVersion(readFileSync(NATIVE_CONFIG, "utf8")),
+  );
   lines.push("");
   lines.push("## Artefak");
   lines.push("");
   lines.push(
-    "- `GYSApp-0.1.0-android-arm64-preview.apk` — APK Android arm64 (tanda tangan debug, untuk pemasangan manual).",
+    `- \`${apkName}\` — APK Android arm64 (tanda tangan debug, untuk pemasangan manual).`,
   );
   lines.push(
     "- `SHA256SUMS-android.txt` dan `native-provenance-android.json` — bukti integritas dan asal commit.",

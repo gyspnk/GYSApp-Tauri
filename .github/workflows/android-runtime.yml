@@ -64,6 +64,9 @@ jobs:
       - name: Exercise packaged APK on Android ${{ inputs.android_version }}
         run: |
           mkdir -p android-qa
+          # The APK comes from another run, so trust its downloaded name over this checkout's version.
+          apk=$(find android-artifacts -maxdepth 1 -name 'GYSApp-*-android-arm64-preview.apk' -print -quit)
+          test -n "$apk"
           sha256sum -c android-artifacts/SHA256SUMS-android.txt
           printf 'APK source commit: '
           cat android-artifacts/commit.txt
@@ -72,7 +75,7 @@ jobs:
           emulator_pid=$!
           sleep 3
           if ! kill -0 "$emulator_pid" 2>/dev/null; then exit 1; fi
-          python3 scripts/android-runtime-smoke.py --apk android-artifacts/GYSApp-0.1.0-android-arm64-preview.apk --output android-qa --android-version "$ANDROID_VERSION"
+          python3 scripts/android-runtime-smoke.py --apk "$apk" --output android-qa --android-version "$ANDROID_VERSION"
       - name: Upload native screenshots and logs
         if: always()
         uses: actions/upload-artifact@v4
