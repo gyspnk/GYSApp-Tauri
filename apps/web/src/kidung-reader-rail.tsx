@@ -2,8 +2,12 @@ import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { HymnMetadata } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
-import { numberLabel, type CatalogState } from "./kidung-shared.js";
-import { KidungCollectionChips } from "./kidung-collection-chips.js";
+import {
+  hymnCollectionLabel,
+  numberLabel,
+  type CatalogState,
+} from "./kidung-shared.js";
+import { Select } from "./select.js";
 
 // One column of the desktop reader: the book's index stays beside the text so
 // moving between songs never costs a trip back to the catalog. The catalog page
@@ -37,14 +41,18 @@ export function KidungReaderRail({
       aria-label={translate(locale, "kidung.collection")}
     >
       {books.length > 1 && (
-        <KidungCollectionChips
-          books={books}
-          active={book}
-          label={translate(locale, "kidung.collection")}
-          onSelect={(value) => {
+        <Select
+          value={book}
+          onChange={(value) => {
             setBook(value);
             setVisible(RAIL_PAGE);
           }}
+          className="kidung-collection-select"
+          label={translate(locale, "kidung.collection")}
+          options={books.map((value) => ({
+            value,
+            label: hymnCollectionLabel(value),
+          }))}
         />
       )}
       <ol

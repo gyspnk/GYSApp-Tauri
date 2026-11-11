@@ -27,7 +27,7 @@ test("faith offers a retry after the pack fails", async ({ page }) => {
 
   await page.unroute("**/offline/faith.json");
   await panel.getByRole("button", { name: "Coba lagi" }).click();
-  await expect(page.locator(".faith-row-heading").first()).toBeVisible({
+  await expect(page.locator(".faith-row").first()).toBeVisible({
     timeout: 15_000,
   });
 });

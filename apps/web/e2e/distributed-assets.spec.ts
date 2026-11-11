@@ -50,12 +50,18 @@ test.describe("distributed asset UI", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
-    const chips = page.getByRole("group", { name: "Koleksi", exact: true });
-    await expect(chips).toBeVisible();
-    await expect(chips.getByRole("button", { name: /english/i })).toHaveCount(
-      0,
-    );
-    await expect(chips.getByRole("button", { name: /mandarin/i })).toHaveCount(
+    const collection = page.getByRole("combobox", {
+      name: "Koleksi",
+      exact: true,
+    });
+    await expect(collection).toBeVisible();
+    await collection.click();
+    // Installed collections are the only options offered by the menu.
+    await expect(
+      page.locator(".kidung-header-filter .control-select-option"),
+    ).toHaveText(["KR"]);
+    await expect(page.getByRole("option", { name: /english/i })).toHaveCount(0);
+    await expect(page.getByRole("option", { name: /mandarin/i })).toHaveCount(
       0,
     );
   });
@@ -152,10 +158,20 @@ test.describe("distributed asset UI", () => {
     await expect(
       page.getByRole("heading", { name: "Kidung", exact: true }),
     ).toBeVisible({ timeout: 15_000 });
-    const filter = page.getByRole("group", { name: "Koleksi" });
+    const filter = page.locator(".kidung-header-filter");
+    const collection = filter.getByRole("combobox", {
+      name: "Koleksi",
+      exact: true,
+    });
     // One collection is always active, so "Semua" is no longer offered.
-    await expect(filter.getByRole("button")).toHaveText(["English", "KR"]);
-    await filter.getByRole("button", { name: "English", exact: true }).click();
+    await expect(collection).toHaveText("KR");
+    await collection.click();
+    await expect(filter.locator(".control-select-option")).toHaveText([
+      "English",
+      "KR",
+    ]);
+    await filter.getByRole("option", { name: /^English/ }).click();
+    await expect(collection).toHaveText("English");
     await expect(
       page.locator('.pujian-item[data-id="hymne-001"]'),
     ).toBeVisible();

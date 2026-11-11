@@ -845,11 +845,16 @@ test("phone Kidung catalog prioritizes search, compact filtering, and large libr
   expect(searchBox).not.toBeNull();
   expect(searchBox!.width).toBeGreaterThanOrEqual(340);
 
-  const filterTrigger = page
-    .getByRole("group", { name: "Koleksi", exact: true })
-    .getByRole("button");
-  await expectTarget(filterTrigger.first());
-  await expect(filterTrigger.first()).toHaveAttribute("aria-pressed", "true");
+  const filterTrigger = page.getByRole("combobox", {
+    name: "Koleksi",
+    exact: true,
+  });
+  await expectTarget(filterTrigger);
+  await filterTrigger.click();
+  await expect(
+    page.getByRole("listbox", { name: "Koleksi", exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
 
   const firstOpen = page.locator(".pujian-title").first();
   const firstNumber = page.locator(".pujian-nomor").first();
@@ -1412,13 +1417,13 @@ test("catalog branding and title metrics stay stable through font readiness", as
   );
   expect(after).toEqual(before);
 
-  // Compact collection chips and search field share a toolbar without visible
-  // labels for the search box; the chips carry their own text.
+  // The compact collection select and search field share a toolbar without a
+  // visible label for the select; the trigger carries the active collection.
   const search = page.getByRole("searchbox", { name: "Cari lagu" });
-  const collection = page
-    .getByRole("group", { name: "Koleksi", exact: true })
-    .getByRole("button")
-    .first();
+  const collection = page.getByRole("combobox", {
+    name: "Koleksi",
+    exact: true,
+  });
   await expectTarget(search);
   await expectTarget(collection);
   const searchBox = (await search.boundingBox())!;
@@ -1504,14 +1509,18 @@ test("Kidung dropdown surfaces stay anchored inside the viewport @nightly", asyn
     await page.setViewportSize(viewport);
     await openCatalog(page);
 
-    // The collection chips stay inside the toolbar; the only menus left in
-    // the catalogue are the reader settings and playlist surfaces below.
     const filter = page.locator(".kidung-header-filter");
-    const chips = filter.locator(".kidung-collection-chip");
-    const chipBox = await chips.first().boundingBox();
-    expect(chipBox).not.toBeNull();
-    expect(chipBox!.x).toBeGreaterThanOrEqual(-1);
-    expect(chipBox!.x + chipBox!.width).toBeLessThanOrEqual(viewport.width + 1);
+    await filter
+      .getByRole("combobox", { name: "Koleksi", exact: true })
+      .click();
+    const menu = filter.locator(".control-select-menu");
+    await expect(menu).toBeVisible();
+    const catalogMenuBox = await menu.boundingBox();
+    expect(catalogMenuBox).not.toBeNull();
+    expect(catalogMenuBox!.x).toBeGreaterThanOrEqual(-1);
+    expect(catalogMenuBox!.x + catalogMenuBox!.width).toBeLessThanOrEqual(
+      viewport.width + 1,
+    );
 
     if (viewport.width >= 768) {
       await page.goto("/GYSApp-Tauri/kidung?section=settings");
@@ -2039,25 +2048,28 @@ for (const [name, width, height, surface, theme] of visualCases) {
   });
 }
 
-test("collection chips replace the dropdown with 44 px targets", async ({
-  page,
-}) => {
-  await page.goto("/GYSApp-Tauri/kidung");
+test("collection control is a select, not a chip row", async ({ page }) => {
+  await openCatalog(page);
   const toolbar = page.locator(".kidung-controls-field");
-  const group = toolbar.getByRole("group", { name: "Koleksi" });
-  await expect(group).toBeVisible();
-  // The dropdown is gone: one collection used to hide inside a menu, which is
-  // a two-tap job for a choice that fits on one row.
-  await expect(toolbar.locator(".kidung-collection-select")).toHaveCount(0);
-  const chips = group.locator(".kidung-collection-chip");
-  const count = await chips.count();
-  expect(count).toBeGreaterThan(0);
-  for (let index = 0; index < count; index += 1) {
-    const box = await chips.nth(index).boundingBox();
-    expect(box!.height).toBeGreaterThanOrEqual(44);
-  }
-  // Exactly one collection is active, and it says so to assistive tech.
-  await expect(group.locator('[aria-pressed="true"]')).toHaveCount(1);
+  const select = toolbar.getByRole("combobox", {
+    name: "Koleksi",
+    exact: true,
+  });
+  await expect(select).toBeVisible();
+  // The chip row is gone: neither its group nor its chips may come back.
+  await expect(toolbar.locator(".kidung-collection-chips")).toHaveCount(0);
+  await expect(toolbar.locator(".kidung-collection-chip")).toHaveCount(0);
+  await expect(toolbar.getByRole("group", { name: "Koleksi" })).toHaveCount(0);
+  const box = await select.boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  // One collection renders as a real listbox with that row selected.
+  await select.click();
+  const listbox = page.getByRole("listbox", { name: "Koleksi", exact: true });
+  await expect(listbox).toBeVisible();
+  await expect(listbox.getByRole("option", { name: /^KR/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
 });
 
 test("desktop reader keeps the catalog index beside the text", async ({

@@ -29,12 +29,12 @@ import {
   hymnCollectionLabel,
   uniqueItems,
 } from "./kidung-shared.js";
-import { KidungCollectionChips } from "./kidung-collection-chips.js";
 import {
   readStoredCollection,
   resolveCollection,
   writeStoredCollection,
 } from "./kidung-collection-store.js";
+import { Select } from "./select.js";
 import { loadHymnSearchCorpus } from "./hymn-search-corpus.js";
 import { KidungLocalNav } from "./kidung-local-nav.js";
 import { readHymnViewerMode, writeHymnViewerMode } from "./hymn-view-mode.js";
@@ -261,11 +261,16 @@ export function HymnCatalog({
           <KidungLocalNav active="songs" locale={locale} />
           {state.status === "ready" && (
             <div className="kidung-header-filter">
-              <KidungCollectionChips
-                books={books}
-                active={activeBook}
+              <Select
+                value={activeBook}
+                onChange={setBook}
+                className="kidung-collection-select"
+                animated
                 label={translate(locale, "kidung.collection")}
-                onSelect={setBook}
+                options={books.map((value) => ({
+                  value,
+                  label: hymnCollectionLabel(value),
+                }))}
               />
             </div>
           )}

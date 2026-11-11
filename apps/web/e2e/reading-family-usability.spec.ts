@@ -272,9 +272,10 @@ test("reading catalogs stay flat, readable, and contained across layouts", async
     await installFaithFixture(page);
     await page.goto("/GYSApp-Tauri/iman");
     await expect(page.locator(".faith-page")).toBeVisible();
-    await expect(page.locator(".faith-row-heading").first()).toBeVisible();
+    await expect(page.locator(".faith-row").first()).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    await expectTouchTarget(page.locator(".faith-row-heading").first(), 32);
+    // The whole row is the single 44 px target, number and statement included.
+    await expectTouchTarget(page.locator(".faith-row").first(), 44);
 
     const faithRowsStyle = await page
       .locator(".faith-rows")
@@ -320,7 +321,8 @@ for (const viewport of readerViewports) {
 
     await installFaithPdfFixture(page);
     await page.goto("/GYSApp-Tauri/iman");
-    await page.locator(".faith-row-heading").first().click();
+    await page.locator(".faith-row").first().click();
+    await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
     const faithOverlay = page.locator(".faith-pdf-overlay");
     await expect(faithOverlay).toBeVisible({ timeout: 20_000 });
     await expect
@@ -393,7 +395,8 @@ test("reading themes preserve text hierarchy and reachable overlay chrome", asyn
 
   await installFaithPdfFixture(page);
   await page.goto("/GYSApp-Tauri/iman");
-  await page.locator(".faith-row-heading").first().click();
+  await page.locator(".faith-row").first().click();
+  await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
   await expect(page.locator(".faith-pdf-overlay")).toBeVisible({
     timeout: 20_000,
   });

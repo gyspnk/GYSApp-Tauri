@@ -15,14 +15,16 @@ async function settled(panel: import("@playwright/test").Locator) {
 test.beforeEach(async ({ page }) => {
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/iman");
-  await expect(page.locator(".faith-row-summary").first()).toBeVisible({
+  await expect(page.locator(".faith-row").first()).toBeVisible({
     timeout: 30_000,
   });
+  // The sheet owns the PDF entry point now: no per-row PDF or notes button.
+  await expect(page.getByRole("button", { name: /Buka PDF/ })).toHaveCount(0);
 });
 
 test("phone notes rise from the bottom edge", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.locator(".faith-row-summary").first().click();
+  await page.locator(".faith-row").first().click();
   await page.getByRole("button", { name: /^Catatan pribadi/ }).click();
 
   const panel = page.locator(".faith-notes .bible-notes-modal");
@@ -43,7 +45,7 @@ test("phone notes rise from the bottom edge", async ({ page }) => {
 
 test("wide screens dock the note panel on the right", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.locator(".faith-row-summary").first().click();
+  await page.locator(".faith-row").first().click();
   await page.getByRole("button", { name: /^Catatan pribadi/ }).click();
 
   const panel = page.locator(".faith-notes .bible-notes-modal");

@@ -343,7 +343,9 @@ test("literature issue resolves its direct PDF instead of opening raw article te
   );
 });
 
-test("faith row opens PDF directly and shows resume", async ({ page }) => {
+test("faith row opens its sheet and the sheet opens the PDF at the resume page", async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     localStorage.setItem(
       "gys-faith-pdf-1",
@@ -382,9 +384,10 @@ test("faith row opens PDF directly and shows resume", async ({ page }) => {
   });
 
   await page.goto("/GYSApp-Tauri/iman");
-  const row = page.locator(".faith-row-heading").first();
+  const row = page.locator(".faith-row").first();
   await expect(row).toContainText(/Lanjut.*4/i);
   await row.click();
+  await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
 
   await expect(page.locator(".faith-pdf-backdrop")).toBeVisible();
   await expect(page.locator(".faith-modal-backdrop")).toHaveCount(0);
@@ -473,8 +476,9 @@ test("faith PDF overlay keeps both official links reachable across locales and w
       : [390]) {
       await page.setViewportSize({ width: viewport, height: 720 });
       await page.goto(`/GYSApp-Tauri/iman?__gys_locale=${locale}`);
-      const row = page.locator(".faith-row-heading").first();
+      const row = page.locator(".faith-row").first();
       await row.click();
+      await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
 
       const overlay = page.locator(".faith-pdf-overlay");
       await expect(overlay).toBeVisible();

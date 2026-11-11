@@ -16,7 +16,7 @@ test("catalog and settings stay usable without loading the hymn reader", async (
     const { assets } = (await response.json()) as { assets: string[] };
     // Section chunks are catalog-level; only the reader may not load with them.
     const sectionChunk =
-      /^assets\/kidung-(?:page|catalog|local-nav|collection-chips|midi-controls|playlist-page|playlists|settings-page|shared)-/;
+      /^assets\/kidung-(?:page|catalog|local-nav|midi-controls|playlist-page|playlists|settings-page|shared)-/;
     const readers = assets.filter(
       (path) =>
         path.startsWith("assets/kidung-") &&

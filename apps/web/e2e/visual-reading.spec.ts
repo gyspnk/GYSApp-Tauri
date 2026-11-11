@@ -379,7 +379,7 @@ for (const viewport of viewports) {
 
     await page.goto("/GYSApp-Tauri/iman");
     await expect(page.locator(".faith-page")).toBeVisible();
-    await expect(page.locator(".faith-row-heading")).toHaveCount(10);
+    await expect(page.locator(".faith-row")).toHaveCount(10);
     await expect(page.locator(".faith-search-bar")).toBeVisible();
     await assertViewportIntegrity(page);
     await page.waitForTimeout(250);
@@ -467,7 +467,8 @@ for (const viewport of readerViewports) {
     );
 
     await page.goto("/GYSApp-Tauri/iman");
-    await page.locator(".faith-row-heading").first().click();
+    await page.locator(".faith-row").first().click();
+    await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
     await expect(page.locator(".faith-pdf-backdrop")).toBeVisible({
       timeout: 20_000,
     });
@@ -584,7 +585,8 @@ test("AMOLED faith overlay theme sample", async ({ page }) => {
   );
 
   await page.goto("/GYSApp-Tauri/iman");
-  await page.locator(".faith-row-heading").first().click();
+  await page.locator(".faith-row").first().click();
+  await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
   await expect(page.locator(".faith-pdf-overlay")).toBeVisible({
     timeout: 20_000,
   });

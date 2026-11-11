@@ -105,7 +105,8 @@ test("a Faith PDF overlay blocks updates even while the catalog URL stays unchan
   await page.goto("/GYSApp-Tauri/iman");
   const banner = page.locator(".app-update-banner");
   await expect(banner.locator("button")).toBeEnabled();
-  await page.locator(".faith-row-heading").first().click();
+  await page.locator(".faith-row").first().click();
+  await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
   await expect(page.locator(".faith-pdf-body .pdf-reader")).toBeVisible();
   await expect(page).toHaveURL(/\/iman$/);
   await expect(banner.locator("button")).toBeDisabled();

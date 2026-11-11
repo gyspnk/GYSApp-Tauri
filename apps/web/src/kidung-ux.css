@@ -942,6 +942,10 @@ kidung-row-menu > summary:focus-visible,
   }
 }
 
+.hymn-page .kidung-collection-select > .control-select-label {
+  display: none;
+}
+
 /* Header categories and compact actions share consistent alignment. */
 .hymn-page .kidung-header-filter {
   min-width: 0;
@@ -1067,6 +1071,44 @@ kidung-row-menu > summary:focus-visible,
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 12%, transparent);
 }
 
+/* A compact category pill, with an airy list rather than nested boxes. */
+.hymn-page .kidung-collection-select .control-select-trigger {
+  border-radius: 24px;
+  background: var(--blue-soft);
+  border-color: color-mix(in srgb, var(--blue) 18%, var(--line));
+  color: var(--blue);
+  font-weight: 650;
+  box-shadow: none;
+  padding-inline: 14px;
+}
+.kidung-collection-select .control-select-chevron {
+  color: inherit;
+}
+.kidung-collection-select .control-select-trigger:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.kidung-collection-select .control-select-menu {
+  min-width: 160px;
+  padding: 6px;
+  border-radius: 16px;
+  animation: none;
+}
+.kidung-collection-select .control-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.kidung-collection-select .control-select-option.is-selected {
+  color: var(--blue);
+  background: var(--blue-soft);
+  font-weight: 650;
+}
+.kidung-collection-select .control-select-option.is-selected::after {
+  content: "✓";
+}
 .kidung-local-nav-links {
   position: relative;
   isolation: isolate;

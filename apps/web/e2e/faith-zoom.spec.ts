@@ -14,8 +14,8 @@ test("Faith Ctrl+wheel zooms text in/out while ordinary scrolling stays native",
   const size = () =>
     text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
   const initial = await size();
-  const button = page.locator(".faith-row-summary").first();
-  const bounds = await button.boundingBox();
+  const row = page.locator(".faith-row").first();
+  const bounds = await row.boundingBox();
   await text.hover();
   await page.keyboard.down("Control");
   await page.mouse.wheel(0, -200);
@@ -34,7 +34,8 @@ test("Faith Ctrl+wheel zooms text in/out while ordinary scrolling stays native",
   });
   expect(native).toBe(true);
   await expect.poll(size).toBeCloseTo(initial, 1);
-  expect((await button.boundingBox())!.height).toBeCloseTo(bounds!.height, 1);
+  // The row grows with the text it contains, so only its width stays fixed.
+  expect((await row.boundingBox())!.width).toBeCloseTo(bounds!.width, 1);
   await text.evaluate((el) =>
     el.dispatchEvent(
       new WheelEvent("wheel", {
@@ -152,25 +153,15 @@ for (const width of [320, 1440]) {
         const box = await page.locator(selector).first().boundingBox();
         expect(box!.width).toBeCloseTo(bounds!.width, 1);
       }
-      const actions = page.locator(".faith-row-actions").first();
-      const tools = await actions.getByRole("button").all();
-      for (const tool of tools)
-        expect((await tool.boundingBox())!.height).toBeCloseTo(32, 1);
-      const paragraph = (await paragraphs.first().boundingBox())!;
-      const lastTool = (await tools.at(-1)!.boundingBox())!;
-      const copy = (await page
-        .locator(".faith-row-copy")
-        .first()
-        .boundingBox())!;
-      // Desktop puts the actions in their own column at the row's right edge,
-      // aligned with the statement's first line, so the tools never dangle
-      // under a short paragraph.
-      expect(lastTool.x + lastTool.width).toBeCloseTo(copy.x + copy.width, 1);
-      if (width >= 768) {
-        expect(Math.abs(lastTool.y - paragraph.y)).toBeLessThan(4);
-      } else {
-        expect(lastTool.y - paragraph.y - paragraph.height).toBeCloseTo(8, 1);
-      }
+      // One tap per row: the row itself is the button and the PDF lives in
+      // the sheet it opens.
+      const row = page.locator(".faith-row").first();
+      await expect(row).toHaveAttribute("aria-haspopup", "dialog");
+      await expect(row).toHaveAttribute("aria-expanded", "false");
+      expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      await expect(page.getByRole("button", { name: /Buka PDF/ })).toHaveCount(
+        0,
+      );
       const input = page.getByLabel(
         {
           id: "Cari pokok iman",

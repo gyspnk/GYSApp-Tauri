@@ -233,7 +233,7 @@ test("offline reader packs open without a network request", async ({
   await expect(
     page.getByRole("region", { name: "Dasar Kepercayaan" }),
   ).toBeVisible();
-  await expect(page.locator(".faith-row-heading").first()).toBeVisible({
+  await expect(page.locator(".faith-row").first()).toBeVisible({
     timeout: 15_000,
   });
 });
@@ -276,21 +276,20 @@ test("faith topics search, open summary, and persist a personal note", async ({
   await expect(
     page.getByRole("region", { name: "Dasar Kepercayaan" }),
   ).toBeVisible();
-  const rows = page.locator(".faith-row-heading");
+  const rows = page.locator(".faith-row");
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
   const initialCount = await rows.count();
   expect(initialCount).toBeGreaterThan(0);
-  await expect(page.locator(".faith-row-pdf-action")).toHaveCount(0);
-  await expect(page.locator(".faith-row-summary").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /Buka PDF/ })).toHaveCount(0);
 
-  // Search filters the list using real content without changing the direct-PDF action.
+  // Search filters the list using real content.
   await page.getByLabel("Cari pokok iman").fill("Allah");
   await expect
-    .poll(async () => page.locator(".faith-row-heading").count())
+    .poll(async () => page.locator(".faith-row").count())
     .toBeLessThan(initialCount);
   await page.getByLabel("Cari pokok iman").fill("");
 
-  // Notes remain available as the explicit secondary action.
+  // One tap opens the topic sheet, where notes stay available.
   const summaryButton = page.getByRole("button", {
     name: "Buka catatan pokok iman 2",
     exact: true,
@@ -329,17 +328,18 @@ test("faith topics search, open summary, and persist a personal note", async ({
   ).toHaveValue("Renungan dari pokok dasar kepercayaan.");
 });
 
-test("faith row opens its PDF viewer directly in fullscreen overlay", async ({
+test("faith row opens its sheet and the sheet opens the PDF viewer", async ({
   page,
 }) => {
   await page.goto("/GYSApp-Tauri/iman");
   await expect(
     page.getByRole("region", { name: "Dasar Kepercayaan" }),
   ).toBeVisible();
-  const rows = page.locator(".faith-row-heading");
+  const rows = page.locator(".faith-row");
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
 
   await rows.first().click();
+  await page.getByRole("button", { name: /Baca lebih lanjut/ }).click();
   const pdfOverlay = page.locator(".faith-pdf-backdrop");
   await expect(pdfOverlay).toBeVisible();
   await expect(page.locator(".faith-modal-backdrop")).toHaveCount(0);
@@ -972,7 +972,7 @@ test("hymn catalog keeps search and collection controls in its header", async ({
   const header = page.locator(".kidung-index-toolbar");
   await expect(header).toBeVisible();
   await expect(header.getByLabel("Cari lagu")).toBeVisible();
-  await expect(header.getByRole("group", { name: "Koleksi" })).toBeVisible();
+  await expect(header.getByRole("combobox", { name: "Koleksi" })).toBeVisible();
   await expect(
     page.getByText(
       "Pilih satu pujian untuk membuka lirik per bait, chord, PDF, atau iringan MIDI.",

@@ -354,13 +354,19 @@ test.describe("responsive reader navigation", () => {
     expect(desktop.mediaTop).toBeGreaterThan(desktop.verseBottom);
   });
 
-  test("faith rows keep the PDF action and Catatan action separated", async ({
+  test("faith rows are one tappable surface and the sheet owns the PDF", async ({
     page,
   }) => {
+    // The progress readout is status inside the row and must survive the merge.
     await page.addInitScript(() => {
       localStorage.setItem(
         "gys-faith-pdf-1",
-        JSON.stringify({ page: 4, total: 10, updatedAt: Date.now() }),
+        JSON.stringify({
+          page: 4,
+          totalPages: 10,
+          percent: 40,
+          lastOpenedAt: "2026-09-11T12:00:00.000Z",
+        }),
       );
     });
 
@@ -372,61 +378,60 @@ test.describe("responsive reader navigation", () => {
     ]) {
       await page.setViewportSize(viewport);
       await page.goto("/GYSApp-Tauri/iman");
-      await expect(page.locator(".faith-row").first()).toBeVisible({
-        timeout: 15_000,
-      });
-      await expect(page.getByText("Baca PDF", { exact: true })).toHaveCount(0);
-      await expect(page.locator(".faith-row-summary").first()).toContainText(
-        "Catatan",
+      const row = page.locator(".faith-row").first();
+      await expect(row).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByRole("button", { name: /Buka PDF/ })).toHaveCount(
+        0,
       );
+      await expect(row).toHaveAttribute("aria-haspopup", "dialog");
+      await expect(row).toHaveAttribute("aria-expanded", "false");
+      await expect(row).toContainText("Lanjut · halaman 4");
 
       const rows = await page.locator(".faith-row").evaluateAll((elements) =>
         elements.slice(0, 6).map((element) => {
           const row = element.getBoundingClientRect();
-          const heading = element
-            .querySelector<HTMLElement>(".faith-row-heading")!
+          const number = element
+            .querySelector<HTMLElement>(".faith-number")!
             .getBoundingClientRect();
-          const action = element
-            .querySelector<HTMLElement>(".faith-row-summary")!
+          const statement = element
+            .querySelector<HTMLElement>(".faith-statement")!
             .getBoundingClientRect();
           return {
             row: {
               left: row.left,
               right: row.right,
               width: row.width,
+              height: row.height,
               scrollWidth: (element as HTMLElement).scrollWidth,
               clientWidth: (element as HTMLElement).clientWidth,
             },
-            heading: {
-              left: heading.left,
-              right: heading.right,
-              bottom: heading.bottom,
-            },
-            action: {
-              top: action.top,
-              left: action.left,
-              right: action.right,
-              width: action.width,
-              height: action.height,
-            },
+            number: { left: number.left, right: number.right },
+            statement: { left: statement.left, right: statement.right },
           };
         }),
       );
 
-      for (const { row, heading, action } of rows) {
-        if (row.width === 0 || action.width === 0) continue;
+      for (const { row, number, statement } of rows) {
+        if (row.width === 0) continue;
         expect(row.scrollWidth).toBeLessThanOrEqual(row.clientWidth + 1);
-        expect(action.width).toBeGreaterThanOrEqual(44);
-        // Compact Faith actions are intentionally 32px; allow subpixel rounding.
-        expect(action.height).toBeGreaterThanOrEqual(32 - 0.01);
-        expect(action.left).toBeGreaterThanOrEqual(row.left - 1);
-        expect(action.right).toBeLessThanOrEqual(row.right + 1);
-        expect(heading.left).toBeGreaterThanOrEqual(row.left - 1);
-        expect(heading.right).toBeLessThanOrEqual(row.right + 1);
-        expect(
-          heading.right <= action.left - 5 || heading.bottom <= action.top - 5,
-        ).toBe(true);
+        // The whole row, number and statement included, is the tap target.
+        expect(row.height).toBeGreaterThanOrEqual(44);
+        expect(number.left).toBeGreaterThanOrEqual(row.left - 1);
+        expect(number.right).toBeLessThanOrEqual(row.right + 1);
+        expect(statement.left).toBeGreaterThanOrEqual(row.left - 1);
+        expect(statement.right).toBeLessThanOrEqual(row.right + 1);
       }
+
+      await row.click();
+      const sheet = page.locator(".faith-modal-backdrop");
+      await expect(sheet).toBeVisible();
+      await expect(row).toHaveAttribute("aria-expanded", "true");
+      await expect(
+        sheet.getByRole("button", { name: /Baca lebih lanjut/ }),
+      ).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(sheet).toHaveCount(0);
+      await expect(row).toHaveAttribute("aria-expanded", "false");
       await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
     }
   });
@@ -563,7 +568,7 @@ test.describe("responsive reader navigation", () => {
       )
       .toBeGreaterThan(200);
     await expect(
-      page.locator(".kidung-header-filter .kidung-collection-chips"),
+      page.getByRole("combobox", { name: "Koleksi", exact: true }),
     ).toBeVisible();
     await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
 
@@ -1520,7 +1525,7 @@ test("Iman belief sheet and note editor close with Escape and restore focus", as
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/GYSApp-Tauri/iman");
-  const row = page.locator(".faith-row-summary").first();
+  const row = page.locator(".faith-row").first();
   await expect(row).toBeVisible();
   await row.click();
   const sheet = page.locator(".faith-modal-backdrop");
@@ -1543,5 +1548,5 @@ test("Iman belief sheet and note editor close with Escape and restore focus", as
   await expect(sheet).toHaveCount(0);
   await expect
     .poll(() => page.evaluate(() => document.activeElement?.className ?? ""))
-    .toContain("faith-row-summary");
+    .toContain("faith-row");
 });

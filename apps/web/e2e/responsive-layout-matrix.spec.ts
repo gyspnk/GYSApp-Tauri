@@ -428,7 +428,7 @@ test("reading surfaces stay contained around phone, tablet, and desktop edges", 
       viewport.width,
     );
     await expectInsideViewport(
-      page.locator(".faith-row-heading").first(),
+      page.locator(".faith-row").first(),
       viewport.width,
     );
   }

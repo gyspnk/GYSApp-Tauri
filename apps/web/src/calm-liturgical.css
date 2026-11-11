@@ -582,12 +582,6 @@ summary:focus-visible {
   background: transparent;
   border-radius: 0;
 }
-.faith-row-heading {
-  align-items: start;
-}
-.faith-row-heading .faith-number {
-  align-self: start;
-}
 /* A discrete cover and caption removes blur/gradient work from every shelf
    item and keeps both real artwork and offline initials legible. */
 .home-suara-shelf .suara-library-item,

@@ -67,7 +67,7 @@ for (const width of [320, 390, 1440]) {
           interactive: Boolean(node.closest("button")),
           clipped: node.scrollHeight > node.clientHeight + 1,
         })),
-      ).toEqual({ tag: "P", interactive: false, clipped: false });
+      ).toEqual({ tag: "SPAN", interactive: true, clipped: false });
       await rows.nth(index).scrollIntoViewIfNeeded();
       const bounds = (await rows.nth(index).boundingBox())!;
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);

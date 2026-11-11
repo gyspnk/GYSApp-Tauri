@@ -456,62 +456,59 @@ export function FaithPage({ locale }: { locale: Locale }) {
               const note = hasNote(item.number);
               const progress = readFaithPdfProgress(item.number);
               return (
-                <div className="faith-row" role="listitem" key={item.number}>
-                  <span className="faith-number" aria-hidden="true">
-                    {item.number.padStart(2, "0")}
-                  </span>
-                  <div className="faith-row-copy">
-                    <p className="faith-statement">{item.text}</p>
-                    <div className="faith-row-actions">
-                      <button
-                        className={`faith-row-heading${isActive ? " is-selected" : ""}${note ? " has-note" : ""}`}
-                        type="button"
-                        onPointerEnter={() =>
-                          void import("./pdf.js").catch(() => undefined)
-                        }
-                        onFocus={() =>
-                          void import("./pdf.js").catch(() => undefined)
-                        }
-                        onClick={(event) =>
-                          openFaithPdf(item, event.currentTarget)
-                        }
-                        aria-label={translate(locale, "faith.pdfLabel", {
-                          number: item.number,
-                        })}
-                      >
-                        <Icon name="file" size={16} />
-                        <span>PDF</span>
-                        {progress && (
-                          <span
-                            className="faith-row-progress"
-                            title={translate(locale, "faith.progressTitle", {
-                              percent: progress.percent,
-                            })}
-                          >
-                            {translate(locale, "faith.progress", {
-                              page: progress.page,
-                            })}
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        className="faith-row-summary"
-                        type="button"
-                        onClick={() => toggleSelected(item.number)}
-                        aria-label={translate(locale, "faith.noteLabel", {
-                          number: item.number,
-                        })}
-                      >
-                        <Icon name="bookmark" size={14} />
-                        <span>{translate(locale, "faith.noteShort")}</span>
-                        {note && (
-                          <span className="sr-only">
-                            {translate(locale, "faith.hasNote")}
-                          </span>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+                <div
+                  className="faith-row-item"
+                  role="listitem"
+                  key={item.number}
+                >
+                  {/* The whole row is the one action: it opens the topic sheet,
+                      which holds the PDF entry point. The number and statement
+                      are inside the button, so the tap target covers both. */}
+                  <button
+                    className={`faith-row${isActive ? " is-selected" : ""}`}
+                    type="button"
+                    aria-haspopup="dialog"
+                    aria-expanded={isActive}
+                    aria-label={translate(locale, "faith.noteLabel", {
+                      number: item.number,
+                    })}
+                    onPointerEnter={() =>
+                      void import("./pdf.js").catch(() => undefined)
+                    }
+                    onFocus={() =>
+                      void import("./pdf.js").catch(() => undefined)
+                    }
+                    onClick={() => toggleSelected(item.number)}
+                  >
+                    <span className="faith-number" aria-hidden="true">
+                      {item.number.padStart(2, "0")}
+                    </span>
+                    <span className="faith-row-copy">
+                      <span className="faith-statement">{item.text}</span>
+                      {(note || progress) && (
+                        <span className="faith-row-status">
+                          {note && (
+                            <span className="faith-row-note">
+                              <Icon name="bookmark" size={14} />
+                              {translate(locale, "faith.hasNote")}
+                            </span>
+                          )}
+                          {progress && (
+                            <span
+                              className="faith-row-progress"
+                              title={translate(locale, "faith.progressTitle", {
+                                percent: progress.percent,
+                              })}
+                            >
+                              {translate(locale, "faith.progress", {
+                                page: progress.page,
+                              })}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </span>
+                  </button>
                 </div>
               );
             })}

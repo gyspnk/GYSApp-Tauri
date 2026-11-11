@@ -97,11 +97,29 @@
 }
 
 .faith-row {
+  width: 100%;
+  min-height: 44px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
-  align-items: center;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
   gap: 16px;
   padding: 10px 20px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-out);
+}
+
+.faith-row:hover {
+  background: var(--surface-soft);
+}
+
+.faith-row:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
 }
 
 .faith-rows > div:last-child {
@@ -155,47 +173,13 @@
   color: var(--blue);
 }
 
-.faith-row-heading {
-  width: 100%;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  align-items: center;
-  column-gap: 20px;
-  border: 0;
-  background: transparent;
-  text-align: left;
-  color: var(--ink);
-  padding: 6px 0;
-  cursor: pointer;
-  transition: background var(--motion-fast) var(--ease-out);
-}
-
-.faith-row-heading:hover {
-  background: var(--surface-soft);
-}
-
-.faith-row-heading.is-selected {
-  color: var(--blue);
-  background: var(--blue-soft);
-  border-radius: var(--radius-control);
-}
-
-.faith-row-heading strong {
-  font-family: var(--font-reading);
-  font-size: 1.0625rem;
-  font-weight: 450;
-  line-height: 1.6;
-  min-width: 0;
-}
-
 .faith-row-copy {
   display: grid;
   gap: 4px;
   min-width: 0;
 }
 
-.faith-row-heading .faith-number {
+.faith-row > .faith-number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -213,13 +197,25 @@
   justify-self: center;
 }
 
-.faith-row-actions {
+/* Note and reading progress are status, not controls: they stay inside the
+   row button so the row keeps one tap target. */
+.faith-row-status {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  min-width: 44px;
-  flex: 0 0 auto;
+  gap: 4px 12px;
+  padding-top: 2px;
+  color: var(--muted);
+  font-size: max(var(--text-meta), 0.6875rem);
+  line-height: 1.4;
+}
+
+.faith-row-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--blue);
+  font-weight: 650;
 }
 
 .faith-copy {
@@ -1156,44 +1152,6 @@
   padding-block: 14px;
 }
 
-.faith-row-heading strong {
-  min-width: 0;
-}
-
-.faith-row-summary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: max-content;
-  min-width: 44px;
-  min-height: 44px;
-  margin: 0;
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  color: var(--muted);
-  font: inherit;
-  font-size: max(var(--text-meta), 0.6875rem);
-  font-weight: 650;
-  line-height: 1.4;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    border-color var(--motion-fast) var(--ease-out),
-    background-color var(--motion-fast) var(--ease-out),
-    color var(--motion-fast) var(--ease-out);
-}
-
-.faith-row-summary:hover,
-.faith-row-summary:focus-visible {
-  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
-  background: var(--blue-soft);
-  color: var(--blue);
-  outline: none;
-}
-
 .faith-pdf-progress {
   display: block;
   width: 100%;
@@ -1203,31 +1161,13 @@
 }
 
 @media (max-width: 620px) {
-  .faith-row-heading {
+  .faith-row {
     grid-template-columns: 34px minmax(0, 1fr);
     column-gap: 12px;
   }
 
   .faith-row-progress {
     font-size: max(var(--text-meta), 0.6875rem);
-  }
-}
-
-@media (max-width: 480px) {
-  .faith-row {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
-    padding-inline: 12px;
-  }
-
-  .faith-row-actions {
-    justify-content: flex-start;
-    padding-inline-start: 48px;
-    gap: 6px;
-  }
-
-  .faith-row-summary {
-    padding-inline: 8px;
   }
 }
 

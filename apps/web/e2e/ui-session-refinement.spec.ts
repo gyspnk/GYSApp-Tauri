@@ -54,14 +54,18 @@ for (const width of [390, 768, 1440]) {
     const mode = (await controls
       .locator(".kidung-mode-control")
       .boundingBox())!;
-    const chips = controls.locator(".kidung-collection-chips");
-    const chip = (await chips.boundingBox())!;
-    // The collection is a chip row now: it hugs its labels and scrolls when a
-    // shelf has many collections, so it must stay a real touch target.
-    expect(chip.height).toBeGreaterThanOrEqual(44);
-    expect(chip.width).toBeGreaterThanOrEqual(44);
+    const collection = (await controls
+      .getByRole("combobox", { name: "Koleksi", exact: true })
+      .boundingBox())!;
+    // The collection select hugs its own label and arrow, so it is only as wide
+    // as "KR ⌄" plus padding — still a valid 44 px touch target.
+    expect(collection.height).toBeGreaterThanOrEqual(44);
+    expect(collection.width).toBeGreaterThanOrEqual(44);
+    expect(collection.width).toBeLessThanOrEqual(220);
     expect(mode.x + mode.width).toBeLessThanOrEqual(field.x + field.width);
-    expect(chip.x + chip.width).toBeLessThanOrEqual(field.x + field.width);
+    expect(collection.x + collection.width).toBeLessThanOrEqual(
+      field.x + field.width,
+    );
   });
 
   test(`MIDI exposes full controls and docks across routes at ${width}px`, async ({

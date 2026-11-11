@@ -743,14 +743,25 @@
   gap: 0;
 }
 .faith-page .faith-row {
+  width: 100%;
+  min-height: 44px;
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 16px;
   padding: 18px 0;
   border: 0;
-  border-bottom: 1px solid var(--line);
   border-radius: 0;
   background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   content-visibility: visible;
+  -webkit-tap-highlight-color: transparent;
+}
+.faith-page .faith-row.is-selected {
+  border-radius: var(--radius-control);
+  background: var(--blue-soft);
+  color: var(--blue);
 }
 .faith-row > .faith-number {
   width: 36px;
@@ -802,42 +813,10 @@
   color: var(--muted);
   font-size: 0.9375rem;
 }
-.faith-page .faith-row-actions {
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding-top: 4px;
-  padding-inline-start: 0;
-}
-.faith-page :is(.faith-row-heading, .faith-row-summary) {
-  width: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 32px;
-  padding: 4px 8px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  font-size: 0.6875rem;
-  line-height: 1.4;
-}
-.faith-page .faith-row-heading {
-  color: var(--blue);
-}
-/* These compact icon buttons are the only way into the PDF and notes on a
-   phone, so a coarse pointer gets the 44 px target rather than 32 px. */
-@media (hover: none), (pointer: coarse) {
-  .faith-page :is(.faith-row-heading, .faith-row-summary) {
-    min-height: 44px;
-  }
-}
-.faith-page :is(.faith-row-heading, .faith-row-summary) svg {
-  width: 13px;
-  height: 13px;
-  margin: 0;
-}
-.faith-row-heading.has-note {
-  border-color: var(--blue);
+/* The note/progress line is status inside the row button; the row itself is
+   the only control and opens the topic sheet. */
+.faith-page .faith-row-status {
+  justify-content: flex-start;
 }
 
 @media (max-width: 1199px) {
@@ -989,9 +968,6 @@
     height: 28px;
     font-size: 0.875rem;
     border-radius: 8px;
-  }
-  .faith-page .faith-row-heading {
-    flex-wrap: wrap;
   }
   .hymn-page .hymn-index-heading {
     padding-top: 16px;
@@ -5867,28 +5843,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* Design pass (5 Nov): overlays read as content, not chrome, and the faith
-   row actions line up with the first line instead of floating mid-row. */
-@media (min-width: 768px) {
-  .faith-page .faith-row-copy {
-    display: grid;
-    min-width: 0;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 16px;
-    align-items: start;
-  }
-  .faith-page .faith-statement {
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .faith-page .faith-row-actions {
-    grid-column: 2;
-    grid-row: 1;
-    justify-content: flex-end;
-    padding-top: 2px;
-  }
-}
-
+/* Design pass (5 Nov): overlays read as content, not chrome. */
 .suara-card-media .img-loading-bar {
   display: none;
 }
@@ -5975,27 +5930,41 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* The collection is a chip row, not a dropdown: one tap instead of open-then-
-   pick, and every chip is a 44 px target. The row scrolls sideways rather than
-   wrapping, so a narrow phone never gains an extra toolbar row. */
+/* The collection pill is content-sized on every width. Stretching it pushed
+   the chevron to a far edge, so the pill, its arrow and the Aa/score switch
+   read as three unrelated islands with dead air between them. */
 .hymn-page .kidung-controls-field .kidung-header-filter {
   flex: 0 0 auto;
   width: fit-content;
+}
+.hymn-page .kidung-controls-field .kidung-collection-select {
+  flex: 0 0 auto;
+  width: fit-content;
   min-width: 0;
-  max-width: 100%;
+  max-width: min(60vw, 220px);
 }
-.hymn-page .kidung-collection-chips {
-  display: flex;
+.hymn-page
+  .kidung-controls-field
+  .kidung-collection-select
+  .control-select-trigger {
+  width: auto;
+  min-width: 0;
+  min-height: 44px;
+  justify-content: flex-start;
+  padding-inline: 12px 10px;
   gap: 6px;
-  max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
 }
-.hymn-page .kidung-collection-chips::-webkit-scrollbar {
-  display: none;
+.hymn-page
+  .kidung-controls-field
+  .kidung-collection-select
+  .control-select-value {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-:is(.kidung-collection-chip, .literature-category-chip) {
+.literature-category-chip {
   flex: 0 0 auto;
   min-height: 44px;
   padding-inline: 14px;
@@ -6014,16 +5983,16 @@ body:has(.hymn-detail-page.is-text-viewer)
     color 120ms ease;
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(.kidung-collection-chip, .literature-category-chip) {
+  .literature-category-chip {
     transition: none;
   }
 }
-:is(.kidung-collection-chip, .literature-category-chip)[aria-pressed="true"] {
+.literature-category-chip[aria-pressed="true"] {
   border-color: var(--blue);
   background: var(--blue-soft);
   color: var(--blue);
 }
-:is(.kidung-collection-chip, .literature-category-chip):focus-visible {
+.literature-category-chip:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }

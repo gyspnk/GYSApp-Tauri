@@ -206,8 +206,7 @@ test.describe("coarse pointers get the full 44 px target", () => {
     await expect(
       page.getByRole("heading", { name: "Dasar Kepercayaan", exact: true }),
     ).toBeVisible();
-    await expectTouchTarget(page.locator(".faith-row-heading").first());
-    await expectTouchTarget(page.locator(".faith-row-summary").first());
+    await expectTouchTarget(page.locator(".faith-row").first());
 
     // The reader rule keeps the visible number small, so the hit area is the
     // measurement that matters.
