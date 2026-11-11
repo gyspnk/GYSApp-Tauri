@@ -163,3 +163,15 @@ Supaya banyak pekerjaan selesai simultan tanpa saling merusak:
 5. **Hasil batch diverifikasi otak**, bukan dipercaya: `pnpm check:fast` untuk
    tipe/format, `pnpm e2e:one` untuk kontrak yang tersentuh, lalu hosted run untuk
    bukti. Subagent yang gagal dilaporkan apa adanya, bukan ditutupi.
+
+## Fase workflow di panel (11 Nov)
+
+Panel membaca `tool-workflow/run-start`, `agent-start`, `agent-end`, `run-end` dari
+`binding(id).eventSource` yang sama dengan detail turn/tool. Yang ditampilkan hanya
+badge `.kb-brain-wf` ("workflow · N agen" saat berjalan, "workflow done" setelah
+`run-end`) dan satu baris "Workflow" di kartu detail. `agent-start.phase` sengaja
+tidak dipakai karena itu judul fase, bukan status run. Batas jujur: kalau jendela
+event terpaginasi di atas `agent-start` lama, jumlah agen adalah batas bawah —
+status buka/selesai tetap benar karena event agen yang lebih baru dari `run-end`
+membuktikan run masih terbuka. Panel belum punya kontrak browser; verifikasinya
+`node --check`, `node test/smoke.js`, cakupan kunci locale, dan urutan event sintetis.
