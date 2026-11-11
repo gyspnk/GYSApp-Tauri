@@ -224,12 +224,6 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   const speechActive = activeMediaKind === "speech";
   const isKidungMedia = activeMediaKind === "midi";
   const hasMediaSession = speechActive ? speechHasSession : midiHasSession;
-  const latestMidiRef = useRef(snapshot);
-  const latestSpeechRef = useRef(speechSnapshot);
-  const latestMediaKindRef = useRef(activeMediaKind);
-  latestMidiRef.current = snapshot;
-  latestSpeechRef.current = speechSnapshot;
-  latestMediaKindRef.current = activeMediaKind;
   // gyschordweb mini-player parity: key/accidental mirror the hymn transpose
   // state; the displayed key is derived from the current transpose offset.
   const [keyAccidental, setKeyAccidental] = useHymnNotation();
@@ -657,6 +651,9 @@ export function MediaSurface({ locale }: { locale: Locale }) {
   useEffect(() => {
     mediaSessionBridge.setSpeechActive(speechActive);
   }, [speechActive, speechSnapshot.status]);
+  // The bridge outlives this surface: hand system routing back to MIDI on
+  // unmount so a stale speech flag cannot capture transport after close.
+  useEffect(() => () => mediaSessionBridge.setSpeechActive(false), []);
   useEffect(() => {
     if (!hasMediaSession || !("mediaSession" in navigator)) return;
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -664,121 +661,7 @@ export function MediaSurface({ locale }: { locale: Locale }) {
       artist: "Gereja Yesus Sejati",
       album: speechActive ? "Alkitab TB" : "Kidung Rohani",
     });
-    const handlers: Array<
-      [
-        MediaSessionAction,
-        (details?: MediaSessionActionDetails) => void | Promise<void>,
-      ]
-    > = [
-      [
-        "play",
-        () => {
-          const speech = latestSpeechRef.current;
-          if (latestMediaKindRef.current === "speech")
-            return speech.status === "paused"
-              ? speechPlayer.resume()
-              : speechPlayer.play();
-          void speechPlayer.pause();
-          return midiPlayer.play().catch(() => undefined);
-        },
-      ],
-      [
-        "pause",
-        () =>
-          latestMediaKindRef.current === "speech"
-            ? speechPlayer.pause()
-            : midiPlayer.pause().catch(() => undefined),
-      ],
-      [
-        "stop",
-        () =>
-          latestMediaKindRef.current === "speech"
-            ? speechPlayer.stop()
-            : midiPlayer.stop().catch(() => undefined),
-      ],
-      [
-        "previoustrack",
-        () => {
-          if (latestMediaKindRef.current === "speech")
-            return speechPlayer.previous();
-          return midiPlayer.getTime() > 2
-            ? midiPlayer
-                .seek(0)
-                .then(() => midiPlayer.play())
-                .catch(() => undefined)
-            : playAdjacentMidiHymn(-1).catch(() => undefined);
-        },
-      ],
-      [
-        "nexttrack",
-        () =>
-          latestMediaKindRef.current === "speech"
-            ? speechPlayer.next()
-            : playAdjacentMidiHymn(1).catch(() => undefined),
-      ],
-      [
-        "seekbackward",
-        (details) => {
-          return latestMediaKindRef.current === "speech"
-            ? undefined
-            : midiPlayer.seek(
-                Math.max(0, midiPlayer.getTime() - (details?.seekOffset ?? 10)),
-              );
-        },
-      ],
-      [
-        "seekforward",
-        (details) => {
-          const midi = latestMidiRef.current;
-          return latestMediaKindRef.current === "speech"
-            ? undefined
-            : midiPlayer.seek(
-                Math.min(
-                  midi.duration,
-                  midiPlayer.getTime() + (details?.seekOffset ?? 10),
-                ),
-              );
-        },
-      ],
-      [
-        "seekto",
-        (details) => {
-          return latestMediaKindRef.current === "speech"
-            ? undefined
-            : midiPlayer.seek(details?.seekTime ?? midiPlayer.getTime());
-        },
-      ],
-    ];
-    for (const [action, handler] of handlers) {
-      try {
-        const seeking =
-          action === "seekto" ||
-          action === "seekbackward" ||
-          action === "seekforward";
-        navigator.mediaSession.setActionHandler(
-          action,
-          speechActive && seeking ? null : handler,
-        );
-      } catch {
-        // Safari exposes the Media Session object but not every action.
-      }
-    }
-    return () => {
-      for (const [action] of handlers) {
-        try {
-          navigator.mediaSession.setActionHandler(action, null);
-        } catch {
-          /* unsupported action */
-        }
-      }
-    };
-  }, [
-    hasMediaSession,
-    mediaTitle,
-    speechActive,
-    speechSnapshot.status,
-    snapshot.status,
-  ]);
+  }, [hasMediaSession, mediaTitle, speechActive]);
   const [neighbors, setNeighbors] = useState({ previous: false, next: false });
   useEffect(() => {
     if (!isKidungMedia || !snapshot.songId) return;

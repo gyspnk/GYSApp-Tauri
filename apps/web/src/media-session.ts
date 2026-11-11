@@ -14,15 +14,16 @@
  * exactly like the global MidiEngine in gyschordweb.
  */
 import { midiPlayer } from "./midi-player.js";
-import {
-  playNextMidiPlaylistItem,
-  playPreviousMidiPlaylistItem,
-} from "./midi-queue.js";
+import { playAdjacentMidiHymn } from "./midi-queue.js";
 import { getMidiPlaylist } from "./midi-playlist.js";
 import { speechPlayer } from "./speech-player.js";
 
 const SKIP_SECONDS = 10;
 const POLL_MS = 1000;
+
+type ActionHandler = (
+  details?: MediaSessionActionDetails,
+) => void | Promise<void>;
 
 function generateSilentWavUrl(seconds: number): string {
   const sampleRate = 8000;
@@ -58,11 +59,12 @@ export class MediaSessionBridge {
   private poll: number | undefined;
   private installed = false;
   private speechActive = false;
+  private readonly registeredActions = new Set<MediaSessionAction>();
 
   public install(): void {
     if (this.installed) return;
     this.installed = true;
-    void this.setupHandlers();
+    this.syncActionHandlers();
     this.poll = window.setInterval(() => this.pollTick(), POLL_MS);
     document.addEventListener("visibilitychange", () =>
       this.onVisibilityChange(),
@@ -75,6 +77,7 @@ export class MediaSessionBridge {
     this.poll = undefined;
     this.releaseWakeLock();
     this.pauseSilentAudio();
+    this.clearActionHandlers();
     this.installed = false;
   }
 
@@ -90,7 +93,9 @@ export class MediaSessionBridge {
   }
 
   public setSpeechActive(active: boolean): void {
+    const changed = this.speechActive !== active;
     this.speechActive = active;
+    if (changed) this.syncActionHandlers();
     this.sync();
   }
 
@@ -261,70 +266,136 @@ export class MediaSessionBridge {
     this.updatePositionState();
   }
 
-  private async setupHandlers(): Promise<void> {
-    const session = this.mediaSession();
-    if (!session || typeof session.setActionHandler !== "function") return;
-    try {
-      session.setActionHandler("play", () => {
-        if (!midiPlayer.isPlaying()) {
-          void midiPlayer
-            .play()
-            .catch(() => undefined)
-            .finally(() => this.sync());
-        }
-      });
-      session.setActionHandler("pause", () => {
-        void midiPlayer
-          .pause()
-          .catch(() => undefined)
-          .finally(() => this.sync());
-      });
-      session.setActionHandler("stop", () => {
-        void midiPlayer
-          .stop()
-          .catch(() => undefined)
-          .finally(() => this.sync());
-      });
-      session.setActionHandler("previoustrack", () => {
-        // gyschordweb onPrevSong(allowRewind): >2 s plays from 0, else previous.
-        if (midiPlayer.getTime() > 2) {
-          void midiPlayer
-            .seek(0)
-            .catch(() => undefined)
-            .then(() => midiPlayer.play())
-            .catch(() => undefined);
-          return;
-        }
-        void playPreviousMidiPlaylistItem().catch(() => undefined);
-      });
-      session.setActionHandler("nexttrack", () => {
-        void playNextMidiPlaylistItem().catch(() => undefined);
-      });
-      session.setActionHandler(
+  private actionHandlers(): Array<[MediaSessionAction, ActionHandler]> {
+    return [
+      [
+        "play",
+        () => {
+          if (this.speechActive) {
+            return speechPlayer.snapshot().status === "paused"
+              ? speechPlayer.resume()
+              : speechPlayer.play();
+          }
+          void speechPlayer.pause();
+          return midiPlayer.play().catch(() => undefined);
+        },
+      ],
+      [
+        "pause",
+        () =>
+          this.speechActive
+            ? speechPlayer.pause()
+            : midiPlayer.pause().catch(() => undefined),
+      ],
+      [
+        "stop",
+        () =>
+          this.speechActive
+            ? speechPlayer.stop()
+            : midiPlayer.stop().catch(() => undefined),
+      ],
+      [
+        "previoustrack",
+        () => {
+          if (this.speechActive) return speechPlayer.previous();
+          // gyschordweb onPrevSong(allowRewind): >2 s plays from 0, else previous.
+          if (midiPlayer.getTime() > 2) {
+            return midiPlayer
+              .seek(0)
+              .then(() => midiPlayer.play())
+              .catch(() => undefined);
+          }
+          return playAdjacentMidiHymn(-1).catch(() => undefined);
+        },
+      ],
+      [
+        "nexttrack",
+        () =>
+          this.speechActive
+            ? speechPlayer.next()
+            : playAdjacentMidiHymn(1).catch(() => undefined),
+      ],
+      [
         "seekto",
-        (details: MediaSessionActionDetails) => {
-          if (typeof details.seekTime !== "number") return;
+        (details) => {
+          if (this.speechActive) return;
           void midiPlayer
-            .seek(details.seekTime)
+            .seek(details?.seekTime ?? midiPlayer.getTime())
             .catch(() => undefined)
             .finally(() => this.updatePositionState());
         },
-      );
-      session.setActionHandler(
+      ],
+      [
         "seekbackward",
-        (details: MediaSessionActionDetails) => {
-          this.seekBy(-(details.seekOffset ?? SKIP_SECONDS));
+        (details) => {
+          if (this.speechActive) return;
+          this.seekBy(-(details?.seekOffset ?? SKIP_SECONDS));
         },
-      );
-      session.setActionHandler(
+      ],
+      [
         "seekforward",
-        (details: MediaSessionActionDetails) => {
-          this.seekBy(details.seekOffset ?? SKIP_SECONDS);
+        (details) => {
+          if (this.speechActive) return;
+          this.seekBy(details?.seekOffset ?? SKIP_SECONDS);
         },
+      ],
+    ];
+  }
+
+  /** Register the whole action set in one place; speech has no seeking. */
+  private syncActionHandlers(): void {
+    const session = this.mediaSession();
+    if (!session || typeof session.setActionHandler !== "function") return;
+    for (const [action, handler] of this.actionHandlers()) {
+      const seeking =
+        action === "seekto" ||
+        action === "seekbackward" ||
+        action === "seekforward";
+      this.applyActionHandler(
+        session,
+        action,
+        this.speechActive && seeking ? null : handler,
       );
-    } catch {
-      // Individual handlers can be unsupported; ignore.
     }
+  }
+
+  private applyActionHandler(
+    session: MediaSession,
+    action: MediaSessionAction,
+    handler: ActionHandler | null,
+  ): void {
+    if (handler === null) {
+      if (!this.registeredActions.has(action)) return;
+      try {
+        session.setActionHandler(action, null);
+      } catch {
+        return;
+      }
+      this.registeredActions.delete(action);
+      return;
+    }
+    if (this.registeredActions.has(action)) return;
+    try {
+      session.setActionHandler(action, handler);
+      this.registeredActions.add(action);
+    } catch {
+      // Safari exposes the Media Session object but not every action.
+    }
+  }
+
+  /** Release only the actions this bridge installed (unmount/teardown). */
+  private clearActionHandlers(): void {
+    const session = this.mediaSession();
+    if (session && typeof session.setActionHandler === "function") {
+      for (const action of [...this.registeredActions]) {
+        try {
+          session.setActionHandler(action, null);
+        } catch {
+          // unsupported action
+        }
+      }
+    }
+    this.registeredActions.clear();
   }
 }
 
