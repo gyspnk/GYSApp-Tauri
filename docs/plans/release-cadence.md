@@ -63,3 +63,7 @@ sebelum rilis diterbitkan, dan APK hanya berbeda 1 504 byte dari rilis sebelumny
 1. Baca job yang merah; kegagalan umum: SDK/NDK tidak terpasang, `tauri android init` gagal, verifikasi APK (`verify-android-apk.py`), atau aset tidak terunggah.
 2. Perbaiki di `main`, push, lalu dispatch ulang dengan tag baru (generator menaikkan nomor urut harian).
 3. Jangan menerbitkan release yang asetnya tidak lengkap; workflow sudah menolak (`Missing asset`).
+
+## versionCode
+
+Android menolak memasang APK dengan `versionCode` yang tidak lebih besar. Kode diturunkan dari putaran rilis (`1000 + turn`) oleh `scripts/android-version-code.mjs` di `native-android.yml`, sehingga setiap rilis preview bisa dipasang menimpa yang lama tanpa langkah manual. Skrip menolak properties tanpa baris `versionCode` dan menolak kode yang mundur.

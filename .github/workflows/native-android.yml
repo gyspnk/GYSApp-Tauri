@@ -12,6 +12,11 @@ on:
         required: false
         default: ""
         type: string
+      turn:
+        description: "Release turn; the APK versionCode derives from it"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: write
@@ -67,6 +72,9 @@ jobs:
       - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
       - name: Generate Android project
         run: pnpm --filter @gys/native tauri android init --ci
+      - name: Raise the APK version code to this release turn
+        if: inputs.turn != ''
+        run: node scripts/android-version-code.mjs --turn "${{ inputs.turn }}" apps/native/src-tauri/gen/android/app/tauri.properties
       - name: Configure optimized preview packaging
         run: node scripts/configure-android-preview.mjs
       # This manually dispatched preview uses the Android debug signing identity.

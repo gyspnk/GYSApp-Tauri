@@ -114,7 +114,8 @@ jobs:
         run: |
           set -euo pipefail
           gh workflow run native-android.yml --ref main \
-            -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG"
+            -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG" \
+            -f turn="${{ inputs.turn }}"
       - name: Wait for the APK build
         run: |
           set -euo pipefail
