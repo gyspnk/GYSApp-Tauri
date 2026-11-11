@@ -6239,3 +6239,15 @@ body:has(.hymn-detail-page.is-text-viewer)
     animation: none;
   }
 }
+
+/* The owner reads scripture across the whole page in landscape: the 46rem
+   measure and the 88ch ceiling only apply to portrait and to a tall desktop
+   window, never to a landscape one. This sits at the end of the file because
+   it must win over the min-width rules above by source order. */
+@media (orientation: landscape) {
+  .bible-reader .verse-list,
+  .bible-reader .verse-content {
+    max-width: none;
+    margin-inline: 0;
+  }
+}

@@ -79,7 +79,7 @@ test("an available update installs itself and reloads the page, with no button",
   await expect(page.locator(".app-update-banner")).toHaveCount(0);
 });
 
-test("reading holds the update until the reader is left, then it applies", async ({
+test("a reader never blocks the update: it applies on the page being read", async ({
   page,
 }) => {
   test.skip(process.env.GYS_E2E_DEV === "1", "Production update coordinator");
@@ -87,19 +87,18 @@ test("reading holds the update until the reader is left, then it applies", async
   await expect(page.locator(".verse-row").first()).toBeVisible();
   const banner = page.locator(".app-update-banner");
   await expect(banner).toBeVisible();
-  await expect(banner).toContainText("Selesaikan membaca atau menulis dulu");
-  expect(
-    await page.evaluate(() =>
-      localStorage.getItem("gys-e2e-update-activation"),
-    ),
-  ).toBeNull();
+  // Reading is no longer a reason to hold: the worker activates while the page
+  // is on a chapter, and only an unsaved draft or an open surface may pause it.
+  await expect
+    .poll(() =>
+      page.evaluate(() => localStorage.getItem("gys-e2e-update-activation")),
+    )
+    .toBe("requested");
   await page.evaluate(() =>
     navigator.serviceWorker.dispatchEvent(new Event("controllerchange")),
   );
-  await expect(banner).toBeVisible();
-  expect(await boot(page)).toBe(1);
-  await page.getByRole("link", { name: "Beranda", exact: true }).click();
   await expect.poll(() => boot(page)).toBe(2);
+  await expect(page.locator(".verse-row").first()).toBeVisible();
 });
 
 test("an unsaved note postpones the reload until it is gone", async ({
@@ -118,7 +117,7 @@ test("an unsaved note postpones the reload until it is gone", async ({
     navigator.serviceWorker.dispatchEvent(new Event("controllerchange")),
   );
   await expect(page.locator(".app-update-banner")).toContainText(
-    "Selesaikan membaca atau menulis dulu",
+    "Selesaikan tulisan yang sedang dibuka dulu",
   );
   expect(await boot(page)).toBe(1);
   await page.locator("#unsaved-editor").evaluate((element) => element.remove());

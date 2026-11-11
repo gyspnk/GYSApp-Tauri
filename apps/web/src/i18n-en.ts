@@ -18,7 +18,7 @@ export const enMessages: Record<string, string> = {
   "more.explore": "Explore the collection",
   "more.preferences": "Settings & device",
   "update.waiting":
-    "The update installs itself in a moment. Finish reading or writing first.",
+    "The update installs itself in a moment. Finish what you are writing first.",
   "update.activating": "Updating the app…",
   "home.title": "Readings & hymns",
   "image.previewError": "Preview could not load: {title}",

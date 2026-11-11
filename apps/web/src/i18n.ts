@@ -34,7 +34,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "more.explore": "Jelajahi koleksi",
     "more.preferences": "Pengaturan & perangkat",
     "update.waiting":
-      "Pembaruan dipasang sebentar lagi. Selesaikan membaca atau menulis dulu.",
+      "Pembaruan dipasang sebentar lagi. Selesaikan tulisan yang sedang dibuka dulu.",
     "update.activating": "Memperbarui aplikasi…",
     "home.title": "Bacaan & nyanyian",
     "image.previewError": "Gagal memuat pratinjau: {title}",

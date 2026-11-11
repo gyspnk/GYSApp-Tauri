@@ -92,20 +92,9 @@ describe("self-applying app updates", () => {
     expect(controller.updating).toBe(false);
     expect(reload).toHaveBeenCalledOnce();
   });
-  it("protects reader routes, paused audio and dirty editors", () => {
-    for (const path of [
-      "/GYSApp-Tauri/bible",
-      "/GYSApp-Tauri/kidung/hymn-001",
-      "/GYSApp-Tauri/iman/topic",
-      "/GYSApp-Tauri/literatur/article",
-    ])
-      expect(isUpdateBusy(path, "idle", "idle", false)).toBe(true);
-    expect(
-      isUpdateBusy("/GYSApp-Tauri/iman", "idle", "idle", false, true),
-    ).toBe(true);
-    expect(isUpdateBusy("/", "paused", "idle", false)).toBe(true);
-    expect(isUpdateBusy("/", "idle", "paused", false)).toBe(true);
-    expect(isUpdateBusy("/", "idle", "idle", true)).toBe(true);
-    expect(isUpdateBusy("/GYSApp-Tauri/", "idle", "idle", false)).toBe(false);
+  it("lets the update run on any route, pausing only for typed text or an open surface", () => {
+    expect(isUpdateBusy(false, false)).toBe(false);
+    expect(isUpdateBusy(true, false)).toBe(true);
+    expect(isUpdateBusy(false, true)).toBe(true);
   });
 });

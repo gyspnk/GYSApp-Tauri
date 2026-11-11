@@ -16,7 +16,7 @@ export const zhMessages: Record<string, string> = {
   "more.collectionSauh": "每日灵修",
   "more.explore": "探索馆藏",
   "more.preferences": "设置与设备",
-  "update.waiting": "更新即将自动安装。请先完成阅读或书写。",
+  "update.waiting": "更新即将自动安装。请先完成正在书写的内容。",
   "update.activating": "正在更新应用…",
   "home.title": "阅读与诗歌",
   "image.previewError": "预览加载失败：{title}",

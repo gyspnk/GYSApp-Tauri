@@ -30,16 +30,17 @@ export function installServiceWorkerUpdates(): () => void {
       if (!editor.isConnected) dirtyEditors.delete(editor);
     const focused = document.activeElement;
     return isUpdateBusy(
-      location.pathname,
-      midiPlayer.snapshot().status,
-      speechPlayer.snapshot().status,
       dirtyEditors.size > 0 ||
         (focused instanceof HTMLElement &&
           (focused.matches(
             "input:not([type='button']):not([type='range']), textarea, select",
           ) ||
             focused.isContentEditable)),
-      Boolean(document.querySelector(".pdf-reader")),
+      Boolean(
+        document.querySelector(
+          '.pdf-reader, [role="dialog"][aria-modal="true"]',
+        ),
+      ),
     );
   };
   const render = () => {

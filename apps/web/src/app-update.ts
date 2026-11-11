@@ -64,20 +64,9 @@ export class AppUpdateController {
   }
 }
 
-export function isUpdateBusy(
-  path: string,
-  midi: string,
-  speech: string,
-  editing: boolean,
-  readingOverlay = false,
-): boolean {
-  return (
-    editing ||
-    readingOverlay ||
-    /\/(?:bible|kidung\/[^/?]+|iman\/[^/?]+|literatur\/[^/?]+)(?:\/|$)/.test(
-      path,
-    ) ||
-    ["loading", "playing", "paused"].includes(midi) ||
-    ["loading", "speaking", "paused"].includes(speech)
-  );
+export function isUpdateBusy(editing: boolean, overlay: boolean): boolean {
+  // The update no longer waits for a calm page: it installs and reloads on any
+  // route. Only losing typed text or an open surface (dialog, PDF reader) is
+  // worth a pause, because a reload would take it away mid-action.
+  return editing || overlay;
 }
