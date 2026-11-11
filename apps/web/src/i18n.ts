@@ -836,7 +836,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.checkingAccount": "Memeriksa status akun e-GYS…",
     "more.memberOfficial": "Jemaat Resmi ✓",
     "more.memberRegistered": "Anggota Terdaftar",
-    "more.fullName": "Nama Lengkap",
     "more.branch": "Daerah / Cabang",
     "more.center": "Pusat",
     "more.memberNumber": "No. Anggota",

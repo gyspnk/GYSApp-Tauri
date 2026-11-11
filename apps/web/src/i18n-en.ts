@@ -807,7 +807,6 @@ export const enFeatureMessages: Record<string, string> = {
   "more.checkingAccount": "Checking e-GYS account status…",
   "more.memberOfficial": "Official member ✓",
   "more.memberRegistered": "Registered member",
-  "more.fullName": "Full name",
   "more.branch": "Region / branch",
   "more.center": "Central",
   "more.memberNumber": "Member no.",

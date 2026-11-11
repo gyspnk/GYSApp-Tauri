@@ -786,7 +786,6 @@ export const zhFeatureMessages: Record<string, string> = {
   "more.checkingAccount": "正在检查 e-GYS 账户状态…",
   "more.memberOfficial": "正式会友 ✓",
   "more.memberRegistered": "已注册会友",
-  "more.fullName": "姓名",
   "more.branch": "地区 / 分堂",
   "more.center": "总会",
   "more.memberNumber": "会友编号",
