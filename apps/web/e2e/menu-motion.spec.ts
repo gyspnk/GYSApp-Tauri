@@ -82,11 +82,16 @@ async function sampleExit(
           bottom: number;
           inert: boolean;
           opensUp: boolean;
+          anchorRight: number;
+          anchorTop: number;
         }> = [];
+        const anchor = close
+          ? close.selector
+            ? document.querySelector<HTMLElement>(close.selector)
+            : (document.activeElement as HTMLElement)
+          : null;
         if (close) {
-          const trigger = close.selector
-            ? document.querySelector<HTMLElement>(close.selector)!
-            : (document.activeElement as HTMLElement);
+          const trigger = anchor!;
           if (close.key)
             trigger.dispatchEvent(
               new KeyboardEvent("keydown", { key: close.key, bubbles: true }),
@@ -113,6 +118,10 @@ async function sampleExit(
             bottom: box?.bottom ?? 0,
             inert: node?.inert ?? true,
             opensUp: node?.classList.contains("is-open-up") ?? false,
+            // The menu follows its trigger; a page that scrolls between frames
+            // moves both, so the drift is measured against the trigger.
+            anchorRight: anchor?.getBoundingClientRect().right ?? 0,
+            anchorTop: anchor?.getBoundingClientRect().top ?? 0,
           });
           if (time - started < 260) requestAnimationFrame(sample);
           else resolve(frames);
@@ -234,15 +243,14 @@ for (const width of [390, 1440]) {
     for (const frame of visible) {
       expect(frame.inert).toBe(true);
       expect(frame.opensUp).toBe(opensUp);
-      // The trigger is content sized, so an anchored menu may settle by a few
-      // pixels between frames; it must not jump across the screen.
-      expect(Math.abs(frame.right - visible[0]!.right)).toBeLessThan(4.5);
-      expect(
-        Math.abs(
-          (opensUp ? frame.bottom : frame.y) -
-            (opensUp ? visible[0]!.bottom : visible[0]!.y),
-        ),
-      ).toBeLessThan(4.5);
+      // The menu must stay glued to its trigger. Measured against the trigger
+      // itself, so a page that scrolls a few pixels between frames still proves
+      // the anchor instead of failing on the scroll.
+      const offsetX = (f: (typeof visible)[number]) => f.right - f.anchorRight;
+      const offsetY = (f: (typeof visible)[number]) =>
+        (opensUp ? f.bottom : f.y) - f.anchorTop;
+      expect(Math.abs(offsetX(frame) - offsetX(visible[0]!))).toBeLessThan(1.5);
+      expect(Math.abs(offsetY(frame) - offsetY(visible[0]!))).toBeLessThan(1.5);
     }
     await expect(menu).toHaveCount(0);
     await trigger.click();
