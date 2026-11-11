@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-// The quick navigation sheet is the page: full viewport, square corners, a
-// transparent blurred backdrop instead of a tinted card scrim.
+// The address picker stays a centred card; the full-screen surface belongs to
+// the drag quick navigation (bible-quick-nav-overlay.spec.ts).
 for (const viewport of [
   { width: 844, height: 390 },
   { width: 1024, height: 600 },
 ]) {
-  test(`quick navigation fills the screen with a blurred backdrop at ${viewport.width}x${viewport.height}`, async ({
+  test(`the address picker stays a centred card at ${viewport.width}x${viewport.height}`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport);
@@ -30,9 +30,12 @@ for (const viewport of [
     const panel = page.locator(".bible-address-picker");
     const box = await panel.boundingBox();
     expect(box).not.toBeNull();
-    expect(Math.abs(box!.width - viewport.width)).toBeLessThanOrEqual(2);
-    expect(box!.height).toBeGreaterThanOrEqual(viewport.height * 0.9 - 2);
-    await expect(panel).toHaveCSS("border-radius", "0px");
+    expect(box!.width).toBeLessThanOrEqual(422);
+    expect(box!.width).toBeLessThanOrEqual(viewport.width - 20);
+    expect(
+      Math.abs(box!.x + box!.width / 2 - viewport.width / 2),
+    ).toBeLessThanOrEqual(2);
+    await expect(panel).toHaveCSS("border-radius", "24px");
 
     const backdropStyle = await page
       .locator(".bible-picker-backdrop")
@@ -46,11 +49,13 @@ for (const viewport of [
         };
       });
     expect(backdropStyle.filter).toContain("blur");
-    const alpha = backdropStyle.background
-      .match(/rgba?\(([^)]+)\)/)?.[1]
-      .split(",")
-      .map((part) => part.trim())[3];
-    expect(alpha === undefined || Number(alpha) === 0).toBe(true);
+    const alpha = Number(
+      backdropStyle.background
+        .match(/rgba?\(([^)]+)\)/)?.[1]
+        .split(",")
+        .map((part) => part.trim())[3],
+    );
+    expect(alpha).toBeGreaterThan(0);
 
     // The testament pills belong to search mode: they only mount once the
     // query reaches React state, so assert the typed value before them.
@@ -82,16 +87,16 @@ for (const viewport of [
         .evaluate((element) => getComputedStyle(element).overflowY),
     ).toBe("auto");
 
-    // The padded rim of the sheet is still backdrop, so an edge tap dismisses.
+    // A card leaves real backdrop around it, so an edge tap dismisses.
     await page
       .locator(".bible-picker-backdrop")
-      .click({ position: { x: 1, y: 1 } });
+      .click({ position: { x: 2, y: 2 } });
     await expect(dialog).toBeHidden();
     await expect(trigger).toBeFocused();
   });
 }
 
-test("the full-screen sheet still closes from the keyboard and the rim, and returns focus", async ({
+test("the card still closes from the keyboard and the rim, and returns focus", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 844, height: 390 });
@@ -115,8 +120,7 @@ test("the full-screen sheet still closes from the keyboard and the rim, and retu
   await expect(dialog).toBeHidden();
   await expect(trigger).toBeFocused();
 
-  // The sheet covers the viewport, so the only reachable part of the backdrop
-  // is the padded rim: its pointer events pass through and close the sheet.
+  // The card is centred, so the backdrop around it is reachable.
   await trigger.click();
   await expect(dialog).toBeVisible();
   await page.mouse.click(2, 2);
