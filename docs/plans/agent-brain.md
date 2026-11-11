@@ -225,3 +225,15 @@ kerja + objek>` dan `description` panggilan `subagent` memakai frasa yang sama
 Panel sempat menggambar peta sebagai strip 2:1 di atas dialog yang tinggi, jadi separuh bidang tampak kosong. Sekarang `.kb-card.kb-brain` memegang tinggi body dialog (`display:flex; flex:1; min-height:0`), `.kb-brain-map` tumbuh dengan `flex:1 1 0`, dan `BrainPanel` mengukur kotak SVG lewat `ResizeObserver` lalu memakai viewBox `0 0 660 <tinggi sesuai aspect>`; koordinat node diskalakan (`y * mapH/340`) supaya sebaran ikut tinggi, dan roda/geser memakai skala 660 unit yang sama.
 
 Terukur dengan stylesheet plugin yang sama di halaman uji statis: peta menempati **0,44 → 0,70** tinggi dialog 780×840, dan **0,32 → 0,69** pada panel sempit (420×700). Batas jujur: belum ada verifikasi di GUI hidup (127.0.0.1:3080 menjawab 401 untuk sesi non-operator) dan repo plugin masih lokal (#13).
+
+## Panel tidak mengarang (11 Nov)
+
+Audit panel terhadap API klien menemukan sepuluh tempat di mana tampilan bisa berbeda dari keadaan sebenarnya. Yang diperbaiki di plugin (commit `9cfa5ff`):
+
+- **Garis hanya bila induknya nyata.** Anak yang induknya di luar empat root teratas tidak lagi disambung ke root acak; simpulnya ditandai `orphan` dan tampil tanpa kabel.
+- **Detail tidak hilang saat daftar terbit.** `read()` tidak lagi mereset `details`; setState menggabungkan hasil baca sebelumnya.
+- **Workflow dihitung per `runId`.** Beberapa run bisa hidup bersamaan, jadi tiap run punya kumpulan `started`/`ended` sendiri; `run-end` hanya menutup run dengan `runId` yang sama, dan agen = selisih himpunan untuk semua run yang hidup.
+- **Angka yang tidak pasti ditandai.** Bila jendela event terpotong (`hasMore`) atau ada `agent-end` tanpa `agent-start`, badge menulis `≥N`, bukan angka palsu.
+- **Biaya pindai turun.** Hanya simpul `running` dan yang dipilih yang dibaca detailnya, dengan gerbang `revision` dan debounce 250 ms — streaming per chunk tidak lagi memicu pemindaian seluruh jendela untuk setiap simpul.
+
+Kontrak yang tersedia sekarang hanya `node --check`, `node test/smoke.js`, dan uji event sintetis (dua run paralel, satu `run-end`); belum ada uji browser karena `127.0.0.1:3080` menjawab 401 untuk sesi non-operator (issue #12).
