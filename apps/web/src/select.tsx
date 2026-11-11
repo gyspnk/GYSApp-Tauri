@@ -41,6 +41,8 @@ export function Select<T extends string | number>({
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const pendingFocus = useRef<number | null>(null);
   const [open, setOpen] = useState(false);
   const menuPresent = useMenuPresence(open, menuRef);
   const [opensUp, setOpensUp] = useState(false);
@@ -50,9 +52,28 @@ export function Select<T extends string | number>({
   );
   const selected = options[index] ?? options[0];
   const [activeIndex, setActiveIndex] = useState(index);
-  const activeOptionId = open ? `${id}-option-${activeIndex}` : undefined;
+
+  const focusedOptionIndex = () =>
+    optionRefs.current.findIndex(
+      (option) => option !== null && option === document.activeElement,
+    );
+  const focusOption = (optionIndex: number) => {
+    optionRefs.current[optionIndex]?.focus({ preventScroll: true });
+  };
+  const openAt = (optionIndex: number) => {
+    pendingFocus.current = optionIndex;
+    setActiveIndex(optionIndex);
+    setOpen(true);
+  };
 
   useEffect(() => setActiveIndex(index), [index]);
+  useLayoutEffect(() => {
+    if (!open || !menuPresent) return;
+    const pending = pendingFocus.current;
+    if (pending === null) return;
+    pendingFocus.current = null;
+    focusOption(pending);
+  }, [open, menuPresent]);
   useLayoutEffect(() => {
     const menu = menuRef.current;
     const option = menu?.children[activeIndex] as HTMLElement | undefined;
@@ -137,40 +158,54 @@ export function Select<T extends string | number>({
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (disabled) return;
     if (event.key === "Escape") {
-      if (open) {
-        event.preventDefault();
-        setOpen(false);
-      }
+      if (!open) return;
+      event.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus({ preventScroll: true });
       return;
     }
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      if (open && options[activeIndex]) choose(options[activeIndex]);
-      else setOpen(true);
+      if (!open) {
+        openAt(index);
+        return;
+      }
+      const target =
+        options[focusedOptionIndex() >= 0 ? focusedOptionIndex() : activeIndex];
+      if (target) choose(target);
       return;
     }
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (
+      event.key === "ArrowDown" ||
+      event.key === "ArrowUp" ||
+      event.key === "Home" ||
+      event.key === "End"
+    ) {
       event.preventDefault();
-      setOpen(true);
-      setActiveIndex((current) =>
-        event.key === "ArrowDown"
-          ? Math.min(options.length - 1, current + 1)
-          : Math.max(0, current - 1),
-      );
-    }
-    if (event.key === "Home" || event.key === "End") {
-      event.preventDefault();
-      setOpen(true);
-      setActiveIndex(
-        event.key === "Home" ? 0 : Math.max(0, options.length - 1),
-      );
+      const step =
+        event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+      const next =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? Math.max(0, options.length - 1)
+            : Math.max(0, Math.min(options.length - 1, activeIndex + step));
+      if (open) {
+        setActiveIndex(next);
+        focusOption(next);
+        return;
+      }
+      openAt(next);
     }
   };
 
   const toggleOpen = () => {
     if (disabled || !selected) return;
-    setActiveIndex(index);
-    setOpen((current) => !current);
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    openAt(index);
   };
 
   return (
@@ -195,7 +230,6 @@ export function Select<T extends string | number>({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={menuPresent ? id : undefined}
-        aria-activedescendant={activeOptionId}
         aria-label={label}
         disabled={disabled || !selected}
         onClick={toggleOpen}
@@ -225,8 +259,7 @@ export function Select<T extends string | number>({
           data-menu-instant={!animated || undefined}
           inert={!open}
           aria-hidden={!open}
-          tabIndex={0}
-          aria-activedescendant={activeOptionId}
+          tabIndex={-1}
           onKeyDown={onKeyDown}
           aria-label={label}
           aria-labelledby={label ? `${id}-label` : undefined}
@@ -236,6 +269,9 @@ export function Select<T extends string | number>({
               className={`control-select-option${optionIndex === activeIndex ? " is-active" : ""}${option.value === value ? " is-selected" : ""}`}
               id={`${id}-option-${optionIndex}`}
               key={String(option.value)}
+              ref={(node) => {
+                optionRefs.current[optionIndex] = node;
+              }}
               type="button"
               role="option"
               aria-selected={option.value === value}
