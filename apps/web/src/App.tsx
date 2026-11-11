@@ -43,6 +43,7 @@ import {
   Routes,
   useLocation,
   useNavigate,
+  useNavigationType,
 } from "react-router-dom";
 import {
   DESTINATIONS,
@@ -478,9 +479,85 @@ function Shell({
       history.scrollRestoration = previous;
     };
   }, []);
+  // A tap into a hymn is a push; Back is a pop. Only a pop may reuse the
+  // offset the reader left behind, so a forward navigation still starts at the
+  // top and never inherits a stale position.
+  const navigationType = useNavigationType();
+  // The catalog's mode toggle rewrites the query with `replace`, so keying this
+  // on the pathname keeps an offset discoverable after that rewrite.
+  const scrollKey = location.pathname;
+  const scrollOffsets = useRef<Map<string, number>>(new Map());
+  const scrollKeyRef = useRef(scrollKey);
+  const restoredOffsetRef = useRef(0);
+  // While a pop is being restored the incoming route legitimately scrolls to
+  // 0 (and then walks down as rows append). Saving that transient value would
+  // overwrite the offset the reader actually left behind.
+  const restoringRef = useRef(false);
+  // Declared before the restore effect below: the reset's own scroll event
+  // lands a frame later and must be credited to the incoming route. Crediting
+  // it to the outgoing one saved 0 and made an earlier attempt useless.
   useLayoutEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, [location.pathname]);
+    scrollKeyRef.current = scrollKey;
+  }, [scrollKey]);
+  useEffect(() => {
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    // Read the key from the URL, not from React state: on a push the route
+    // resets the scroll before this component commits, and crediting that
+    // zero to the page being left would erase the offset we want back.
+    const keyAt = () =>
+      window.location.pathname.replace(base, "").replace(/\/$/, "") || "/";
+    const save = () => {
+      if (restoringRef.current) return;
+      scrollOffsets.current.set(keyAt(), window.scrollY);
+    };
+    window.addEventListener("scroll", save, { passive: true });
+    return () => window.removeEventListener("scroll", save);
+  }, []);
+  useLayoutEffect(() => {
+    const saved =
+      navigationType === "POP"
+        ? scrollOffsets.current.get(scrollKey)
+        : undefined;
+    restoredOffsetRef.current = saved ?? 0;
+    restoringRef.current = Boolean(saved);
+    if (!saved) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      return;
+    }
+    // The catalogue paints fourteen rows and appends the rest as the page
+    // grows, so the height at the moment of the pop is only a fraction of the
+    // place the reader left. Re-apply the offset whenever the document grows
+    // and stop once it is reached (or after five seconds, on a shorter list).
+    const target = saved;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      observer.disconnect();
+      window.clearTimeout(timer);
+      restoringRef.current = false;
+    };
+    const clamp = () =>
+      Math.min(
+        target,
+        Math.max(0, document.documentElement.scrollHeight - window.innerHeight),
+      );
+    const observer = new ResizeObserver(() => {
+      if (scrollKeyRef.current !== scrollKey) {
+        finish();
+        return;
+      }
+      window.scrollTo({ top: clamp(), left: 0, behavior: "instant" });
+      if (window.scrollY >= target) finish();
+    });
+    const timer = window.setTimeout(finish, 5_000);
+    window.scrollTo({ top: clamp(), left: 0, behavior: "instant" });
+    if (window.scrollY >= target) {
+      finish();
+      return;
+    }
+    observer.observe(document.documentElement);
+  }, [scrollKey, navigationType]);
   const firstRouteRef = useRef(true);
   useEffect(() => {
     // Data-backed pages paint a loader before their heading exists, and on a
@@ -504,6 +581,9 @@ function Shell({
         firstRouteRef.current = false;
         return true;
       }
+      // Back returns the reader mid-catalogue; focus belongs where they are
+      // looking, not on a heading that has scrolled far off the top.
+      if (restoredOffsetRef.current > 0) return true;
       // A direct reader or dialog may already have claimed focus while this
       // page was still painting its heading; moving it again would yank the
       // user out of the overlay they just opened.
