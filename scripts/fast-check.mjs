@@ -80,10 +80,15 @@ export function collectChecks(files) {
     const contract = "apps/web/src/i18n.test.ts";
     if (existsSync(contract)) tests.push(contract);
   }
+  // The documentation gate is the last thing CI checks and the easiest to forget
+  // locally: a broken link or an unwritten round note fails there, not here.
+  const docs = changed.some(
+    (file) => file.startsWith("docs/") || file === "README.md",
+  );
   const typechecks = [...new Set([...sources, ...tests].map(ownerOf))].filter(
     Boolean,
   );
-  return { formatted, sources, tests: [...new Set(tests)], typechecks };
+  return { formatted, docs, sources, tests: [...new Set(tests)], typechecks };
 }
 
 function baseName(file) {
@@ -124,8 +129,8 @@ function run(label, command, args) {
 
 export function main(argv = process.argv.slice(2)) {
   const files = argv.length ? argv : changedSince("origin/main");
-  const { formatted, sources, tests, typechecks } = collectChecks(files);
-  if (!formatted.length && !sources.length && !tests.length) {
+  const { formatted, docs, sources, tests, typechecks } = collectChecks(files);
+  if (!formatted.length && !docs && !sources.length && !tests.length) {
     process.stdout.write("Nothing changed against origin/main.\n");
     return;
   }
@@ -147,6 +152,7 @@ export function main(argv = process.argv.slice(2)) {
       byOwner.set(workspace, [...(byOwner.get(workspace) ?? []), file]);
   }
   if (unowned.length) run("unit (scripts)", "node", ["--test", ...unowned]);
+  if (docs) run("docs", "node", ["scripts/verify-documentation.mjs"]);
   for (const [workspace, files] of byOwner)
     // vitest runs inside the package, so hand it package-relative paths.
     run(`unit (${workspace})`, "pnpm", [

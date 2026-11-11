@@ -70,3 +70,9 @@ test("a scripts tool drags its own node test into the check", () => {
   const { tests } = collectChecks(["scripts/issue-queue.mjs"]);
   assert.deepEqual(tests, ["scripts/issue-queue.test.mjs"]);
 });
+
+test("a documentation change pulls the documentation gate into the fast check", () => {
+  const checks = collectChecks(["docs/plans/ui-spec-loop.md"]);
+  assert.equal(checks.docs, true);
+  assert.equal(collectChecks(["apps/web/src/app.ts"]).docs, false);
+});
