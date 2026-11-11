@@ -24,8 +24,13 @@ test("coming back from a hymn returns to where the catalogue was left", async ({
 
   await page.goBack();
   await expect(rows.first()).toBeAttached();
+  // The catalogue reopens with a screenful and appends the rest while idle; the
+  // offset can only be honoured once the list is tall enough to hold it.
   await expect
-    .poll(() => page.evaluate(() => window.scrollY), { timeout: 8_000 })
+    .poll(() => rows.count(), { timeout: 15_000 })
+    .toBeGreaterThan(100);
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY), { timeout: 15_000 })
     .toBeGreaterThan(2300);
   await expect(target).toBeInViewport();
   // Focus stays where the reader is looking, not on the off-screen heading.

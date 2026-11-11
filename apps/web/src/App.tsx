@@ -535,6 +535,7 @@ function Shell({
       finished = true;
       observer.disconnect();
       window.clearTimeout(timer);
+      window.clearInterval(poll);
       restoringRef.current = false;
     };
     const clamp = () =>
@@ -550,6 +551,12 @@ function Shell({
       window.scrollTo({ top: clamp(), left: 0, behavior: "instant" });
       if (window.scrollY >= target) finish();
     });
+    // A page transition can disable window scrolling for a few frames, and a
+    // resize observer says nothing when it re-enables. Poll alongside it.
+    const poll = window.setInterval(() => {
+      if (window.scrollY >= target) finish();
+      else window.scrollTo({ top: clamp(), left: 0, behavior: "instant" });
+    }, 150);
     const timer = window.setTimeout(finish, 5_000);
     window.scrollTo({ top: clamp(), left: 0, behavior: "instant" });
     if (window.scrollY >= target) {
