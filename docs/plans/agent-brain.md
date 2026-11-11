@@ -237,3 +237,9 @@ Audit panel terhadap API klien menemukan sepuluh tempat di mana tampilan bisa be
 - **Biaya pindai turun.** Hanya simpul `running` dan yang dipilih yang dibaca detailnya, dengan gerbang `revision` dan debounce 250 ms — streaming per chunk tidak lagi memicu pemindaian seluruh jendela untuk setiap simpul.
 
 Kontrak yang tersedia sekarang hanya `node --check`, `node test/smoke.js`, dan uji event sintetis (dua run paralel, satu `run-end`); belum ada uji browser karena `127.0.0.1:3080` menjawab 401 untuk sesi non-operator (issue #12).
+
+## Kontrak model panel (11 Nov)
+
+Logika panel dipisah ke model murni di scope modul `client.js` (`buildGraph`, `readWorkflow`, `describeDetail`, `sameDetail`, `shortLabel`) dan diekspor lewat `typeof module` — `require` relatif tidak didukung loader klien (`dsh-client-modules/lib/client.js:840` melempar "missed the module table"), jadi tes menyentuh fungsi yang sama, bukan salinan.
+
+`node --test test/` di repo plugin = 16 kasus (`test/brain-model.test.js` 14 + `test/bundle-load.test.js` 2). Jalankan sebelum menyentuh panel; `bundle-load` menjalankan `client.js` di `vm` dengan loader tiruan sehingga "dock tetap terdaftar" tidak perlu browser.
