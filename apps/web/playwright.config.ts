@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import { resolveE2eServerCommand } from "./src/e2e-server-command.js";
+import { ONBOARDED_STATE } from "./e2e/fixtures/onboarded-state.js";
 
 export default defineConfig({
   // One `expect` object only: a second key with the same name silently replaced
@@ -39,25 +40,7 @@ export default defineConfig({
     serviceWorkers: "block",
     // Every spec starts as a returning reader: the welcome screen is covered by
     // its own contract, and the other suites must not be redirected by it.
-    storageState: {
-      cookies: [],
-      origins: [
-        {
-          origin: "http://127.0.0.1:4173",
-          localStorage: [
-            {
-              name: "gys-shell-settings-v1",
-              value: JSON.stringify({
-                version: 1,
-                locale: "id",
-                theme: "light",
-                onboarded: true,
-              }),
-            },
-          ],
-        },
-      ],
-    },
+    storageState: ONBOARDED_STATE,
   },
   webServer: {
     // Local clean checkouts still build all workspace entrypoints automatically.

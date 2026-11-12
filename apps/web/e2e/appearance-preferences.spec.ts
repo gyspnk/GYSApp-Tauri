@@ -172,7 +172,16 @@ test("appearance controls stay legible with the existing dark theme", async ({
   page,
 }) => {
   await page.addInitScript(() => {
-    window.localStorage.setItem("gys-theme", "dark");
+    // The versioned envelope wins over the legacy `gys-theme` key.
+    window.localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({
+        version: 1,
+        locale: "id",
+        theme: "dark",
+        onboarded: true,
+      }),
+    );
   });
   await page.setViewportSize({ width: 768, height: 1024 });
   const { dialog } = await openAppearance(page);

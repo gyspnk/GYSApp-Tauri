@@ -1,5 +1,6 @@
 import { test as base, expect } from "@playwright/test";
 import type { BrowserContext, Page } from "@playwright/test";
+import { ONBOARDED_STATE } from "./onboarded-state.js";
 
 /**
  * Experimental fixture for read-only specs: one browser context per worker, a
@@ -16,7 +17,11 @@ export const test = base.extend<
 >({
   sharedContext: [
     async ({ browser }, use) => {
-      const context = await browser.newContext();
+      // The shared context bypasses the config-level storage state, so the
+      // returning-reader envelope is applied here explicitly.
+      const context = await browser.newContext({
+        storageState: ONBOARDED_STATE,
+      });
       await use(context);
       await context.close();
     },

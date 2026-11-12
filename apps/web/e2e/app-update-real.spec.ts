@@ -64,6 +64,19 @@ test("a real waiting worker activates once without another ready banner", async 
     throw new Error("Missing test server address");
   try {
     await page.route(/^https:\/\//, (route) => route.abort());
+    // The proxy listens on another origin, so the seeded returning-reader
+    // envelope does not apply; seed it for this page too.
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({
+          version: 1,
+          locale: "id",
+          theme: "light",
+          onboarded: true,
+        }),
+      );
+    });
     await page.goto(`http://127.0.0.1:${address.port}/GYSApp-Tauri/`);
     await expect(page.locator(".home-grid")).toBeVisible();
     await expect
