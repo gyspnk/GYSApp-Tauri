@@ -158,19 +158,22 @@ export function BibleQuickNavOverlay({
     typeof window !== "undefined" &&
     window.matchMedia("(max-height: 540px) and (orientation: landscape)")
       .matches;
+  // The sheet is the screen now: no readout above it and no column header, so
+  // the grid only gives up the 12 px padding on each side and the room the
+  // step pill needs at the bottom.
+  const insetY = compact ? 24 : 56;
   const usableHeight = Math.max(
     140,
-    (box.height ||
-      (typeof window === "undefined" ? 560 : window.innerHeight - 140)) -
-      (compact ? 100 : 150),
+    (box.height || (typeof window === "undefined" ? 560 : window.innerHeight)) -
+      insetY,
   );
   const usableWidth = Math.max(
     260,
     (box.width || (typeof window === "undefined" ? 800 : window.innerWidth)) -
-      32,
+      24,
   );
   const rowPitch = compact ? 25 : 30;
-  const minColumn = compact ? 78 : 88;
+  const minColumn = compact ? 78 : 96;
   const fitRows = Math.max(3, Math.floor(usableHeight / rowPitch));
   // A column narrower than the minimum breaks book names into three lines, so
   // the column count is capped by width first and only then by height.
@@ -202,7 +205,9 @@ export function BibleQuickNavOverlay({
       aria-live="polite"
       aria-label={translate(locale, "bible.quickNavAria")}
     >
-      <div className="quick-nav-floater">
+      {/* The readout is announced, not painted: the selected cell already
+          shows the current book, chapter and verse. */}
+      <div className="sr-only">
         <strong>
           {dragState.bookName} {dragState.chapter}
           {dragState.verse > 0 ? `:${dragState.verse}` : ""}
@@ -223,7 +228,6 @@ export function BibleQuickNavOverlay({
 
       <div className="quick-nav-columns-container" ref={boxRef}>
         <div className="quick-nav-column is-active-column">
-          <div className="quick-nav-column-header">{columnLabel}</div>
           <div
             className="quick-nav-column-list"
             ref={listRef}

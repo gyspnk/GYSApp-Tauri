@@ -499,7 +499,6 @@ test("Bible title drag advances through book, chapter, and verse before commit",
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2 + 8, box.y + box.height / 2);
-  await expect(page.locator(".quick-nav-floater")).toBeVisible();
   const fieldBox = await page
     .locator(".quick-nav-columns-container")
     .boundingBox();
@@ -602,7 +601,7 @@ test("Bible drag release defaults incomplete book and chapter choices to verse o
       handleBox.x + handleBox.width / 2 + 16,
       handleBox.y + handleBox.height / 2,
     );
-    await expect(page.locator(".quick-nav-floater")).toBeVisible();
+    await expect(page.locator(".quick-nav-columns-container")).toBeVisible();
     const item = page.locator(`[data-quick-nav-value="${value}"]`);
     const itemBox = await item.boundingBox();
     if (!itemBox) throw new Error("Quick navigation item is not measurable");

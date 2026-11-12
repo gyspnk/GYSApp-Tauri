@@ -1,6 +1,6 @@
 import { test as base, expect } from "@playwright/test";
 import type { BrowserContext, Page } from "@playwright/test";
-import { ONBOARDED_STATE } from "./onboarded-state.js";
+import { ONBOARDED_ENVELOPE, ONBOARDED_STATE } from "./onboarded-state.js";
 
 /**
  * Experimental fixture for read-only specs: one browser context per worker, a
@@ -31,14 +31,17 @@ export const test = base.extend<
     const page = await sharedContext.newPage();
     await use(page);
     await page
-      .evaluate(() => {
+      .evaluate((envelope) => {
         try {
           localStorage.clear();
           sessionStorage.clear();
+          // The shared context lives across tests, so the returning-reader
+          // envelope has to be put back for the next page.
+          localStorage.setItem("gys-shell-settings-v1", envelope);
         } catch {
           // About:blank or a closed page: nothing to clear.
         }
-      })
+      }, ONBOARDED_ENVELOPE)
       .catch(() => undefined);
     await page.close();
     await sharedContext.clearCookies();

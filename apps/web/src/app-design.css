@@ -6424,3 +6424,38 @@ body:has(.hymn-detail-page.is-text-viewer)
     transition: none;
   }
 }
+
+/* The MIDI queue used to open with a large page title and a full-width
+   switch while the catalogue above it used a compact icon row, so switching
+   between the two pages moved every control. Both now share one toolbar card
+   at the same height, and the queue keeps only a screen-reader heading. */
+.kidung-tool-page .kidung-index-toolbar {
+  padding-top: 0;
+}
+.kidung-tool-page .kidung-controls-field {
+  justify-content: space-between;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.kidung-tool-page .kidung-local-nav {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.kidung-tool-page .kidung-local-nav-links {
+  width: auto;
+}
+.kidung-tool-page .kidung-tool-heading-actions {
+  margin: 0;
+}
+.kidung-tool-page {
+  gap: 10px;
+}
+.kidung-tool-page > .kidung-index-toolbar {
+  grid-column: 1 / -1;
+}

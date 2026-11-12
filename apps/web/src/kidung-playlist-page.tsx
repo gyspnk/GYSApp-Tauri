@@ -156,47 +156,49 @@ export function HymnPlaylistPage({
 
   return (
     <div className="page hymn-page kidung-tool-page">
-      <KidungLocalNav active="playlist" locale={locale} />
-      <header className="kidung-tool-heading">
-        <div>
-          <h1>{translate(locale, "kidung.playlist")}</h1>
+      {/* The queue shares the catalogue's toolbar row so switching between the
+          two pages keeps one header size instead of jumping to a big title. */}
+      <div className="kidung-index-toolbar">
+        <div className="kidung-controls-field">
+          <h1 className="sr-only">{translate(locale, "kidung.playlist")}</h1>
+          <KidungLocalNav active="playlist" locale={locale} />
+          <div className="kidung-tool-heading-actions">
+            <details className="kidung-row-menu">
+              <summary aria-label={translate(locale, "kidung.playlistTools")}>
+                <Icon name="more" size={18} />
+              </summary>
+              <div className="kidung-row-menu-panel">
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {translate(locale, "kidung.import")}
+                </button>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => downloadMidiPlaylist()}
+                  disabled={playlist.items.length === 0}
+                >
+                  {translate(locale, "kidung.exportQueue")}
+                </button>
+              </div>
+            </details>
+            <input
+              ref={fileInputRef}
+              className="sr-only"
+              type="file"
+              accept="application/json,.json"
+              aria-label={translate(locale, "kidung.import")}
+              onChange={(event) => {
+                void importPlaylist(event.target.files?.[0]);
+                event.currentTarget.value = "";
+              }}
+            />
+          </div>
         </div>
-        <div className="kidung-tool-heading-actions">
-          <details className="kidung-row-menu">
-            <summary aria-label={translate(locale, "kidung.playlistTools")}>
-              <Icon name="more" size={18} />
-            </summary>
-            <div className="kidung-row-menu-panel">
-              <button
-                className="text-button"
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {translate(locale, "kidung.import")}
-              </button>
-              <button
-                className="text-button"
-                type="button"
-                onClick={() => downloadMidiPlaylist()}
-                disabled={playlist.items.length === 0}
-              >
-                {translate(locale, "kidung.exportQueue")}
-              </button>
-            </div>
-          </details>
-          <input
-            ref={fileInputRef}
-            className="sr-only"
-            type="file"
-            accept="application/json,.json"
-            aria-label={translate(locale, "kidung.import")}
-            onChange={(event) => {
-              void importPlaylist(event.target.files?.[0]);
-              event.currentTarget.value = "";
-            }}
-          />
-        </div>
-      </header>
+      </div>
       <section
         className="kidung-queue-surface"
         aria-label={translate(locale, "kidung.midiPlaylist")}

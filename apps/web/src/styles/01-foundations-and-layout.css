@@ -2532,60 +2532,12 @@ body.is-resizing-bible {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  padding: max(0.75rem, env(safe-area-inset-top)) 0
-    max(0rem, env(safe-area-inset-bottom));
-  background: color-mix(in srgb, var(--canvas) 34%, transparent);
-  backdrop-filter: blur(7px);
+  padding: 0;
+  /* Blur is the only veil: a solid tint hid the verses behind the sheet. */
+  background: transparent;
+  backdrop-filter: blur(20px) saturate(1.08);
   pointer-events: none;
   animation: quick-nav-in var(--motion-fast) var(--ease-out);
-}
-
-.quick-nav-floater {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 0.25rem;
-  width: fit-content;
-  min-width: 13rem;
-  margin: 0 auto 0.75rem;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid color-mix(in srgb, var(--blue) 40%, var(--line));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--surface) 94%, var(--blue));
-  box-shadow: var(--shadow-lift);
-  text-align: center;
-  pointer-events: none;
-  animation: quick-nav-in var(--motion-fast) var(--ease-out);
-}
-
-@media (max-height: 540px) and (orientation: landscape) {
-  .quick-nav-floater {
-    margin-bottom: 8px;
-    padding: 6px 14px;
-    min-width: 0;
-  }
-  .quick-nav-floater strong {
-    font-size: 1rem;
-  }
-  .quick-nav-floater small {
-    display: none;
-  }
-}
-
-.quick-nav-floater strong {
-  font-size: 1.125rem;
-  color: var(--ink);
-}
-
-.quick-nav-floater span {
-  color: var(--blue);
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
-.quick-nav-floater small {
-  color: var(--muted);
-  font-size: 0.75rem;
 }
 
 .quick-nav-columns-container {
@@ -2593,13 +2545,13 @@ body.is-resizing-bible {
   min-height: 0;
   width: 100%;
   height: auto;
-  padding: max(14px, env(safe-area-inset-top))
-    max(16px, env(safe-area-inset-right))
-    max(104px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  padding: max(12px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(56px, calc(env(safe-area-inset-bottom) + 44px))
+    max(12px, env(safe-area-inset-left));
   border: 0;
   border-radius: 0;
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
-  backdrop-filter: blur(20px) saturate(1.08);
+  background: transparent;
   pointer-events: none;
 }
 
@@ -2608,13 +2560,7 @@ body.is-resizing-bible {
   flex-direction: column;
   min-width: 0;
   height: 100%;
-  border-radius: 10px;
-  background: var(--surface-soft);
-  border: 2px solid transparent;
-  transition:
-    border-color var(--motion-fast),
-    background var(--motion-fast),
-    box-shadow var(--motion-fast);
+  background: transparent;
   overflow: hidden;
 }
 .quick-nav-multistep {
@@ -2634,28 +2580,6 @@ body.is-resizing-bible {
   text-align: center;
   pointer-events: none;
   animation: soft-rise 220ms var(--ease-out);
-}
-
-.quick-nav-column.is-active-column {
-  border-color: var(--blue);
-  background: color-mix(in srgb, var(--blue-soft) 40%, var(--surface-soft));
-  box-shadow: 0 0 12px color-mix(in srgb, var(--blue) 30%, transparent);
-}
-
-.quick-nav-column-header {
-  padding: 8px 12px;
-  font-size: 0.6875rem;
-  font-weight: 750;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  border-bottom: 1px solid var(--line);
-  text-align: center;
-  background: var(--surface);
-}
-
-.quick-nav-column.is-active-column .quick-nav-column-header {
-  color: var(--blue);
 }
 
 .quick-nav-column-list {
@@ -2706,16 +2630,5 @@ body.is-resizing-bible {
   .quick-nav-item {
     padding: 2px 6px;
     font-size: 0.6875rem;
-  }
-  .quick-nav-floater {
-    margin-bottom: 8px;
-    padding: 6px 14px;
-    min-width: 0;
-  }
-  .quick-nav-floater strong {
-    font-size: 1rem;
-  }
-  .quick-nav-floater small {
-    display: none;
   }
 }

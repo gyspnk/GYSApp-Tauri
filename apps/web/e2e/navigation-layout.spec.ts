@@ -1402,7 +1402,6 @@ test.describe("responsive reader navigation", () => {
       close: "Tutup pemilih kitab",
       steps: "Langkah pemilihan",
       placeholder: "Cari kitab atau isi ayat…",
-      dragBook: "Menggeser Kitab",
     },
     en: {
       locale: "en",
@@ -1412,7 +1411,6 @@ test.describe("responsive reader navigation", () => {
       close: "Close book picker",
       steps: "Selection steps",
       placeholder: "Search books or verse text…",
-      dragBook: "Scrubbing Book",
     },
     zh: {
       locale: "zh",
@@ -1422,7 +1420,6 @@ test.describe("responsive reader navigation", () => {
       close: "关闭书卷选择器",
       steps: "选择步骤",
       placeholder: "搜索书卷或经文内容…",
-      dragBook: "正在滑动书卷",
     },
   } as const;
   const viewports = [
@@ -1496,8 +1493,10 @@ test.describe("responsive reader navigation", () => {
         const overlay = page.locator(".quick-nav-drag-overlay");
         await expect(overlay).toBeVisible();
         await expect(overlay).toHaveAttribute("aria-label", selected.quick);
-        await expect(overlay.locator(".quick-nav-column-header")).toHaveText(
-          selected.dragBook,
+        // The sheet is the grid: every book, no readout and no column header.
+        await expect(overlay.locator(".quick-nav-item")).toHaveCount(66);
+        await expect(overlay.locator(".quick-nav-column-header")).toHaveCount(
+          0,
         );
         await expect.poll(() => hasNoHorizontalOverflow(page)).toBe(true);
         await page.mouse.up();

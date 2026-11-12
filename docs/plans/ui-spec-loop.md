@@ -231,3 +231,18 @@ Angka terukur: rasio chord light 9,16 / sepia 9,99 / dark 6,13 / amoled 6,99; to
 | Kontrak lain diberi `storageState` "sudah pernah dibuka" di `apps/web/playwright.config.ts`                                                                        | 37 spec yang membuka `/` menguji aplikasi, bukan layar pembuka                                                | suite penuh tetap memakai keadaan pembaca lama                                               |
 
 Kontrak tambahan yang ikut berubah: `apps/web/e2e/fixtures/onboarded-state.ts` dipakai `playwright.config.ts` **dan** fixture `reuse-context` (konteks bersama melewati `storageState`), `apps/web/e2e/app-update-real.spec.ts` menyemai amplop di origin proxy-nya, `apps/web/e2e/appearance-preferences.spec.ts:171` menulis tema gelap lewat amplop (kunci lama `gys-theme` kalah oleh amplop), dan `apps/web/scripts/native-quick-smoke.mjs` kini melewati layar sambutan pada profil baru sebelum menunggu `.home-grid`.
+
+### Alkitab: lembar drag memenuhi layar dengan latar blur (diterapkan 12 Nov)
+
+| perubahan                                                                   | alasan                                                                      | kontrak                                                                                                    |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Panel informasi kitab dan angka halaman dihapus dari lembar drag            | Lembar itu sekarang seluruh layar; teks di atasnya hanya memakan baris      | `apps/web/e2e/bible-quick-nav-overlay.spec.ts` menolak `.quick-nav-floater` dan `.quick-nav-column-header` |
+| Latar belakang jadi `backdrop-filter: blur(20px)` tanpa lapisan warna solid | Permintaan pemilik: halaman di belakang tetap terlihat, bukan tertutup      | spec membaca `backdrop-filter` dan memastikan alfa overlay < 0,08                                          |
+| Kisi menghitung tinggi dari kotak lembar sendiri                            | Tanpa header, 66 kitab muat 6×11 di 844×390 dan 3×22 di 390×844 tanpa gulir | spec memeriksa `scrollHeight == clientHeight` dan jumlah sel                                               |
+
+### Kidung: header antrean MIDI menyamai katalog (diterapkan 12 Nov)
+
+| perubahan                                                                                    | alasan                                                                 | kontrak                                                                               |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Judul besar "Antrean MIDI" jadi `sr-only`, baris alat memakai kartu yang sama dengan katalog | Pindah tab membuat semua kontrol bergeser karena tinggi header berbeda | `apps/web/e2e/kidung-queue-header.spec.ts` menyamakan tinggi `.kidung-controls-field` |
+| Switch dua tab tidak lagi selebar kolom                                                      | Kontrol selebar field terbaca sebagai baris tab, bukan alat            | spec memastikan lebar nav < 75 % field                                                |
