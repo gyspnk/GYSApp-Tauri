@@ -6,6 +6,8 @@ export type ShellSettings = {
   version: 1;
   locale: Locale;
   theme: ShellTheme;
+  /** True once the welcome screen has been finished or skipped. */
+  onboarded: boolean;
 };
 
 /** The small storage surface used here keeps the boundary easy to test. */
@@ -26,6 +28,7 @@ export const DEFAULT_SHELL_SETTINGS: ShellSettings = {
   version: 1,
   locale: "id",
   theme: "light",
+  onboarded: false,
 };
 
 const LOCALES: ReadonlySet<string> = new Set(["id", "en", "zh"]);
@@ -56,6 +59,10 @@ function parseSettings(value: unknown): ShellSettings | undefined {
         version: 1,
         locale: candidate.locale,
         theme: candidate.theme,
+        // Envelopes written before the welcome screen existed have no flag.
+        // Those devices already used the app, so only an explicit false (or a
+        // device with no envelope at all) shows the welcome screen.
+        onboarded: candidate.onboarded !== false,
       }
     : undefined;
 }
@@ -89,6 +96,7 @@ function legacySettings(storage: ShellStorage | undefined): {
       version: 1,
       locale: isLocale(locale) ? locale : DEFAULT_SHELL_SETTINGS.locale,
       theme: isTheme(theme) ? theme : DEFAULT_SHELL_SETTINGS.theme,
+      onboarded: true,
     },
   };
 }

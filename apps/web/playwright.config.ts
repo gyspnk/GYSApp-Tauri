@@ -37,6 +37,27 @@ export default defineConfig({
     // runs against the first paint; PWA metadata is still verified through
     // page.request against the built sw.js in runtime-health.spec.ts.
     serviceWorkers: "block",
+    // Every spec starts as a returning reader: the welcome screen is covered by
+    // its own contract, and the other suites must not be redirected by it.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: "http://127.0.0.1:4173",
+          localStorage: [
+            {
+              name: "gys-shell-settings-v1",
+              value: JSON.stringify({
+                version: 1,
+                locale: "id",
+                theme: "light",
+                onboarded: true,
+              }),
+            },
+          ],
+        },
+      ],
+    },
   },
   webServer: {
     // Local clean checkouts still build all workspace entrypoints automatically.

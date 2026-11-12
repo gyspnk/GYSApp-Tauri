@@ -17,6 +17,7 @@ import {
   RouteErrorBoundary,
 } from "./route-frames.js";
 import { useReadinessMarker } from "./readiness.js";
+import { WelcomePage } from "./welcome.js";
 import { focusRouteHeading, routeTitle } from "./route-a11y.js";
 import { useMenuPresence } from "./use-menu-presence.js";
 import {
@@ -65,6 +66,7 @@ import { installHeadphoneDisconnectGuard } from "./headphone-guard.js";
 import { useScreenWakeLock } from "./wake-lock.js";
 import { installDailyReminder } from "./daily-reminder.js";
 import { getShellSettingsStorage } from "./settings.js";
+import { getEgysProfile, signInEgysWithGoogle } from "./egys.js";
 import {
   readShellSettings,
   writeShellSettings,
@@ -196,6 +198,9 @@ function useAppSettings() {
       .catch(() => undefined)
       .then(() => setSettings((current) => ({ ...current })));
   }, []);
+  const finishWelcome = useCallback(() => {
+    setSettings((current) => ({ ...current, onboarded: true }));
+  }, []);
   const setTheme = useCallback((theme: Theme) => {
     // Freeze dropdown focus scroll before the lazy transition import can wait.
     window.scrollTo({ left: scrollX, top: scrollY, behavior: "instant" });
@@ -209,6 +214,8 @@ function useAppSettings() {
     setLocale,
     theme: settings.theme,
     setTheme,
+    onboarded: settings.onboarded,
+    finishWelcome,
   };
 }
 
@@ -905,6 +912,22 @@ function RoutedApp() {
   useEffect(() => installMidiQueueCoordinator(), []);
   useEffect(() => installMediaSessionBridge(), []);
   useEffect(() => installHeadphoneDisconnectGuard(), []);
+  // The welcome screen signs in through the same e-GYS call as the account
+  // card; a failure leaves the screen open so the reader can still skip.
+  const completeWelcomeLogin = useCallback(async (credential: string) => {
+    await signInEgysWithGoogle(credential);
+    await getEgysProfile();
+  }, []);
+  if (!settings.onboarded) {
+    return (
+      <WelcomePage
+        locale={locale}
+        setLocale={settings.setLocale}
+        onDone={settings.finishWelcome}
+        onCredential={completeWelcomeLogin}
+      />
+    );
+  }
   return (
     <Routes>
       <Route element={<Shell {...settings} />}>

@@ -122,6 +122,12 @@ export const enMessages: Record<string, string> = {
   "shell.notFoundBody":
     "This address is not available. Return home to continue.",
   "shell.notFoundHome": "Back to Home",
+  "welcome.title": "Welcome to GYSApp",
+  "welcome.body":
+    "Readings, hymns, and reflections of the True Jesus Church in one place.",
+  "welcome.language": "Choose a language",
+  "welcome.loginHint": "Optional. Every reading stays open without an account.",
+  "welcome.skip": "Skip and start reading",
   "shell.search": "Search",
   "shell.searchAll": "Search across the app",
   "shell.media": "Now playing",

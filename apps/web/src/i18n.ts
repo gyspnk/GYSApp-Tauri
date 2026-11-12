@@ -138,6 +138,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     "shell.notFoundBody":
       "Alamat ini tidak tersedia. Kembali ke Beranda untuk melanjutkan.",
     "shell.notFoundHome": "Kembali ke Beranda",
+    "welcome.title": "Selamat datang di GYSApp",
+    "welcome.body":
+      "Bacaan, nyanyian, dan renungan Gereja Yesus Sejati dalam satu tempat.",
+    "welcome.language": "Pilih bahasa",
+    "welcome.loginHint": "Opsional. Tanpa akun pun semua bacaan tetap terbuka.",
+    "welcome.skip": "Lewati, mulai membaca",
     "shell.search": "Cari",
     "shell.searchAll": "Cari di seluruh aplikasi",
     "shell.media": "Sedang diputar",

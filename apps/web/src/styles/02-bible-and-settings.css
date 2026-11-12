@@ -2792,7 +2792,7 @@
 }
 /* The shared Google face exists only when the Identity control renders; while
    the fallback button is visible it would duplicate the label. */
-.more-page .egys-google-control:has(.egys-google-fallback) .egys-google-face {
+.egys-google-control:has(.egys-google-fallback) .egys-google-face {
   display: none;
 }
 /* Label/value rows stay readable instead of stretching across the full card. */

@@ -6344,3 +6344,83 @@ body:has(.hymn-detail-page.is-text-viewer)
 .hymn-page .kidung-toolbar-collapse {
   display: none;
 }
+
+/* First-run welcome: one calm card, no shell chrome, so a new device starts
+   with a greeting instead of the reader. */
+.welcome-page {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 24px;
+  background: var(--canvas);
+}
+.welcome-card {
+  display: grid;
+  gap: 16px;
+  width: min(460px, 100%);
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+}
+.welcome-mark {
+  margin: 0;
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+.welcome-card h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+.welcome-card h1:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+.welcome-body {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+.welcome-language .welcome-language-select {
+  width: 100%;
+}
+.welcome-login {
+  display: grid;
+  gap: 8px;
+  padding-top: 4px;
+}
+.welcome-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.welcome-skip {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.welcome-skip:hover {
+  border-color: var(--line-strong);
+}
+.welcome-skip:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-skip {
+    transition: none;
+  }
+}

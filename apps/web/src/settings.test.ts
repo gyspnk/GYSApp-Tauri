@@ -29,18 +29,32 @@ describe("versioned shell settings", () => {
       version: 1,
       locale: "en",
       theme: "sepia",
+      onboarded: true,
     });
     expect(legacy.getItem("gys-shell-settings-v1")).toBe(
-      JSON.stringify({ version: 1, locale: "en", theme: "sepia" }),
+      JSON.stringify({
+        version: 1,
+        locale: "en",
+        theme: "sepia",
+        onboarded: true,
+      }),
     );
   });
 
   it("writes the validated envelope and legacy compatibility keys", () => {
     const target = storage();
-    writeShellSettings({ version: 1, locale: "zh", theme: "amoled" }, target);
+    writeShellSettings(
+      { version: 1, locale: "zh", theme: "amoled", onboarded: true },
+      target,
+    );
 
     expect(target.getItem("gys-shell-settings-v1")).toBe(
-      JSON.stringify({ version: 1, locale: "zh", theme: "amoled" }),
+      JSON.stringify({
+        version: 1,
+        locale: "zh",
+        theme: "amoled",
+        onboarded: true,
+      }),
     );
     expect(target.getItem("gys-locale")).toBe("zh");
     expect(target.getItem("gys-theme")).toBe("amoled");
