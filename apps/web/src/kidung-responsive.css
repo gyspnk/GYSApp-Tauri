@@ -342,3 +342,17 @@
     transition: none;
   }
 }
+
+/* Queue tabs must stay wide enough to read and stay equal: two fields of at
+   least 88 px inside the shared toolbar card. */
+.kidung-tool-page .kidung-controls-field .kidung-local-nav-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(88px, 1fr));
+  width: max-content;
+}
+.kidung-tool-page .kidung-controls-field .kidung-local-nav a {
+  width: 100%;
+  min-width: 88px;
+  justify-content: center;
+  text-align: center;
+}

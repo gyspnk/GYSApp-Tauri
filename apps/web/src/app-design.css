@@ -6515,3 +6515,10 @@ body:has(.hymn-detail-page.is-text-viewer)
     justify-self: end;
   }
 }
+/* The queue switch sits in the same 54 px card as the catalogue, so it keeps
+   the catalogue's 264 px width on wide screens instead of collapsing. */
+@media (min-width: 1101px) {
+  .kidung-tool-page .kidung-local-nav {
+    width: 264px;
+  }
+}
