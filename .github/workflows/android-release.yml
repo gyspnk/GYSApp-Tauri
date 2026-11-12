@@ -173,9 +173,19 @@ jobs:
               throw new Error('Unexpected signing identity: ' + provenance.signing);
             }
             const { execFileSync } = require('node:child_process');
-            const tagCommit = execFileSync('git', ['rev-list', '-n', '1', process.env.GYS_RELEASE_TAG], { encoding: 'utf8' }).trim();
+            // A draft release has no tag yet: GitHub only creates it on publish, so
+            // the draft's target commit is the honest comparison there.
+            let tagCommit = '';
+            try {
+              tagCommit = execFileSync('git', ['rev-list', '-n', '1', process.env.GYS_RELEASE_TAG], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+            } catch {
+              tagCommit = '';
+            }
+            if (!tagCommit) {
+              tagCommit = execFileSync('gh', ['release', 'view', process.env.GYS_RELEASE_TAG, '--json', 'targetCommitish', '--jq', '.targetCommitish'], { encoding: 'utf8' }).trim();
+            }
             if (tagCommit !== provenance.commit) {
-              throw new Error('Tag ' + process.env.GYS_RELEASE_TAG + ' points at ' + tagCommit + ' but the APK came from ' + provenance.commit);
+              throw new Error('Release ' + process.env.GYS_RELEASE_TAG + ' points at ' + tagCommit + ' but the APK came from ' + provenance.commit);
             }
           "
           if [ "${{ inputs.draft }}" = "true" ]; then
