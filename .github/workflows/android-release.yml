@@ -105,8 +105,9 @@ jobs:
             # draft pointing at another commit, is never touched.
             draft=$(gh release view "$GYS_RELEASE_TAG" --json isDraft --jq .isDraft)
             target=$(gh release view "$GYS_RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
-            if [ "$draft" = "true" ] && [ "$target" = "$GITHUB_SHA" ]; then
-              echo "Clearing the draft $GYS_RELEASE_TAG left by an earlier attempt on this commit."
+            apk=$(gh release view "$GYS_RELEASE_TAG" --json assets --jq '[.assets[].name | select(endswith(".apk"))] | length')
+            if [ "$draft" = "true" ] && { [ "$target" = "$GITHUB_SHA" ] || [ "$apk" = "0" ]; }; then
+              echo "Clearing the draft $GYS_RELEASE_TAG left by an earlier attempt (target=$target, apk assets=$apk)."
               gh release delete "$GYS_RELEASE_TAG" --yes --cleanup-tag
             else
               echo "Release $GYS_RELEASE_TAG already exists (draft=$draft, target=$target); refusing to overwrite."
