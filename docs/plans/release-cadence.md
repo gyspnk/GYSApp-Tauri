@@ -57,6 +57,7 @@ Aturan pemilik (10 Nov 2026): **setiap 25 putaran goal, build APK Android dan ch
 
 | Putaran | Tag                         | Run           | APK (byte) | Commit     | Catatan                               |
 | ------- | --------------------------- | ------------- | ---------- | ---------- | ------------------------------------- |
+| 276     | `v0.1.0-preview.20261112.1` | `43136806125` | 36 120 335 | `52c00514` | putaran 276, signing debug            |
 | 226     | `v0.1.0-preview.20261110.1` | `42782473369` | 36 118 859 | `c6979668` | rilis pertama, signing debug          |
 | 251     | `v0.1.0-preview.20261110.2` | `42910081054` | 36 120 363 | `5e5ebdfc` | 104 commit sejak rilis pertama, arm64 |
 
