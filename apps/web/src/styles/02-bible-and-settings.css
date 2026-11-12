@@ -1502,20 +1502,19 @@
   border-color: var(--line);
   background: var(--surface);
 }
-/* Google Identity Services renders a same-document button element (not an
-   iframe), so its chrome can follow the app's provider frame. Structure-only
-   selector: no generated class names. */
+/* Google paints its own control inside the frame. Stretching it to the frame
+   (width/height 100%) collapsed it to one 18 px text line and let the rest of
+   its chrome spill over the neighbouring buttons; the personalized card a
+   signed-in visitor gets is taller still. Let Google size itself and clip it. */
 .egys-provider-all .egys-google-control [role="button"] {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  padding: 0 !important;
+  /* Google keeps its own height (40 px "large", taller when personalized);
+     only its chrome is folded into the app's frame so the row stays one box. */
+  max-width: 100% !important;
+  max-height: 100% !important;
   border: 0 !important;
   border-radius: inherit !important;
   background: transparent !important;
   box-shadow: none !important;
-  color: var(--ink) !important;
-  font: inherit !important;
 }
 .egys-provider-all .egys-google-control:hover {
   border-color: var(--blue);
@@ -1529,6 +1528,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Whatever Google injects stays inside the frame. */
+  overflow: hidden;
   /* Google fails silently for an unregistered origin: the host stays empty and
      would still cover the row, swallowing every press. Only a host that really
      holds Google's control may take the pointer. */
@@ -1605,13 +1606,6 @@
   .egys-google-control [role="button"] {
     min-width: 0 !important;
     overflow: hidden !important;
-    justify-content: center !important;
-  }
-  .egys-google-control [role="button"] > * {
-    min-width: 0 !important;
-    overflow: hidden !important;
-    white-space: nowrap !important;
-    text-overflow: ellipsis !important;
   }
 }
 @container (max-width: 280px) {

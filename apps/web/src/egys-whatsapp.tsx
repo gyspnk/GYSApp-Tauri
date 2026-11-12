@@ -84,6 +84,9 @@ export function EgysWhatsApp({
     const deadline = Date.now() + LOGIN_TIMEOUT_MS;
     let socket: WebSocket | undefined;
     let reference = "";
+    // The number the provider issued the reference for; the confirmation is
+    // judged against it, not against whatever format the WhatsApp frame used.
+    let issuedPhone = "";
     let launched = false;
     let confirming = false;
     let reconnect = 0;
@@ -131,12 +134,26 @@ export function EgysWhatsApp({
       setStatus("Memverifikasi akun");
       const sleep = (delay: number) =>
         new Promise((resolve) => window.setTimeout(resolve, delay));
+      // The code is verified against the number the reference was issued for.
+      // A frame can name the sender in another format (0851… beside 62851…),
+      // and a mismatched number is one way a right code still fails, so the
+      // issued number wins whenever both are known.
+      const framePhone = providerPhone(mobilephone);
+      const confirmPhone = issuedPhone || framePhone;
+      if (issuedPhone && framePhone && issuedPhone !== framePhone)
+        recordDiagnostic(
+          "warn",
+          "egys.whatsapp.confirm.phone",
+          new Error(
+            `frame=${framePhone.slice(0, 4)}… kept=${issuedPhone.slice(0, 4)}…`,
+          ),
+        );
       const requestConfirm = () =>
         requestEgysProvider(
           "whatsapp/confirm",
           {
             otp: code,
-            mobilephone: providerPhone(mobilephone),
+            mobilephone: confirmPhone,
             ...(reference || readStoredReference()
               ? { referenceid: reference || readStoredReference() }
               : {}),
@@ -228,6 +245,7 @@ export function EgysWhatsApp({
         reference = data.referenceid ?? data.referenceId ?? "";
         storeReference(reference);
         const phone = data.mobilephone ?? data.mobilePhone;
+        if (phone) issuedPhone = providerPhone(phone);
         if (!reference || !phone || !data.content) {
           fail("Respons WhatsApp tidak valid. Tekan WhatsApp lagi.");
           return;

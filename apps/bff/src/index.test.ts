@@ -1795,6 +1795,10 @@ describe("BFF public boundary", () => {
         expect(calls[1]!.body).toContain("referenceid=ref-123");
         expect(calls[1]!.body).toContain("mobilephone=628987654321");
         expect(calls[1]!.body).not.toContain("attacker-ref");
+        // The provider's own login page posts exactly these fields; the extra
+        // `ismobile=1` sent every code down its mobile-app branch and answered
+        // "Wrong OTP." even for a correct one.
+        expect(calls[1]!.body).not.toContain("ismobile");
         const apple = await app.request(
           "/api/v1/auth/egys/apple",
           {
@@ -1880,6 +1884,48 @@ describe("BFF public boundary", () => {
       }
     },
   );
+
+  it("surfaces the provider's error list when a WhatsApp code is rejected", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          error: true,
+          errors: [{ type: "Bad Request", message: "Wrong OTP." }],
+        }),
+        { status: 400, headers: { "content-type": "application/json" } },
+      )) as typeof fetch;
+    try {
+      const app = createApp({
+        allowedOrigins: ["http://localhost:5173"],
+        chordManifest: manifest,
+        content: [],
+      });
+      const env = { EGYS_API_BASE_URL: "https://e.gys.or.id" };
+      const confirm = await app.request(
+        "/api/v1/auth/egys/whatsapp/confirm",
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            origin: "http://localhost:5173",
+          },
+          body: JSON.stringify({
+            otp: "1234",
+            mobilephone: "628123456789",
+            referenceid: "ref-1",
+          }),
+        },
+        env,
+      );
+      expect(confirm.status).toBe(401);
+      // The provider words every rejection in `errors[0].message`; without it
+      // the account panel could only say "e-GYS 400:" with no reason.
+      expect(JSON.stringify(await confirm.json())).toContain("Wrong OTP.");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 
   it("binds WhatsApp tracking to the cookie and trusted origin", async () => {
     const app = createApp({

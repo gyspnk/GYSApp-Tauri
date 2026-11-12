@@ -1580,12 +1580,22 @@ export function createApp(
       // Keep the upstream reason in the failure so a client diagnostic can show
       // exactly which field the provider rejected (phone format, expired code,
       // unknown reference) instead of one opaque message.
+      // The provider's own client reads `errors[0].message` ("Wrong OTP.",
+      // "Reference not found") and never fills `message` for a failed confirm,
+      // so ignoring it left every rejection as "e-GYS 400:" with no reason.
+      const errors = Array.isArray(payload.errors) ? payload.errors : [];
+      const firstError = errors.find(
+        (entry): entry is Record<string, unknown> =>
+          typeof entry === "object" && entry !== null,
+      );
       const reason =
         typeof payload.message === "string"
           ? payload.message
           : typeof payload.error === "string"
             ? payload.error
-            : "";
+            : typeof firstError?.message === "string"
+              ? firstError.message
+              : "";
       const detail = reason.replace(/\s+/g, " ").slice(0, 160);
       throw new ProviderRejection(response.status, detail);
     }
@@ -1773,10 +1783,13 @@ export function createApp(
         c,
         "/login/whatsapp-login-confirm",
         {
+          // Exactly the fields the provider's own login page posts
+          // (`{referenceid, otp, mobilephone}`). `ismobile` was our addition;
+          // the live client never sends it, and an unknown field is one more
+          // reason the provider can refuse a code we cannot see from here.
           referenceid,
           otp: parsed.data.otp,
           mobilephone: parsed.data.mobilephone,
-          ismobile: "1",
         },
       );
       const result = saveProviderSession(c, payload);
