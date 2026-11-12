@@ -255,8 +255,17 @@ for (const width of [390, 1440]) {
       const offsetX = (f: (typeof visible)[number]) => f.right - f.anchorRight;
       const offsetY = (f: (typeof visible)[number]) =>
         (opensUp ? f.bottom : f.y) - f.anchorTop;
-      expect(Math.abs(offsetX(frame) - offsetX(visible[0]!))).toBeLessThan(1.5);
-      expect(Math.abs(offsetY(frame) - offsetY(visible[0]!))).toBeLessThan(1.5);
+      // The exit animation scales the menu to 0.98, so its edges travel up to
+      // 2 % of its height while the anchor stays put: a slow shard samples
+      // nearly the whole 2.3 px and failed the old flat 1.5 px budget twice in
+      // a row. Anything beyond the scale itself is a real jump.
+      const driftBudget = 0.02 * Math.abs(frame.bottom - frame.y) + 0.75;
+      expect(Math.abs(offsetX(frame) - offsetX(visible[0]!))).toBeLessThan(
+        driftBudget,
+      );
+      expect(Math.abs(offsetY(frame) - offsetY(visible[0]!))).toBeLessThan(
+        driftBudget,
+      );
     }
     await expect(menu).toHaveCount(0);
     await trigger.click();
