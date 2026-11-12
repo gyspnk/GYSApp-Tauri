@@ -74,8 +74,11 @@ for (const width of [320, 390, 768, 1440]) {
       () =>
         parseFloat(getComputedStyle(document.documentElement).fontSize) / 16,
     );
+    // The chrome now carries the same top gap as the text reader (owner, 12
+    // Nov), so the compact budget grows by exactly that gap and nothing else.
+    const readerGap = width >= 720 ? 18 : 14;
     expect((await header.boundingBox())!.height).toBeLessThanOrEqual(
-      (width >= 960 ? 72 : 64) * textScale,
+      (width >= 960 ? 72 : 64) * textScale + readerGap,
     );
     await expect(header.locator("button:visible")).toHaveCount(2);
     for (const button of await page

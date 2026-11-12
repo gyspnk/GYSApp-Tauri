@@ -276,3 +276,5 @@ Spec yang dikunci:
 5. Kontrak `apps/web/e2e/kidung-partitur-parity.spec.ts` mengukur di 390 dan 1440: judul teks ≥ jarak, chrome partitur ≥ jarak, selisih keduanya ≤ 10 px, radius sama, dan tidak ada "PDF" di tombol chrome.
 
 Jebakan yang ditemukan: chrome partitur hidup di dalam `.gys-pdf-overlay` yang `position: fixed`, jadi `padding-top` pada `.hymn-detail-page` tidak berpengaruh (halaman itu hanya wadah 0 px). Selain itu `:is()` menaikkan spesifisitas selektor lama sehingga aturan radius baru kalah — selektor literal diperlukan. Aturan `padding-block: 6px` di `apps/web/src/styles/04-reader-media.css` (media ≤599 px) juga menang atas selektor dua kelas, jadi aturan baru harus menyebut `.app-frame.is-reader-route` dan `.gys-pdf-overlay` secara eksplisit.
+
+Kontrak yang ikut bergerak: `apps/web/e2e/score-seamless.spec.ts` memberi anggaran tinggi chrome `(width >= 960 ? 72 : 64) * textScale + readerGap`, karena chrome partitur sekarang membawa jarak atas yang sama dengan judul mode teks (14 px, 18 px sejak 720 px). Tanpa penambahan itu, chrome 320 px terukur 75,4 px dan 1440 px 82 px — keduanya hanya melewati anggaran lama sebesar jarak baru.
