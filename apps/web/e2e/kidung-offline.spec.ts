@@ -32,9 +32,12 @@ test("prepared catalog opens previously unvisited Kidung sections offline @night
   await expect(page.locator(".kidung-settings-section").first()).toBeVisible();
   await page.locator('a.nav-item[href$="/kidung"]').click();
   await page.locator('.kidung-local-nav a[href$="section=playlist"]').click();
-  await expect(page.locator(".kidung-tool-heading h1")).toHaveText(
-    "Antrean MIDI",
-  );
+  // The queue keeps its title for assistive tech; the visible chrome is one
+  // toolbar card shared with the catalogue, so the tab is what identifies it.
+  await expect(page.locator(".kidung-tool-page h1")).toHaveText("Antrean MIDI");
+  await expect(
+    page.locator('.kidung-local-nav a[href$="section=playlist"]'),
+  ).toHaveAttribute("aria-current", "page");
   await page.locator('.kidung-local-nav a[href$="/kidung"]').click();
   await expect(page.locator(".pujian-item")).toHaveCount(533);
   const mode = page.locator(".kidung-mode-cycle");
