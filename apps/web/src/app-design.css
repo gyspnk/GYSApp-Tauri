@@ -6522,3 +6522,43 @@ body:has(.hymn-detail-page.is-text-viewer)
     width: 264px;
   }
 }
+
+/* One reader rhythm for both modes: the score's chrome starts as far from the
+   viewport edge as the text title, and its buttons keep the text toolbar's
+   shape, so switching modes does not move the furniture. */
+.hymn-detail-page {
+  --reader-top-gap: 14px;
+}
+@media (min-width: 720px) {
+  .hymn-detail-page {
+    --reader-top-gap: 18px;
+  }
+}
+/* The text reader owns its gap on the page; the score lives in a fixed overlay,
+   so its chrome carries the same gap as padding instead. */
+.hymn-detail-page.is-text-viewer {
+  padding-top: var(--reader-top-gap);
+}
+.app-frame.is-reader-route
+  .hymn-detail-page.is-pdf-viewer
+  .gys-pdf-overlay
+  .hymn-pdf-viewer-chrome {
+  padding-top: max(var(--reader-top-gap), env(safe-area-inset-top));
+}
+/* Literal selectors, not :is(), because the clamp rule they replace carries
+   three classes inside its own :is() and would otherwise win. */
+.hymn-detail-page.is-text-viewer
+  .hymn-text-toolbar
+  .detail-actions
+  .hymn-action,
+.hymn-detail-page.is-text-viewer
+  .detail-hero
+  .hymn-text-toolbar
+  .hymn-partitur-toggle,
+.hymn-detail-page.is-text-viewer
+  .hymn-text-toolbar
+  .detail-actions
+  .hymn-more-actions-summary,
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome .viewer-chrome-button {
+  border-radius: 12px;
+}

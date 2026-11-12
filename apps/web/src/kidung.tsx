@@ -1649,7 +1649,7 @@ export function HymnDetail({
               onClick={() => selectViewerMode("pdf")}
             >
               <Icon name="file" size={16} />
-              <span>PDF</span>
+              <span>{translate(locale, "kidung.score")}</span>
             </button>
           </div>
         )}
@@ -1749,7 +1749,7 @@ export function HymnDetail({
             >
               <Icon name="file" size={20} />
               <span className="hymn-action-caption" aria-hidden="true">
-                PDF
+                {translate(locale, "kidung.score")}
               </span>
             </button>
           )}

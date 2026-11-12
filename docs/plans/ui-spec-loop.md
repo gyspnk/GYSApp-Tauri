@@ -262,3 +262,17 @@ Kontrak tambahan yang ikut berubah: `apps/web/e2e/fixtures/onboarded-state.ts` d
 | Di bawah 540 px tinggi, daftar pengaturan jadi satu kolom penuh | Dua kolom di samping panel terbuka tidak terbaca; pemilik meminta satu baris satu pengaturan | `apps/web/e2e/more-landscape.spec.ts` memilih 1 kolom saat tinggi ≤ 540, tetap 2 di 1024x600 |
 
 Kontrak yang ikut bergerak: `apps/web/e2e/kidung-section-navigation.spec.ts` menuntut tab antrean ≥80 px (kini 88 px minimum lewat `kidung-responsive.css`, karena berkas itu dimuat setelah `app-design.css`), `apps/web/e2e/kidung-offline.spec.ts` membaca judul antrean dari `h1` di dalam `.kidung-tool-page` setelah header terpisah dihapus, dan `apps/web/e2e/kidung-style-behavior.spec.ts` memakai toleransi 1 px untuk geseran hover (piksel pecahan dari tata letak baris).
+
+## Kidung: mode partitur setara mode teks (12 Nov, revisi goal 20)
+
+Permintaan pemilik (m11121): judul di mode teks terlalu dekat ke atas, tombol "PDF" harus bernama "Partitur", dan tampilan mode partitur harus konsisten dengan mode teks.
+
+Spec yang dikunci:
+
+1. Kedua mode memakai satu variabel jarak atas `--reader-top-gap` (14 px, 18 px sejak 720 px) di `.hymn-detail-page`.
+2. Mode teks menerapkannya sebagai `padding-top` halaman; mode partitur menerapkannya sebagai `padding-top` chrome, karena chrome-nya sticky di dalam overlay `position: fixed` sehingga padding halaman tidak terlihat.
+3. Chrome partitur dan toolbar teks memakai radius kontrol 12 px yang sama (`.hymn-text-toolbar .detail-actions .hymn-action`, `.hymn-partitur-toggle`, `.hymn-pdf-viewer-chrome .viewer-chrome-button`).
+4. Tidak ada teks "PDF" yang terlihat di chrome kidung; label mode memakai `kidung.score` = "Partitur"/"Score"/"乐谱".
+5. Kontrak `apps/web/e2e/kidung-partitur-parity.spec.ts` mengukur di 390 dan 1440: judul teks ≥ jarak, chrome partitur ≥ jarak, selisih keduanya ≤ 10 px, radius sama, dan tidak ada "PDF" di tombol chrome.
+
+Jebakan yang ditemukan: chrome partitur hidup di dalam `.gys-pdf-overlay` yang `position: fixed`, jadi `padding-top` pada `.hymn-detail-page` tidak berpengaruh (halaman itu hanya wadah 0 px). Selain itu `:is()` menaikkan spesifisitas selektor lama sehingga aturan radius baru kalah — selektor literal diperlukan. Aturan `padding-block: 6px` di `apps/web/src/styles/04-reader-media.css` (media ≤599 px) juga menang atas selektor dua kelas, jadi aturan baru harus menyebut `.app-frame.is-reader-route` dan `.gys-pdf-overlay` secara eksplisit.
