@@ -70,10 +70,16 @@ jobs:
       - run: python -m unittest discover -s scripts -p 'compact_bible_database_test.py'
       - run: python -m unittest discover -s scripts -p 'verify_android_apk_test.py'
       - run: pnpm --filter @gys/contracts build && pnpm --filter @gys/domain build
+      # Tauri 2.11 only writes `tauri.properties` when the project is generated
+      # with a non-empty `bundle.android` block, so the code is set in the config
+      # the generator reads, before `android init` runs.
+      - name: Set the APK version code for this release turn
+        if: inputs.turn != ''
+        run: node scripts/android-version-code.mjs --turn "${{ inputs.turn }}" apps/native/src-tauri/tauri.conf.json
       - name: Generate Android project
         run: pnpm --filter @gys/native tauri android init --ci
-      - name: Raise the APK version code to this release turn
-        if: inputs.turn != ''
+      - name: Raise the generated properties too when Tauri wrote them
+        if: inputs.turn != '' && hashFiles('apps/native/src-tauri/gen/android/app/tauri.properties') != ''
         run: node scripts/android-version-code.mjs --turn "${{ inputs.turn }}" apps/native/src-tauri/gen/android/app/tauri.properties
       - name: Configure optimized preview packaging
         run: node scripts/configure-android-preview.mjs

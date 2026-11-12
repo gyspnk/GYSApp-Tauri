@@ -42,6 +42,7 @@
     }
   },
   "bundle": {
+    "android": { "versionCode": 1276 },
     "active": true,
     "targets": "all",
     "icon": ["icons/icon.ico"],
