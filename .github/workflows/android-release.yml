@@ -96,24 +96,35 @@ jobs:
           );
           NODE
           cat release-summary.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Create the draft release for this commit
+      # A retry must not rebuild a draft that is already complete: the APK takes
+      # ten minutes, and the assets are the same bytes. A complete draft is reused
+      # and only published; an incomplete one is cleared and rebuilt.
+      - name: Decide whether this draft can be reused
+        id: draft
         run: |
           set -euo pipefail
-          if gh release view "$GYS_RELEASE_TAG" >/dev/null 2>&1; then
-            # A draft left behind by a failed attempt for this same commit holds no
-            # APK, so it is safe to clear and rebuild. Anything published, or a
-            # draft pointing at another commit, is never touched.
-            draft=$(gh release view "$GYS_RELEASE_TAG" --json isDraft --jq .isDraft)
-            target=$(gh release view "$GYS_RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
-            apk=$(gh release view "$GYS_RELEASE_TAG" --json assets --jq '[.assets[].name | select(endswith(".apk"))] | length')
-            if [ "$draft" = "true" ] && { [ "$target" = "$GITHUB_SHA" ] || [ "$apk" = "0" ]; }; then
-              echo "Clearing the draft $GYS_RELEASE_TAG left by an earlier attempt (target=$target, apk assets=$apk)."
-              gh release delete "$GYS_RELEASE_TAG" --yes --cleanup-tag
-            else
-              echo "Release $GYS_RELEASE_TAG already exists (draft=$draft, target=$target); refusing to overwrite."
-              exit 1
-            fi
+          echo "reuse=false" >> "$GITHUB_OUTPUT"
+          if ! gh release view "$GYS_RELEASE_TAG" >/dev/null 2>&1; then
+            exit 0
           fi
+          draft=$(gh release view "$GYS_RELEASE_TAG" --json isDraft --jq .isDraft)
+          target=$(gh release view "$GYS_RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
+          apk=$(gh release view "$GYS_RELEASE_TAG" --json assets --jq '[.assets[].name | select(endswith(".apk"))] | length')
+          if [ "$draft" != "true" ]; then
+            echo "Release $GYS_RELEASE_TAG is already published; refusing to overwrite."
+            exit 1
+          fi
+          if [ "$apk" = "1" ]; then
+            echo "Reusing the complete draft $GYS_RELEASE_TAG from $target."
+            echo "reuse=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Clearing the incomplete draft $GYS_RELEASE_TAG (target=$target, apk assets=$apk)."
+          gh release delete "$GYS_RELEASE_TAG" --yes --cleanup-tag
+      - name: Create the draft release for this commit
+        if: steps.draft.outputs.reuse != 'true'
+        run: |
+          set -euo pipefail
           gh release create "$GYS_RELEASE_TAG" \
             --draft \
             --prerelease \
@@ -122,12 +133,14 @@ jobs:
             --notes-file release-notes.md
           gh release upload "$GYS_RELEASE_TAG" "CHANGELOG-${GYS_RELEASE_TAG}.md"
       - name: Dispatch the APK build for this commit
+        if: steps.draft.outputs.reuse != 'true'
         run: |
           set -euo pipefail
           gh workflow run native-android.yml --ref main \
             -f ref="$GITHUB_SHA" -f release_tag="$GYS_RELEASE_TAG" \
             -f turn="${{ inputs.turn }}"
       - name: Wait for the APK build
+        if: steps.draft.outputs.reuse != 'true'
         run: |
           set -euo pipefail
           run_id=""
