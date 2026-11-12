@@ -83,4 +83,43 @@ test.describe("member account card", () => {
     expect(buttonBox.height).toBeGreaterThanOrEqual(44);
     expect(cardBox.width).toBeGreaterThan(700);
   });
+
+  test("keeps the three sign-in providers in one row without overlapping", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.route("**/api/v1/account/profile**", (route) =>
+      route.fulfill({ status: 401, json: { ok: false } }),
+    );
+    await page.goto("/GYSApp-Tauri/lainnya?section=account");
+    const row = page.locator(".egys-provider-methods");
+    await expect(row).toBeVisible({ timeout: 20_000 });
+    const boxes = await row.locator(".egys-provider").evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const box = node.getBoundingClientRect();
+        return {
+          top: Math.round(box.top),
+          left: Math.round(box.left),
+          right: Math.round(box.right),
+          height: box.height,
+          scrollWidth: node.scrollWidth,
+          clientWidth: node.clientWidth,
+        };
+      }),
+    );
+    // Google's injected control used to collapse to an 18 px strip that spilled
+    // over its neighbour; one row, one height, nothing overflowing.
+    expect(boxes).toHaveLength(3);
+    expect(new Set(boxes.map((box) => box.top)).size).toBe(1);
+    for (let index = 1; index < boxes.length; index += 1) {
+      expect(boxes[index]!.left).toBeGreaterThanOrEqual(
+        boxes[index - 1]!.right - 1,
+      );
+    }
+    for (const box of boxes) {
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth + 1);
+    }
+  });
 });
