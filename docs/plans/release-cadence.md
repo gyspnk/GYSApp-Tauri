@@ -126,3 +126,14 @@ Rilis ini mengunggah **empat** aset (APK, `SHA256SUMS-android.txt`, `native-prov
 Perintah: `gh workflow run android-release.yml --ref main -f turn=276`, lalu poll `gh api …/actions/runs/<id>`. Sesudah rilis: cek log `APK versionCode 1276 verified`, rilis bukan draft, empat aset lengkap, `lastTurn/nextDueTurn` = 276/301, baris 276 ada di tabel ini, tutup #14.
 
 Risiko yang tetap terbuka: tag/draft dibuat sebelum build (build gagal meninggalkan draft + tag, run ulang memakai `.2`), langkah kadensi berjalan sesudah rilis publik sehingga bisa kalah balapan dengan proteksi branch, dan prefiks `v0.1.0-preview.` masih hardcoded di `scripts/release-notes.mjs:133`.
+
+## Pelajaran dari rilis 276 (12 Nov)
+
+Rilis pertama gagal empat kali, semuanya di jalur rilis, bukan di aplikasi:
+
+1. **`tauri.properties` tidak pernah ada.** Tauri 2.11 hanya menulisnya bila proyek dibuat dengan blok `bundle.android` yang tidak kosong; milik kita kosong. Kode versi sekarang ditulis ke `tauri.conf.json` (`bundle.android.versionCode`) **sebelum** `android init`, dan properti hasil generate tetap dinaikkan bila Tauri menulisnya.
+2. **Draf yang gagal tidak bisa diulang.** Draf sisa percobaan yang mati sebelum APK ada kini dihapus dan dibangun ulang; draf yang sudah lengkap dipakai ulang, jadi APK sepuluh menit tidak dibangun dua kali.
+3. **Tag belum ada saat draf.** GitHub baru membuat tag ketika draf diterbitkan, jadi `git rev-list <tag>` gagal pada percobaan pertama; pemeriksaan jatuh ke `targetCommitish` draf.
+4. **APK dari commit lain.** Draf yang dipakai ulang dibangun dari commit sebelumnya; pemeriksaan provenance sekarang membandingkan kedua commit dan hanya menerima bila semua berkas di antaranya ada di `.github/` atau `docs/`.
+
+Smoke Android juga menunggu judul "JELAJAHI KOLEKSI" yang hilang saat halaman pengaturan diringkas; sekarang memakai judul grup pertama ("AKUN & TAMPILAN"), yang tetap membesar pada `font_scale=2.0`.
