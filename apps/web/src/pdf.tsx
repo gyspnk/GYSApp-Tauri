@@ -46,10 +46,13 @@ import { hapticTick } from "./haptics.js";
 import { useReadingToolbarAutoHide } from "./use-toolbar-auto-hide.js";
 import { readHymnViewerPrefs } from "./hymn-viewer-prefs.js";
 import {
-  chordFillColor,
-  chordTextColor,
+  chordFillPaint,
+  chordSurface,
+  chordTextPaint,
   readChordUiPrefs,
+  subscribeChordSurface,
   subscribeChordUiPrefs,
+  type ChordSurface,
 } from "./chord-ui-prefs.js";
 import { getAccentColor, subscribeAccentColor } from "./accent-color.js";
 import { Icon } from "./icons.js";
@@ -114,20 +117,16 @@ function PdfChordLayer({
 }) {
   const [chordUiPrefs, setChordUiPrefs] = useState(() => readChordUiPrefs());
   const [accent, setAccent] = useState(() => getAccentColor());
+  const [surface, setSurface] = useState<ChordSurface>(() => chordSurface());
   useEffect(
     () => subscribeChordUiPrefs(() => setChordUiPrefs(readChordUiPrefs())),
     [],
   );
   useEffect(() => subscribeAccentColor(() => setAccent(getAccentColor())), []);
+  useEffect(() => subscribeChordSurface(() => setSurface(chordSurface())), []);
   if (!markers?.length) return null;
-  const textColor = chordTextColor(chordUiPrefs, accent);
-  const fillColor = chordFillColor(chordUiPrefs, accent);
-  const fillStyle =
-    chordUiPrefs.fill === "none"
-      ? "transparent"
-      : `color-mix(in srgb, ${fillColor} ${
-          chordUiPrefs.fill === "solid" ? "65%" : "32%"
-        }, #ffffff)`;
+  const textColor = chordTextPaint(chordUiPrefs, accent, surface);
+  const fillStyle = chordFillPaint(chordUiPrefs, accent, surface);
   const chordStyle = {
     "--chord-text-color": textColor,
     "--chord-fill-background": fillStyle,

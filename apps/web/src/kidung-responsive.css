@@ -297,3 +297,48 @@
     justify-self: start;
   }
 }
+
+/* Landscape phones give the catalogue one short row. The collection and
+   section switches fold away to the left so the list starts higher; the
+   toggle stays a 44 px target and the search field keeps the row. */
+@media (max-height: 540px) and (orientation: landscape) {
+  .hymn-page .kidung-index-toolbar .kidung-controls-field {
+    grid-template-columns: 44px minmax(0, 1fr) max-content;
+  }
+  .hymn-page .kidung-toolbar-collapse {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .hymn-page .kidung-toolbar-collapse:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .hymn-page .kidung-index-toolbar.is-collapsed .kidung-local-nav,
+  .hymn-page .kidung-index-toolbar.is-collapsed .kidung-header-filter {
+    display: none;
+  }
+  /* With the switches folded the row keeps two cells: the toggle and the
+     view-mode button, which moves to the far edge instead of leaving a gap. */
+  .hymn-page .kidung-index-toolbar.is-collapsed .kidung-controls-field {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+  .hymn-page .kidung-index-toolbar.is-collapsed .kidung-mode-control {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hymn-page .kidung-toolbar-collapse {
+    transition: none;
+  }
+}

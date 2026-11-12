@@ -463,6 +463,8 @@ export const enFeatureMessages: Record<string, string> = {
   "kidung.search": "Search hymns",
   "kidung.searchPlaceholder": "Number or title…",
   "kidung.collection": "Collection",
+  "kidung.showFilters": "Show filters",
+  "kidung.hideFilters": "Hide filters",
   "kidung.searchEmptyTitle": "No hymn found.",
   "kidung.searchEmptyBody": "Try another keyword, or clear the search.",
   "kidung.navigation": "Hymn navigation",

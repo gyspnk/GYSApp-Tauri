@@ -207,3 +207,15 @@ CLS feed nyata tertunda 1,5 detik: 960 0,0589 → 0,00001; 1024 0,0559 → 0,000
 Catatan performa (bukan UI): grafik awal turun 160,5 → 132,6 KiB gz setelah skema zod playlist keluar dari jalur first paint; angka resmi ada di `node scripts/check-bundle-budget.mjs`, bukan catatan lama.
 
 Catatan susulan: indikator muat kartu ayat kini benar-benar di tengah pelat, bukan di tengah slot salinan. Dua hal yang membuatnya sempat gagal: `.sauh-card-content` dipakai sebagai containing block karena slot salinan memang `position: relative` untuk teks, dan aturan `.sauh-skeleton` lama (baris 4729) menang urutan sumber atas aturan baru. Penyelesaiannya satu: slot jadi `position: static` **sesudah** aturan slot, sehingga `position: absolute; inset: 0` jatuh ke panel. Kontrak `Sauh loading state is centered` kembali hijau, `home-verse-reservation` 4/4 dan `ui-polish` 16/16 tetap hijau.
+
+### Kidung: chord terbaca di tema gelap, toolbar landscape bisa dilipat (diterapkan 12 Nov)
+
+| Perubahan                                                                            | Alasan                                                                                             | Kontrak                                                                                        |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Warna teks chord di-mix ke `var(--ink)` per tema (66/66/42/50 %)                     | `#0b4c99` hanya 2,01:1 di dark dan 2,51:1 di amoled; chip pastel membuat pasangan teks–chip 1,01:1 | `apps/web/e2e/chord-contrast.spec.ts` (4 tema, ≥4,5:1) + `apps/web/src/chord-ui-prefs.test.ts` |
+| Isi chip chord di-mix ke `var(--surface)` di tema gelap (5/9 % dan 6/10 %)           | chip putih di halaman gelap menyilaukan dan menghapus kontras teks                                 | sama                                                                                           |
+| `.chord-visual-marker` di text viewer memakai `var(--chord-text-color, var(--navy))` | `--navy` di dark `#a9d8ef` = 1,36:1 di atas chip                                                   | sama                                                                                           |
+| Toolbar katalog di landscape pendek punya tombol lipat 44 px                         | satu baris toolbar memakan 148 px tinggi; daftar baru mulai di 232 px                              | `apps/web/e2e/kidung-toolbar-collapse.spec.ts`                                                 |
+| Saat dilipat, nav dan pemilih koleksi disembunyikan, tombol mode menempel kanan      | menghemat 40 px dan tidak menyisakan sel kosong                                                    | sama                                                                                           |
+
+Angka terukur: rasio chord light 9,16 / sepia 9,99 / dark 6,13 / amoled 6,99; toolbar 148 → 108 px, daftar mulai 232 → 192 px pada 844×390.

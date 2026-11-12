@@ -2208,7 +2208,9 @@
   font-size: calc(0.82em * var(--chord-font-scale, 1));
   line-height: 1.15;
   padding: 0;
-  color: var(--navy);
+  /* The marker colour is theme-aware now; `--navy` was a fixed light-theme ink
+     that measured 1.36:1 on the dark chip. */
+  color: var(--chord-text-color, var(--navy));
 }
 .hymn-detail-page.is-text-viewer .lyrics-sheet p {
   max-width: 100%;
@@ -6335,4 +6337,10 @@ body:has(.hymn-detail-page.is-text-viewer)
     max-width: none;
     margin-inline: 0;
   }
+}
+
+/* The catalogue toolbar's fold control only exists on short landscape
+   screens; everywhere else the collection switch stays visible. */
+.hymn-page .kidung-toolbar-collapse {
+  display: none;
 }

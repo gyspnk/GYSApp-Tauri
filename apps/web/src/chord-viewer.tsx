@@ -9,10 +9,13 @@ import type { ChordDocumentV2 } from "@gys/contracts";
 import type { ChordLayoutPage } from "./chord-layout-pdf.js";
 import { translate, type Locale } from "./i18n.js";
 import {
-  chordFillColor,
-  chordTextColor,
+  chordFillPaint,
+  chordSurface,
+  chordTextPaint,
   readChordUiPrefs,
+  subscribeChordSurface,
   subscribeChordUiPrefs,
+  type ChordSurface,
   type ChordUiPrefs,
 } from "./chord-ui-prefs.js";
 import { getAccentColor, subscribeAccentColor } from "./accent-color.js";
@@ -697,6 +700,7 @@ export function ChordCapability({
   const visible = lines.some((line) => line && line.chords.length > 0);
   const [prefs, setPrefs] = useState<ChordUiPrefs>(() => readChordUiPrefs());
   const [accent, setAccent] = useState(() => getAccentColor());
+  const [surface, setSurface] = useState<ChordSurface>(() => chordSurface());
   useLayoutEffect(
     () => subscribeChordUiPrefs(() => setPrefs(readChordUiPrefs())),
     [],
@@ -705,15 +709,13 @@ export function ChordCapability({
     () => subscribeAccentColor(() => setAccent(getAccentColor())),
     [],
   );
+  useLayoutEffect(
+    () => subscribeChordSurface(() => setSurface(chordSurface())),
+    [],
+  );
   if (!lines.some(Boolean)) return null;
-  const textColor = chordTextColor(prefs, accent);
-  const fillColor = chordFillColor(prefs, accent);
-  const fillStyle =
-    prefs.fill === "none"
-      ? "transparent"
-      : `color-mix(in srgb, ${fillColor} ${
-          prefs.fill === "solid" ? "65%" : "32%"
-        }, #ffffff)`;
+  const textColor = chordTextPaint(prefs, accent, surface);
+  const fillStyle = chordFillPaint(prefs, accent, surface);
   return (
     <span
       className={`chord-capability${active && visible ? "" : " is-hidden"}`}

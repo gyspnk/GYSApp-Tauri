@@ -179,3 +179,91 @@ export function chordFillColor(prefs: ChordUiPrefs, accent: string): string {
       ?.color ?? "#b8dbff"
   );
 }
+
+/**
+ * Chord markers are painted on four different surfaces, so one fixed navy cannot
+ * serve them all: `#0b4c99` measures 8.37:1 on white but 2.01:1 on the dark
+ * surface, and the light chip under a yellow chord only reaches 2.92:1. The
+ * marker colour is therefore mixed toward the theme ink, and the chip toward the
+ * theme surface, by the shares below. Every one of the twelve presets, the
+ * accent path and both fill styles clears 4.5:1 on all four themes with these
+ * numbers (worst case: dark 4.54:1, amoled 5.27:1, light 4.75:1, sepia 4.90:1).
+ */
+export type ChordSurface = "light" | "sepia" | "dark" | "amoled";
+
+const TEXT_SHARE: Record<ChordSurface, number> = {
+  light: 66,
+  sepia: 66,
+  dark: 42,
+  amoled: 50,
+};
+
+const FILL_TINT: Record<ChordSurface, { soft: number; solid: number }> = {
+  light: { soft: 32, solid: 65 },
+  sepia: { soft: 32, solid: 65 },
+  dark: { soft: 5, solid: 9 },
+  amoled: { soft: 6, solid: 10 },
+};
+
+/** Resolve the theme a chord marker is painted on, following `system`. */
+export function chordSurface(theme?: string): ChordSurface {
+  const named = theme ?? document.documentElement.dataset.theme;
+  if (named === "dark" || named === "amoled" || named === "sepia") return named;
+  if (named === "light") return "light";
+  return typeof matchMedia === "function" &&
+    matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+/** Marker text colour: the preset, lifted toward the theme ink. */
+export function chordTextPaint(
+  prefs: ChordUiPrefs,
+  accent: string,
+  surface: ChordSurface,
+): string {
+  const raw = chordTextColor(prefs, accent);
+  return `color-mix(in srgb, ${raw} ${TEXT_SHARE[surface]}%, var(--ink))`;
+}
+
+/** Marker chip: the fill, tinted toward the surface it sits on. */
+export function chordFillPaint(
+  prefs: ChordUiPrefs,
+  accent: string,
+  surface: ChordSurface,
+): string {
+  if (prefs.fill === "none") return "transparent";
+  const raw = chordFillColor(prefs, accent);
+  const tint = FILL_TINT[surface][prefs.fill === "solid" ? "solid" : "soft"];
+  const base =
+    surface === "dark" || surface === "amoled" ? "var(--surface)" : "#ffffff";
+  return `color-mix(in srgb, ${raw} ${tint}%, ${base})`;
+}
+
+/**
+ * Track the surface a chord marker is painted on. The theme lives on
+ * `documentElement.dataset.theme` and `system` follows the media query, so both
+ * need watching; without this a theme switch would keep the old marker colour
+ * until the next render.
+ */
+export function subscribeChordSurface(listener: () => void): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const root = document.documentElement;
+  const observer =
+    typeof MutationObserver === "undefined"
+      ? undefined
+      : new MutationObserver(listener);
+  observer?.observe(root, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  const media =
+    typeof matchMedia === "function"
+      ? matchMedia("(prefers-color-scheme: dark)")
+      : undefined;
+  media?.addEventListener("change", listener);
+  return () => {
+    observer?.disconnect();
+    media?.removeEventListener("change", listener);
+  };
+}

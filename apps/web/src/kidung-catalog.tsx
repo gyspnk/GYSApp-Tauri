@@ -68,6 +68,9 @@ export function HymnCatalog({
     );
   });
   const [query, setQuery] = useState("");
+  // Landscape phones have one short row for the whole toolbar; the collection
+  // and section switches can fold away so the list starts higher.
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
   // Rows arrive once, with a short stagger; afterwards the list keeps still.
   const [staggering, setStaggering] = useState(true);
   useEffect(() => {
@@ -256,11 +259,31 @@ export function HymnCatalog({
   return (
     <div className="page hymn-page">
       <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
-      <div className="kidung-index-toolbar">
+      <div
+        className={`kidung-index-toolbar${filtersCollapsed ? " is-collapsed" : ""}`}
+      >
         <div className="kidung-controls-field">
+          <button
+            type="button"
+            className="kidung-toolbar-collapse"
+            aria-expanded={!filtersCollapsed}
+            aria-controls="kidung-toolbar-filters"
+            onClick={() => setFiltersCollapsed((value) => !value)}
+          >
+            <Icon
+              name={filtersCollapsed ? "chevronRight" : "chevronLeft"}
+              size={18}
+            />
+            <span className="sr-only">
+              {translate(
+                locale,
+                filtersCollapsed ? "kidung.showFilters" : "kidung.hideFilters",
+              )}
+            </span>
+          </button>
           <KidungLocalNav active="songs" locale={locale} />
           {state.status === "ready" && (
-            <div className="kidung-header-filter">
+            <div id="kidung-toolbar-filters" className="kidung-header-filter">
               <Select
                 value={activeBook}
                 onChange={setBook}
