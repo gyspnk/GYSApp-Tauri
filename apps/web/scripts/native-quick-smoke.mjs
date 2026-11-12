@@ -33,6 +33,20 @@ try {
     const started = Date.now();
     if (selected === "startup") {
       await page.goto(nativeRoute("/", origin));
+      // A freshly installed app greets the reader once before the shell. The
+      // smoke drives that path instead of assuming the home grid is first.
+      const welcome = page.locator(".welcome-skip");
+      await Promise.race([
+        welcome.waitFor({ state: "visible", timeout: 10000 }).catch(() => {}),
+        page
+          .locator(".home-grid")
+          .waitFor({ state: "visible", timeout: 10000 })
+          .catch(() => {}),
+      ]);
+      if (await welcome.isVisible()) {
+        results.welcomeShown = true;
+        await welcome.click();
+      }
       await page
         .locator(".home-grid")
         .waitFor({ state: "visible", timeout: 15000 });
