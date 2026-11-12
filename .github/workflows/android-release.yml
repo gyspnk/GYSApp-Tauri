@@ -178,14 +178,24 @@ jobs:
           git fetch --quiet --tags --force origin
           gh release download "$GYS_RELEASE_TAG" --pattern 'native-provenance-android.json' --dir verify-assets
           node -e "
+            const { execFileSync } = require('node:child_process');
             const provenance = require('./verify-assets/native-provenance-android.json');
-            if (provenance.commit !== process.env.GITHUB_SHA) {
-              throw new Error('Artifact source mismatch: ' + provenance.commit);
-            }
             if (provenance.signing !== 'Android debug identity') {
               throw new Error('Unexpected signing identity: ' + provenance.signing);
             }
-            const { execFileSync } = require('node:child_process');
+            // A reused draft was built from an earlier commit. That is only honest
+            // when the commits in between touch nothing the APK ships: CI files and
+            // docs are fine, app sources are not.
+            if (provenance.commit !== process.env.GITHUB_SHA) {
+              const changed = execFileSync('git', ['diff', '--name-only', provenance.commit, process.env.GITHUB_SHA], { encoding: 'utf8' })
+                .split('\n')
+                .filter(Boolean)
+                .filter((file) => !file.startsWith('.github/') && !file.startsWith('docs/'));
+              if (changed.length) {
+                throw new Error('The APK was built from ' + provenance.commit + ' but these files changed since: ' + changed.join(', '));
+              }
+              console.log('Reused APK from ' + provenance.commit + '; only CI and docs changed since.');
+            }
             // A draft release has no tag yet: GitHub only creates it on publish, so
             // the draft's target commit is the honest comparison there.
             let tagCommit = '';
