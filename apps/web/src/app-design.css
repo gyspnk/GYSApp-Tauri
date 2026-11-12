@@ -6459,3 +6459,59 @@ body:has(.hymn-detail-page.is-text-viewer)
 .kidung-tool-page > .kidung-index-toolbar {
   grid-column: 1 / -1;
 }
+
+/* Home greeting: one accent eyebrow instead of a sentence and a title that
+   repeated the three cards underneath. Tabular numbers keep the date from
+   shifting on every locale. */
+.home-page .home-welcome .home-date {
+  margin: 0;
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .home-page .home-welcome .home-date {
+    animation: home-date-in var(--motion-entrance) var(--motion-ease-entrance)
+      backwards;
+  }
+}
+@keyframes home-date-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Landscape settings: one setting per row. The short window cannot show two
+   readable columns beside an open panel, so the list is a single column and an
+   expanded row is simply the row it belongs to. */
+@media (max-height: 540px) and (orientation: landscape) {
+  .more-page .more-settings-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .more-page .more-setting-row {
+    min-height: 48px;
+  }
+}
+/* One greeting band: the date and the three doors share a row from tablet up,
+   so the date no longer sits alone above centred icons. */
+@media (min-width: 720px) {
+  .home-page .home-welcome {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px 24px;
+  }
+  .home-page .home-welcome .page-intro {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .home-page .home-portals {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+}

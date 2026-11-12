@@ -2,7 +2,9 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 // A landscape phone has width but no height: one wide column left half the
-// window empty and stretched every panel past a readable line length.
+// window empty and stretched every panel past a readable line length. A very
+// short landscape window goes the other way — one row per setting — because two
+// columns beside an open panel cannot show both at once.
 for (const viewport of [
   { width: 844, height: 390 },
   { width: 1024, height: 600 },
@@ -19,7 +21,11 @@ for (const viewport of [
     const count = await list.evaluate(
       (node) => getComputedStyle(node).gridTemplateColumns.split(" ").length,
     );
-    expect(count, "the settings list fills the width it has").toBe(2);
+    // Under 540 px of height each setting owns a full row; taller landscape
+    // windows keep the two readable columns.
+    expect(count, "the settings list fills the width it has").toBe(
+      viewport.height <= 540 ? 1 : 2,
+    );
 
     // An open panel carries a form or a paragraph, so it takes the whole width
     // instead of wrapping inside half of it.

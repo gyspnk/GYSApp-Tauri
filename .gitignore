@@ -33,3 +33,6 @@ apps/web/native-smoke-failure.*
 
 # Local QA captures (the hosted job uploads them as artifacts).
 apps/web/ui-screenshots/
+
+# Throwaway browser probes for a single measurement
+apps/web/probe*.mjs

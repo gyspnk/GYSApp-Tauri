@@ -284,10 +284,10 @@ export function HomePage({ locale }: { locale: Locale }) {
     <div className="page home-page">
       <header className="home-welcome">
         <section className="page-intro">
-          <div>
-            <p className="date-line">{today}</p>
-            <h1>{translate(locale, "home.title")}</h1>
-          </div>
+          <h1 className="sr-only">{translate(locale, "home.title")}</h1>
+          {/* The date is the greeting: the old intro sentence repeated what the
+              three cards below already say, so only the day remains on screen. */}
+          <p className="home-date">{today}</p>
         </section>
         <nav
           className="home-portals"

@@ -246,3 +246,17 @@ Kontrak tambahan yang ikut berubah: `apps/web/e2e/fixtures/onboarded-state.ts` d
 | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Judul besar "Antrean MIDI" jadi `sr-only`, baris alat memakai kartu yang sama dengan katalog | Pindah tab membuat semua kontrol bergeser karena tinggi header berbeda | `apps/web/e2e/kidung-queue-header.spec.ts` menyamakan tinggi `.kidung-controls-field` |
 | Switch dua tab tidak lagi selebar kolom                                                      | Kontrol selebar field terbaca sebagai baris tab, bukan alat            | spec memastikan lebar nav < 75 % field                                                |
+
+### Beranda: sapaan berupa tanggal, tanpa kalimat pembuka (diterapkan 12 Nov)
+
+| perubahan                                                            | alasan                                                           | kontrak                                                                                                     |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Judul "Bacaan & nyanyian" jadi `sr-only`; hanya tanggal yang tampil  | Tiga kartu di bawahnya sudah menyebut bacaan, nyanyian, dan iman | `apps/web/e2e/home-hero.spec.ts` memastikan tepat satu `h1`, tak terlihat, dan tanggal sejajar dengan kartu |
+| Tanggal jadi eyebrow aksen (bukan teks kecil abu-abu), angka tabular | Diminta pemilik: tampilan tanggal lebih menarik dan sejajar      | spec membandingkan tepi kiri tanggal dengan `.home-portals`                                                 |
+| Sejak 720 px tanggal dan tiga pintu berbagi satu baris               | Tanggal tadinya menggantung sendiri di atas ikon yang di tengah  | spec memeriksa keduanya tumpang tindih vertikal di 1440                                                     |
+
+### Lainnya: pengaturan landscape satu baris satu pengaturan (diterapkan 12 Nov)
+
+| perubahan                                                       | alasan                                                                                       | kontrak                                                                                      |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Di bawah 540 px tinggi, daftar pengaturan jadi satu kolom penuh | Dua kolom di samping panel terbuka tidak terbaca; pemilik meminta satu baris satu pengaturan | `apps/web/e2e/more-landscape.spec.ts` memilih 1 kolom saat tinggi ≤ 540, tetap 2 di 1024x600 |
