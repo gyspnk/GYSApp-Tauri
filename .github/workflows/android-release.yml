@@ -100,8 +100,18 @@ jobs:
         run: |
           set -euo pipefail
           if gh release view "$GYS_RELEASE_TAG" >/dev/null 2>&1; then
-            echo "Release $GYS_RELEASE_TAG already exists; refusing to overwrite."
-            exit 1
+            # A draft left behind by a failed attempt for this same commit holds no
+            # APK, so it is safe to clear and rebuild. Anything published, or a
+            # draft pointing at another commit, is never touched.
+            draft=$(gh release view "$GYS_RELEASE_TAG" --json isDraft --jq .isDraft)
+            target=$(gh release view "$GYS_RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
+            if [ "$draft" = "true" ] && [ "$target" = "$GITHUB_SHA" ]; then
+              echo "Clearing the draft $GYS_RELEASE_TAG left by an earlier attempt on this commit."
+              gh release delete "$GYS_RELEASE_TAG" --yes --cleanup-tag
+            else
+              echo "Release $GYS_RELEASE_TAG already exists (draft=$draft, target=$target); refusing to overwrite."
+              exit 1
+            fi
           fi
           gh release create "$GYS_RELEASE_TAG" \
             --draft \
