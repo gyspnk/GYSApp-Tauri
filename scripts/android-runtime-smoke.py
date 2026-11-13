@@ -137,8 +137,40 @@ def assert_idle_audio_focus(output, name):
     print("PASS " + name + ": application does not own audio focus", flush=True)
 
 
+WELCOME_SKIP_LABELS = ("Lewati, mulai membaca", "Skip, start reading", "跳过，开始阅读")
+
+
+def dismiss_welcome(output, name):
+    """The first launch opens the welcome screen (owner contract, turn 276+).
+
+    Record it once, then tap its own skip button so the rest of the smoke sees
+    the real app. Later launches remember the choice and fall through at once.
+    """
+    deadline = time.monotonic() + 45
+    while time.monotonic() < deadline:
+        try:
+            tree = hierarchy(output, name)
+        except RuntimeError:
+            time.sleep(2)
+            continue
+        if find_label(tree, "Lainnya") is not None:
+            return False
+        for label in WELCOME_SKIP_LABELS:
+            node = find_label(tree, label)
+            if node is None:
+                continue
+            capture(output, "welcome")
+            l, t, r, b = bounds(node)
+            adb("shell", "input", "tap", str((l + r) // 2), str((t + b) // 2))
+            print("PASS welcome screen skipped: " + label, flush=True)
+            return True
+        time.sleep(2)
+    raise RuntimeError("Welcome screen neither offered a skip nor reached the app")
+
+
 def open_more(output, component, name):
     adb("shell", "am", "start", "-W", "-n", component, timeout=90)
+    dismiss_welcome(output, name + "-welcome")
     node = wait_label(output, "Lainnya", name + "-home")
     l, t, r, b = bounds(node)
     adb("shell", "input", "tap", str((l + r) // 2), str((t + b) // 2))
@@ -193,6 +225,7 @@ def main():
     print("Launching installed APK: " + component, flush=True)
     adb("logcat", "-c")
     adb("shell", "am", "start", "-W", "-n", component, timeout=90)
+    dismiss_welcome(output, "welcome")
     node = wait_label(output, "Lainnya", "home")
     assert_idle_audio_focus(output, "home-idle")
     l, t, r, b = bounds(node)
