@@ -51,7 +51,6 @@ export const zhMessages: Record<string, string> = {
   "suara.sortRecent": "最新",
   "suara.sortOldest": "最早",
   "suara.sortTitle": "按标题",
-  "suara.backHome": "← 主页",
   "suara.title": "真实声音",
   "suara.loading": "正在加载真实声音…",
   "suara.errorTitle": "真实声音暂不可用。",

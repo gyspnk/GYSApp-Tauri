@@ -62,6 +62,8 @@ for (const [locale, searchLabel, clearLabel] of [
     await page.screenshot({
       path: testInfo.outputPath(`testimony-summary-${locale}.png`),
     });
+    // The list has no breadcrumb any more (it pushed the title below its
+    // siblings); the detail's own back link still returns to the collection.
     await page.locator(".detail-back a").click();
     await expect(page).toHaveURL(/\/suara$/);
     await expect(search).toBeVisible();

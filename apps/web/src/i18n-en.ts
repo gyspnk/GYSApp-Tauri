@@ -53,7 +53,6 @@ export const enMessages: Record<string, string> = {
   "suara.sortRecent": "Newest",
   "suara.sortOldest": "Oldest",
   "suara.sortTitle": "By title",
-  "suara.backHome": "← Home",
   "suara.title": "True Voice",
   "suara.loading": "Loading True Voice…",
   "suara.errorTitle": "True Voice is unavailable.",

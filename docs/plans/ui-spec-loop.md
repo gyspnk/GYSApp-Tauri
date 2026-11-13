@@ -342,3 +342,15 @@ Kontrak `apps/web/e2e/kidung-hymnal-window.spec.ts` menjaga aturan itu tanpa per
 | Jeda            | `animation-delay: min(calc(var(--row-index) * var(--motion-stagger)), 240ms)` — gelombang berhenti memanjang setelah 0,24 detik, jadi bagian bawah layar tidak menunggu lalu muncul serentak.                                                                                                           |
 | Ekor daftar     | `.pujian-item:nth-child(n + 61)` tidak beranimasi sama sekali; 533 baris dulu menggerakkan 533 animasi bersamaan.                                                                                                                                                                                       |
 | Kontrak         | `apps/web/e2e/kidung-catalogue-entrance.spec.ts` — setiap baris yang dilukis pertama ikut bergelombang, jeda maksimum 250 ms, seluruh layar ikut, gelombang berhenti sendiri, dan aturan ekor diperiksa dari CSS-nya.                                                                                   |
+
+### Iman dan Suara: judul yang sama dengan Literatur (putaran 98)
+
+| Butir                   | Sebelum                                          | Sesudah                            |
+| ----------------------- | ------------------------------------------------ | ---------------------------------- |
+| Judul Iman              | `h1` sr-only, rute terbuka tanpa nama terlihat   | `h1` dicat "Dasar Kepercayaan"     |
+| Judul Suara             | dicat, tapi 48 px lebih rendah karena breadcrumb | sebaris dengan Literatur dan Iman  |
+| Breadcrumb daftar Suara | "← Beranda" di atas judul                        | dihapus; Beranda ada di navigasi   |
+| Metrik judul            | 31,5 px/650 (390), 36 px/650 (1440)              | sama di ketiga rute, y 74          |
+| Kontrak                 | tidak ada yang membandingkan rute                | `apps/web/e2e/page-titles.spec.ts` |
+
+Kontrak `page-titles.spec.ts` mengukur ketiga rute di 390 dan 1440: satu `h1` terlihat per rute, ukuran dan berat huruf sama, tepi atas dan tepi kiri berselisih ≤1 px. Kunci i18n `suara.backHome` dihapus dari tiga bahasa karena tidak ada lagi yang memakainya (`i18n.test.ts` gagal pada kunci mati).

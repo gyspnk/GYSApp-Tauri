@@ -325,13 +325,10 @@ export function SuaraPage({ locale }: { locale: Locale }) {
       className="page online-content-page suara-page"
       data-testid="suara-page"
     >
-      <div className="detail-back">
-        <Link className="text-button" to="/">
-          {translate(locale, "suara.backHome")}
-        </Link>
-      </div>
       <section className="page-intro">
-        {/* The navigation already says Suara; the eyebrow only repeated it. */}
+        {/* No back link: Literatur and Iman are reached the same way and open
+            straight on their title, so a breadcrumb here pushed this heading
+            48 px lower than its siblings. Beranda stays in the navigation. */}
         <h1>{translate(locale, "suara.title")}</h1>
       </section>
       {state.status === "ready" && state.posts.length > 0 && (

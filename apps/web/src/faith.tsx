@@ -379,9 +379,10 @@ export function FaithPage({ locale }: { locale: Locale }) {
       inert={notePopupOpen ? true : undefined}
     >
       <section className="page-intro faith-intro">
-        <h1 className="sr-only">
-          {group?.title ?? translate(locale, "nav.iman")}
-        </h1>
+        {/* The title is painted, like Literatur and Suara: a screen-reader-only
+            heading left this route as the only destination that opens without
+            a visible name. */}
+        <h1>{group?.title ?? translate(locale, "nav.iman")}</h1>
       </section>
       {!pack && (
         <div className="loading-panel" role="status">
