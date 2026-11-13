@@ -53,6 +53,26 @@ Aturan pemilik (10 Nov 2026): **setiap 25 putaran goal, build APK Android dan ch
    bilangan bulat positif, dan `turn` yang tidak lebih besar dari `lastTurn`.
 5. Laporkan ke pemilik: tag, tautan release, ukuran APK, dan catatan bahwa APK bertanda tangan debug (hanya untuk pemasangan manual).
 
+## Pemicu otomatis (13 Nov)
+
+Aturan "tiap 25 putaran" dulu hanya diperiksa dengan angka putaran yang diketik
+tangan saat dispatch, jadi tidak ada yang menegur bila tempo terlewat — rilis
+terakhir (putaran 276) lewat lebih dari sehari dan 35 commit tanpa APK baru.
+
+Putaran selalu berakhir dengan commit, jadi jumlah commit sejak `lastTag` dipakai
+sebagai saksi yang tidak bisa lupa: `.github/workflows/release-cadence.yml`
+berjalan tiap 6 jam, menjalankan `node scripts/release-due.mjs`, dan bila commit
+sejak rilis terakhir sudah mencapai `intervalTurns` (25) ia mendispatch
+`android-release.yml` dengan `-f turn=<nextDueTurn>`. Penjaga lain:
+
+- Dispatch dilewati bila masih ada run `android-release.yml` yang queued/running,
+  supaya tag tidak lahir dua kali.
+- Bila `git rev-list` gagal (tag hilang, clone dangkal), skrip memilih **rilis**,
+  bukan diam: lebih baik satu rilis lebih awal daripada tidak pernah.
+- Kegagalan rilis tidak memperbarui kadensi, jadi percobaan berikutnya terjadi
+  otomatis enam jam kemudian.
+- Jalur manual tetap sama: `gh workflow run android-release.yml --ref main -f turn=<N>`.
+
 ## Riwayat rilis
 
 | Putaran | Tag                         | Run           | APK (byte) | Commit     | Catatan                               |
