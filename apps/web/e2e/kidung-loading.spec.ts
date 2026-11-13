@@ -15,8 +15,10 @@ test("catalog and settings stay usable without loading the hymn reader", async (
     expect(response.ok()).toBe(true);
     const { assets } = (await response.json()) as { assets: string[] };
     // Section chunks are catalog-level; only the reader may not load with them.
+    // The rail is catalog-level too: the catalog page imports it for the
+    // desktop split, so it ships with the section, not with the reader.
     const sectionChunk =
-      /^assets\/kidung-(?:page|catalog|local-nav|midi-controls|playlist-page|playlists|settings-page|shared)-/;
+      /^assets\/kidung-(?:page|catalog|local-nav|midi-controls|playlist-page|playlists|reader-rail|settings-page|shared)-/;
     const readers = assets.filter(
       (path) =>
         path.startsWith("assets/kidung-") &&

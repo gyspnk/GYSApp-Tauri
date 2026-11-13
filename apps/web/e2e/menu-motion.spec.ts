@@ -485,6 +485,18 @@ test("Bible menu fades and slides out, restores focus and reopens smoothly", asy
   await expect
     .poll(() => speech.evaluate((node) => getComputedStyle(node).opacity))
     .toBe("1");
+  // The real exit is 160 ms, which a loaded shard can sample in two frames and
+  // miss the fade entirely. Check the declared duration, then stretch only this
+  // probe's timeline so the intermediate frames are guaranteed to exist.
+  const speechDuration = await speech.evaluate((node) =>
+    getComputedStyle(node)
+      .transitionDuration.split(",")
+      .map((part) => parseFloat(part)),
+  );
+  expect(speechDuration.every((value) => value > 0 && value <= 0.2)).toBe(true);
+  await page.addStyleTag({
+    content: ".drawer-speech-motion { transition-duration: 1s !important; }",
+  });
   const speechFrames = await sampleExit(page, ".drawer-speech-motion", false, {
     selector: ".speech-settings-toggle",
   });
