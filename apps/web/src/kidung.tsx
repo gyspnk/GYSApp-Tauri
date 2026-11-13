@@ -25,6 +25,7 @@ import {
 } from "@gys/contracts";
 import { ChordNotAvailableError, MidiLoader } from "@gys/domain";
 import { translate, type Locale } from "./i18n.js";
+import { KidungReaderPicker } from "./kidung-reader-rail.js";
 import { createBrowserChordRepository } from "./chords.js";
 import {
   ChordCapability,
@@ -218,6 +219,12 @@ export function HymnDetail({
       ? requestedMode
       : readHymnViewerMode(),
   );
+  // Landscape without a rail: the index has no seat beside the text, so the
+  // reader carries a disclosure of its own instead of sending people back to
+  // the catalogue. PDF mode keeps its own chrome.
+  const showsSongPicker =
+    useMediaQuery("(orientation: landscape) and (max-width: 1199px)") &&
+    viewerMode !== "pdf";
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [pdfInitialPage, setPdfInitialPage] = useState(1);
@@ -2339,6 +2346,19 @@ export function HymnDetail({
           </details>
         </div>
       </section>
+      {showsSongPicker && state.status === "ready" && (
+        <KidungReaderPicker
+          locale={locale}
+          state={state}
+          activeId={songId}
+          onNavigate={() => {
+            const node = document.querySelector<HTMLDetailsElement>(
+              ".kidung-reader-picker",
+            );
+            if (node) node.open = false;
+          }}
+        />
+      )}
       <section className="hymn-detail-surface">
         {viewerMode === "pdf" && (
           <div className="gys-pdf-overlay">
@@ -2862,4 +2882,20 @@ export function HymnDetail({
       )}
     </div>
   );
+}
+
+// The reader decides its own layout from the viewport, so a resize that turns
+// the phone must re-render the picker without a navigation.
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(
+    () => window.matchMedia(query).matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const sync = () => setMatches(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, [query]);
+  return matches;
 }

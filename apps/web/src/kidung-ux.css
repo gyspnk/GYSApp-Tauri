@@ -1576,6 +1576,63 @@ kidung-row-menu > summary:focus-visible,
   }
 }
 
+/* The rail's list and rows are shared: landscape shows the same rows inside a
+   disclosure, so the rules live outside the desktop column layout. */
+.kidung-rail-list {
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.kidung-rail-row {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.kidung-rail-row:hover {
+  background: var(--surface-soft);
+}
+
+.kidung-rail-row:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.kidung-rail-row[aria-current="page"] {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.kidung-rail-number {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.kidung-rail-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Desktop reader: the index keeps its seat beside the text, so moving between
    songs is one click instead of a trip back to the catalog. */
 @media (min-width: 1200px) {
@@ -1596,62 +1653,74 @@ kidung-row-menu > summary:focus-visible,
     max-height: calc(100dvh - 24px);
   }
 
-  .kidung-rail-list {
-    margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    list-style: none;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: var(--surface);
-  }
-
-  .kidung-rail-row {
-    display: flex;
-    width: 100%;
-    min-height: 44px;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-    border: 0;
-    background: transparent;
-    color: var(--ink);
-    font: inherit;
-    text-align: start;
-    cursor: pointer;
-  }
-
-  .kidung-rail-row:hover {
-    background: var(--surface-soft);
-  }
-
-  .kidung-rail-row:focus-visible {
-    outline: 3px solid var(--focus);
-    outline-offset: -3px;
-  }
-
-  .kidung-rail-row[aria-current="page"] {
-    color: var(--blue);
-    background: var(--blue-soft);
-  }
-
-  .kidung-rail-number {
-    flex: 0 0 auto;
-    color: var(--muted);
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .kidung-rail-title {
-    min-width: 0;
-    overflow: hidden;
-    font-size: 0.9375rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .kidung-reader-pane {
     min-width: 0;
   }
+}
+/* Landscape phones have no column for a rail, so the index rides in a
+   disclosure above the text and closes itself once a song is picked. */
+.kidung-reader-picker {
+  margin: 0 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.kidung-reader-picker > summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.kidung-reader-picker > summary::-webkit-details-marker {
+  display: none;
+}
+
+.kidung-reader-picker > summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+  border-radius: 12px;
+}
+
+.kidung-reader-picker[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.kidung-reader-picker-label {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.kidung-reader-picker-current {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kidung-reader-picker-body {
+  display: flex;
+  max-height: min(46dvh, 320px);
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  overflow: auto;
+}
+
+.kidung-reader-picker-body .kidung-rail-list {
+  max-height: none;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }

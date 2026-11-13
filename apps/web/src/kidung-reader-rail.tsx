@@ -7,6 +7,7 @@ import {
   numberLabel,
   type CatalogState,
 } from "./kidung-shared.js";
+import { Icon } from "./icons.js";
 import { Select } from "./select.js";
 
 // One column of the desktop reader: the book's index stays beside the text so
@@ -23,6 +24,69 @@ export function KidungReaderRail({
   state: CatalogState<HymnMetadata>;
   activeId: string;
 }) {
+  return (
+    <aside
+      className="kidung-reader-rail"
+      aria-label={translate(locale, "kidung.collection")}
+    >
+      <RailBody locale={locale} state={state} activeId={activeId} />
+    </aside>
+  );
+}
+
+// Landscape phones and tablets have no room for a permanent rail, so the index
+// rides in a disclosure above the text: one tap to pick another song, closed by
+// default so the reading surface keeps every row.
+export function KidungReaderPicker({
+  locale,
+  state,
+  activeId,
+  onNavigate,
+}: {
+  locale: Locale;
+  state: CatalogState<HymnMetadata>;
+  activeId: string;
+  onNavigate?: () => void;
+}) {
+  const items = state.status === "ready" ? state.items : [];
+  const active = items.find((item) => item.id === activeId);
+  return (
+    <details className="kidung-reader-picker">
+      <summary>
+        <Icon name="book" size={16} />
+        <span className="kidung-reader-picker-label">
+          {translate(locale, "kidung.collection")}
+        </span>
+        <span className="kidung-reader-picker-current">
+          {active
+            ? `${numberLabel(active.number, active.id)} · ${active.title}`
+            : ""}
+        </span>
+        <Icon name="chevronDown" size={16} />
+      </summary>
+      <div className="kidung-reader-picker-body">
+        <RailBody
+          locale={locale}
+          state={state}
+          activeId={activeId}
+          {...(onNavigate ? { onNavigate } : {})}
+        />
+      </div>
+    </details>
+  );
+}
+
+function RailBody({
+  locale,
+  state,
+  activeId,
+  onNavigate,
+}: {
+  locale: Locale;
+  state: CatalogState<HymnMetadata>;
+  activeId: string;
+  onNavigate?: () => void;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
   const items = state.status === "ready" ? state.items : [];
@@ -36,10 +100,7 @@ export function KidungReaderRail({
   const shown = items.filter((item) => item.book === book).slice(0, visible);
 
   return (
-    <aside
-      className="kidung-reader-rail"
-      aria-label={translate(locale, "kidung.collection")}
-    >
+    <>
       {books.length > 1 && (
         <Select
           value={book}
@@ -71,11 +132,12 @@ export function KidungReaderRail({
               type="button"
               className="kidung-rail-row"
               aria-current={item.id === activeId ? "page" : undefined}
-              onClick={() =>
+              onClick={() => {
                 navigate(`/kidung/${item.id}${location.search}`, {
                   replace: true,
-                })
-              }
+                });
+                onNavigate?.();
+              }}
             >
               <span className="kidung-rail-number" aria-hidden="true">
                 {numberLabel(item.number, item.id)}
@@ -85,6 +147,6 @@ export function KidungReaderRail({
           </li>
         ))}
       </ol>
-    </aside>
+    </>
   );
 }

@@ -280,3 +280,16 @@ Jebakan yang ditemukan: chrome partitur hidup di dalam `.gys-pdf-overlay` yang `
 Kontrak yang ikut bergerak: `apps/web/e2e/score-seamless.spec.ts` memberi anggaran tinggi chrome `(width >= 960 ? 72 : 64) * textScale + readerGap`, karena chrome partitur sekarang membawa jarak atas yang sama dengan judul mode teks (14 px, 18 px sejak 720 px). Tanpa penambahan itu, chrome 320 px terukur 75,4 px dan 1440 px 82 px — keduanya hanya melewati anggaran lama sebesar jarak baru.
 
 Kotak Google di kartu akun tidak lagi memipihkan tombol Google: aturan lama memaksa `height: 100%` dan `padding: 0` pada `[role="button"]` milik Google Identity Services, sehingga tombolnya runtuh jadi satu baris teks 18 px dan sisa chromenya menimpa WhatsApp/Apple. Sekarang Google menentukan tinggi sendiri (40 px "large", lebih tinggi saat kartu personalisasi muncul), hanya border dan latarnya yang dilipat ke bingkai aplikasi, dan host `.egys-google-button` memotong apa pun yang lebih besar. Terukur dengan skrip Google sungguhan: 97x44 px di 390 (ikon 40x40 di tengah) dan 355x40 px di 1440, `scrollWidth == clientWidth` di kedua lebar. Penjaga regresi: `apps/web/src/egys-google-frame.test.ts`.
+
+### Kidung: pemilih lagu di landscape (putaran 83)
+
+| Butir spec      | Nilai                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Kapan muncul    | `(orientation: landscape) and (max-width: 1199px)` dan mode teks; rail 1200 px tetap seperti sebelumnya                  |
+| Bentuk          | `<details class="kidung-reader-picker">` di bawah hero, tertutup secara bawaan                                           |
+| Baris ringkas   | 44 px, label "Koleksi", judul lagu aktif, chevron                                                                        |
+| Isi             | daftar rail yang sama (nomor + judul, 44 px per baris), tinggi maksimum `min(46dvh, 320px)`                              |
+| Setelah memilih | panel menutup sendiri, rute berganti tanpa kehilangan posisi baca                                                        |
+| Kontrak         | `apps/web/e2e/kidung-reader-picker.spec.ts` (912x420 memilih lagu 002 lalu menutup; 390 dan 1440 tidak merender pemilih) |
+
+Aturan `.kidung-rail-list`/`.kidung-rail-row` dipindah keluar dari media query 1200 px supaya baris yang sama dipakai rail desktop dan pemilih landscape; hanya tata letak kolom yang tetap di dalam media query.
