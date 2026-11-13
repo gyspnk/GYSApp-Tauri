@@ -151,15 +151,14 @@ export function PdfDetailLayer({
     const schedule = () => {
       cancel();
       window.clearTimeout(timer);
-      if (stage.dataset.pdfZooming === "true") return;
-      // At the fitted zoom the preview already covers the sheet, so the sharp
-      // tiles above it are stale. Clear them now instead of debouncing: a reset
-      // to 100% otherwise left them scaled over the page for a second or more
-      // while scroll and resize events kept restarting the timer.
+      // Staleness is decided by geometry, not by the zoom flag: while the sheet
+      // is being reset the preview already covers it, and during a slow zoom
+      // animation the flag would otherwise hold the tiles until the last frame.
       if (!needsDetail()) {
         clear();
         return;
       }
+      if (stage.dataset.pdfZooming === "true") return;
       timer = window.setTimeout(() => {
         void render();
       }, 120);

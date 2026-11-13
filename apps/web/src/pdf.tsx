@@ -827,6 +827,10 @@ export function PdfReader({
         } else if (event.key === "-") {
           event.preventDefault();
           setZoomPercent((value) => clampPdfZoomPercent(value - 25));
+        } else if (event.key === "0") {
+          // The browser's own "reset zoom" gesture must fit the sheet too.
+          event.preventDefault();
+          setZoomPercent(100);
         }
         return;
       }

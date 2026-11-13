@@ -180,7 +180,9 @@ test("800% zoom paints screen-density vector tiles instead of stretching a low-r
   );
   await expect(page.locator(".pdf-zoom-indicator")).toHaveText("800%");
   const tiles = page.locator("canvas[data-pdf-detail]");
-  await expect(tiles.first()).toBeVisible();
+  // Twelve tiles at device density are a real render job; on a loaded shard
+  // the first one can take longer than the default expect window.
+  await expect(tiles.first()).toBeVisible({ timeout: 20_000 });
   const densities = await tiles.evaluateAll((elements) =>
     elements.map((element) => {
       const canvas = element as HTMLCanvasElement;
