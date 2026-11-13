@@ -255,3 +255,7 @@ Panel sekarang memetakan view model murni (`brainNodeView`) ke `h(...)` tanpa lo
 Menonton run hosted sekarang satu perintah: `pnpm run:watch <runId>` (`scripts/watch-run.mjs`) memanggil `gh api .../runs/<id>` sampai selesai, lalu mencetak satu blok berisi hasil, durasi, job yang gagal, dan perintah lanjutannya (`pnpm verify --explain <id>`). Tidak ada keluaran selama run berjalan, jadi putaran tidak lagi menulis lima sampai sepuluh panggilan polling per run; skripnya keluar 0 untuk hijau, 1 untuk merah, dan 2 bila anggaran waktunya habis (default 45 menit) supaya tidak pernah menggantung. Enam tes di `scripts/watch-run.test.mjs` menjalankan `gh` palsu — termasuk kasus run yang masih berjalan, merah, dan kehabisan waktu.
 
 `pnpm check:fast` ikut menjalankan gerbang dokumentasi (`node scripts/verify-documentation.mjs`) begitu ada berkas `docs/` atau `README.md` yang berubah, jadi tautan rusak dan catatan putaran yang belum ditulis ketahuan dalam hitungan detik, bukan di CI.
+
+## Baseline adoption is a decision, not a copy
+
+`pnpm baselines:adopt --run <id>` prints every changed screenshot with the number of pixels that moved and the box they moved in, then copies only what you select: `--min-diff 1000` drops encoder noise, `--only kidung-390x844` names files. A run that changes three screenshots on purpose no longer drags six noise files into the commit.

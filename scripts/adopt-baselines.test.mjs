@@ -6,7 +6,9 @@ import test from "node:test";
 import { deflateSync } from "node:zlib";
 import {
   artifactName,
+  decodePng,
   indexPngs,
+  pixelDiff,
   pixelHash,
   plan,
 } from "./adopt-baselines.mjs";
@@ -36,12 +38,17 @@ function chunk(type, data) {
 
 /** A 1x1 RGBA PNG whose single pixel is `rgba`. */
 function png(rgba, extraChunk) {
+  return pngRows([rgba], extraChunk);
+}
+
+/** An Nx1 RGBA PNG, one pixel per entry of `rows`. */
+function pngRows(rows, extraChunk) {
   const header = Buffer.alloc(13);
-  header.writeUInt32BE(1, 0);
+  header.writeUInt32BE(rows.length, 0);
   header.writeUInt32BE(1, 4);
   header[8] = 8;
   header[9] = 6;
-  const scanline = Buffer.from([0, ...rgba]);
+  const scanline = Buffer.from([0, ...rows.flat()]);
   const parts = [
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     chunk("IHDR", header),
@@ -114,6 +121,86 @@ test("plan separates identical, changed and unknown screenshots", () => {
   );
   assert.deepEqual(result.missing, ["new.png"]);
   assert.equal(result.bytesOnly.length, 0);
+});
+
+test("decodePng reads the pixels back", () => {
+  const root = fixture();
+  const file = join(root, "two.png");
+  writeFileSync(
+    file,
+    pngRows([
+      [10, 20, 30, 255],
+      [40, 50, 60, 255],
+    ]),
+  );
+  const decoded = decodePng(file);
+  assert.equal(decoded.width, 2);
+  assert.equal(decoded.height, 1);
+  assert.deepEqual([...decoded.pixels], [10, 20, 30, 255, 40, 50, 60, 255]);
+});
+
+test("pixelDiff counts moved pixels and reports their box", () => {
+  const root = fixture();
+  const before = join(root, "before.png");
+  const after = join(root, "after.png");
+  writeFileSync(
+    before,
+    pngRows([
+      [0, 0, 0, 255],
+      [0, 0, 0, 255],
+      [0, 0, 0, 255],
+    ]),
+  );
+  writeFileSync(
+    after,
+    pngRows([
+      [0, 0, 0, 255],
+      [255, 255, 255, 255],
+      [0, 0, 0, 255],
+    ]),
+  );
+  const result = pixelDiff(before, after);
+  assert.equal(result.diff, 1);
+  assert.deepEqual(result.box, { left: 1, top: 0, right: 1, bottom: 0 });
+});
+
+test("pixelDiff ignores a difference below the threshold", () => {
+  const root = fixture();
+  const before = join(root, "a.png");
+  const after = join(root, "b.png");
+  writeFileSync(before, png([100, 100, 100, 255]));
+  writeFileSync(after, png([104, 104, 104, 255]));
+  assert.deepEqual(pixelDiff(before, after), { diff: 0, box: null });
+});
+
+test("pixelDiff refuses images of different sizes", () => {
+  const root = fixture();
+  const small = join(root, "small.png");
+  const wide = join(root, "wide.png");
+  writeFileSync(small, png([1, 1, 1, 255]));
+  writeFileSync(
+    wide,
+    pngRows([
+      [1, 1, 1, 255],
+      [1, 1, 1, 255],
+    ]),
+  );
+  assert.equal(pixelDiff(small, wide), null);
+});
+
+test("plan records how many pixels each changed screenshot moved", () => {
+  const artifact = fixture();
+  const repo = fixture();
+  writeFileSync(join(artifact, "moved.png"), png([0, 0, 0, 255]));
+  writeFileSync(join(repo, "moved.png"), png([255, 255, 255, 255]));
+  const result = plan(indexPngs(artifact), indexPngs(repo));
+  assert.equal(result.changed[0].diff, 1);
+  assert.deepEqual(result.changed[0].box, {
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+  });
 });
 
 test("an artifact name only accepts a numeric run id", () => {
