@@ -287,7 +287,6 @@
   color: var(--blue);
   box-shadow: var(--shadow);
 }
-.detail-neighbors,
 .detail-actions {
   display: flex;
   gap: 8px;
@@ -521,7 +520,6 @@
   .topbar-select.theme-select {
     display: none;
   }
-  .catalog-heading,
   .section-title-row,
   .detail-hero {
     display: grid;
@@ -1524,7 +1522,6 @@ body.gys-viewer-active {
   border: 1px solid var(--line);
   box-shadow: var(--shadow-xs);
 }
-.kidung-inline-toggle,
 .kidung-settings-switch {
   display: inline-flex;
   align-items: center;
@@ -1532,7 +1529,6 @@ body.gys-viewer-active {
   color: var(--muted);
   font-size: 0.6875rem;
 }
-.kidung-inline-toggle input,
 .kidung-settings-switch input {
   width: 16px;
   height: 16px;
@@ -2244,10 +2240,8 @@ body.gys-viewer-active {
     font-size: 0.875rem;
     line-height: 1.5;
   }
-  .page-intro-actions,
   .hymn-page-actions,
-  .detail-actions,
-  .faith-actions {
+  .detail-actions {
     width: 100%;
     gap: 6px;
   }

@@ -1024,7 +1024,6 @@
 .search-field input {
   width: 100%;
 }
-.catalog-heading,
 .section-title-row {
   display: flex;
   align-items: end;
@@ -1033,7 +1032,6 @@
   margin-bottom: 12px;
 }
 
-.catalog-heading small,
 .section-title-row > span {
   color: var(--muted);
 }

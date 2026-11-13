@@ -351,10 +351,8 @@
     min-height: 44px;
   }
 
-  .reader-action-group .reader-control-icon .control-copy,
   .hymn-detail-page .detail-neighbors .control-copy,
-  .asset-action-button .asset-action-copy,
-  .theme-pill-btn .pill-label {
+  .asset-action-button .asset-action-copy {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -366,7 +364,6 @@
     border: 0;
   }
 
-  .more-category-bar,
   .bible-page-header,
   .bible-reader,
   .reader-toolbar {
@@ -936,13 +933,11 @@ body:has(.home-page)::-webkit-scrollbar {
 }
 
 /* Capo & Transpose Button Groups */
-.transpose-btn-group,
 .capo-btn-group {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.transpose-btn-group button,
 .capo-btn-group button {
   min-width: 32px;
   height: 32px;
@@ -957,7 +952,6 @@ body:has(.home-page)::-webkit-scrollbar {
   cursor: pointer;
   transition: all var(--motion-fast) var(--ease-out);
 }
-.transpose-btn-group button:hover:not(:disabled),
 .capo-btn-group button:hover:not(:disabled) {
   border-color: var(--blue);
   color: var(--blue);
@@ -1518,7 +1512,6 @@ body:has(.home-page)::-webkit-scrollbar {
   flex-direction: column;
   gap: 6px;
 }
-.lyrics-tune-line,
 .lyrics-text-line {
   display: flex;
   align-items: center;
@@ -1741,7 +1734,6 @@ body:has(.home-page)::-webkit-scrollbar {
   .workspace,
   .navigation-shell,
   .nav-copy,
-  .sidebar-foot,
   .sidebar-collapse-toggle,
   .nav-active-indicator {
     transition: none !important;
@@ -1818,7 +1810,6 @@ body:has(.home-page)::-webkit-scrollbar {
   .nav-item,
   .nav-active-indicator,
   .nav-copy,
-  .sidebar-foot,
   .sidebar-collapse-toggle,
   .media-surface,
   .media-control,
@@ -1829,8 +1820,7 @@ body:has(.home-page)::-webkit-scrollbar {
   .global-search-result,
   .reader-context-button,
   .control-select-trigger,
-  .popover,
-  .menu-popover {
+  .popover {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;

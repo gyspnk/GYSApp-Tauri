@@ -2436,8 +2436,7 @@ body.is-resizing-bible {
   cursor: col-resize;
   user-select: none;
 }
-.chapter-scrubber,
-.split-ratio-control {
+.chapter-scrubber {
   display: inline-grid;
   grid-template-columns: auto minmax(90px, 150px) auto;
   align-items: center;
@@ -2445,12 +2444,10 @@ body.is-resizing-bible {
   color: var(--muted);
   font-size: 0.6875rem;
 }
-.chapter-scrubber input,
-.split-ratio-control input {
+.chapter-scrubber input {
   accent-color: var(--blue);
 }
-.chapter-scrubber output,
-.split-ratio-control output {
+.chapter-scrubber output {
   min-width: 22px;
   color: var(--ink);
   font-variant-numeric: tabular-nums;

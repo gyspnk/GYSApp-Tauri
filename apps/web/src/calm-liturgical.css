@@ -121,8 +121,7 @@ button.text-button {
    overlays, menus and persistent media that actually sit above the document. */
 .verse-panel,
 .continue-panel,
-.more-card,
-.kidung-card {
+.more-card {
   box-shadow: none;
 }
 
@@ -139,7 +138,6 @@ button.text-button {
 .verse-panel:hover,
 .continue-panel:hover,
 .more-card:hover,
-.kidung-card:hover,
 .primary-button:hover,
 .quiet-button:hover,
 .text-button:hover {
@@ -506,7 +504,6 @@ summary:focus-visible {
   .verse-panel:hover,
   .continue-panel:hover,
   .more-card:hover,
-  .kidung-card:hover,
   .hymn-page .pujian-item:hover {
     transform: none;
   }
@@ -522,7 +519,6 @@ summary:focus-visible {
   .global-search-result,
   .navigation-shell .nav-item,
   .more-card,
-  .kidung-card,
   .media-control,
   .hymn-page .pujian-item,
   .literature-reading-tools > summary::after {

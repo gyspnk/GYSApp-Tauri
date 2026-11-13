@@ -74,8 +74,7 @@
   background: var(--surface);
   border-radius: 12px;
 }
-.page:not(.hymn-page) > .page-intro,
-.faith-page-title {
+.page:not(.hymn-page) > .page-intro {
   padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
