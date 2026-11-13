@@ -25,6 +25,17 @@ export function PdfDetailLayer({
     let disposed = false,
       revision = 0,
       timer = 0;
+    /** Sharp tiles exist only while the page is shown larger than its raster.
+     * Comparing displayed CSS pixels with the raster's CSS size answers that
+     * immediately from the style, without waiting for a re-render. */
+    const needsDetail = () => {
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      const rasterWidth = canvas.width / dpr;
+      return (
+        Number(canvas.dataset.pdfWidth) > 0 &&
+        canvas.getBoundingClientRect().width > rasterWidth * 1.01
+      );
+    };
     let tasks: Array<ReturnType<PDFPageProxy["render"]>> = [];
     let detailPage: PDFPageProxy | undefined;
     const release = (canvases: HTMLCanvasElement[]) => {
@@ -115,6 +126,15 @@ export function PdfDetailLayer({
           release(tiles);
           return;
         }
+        // Rendering takes a beat; by the time the tiles land the preview may
+        // have gone back to device density (a zoom reset while they painted),
+        // and committing them then left sharp tiles parked over a page that no
+        // longer needs them. Re-check the reason they exist.
+        if (!needsDetail()) {
+          release(tiles);
+          clear();
+          return;
+        }
         clear();
         layer.dataset.pdfZoom = canvas.dataset.pdfZoom;
         layer.style.width = `${width}px`;
@@ -132,6 +152,14 @@ export function PdfDetailLayer({
       cancel();
       window.clearTimeout(timer);
       if (stage.dataset.pdfZooming === "true") return;
+      // At the fitted zoom the preview already covers the sheet, so the sharp
+      // tiles above it are stale. Clear them now instead of debouncing: a reset
+      // to 100% otherwise left them scaled over the page for a second or more
+      // while scroll and resize events kept restarting the timer.
+      if (!needsDetail()) {
+        clear();
+        return;
+      }
       timer = window.setTimeout(() => {
         void render();
       }, 120);

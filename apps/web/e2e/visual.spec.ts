@@ -399,14 +399,24 @@ for (const viewport of [viewports[0], viewports[2]]) {
     });
     if (viewport.width <= 599) {
       const title = page.locator(".hymn-pdf-viewer-title strong");
-      await expect
-        .poll(() =>
-          title.evaluate(
-            (element) =>
-              element.clientWidth / (element.parentElement?.clientWidth ?? 1),
-          ),
-        )
-        .toBeGreaterThan(0.85);
+      // The number now shares the row with the title (owner, 13 Nov), so the
+      // title alone no longer fills it: the pair has to, and the title must
+      // stay unclipped instead of being squeezed to make room.
+      const titlePair = () =>
+        title.evaluate((element) => {
+          const row = element.parentElement!;
+          const number = row.querySelector("small");
+          return (
+            (element.clientWidth + (number?.clientWidth ?? 0)) /
+            (row.clientWidth || 1)
+          );
+        });
+      await expect.poll(titlePair).toBeGreaterThan(0.85);
+      expect(
+        await title.evaluate(
+          (element) => element.scrollWidth - element.clientWidth,
+        ),
+      ).toBeLessThanOrEqual(1);
       await expect
         .poll(() =>
           title.evaluate((element) =>

@@ -6605,8 +6605,10 @@ body:has(.hymn-detail-page.is-text-viewer)
   border-color: transparent;
   color: var(--blue);
 }
+/* A hairline around the sheet, painted as a shadow so it cannot change the
+   canvas box that the PDF fit maths measures. */
 .hymn-detail-page.is-pdf-viewer .gys-pdf-overlay .pdf-page-frame canvas {
-  border: 1px solid var(--line);
+  box-shadow: 0 0 0 1px var(--line);
 }
 /* The score dock is the text reader's floating footer: one centred pill with
    the same border, radius and shadow, instead of a page-wide tinted bar.
@@ -6678,7 +6680,10 @@ body:has(.hymn-detail-page.is-text-viewer)
     font-size: 0.8125rem;
     line-height: 1.3;
   }
+  /* The text header shows the title alone on a phone; the score number rides
+     beside it only when there is room, which at 390 px there is not — keeping
+     it forced the title into an ellipsis. */
   .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title small {
-    font-size: 0.6875rem;
+    display: none;
   }
 }
