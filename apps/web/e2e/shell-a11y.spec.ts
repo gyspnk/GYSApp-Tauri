@@ -580,6 +580,45 @@ test("the delete dialog paragraph clears 4.5:1 in every shell theme", async ({
   }
 });
 
+const APPEARANCE_THEMES = ["dark", "amoled", "sepia"] as const;
+
+test("the appearance panel is axe clean in the dark, amoled, and sepia shells", async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+
+  for (const theme of APPEARANCE_THEMES) {
+    await test.step(theme, async () => {
+      await page.addInitScript((value: string) => {
+        localStorage.setItem(
+          "gys-shell-settings-v1",
+          JSON.stringify({
+            version: 1,
+            locale: "id",
+            theme: value,
+            onboarded: true,
+          }),
+        );
+      }, theme);
+      await page.goto("/GYSApp-Tauri/lainnya?section=appearance");
+      await expect(page.locator(".more-page")).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+
+      const appearance = page.locator('[data-setting="appearance"]');
+      // `?section=appearance` already opens the row; clicking again would close it.
+      const open = await appearance.evaluate(
+        (node) => (node as HTMLDetailsElement).open,
+      );
+      if (!open) await appearance.locator("> summary").click();
+      await expect(appearance.locator(".appearance-card")).toBeVisible();
+
+      await expectNoAxeViolations(page);
+    });
+  }
+});
+
 test("the collection chip's aria-controls resolves to its listbox", async ({
   page,
 }) => {
