@@ -50,13 +50,7 @@
   cursor: not-allowed;
 }
 /* e-GYS login tracking line on the account card. */
-.egys-login-trace {
-  display: block;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 0.6875rem;
-  line-height: 1.5;
-}
+
 /* e-GYS profile check state: same visual language as loading-panel. */
 .account-loading-box {
   display: grid;

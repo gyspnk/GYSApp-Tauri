@@ -72,13 +72,6 @@
 
 /* Density and font are plain rows in the appearance group now; only the
    root-level tokens and the font family switch remain here. */
-.appearance-font-preview {
-  margin: 0;
-  padding: 10px 2px 2px;
-  color: var(--muted);
-  font-size: 0.9375rem;
-  letter-spacing: 0.02em;
-}
 
 .appearance-font-preview.is-hymnal {
   font-family: var(--font-reading);

@@ -40,7 +40,7 @@ for (const width of [320, 1440]) {
       await expect(input).toBeFocused();
       await input.fill(copy.query);
       const result = dialog
-        .locator(".global-search-result:has(.is-faith)")
+        .locator('.global-search-result[data-kind="faith"]')
         .first();
       await expect(result.locator("strong")).toHaveText(copy.topic);
       await expect(result.locator(".search-result-mark svg")).toHaveCount(1);

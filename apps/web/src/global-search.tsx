@@ -533,12 +533,10 @@ export function GlobalSearch({
                 <button
                   type="button"
                   className="global-search-result"
+                  data-kind={entry.kind}
                   onClick={() => openResult(entry)}
                 >
-                  <span
-                    className={`search-result-mark is-${entry.kind}`}
-                    aria-hidden="true"
-                  >
+                  <span className="search-result-mark" aria-hidden="true">
                     <Icon name={resultIcons[entry.kind]} size={18} />
                   </span>
                   <span>
