@@ -1,4 +1,6 @@
 /** Pure classification for the inner loop; kept separate so it can be tested. */
+import { readdirSync } from "node:fs";
+import path from "node:path";
 
 const isDocs = (file) =>
   file.startsWith("docs/") || file.endsWith(".md") || file === "CHANGELOG.md";
@@ -98,3 +100,26 @@ export function formatFailure(rows, { jobs = 4, width = 200 } = {}) {
 }
 
 export { isBuildConfig, isDocs };
+
+/**
+ * Every `error-context.md` a downloaded failure artifact left behind. Playwright
+ * writes one per failing test, nested a directory or two deep, and an expired
+ * artifact leaves nothing — both cases must stay quiet.
+ */
+export function discoverErrorContexts(directory, { depth = 3 } = {}) {
+  const found = [];
+  let entries;
+  try {
+    entries = readdirSync(directory, { withFileTypes: true });
+  } catch {
+    return found;
+  }
+  if (depth <= 0) return found;
+  for (const entry of entries) {
+    const full = path.join(directory, entry.name);
+    if (entry.isDirectory())
+      found.push(...discoverErrorContexts(full, { depth: depth - 1 }));
+    else if (entry.name === "error-context.md") found.push(full);
+  }
+  return found;
+}

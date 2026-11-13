@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import {
   classifyChanges,
+  discoverErrorContexts,
   formatFailure,
   summarizeFailure,
 } from "./test-loop-core.mjs";
@@ -155,4 +159,16 @@ test("the digest stays short enough to read in a terminal", () => {
   assert.equal(heading, "✗ verify");
   assert.ok(line.endsWith("…"));
   assert.ok(line.length < 40, line);
+});
+
+test("finds the error context a failure artifact ships", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "verify-"));
+  const nested = path.join(root, "kidung-entrance", "retry1");
+  mkdirSync(nested, { recursive: true });
+  writeFileSync(path.join(nested, "error-context.md"), "# Error details");
+  writeFileSync(path.join(root, "trace.zip"), "not a context");
+  assert.deepEqual(discoverErrorContexts(root), [
+    path.join(nested, "error-context.md"),
+  ]);
+  assert.deepEqual(discoverErrorContexts(path.join(root, "missing")), []);
 });

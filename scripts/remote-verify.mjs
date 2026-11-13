@@ -19,6 +19,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   classifyChanges,
+  discoverErrorContexts,
   formatFailure,
   summarizeFailure,
 } from "./test-loop-core.mjs";
@@ -185,6 +186,44 @@ function explainFailure(runId) {
   for (const line of formatFailure(rows)) console.log(`  ${line}`);
   if (rows.length > 4)
     console.log(`  … ${rows.length - 4} more failing job(s) in the run URL`);
+  if (rows.length) downloadFailureArtifacts(runId);
+}
+
+/**
+ * Pull the failure bundles a red run leaves behind (Playwright writes an
+ * `error-context.md` per failing test) so the diagnosis needs no second `gh`
+ * call. Artifacts expire, and a run without failures has none, so every step
+ * here is allowed to fail quietly.
+ */
+function downloadFailureArtifacts(runId) {
+  const listed = gh(
+    "api",
+    `repos/{owner}/{repo}/actions/runs/${runId}/artifacts`,
+    "--jq",
+    '.artifacts[] | select(.name | test("failures")) | .name',
+  );
+  const names = listed.out
+    .split("\n")
+    .map((line) => line.trim().replace(/^"|"$/g, ""))
+    .filter(Boolean);
+  if (listed.code !== 0 || !names.length) return;
+  const into = path.join(rootDir, ".verify", String(runId));
+  const saved = [];
+  for (const name of names) {
+    const result = spawnSync(
+      "gh",
+      ["run", "download", String(runId), "-n", name, "-D", into],
+      { cwd: rootDir, encoding: "utf8" },
+    );
+    if (result.status === 0) saved.push(name);
+  }
+  if (!saved.length) return;
+  const context = discoverErrorContexts(into);
+  console.log(
+    `  ↓ artifacts in ${path.relative(rootDir, into)} (${saved.length})`,
+  );
+  for (const file of context.slice(0, 3))
+    console.log(`    ${path.relative(rootDir, file)}`);
 }
 
 function waitFor(runId) {

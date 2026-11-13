@@ -36,3 +36,4 @@ apps/web/ui-screenshots/
 
 # Throwaway browser probes for a single measurement
 apps/web/probe*.mjs
+.verify/
