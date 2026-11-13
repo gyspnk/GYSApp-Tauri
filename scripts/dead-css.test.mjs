@@ -4,6 +4,7 @@ import {
   classesInCss,
   deadClasses,
   dynamicPrefixes,
+  mentionedNames,
   mentionsIn,
 } from "./dead-css.mjs";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
@@ -74,4 +75,21 @@ test("keeps classes a template literal can still complete", () => {
     ),
     ["is-blue", "is-dragging"],
   );
+});
+
+test("mentionedNames finds substrings the way includes did", () => {
+  const text = 'className="pujian-item-main is-faith"';
+  const alive = mentionedNames(text, [
+    "pujian-item",
+    "pujian-item-main",
+    "is-faith",
+    "is-hope",
+  ]);
+  // A class name inside a longer identifier still counts: `includes` semantics
+  // are what kept `pujian-item` alive before the Buffer switch.
+  assert.deepEqual([...alive].sort(), [
+    "is-faith",
+    "pujian-item",
+    "pujian-item-main",
+  ]);
 });

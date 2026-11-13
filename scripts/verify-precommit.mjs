@@ -46,5 +46,12 @@ for (const path of formatted) {
 
 if (staged.some((path) => path.startsWith("docs/") || path === "README.md"))
   run("pnpm", ["verify:docs"]);
+
+// A stylesheet can lose its last user without failing typecheck, and the
+// hosted `verify` job only finds out minutes later (round 93 lost a full run to
+// three orphan rules). `git ls-files` reads the index, so a newly staged
+// component still counts as a user here.
+if (staged.some((path) => path.endsWith(".css") && path.includes("apps/web/")))
+  run("node", ["scripts/dead-css.mjs", "--check"]);
 // Generated-asset provenance belongs to the hosted verify job: the policy keeps
 // heavy checks off the device, and the script's guard refuses to run here.
