@@ -306,3 +306,18 @@ Aturan `.kidung-rail-list`/`.kidung-rail-row` dipindah keluar dari media query 1
 | Gerak          | Tidak ada animasi panel; `prefers-reduced-motion` tidak mengubah apa pun karena tidak ada transisi.                                           |
 
 Alasan: panel modal membuat pilihan yang sama terlihat seperti jenis pengaturan lain, dan di 390 px ia menutupi hampir seluruh layar padahal pengaturan lain hanya membuka satu baris. `apps/web/src/ui-preferences-panel.tsx` dihapus; penggantinya `apps/web/src/ui-preferences-rows.tsx`. Kontrak: `apps/web/e2e/appearance-preferences.spec.ts` (12 tes) dan audit axe di `apps/web/e2e/accessibility.spec.ts`.
+
+### Kidung: mode partitur memakai rangka mode teks (putaran 86)
+
+| Bagian    | Mode teks                                           | Mode partitur (sekarang)                               |
+| --------- | --------------------------------------------------- | ------------------------------------------------------ |
+| Permukaan | `--surface` (putih/kanvas tema)                     | sama: overlay, stage, dan chrome memakai `--surface`   |
+| Kepala    | back 32/44 px, judul `clamp(17px, 2.2vw, 22px)`/600 | angka yang sama, satu variabel `--hymn-chrome-control` |
+| Tombol    | 32 px (mouse) / 44 px (sentuh), radius 12 px        | sama; tombol Aa tidak lagi bertanda `--blue-soft`      |
+| Judul     | `h1` 14.6 px (390) / 22 px (1440), tanpa nomor      | `strong` 14.6/22 px, nomor `small` sebaris di kanan    |
+| Dok       | pil putih melayang, radius 999/16 px                | pil yang sama, lebar `min(760px, 100%)`, bayangan sama |
+| Kertas    | halaman putih                                       | lembar skor putih + garis 1 px `--line`                |
+
+Alasan: sampai putaran 85 mode partitur adalah aplikasi lain — kepala biru-muda seluas layar, judul tebal 14 px, tombol Aa 56 px bertanda `--blue-soft`, dan dok selebar layar. Orang yang menekan "Partitur" melihat dokumen yang sama; yang berubah hanya isinya. Variabel `--hymn-chrome-control` kini dideklarasikan di `.hymn-detail-page`, bukan di `.is-text-viewer`, sehingga kedua mode membaca satu angka.
+
+Catatan pelaksana: `apps/web/e2e/score-seamless.spec.ts` mengubah ambang tombolnya menjadi `matchMedia("(pointer: coarse)") ? 44 : 32` — aturan 44 px tetap berlaku untuk sentuh, sedangkan mouse memakai 32 px seperti toolbar teks. Kontrak paritas `apps/web/e2e/kidung-partitur-parity.spec.ts` kini juga membandingkan ukuran kontrol, ukuran/potret huruf judul, warna permukaan, dan bentuk dok.

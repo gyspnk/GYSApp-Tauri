@@ -5060,12 +5060,14 @@ body:has(.hymn-detail-page.is-text-viewer)
   }
 }
 
-/* One compact reader header; touch and mouse keep distinct target sizes. */
-.hymn-detail-page.is-text-viewer {
+/* One compact reader header; touch and mouse keep distinct target sizes.
+   Both viewer modes read this one variable, so the header never changes
+   size when the owner switches between text and score. */
+.hymn-detail-page {
   --hymn-chrome-control: 32px;
 }
 @media (pointer: coarse) {
-  .hymn-detail-page.is-text-viewer {
+  .hymn-detail-page {
     --hymn-chrome-control: 44px;
   }
 }
@@ -6561,4 +6563,122 @@ body:has(.hymn-detail-page.is-text-viewer)
   .hymn-more-actions-summary,
 .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome .viewer-chrome-button {
   border-radius: 12px;
+}
+
+/* MODE PARTITUR SETARA MODE TEKS (owner, 13 Nov): the score reader keeps the
+   text reader's surface, title scale and control colour, so switching modes
+   changes the document, not the frame around it. */
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay,
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay .pdf-stage {
+  background: var(--surface);
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome {
+  background: var(--surface);
+  padding-inline: var(--page-gutter);
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title strong {
+  display: block;
+  min-width: 0;
+  font-family: var(--font-reading);
+  font-size: clamp(1.0625rem, 2.2vw, 1.375rem);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: unset;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title small {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-text-toggle.reader-mode-button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--blue);
+}
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay .pdf-page-frame canvas {
+  border: 1px solid var(--line);
+}
+/* The score dock is the text reader's floating footer: one centred pill with
+   the same border, radius and shadow, instead of a page-wide tinted bar.
+   Seven classes: the `:has()` reader rule at 3821 counts as six. */
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .gys-pdf-overlay
+  .pdf-reader-hymn
+  .pdf-toolbar {
+  width: min(100% - 24px, 24rem);
+  margin: 8px auto max(8px, env(safe-area-inset-bottom));
+  padding: 4px;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+@media (min-width: 900px) {
+  .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+    .gys-pdf-overlay
+    .pdf-reader-hymn
+    .pdf-toolbar {
+    width: min(760px, 100% - 24px);
+    max-width: none;
+    margin: 10px auto max(12px, env(safe-area-inset-bottom));
+    padding: 4px 14px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-xs);
+  }
+}
+
+/* The score header is the text header: same control size, same rhythm.
+   Six classes to tie with the reader rule above and win on source order. */
+.app-frame.is-reader-route
+  .hymn-detail-page.is-pdf-viewer
+  .gys-pdf-overlay
+  .hymn-pdf-viewer-chrome,
+.app-frame.is-reader-route
+  .hymn-detail-page.is-pdf-viewer
+  .gys-pdf-overlay
+  .hymn-pdf-viewer-chrome.is-no-music {
+  grid-template-columns: var(--hymn-chrome-control) minmax(0, 1fr) repeat(
+      2,
+      var(--hymn-chrome-control)
+    );
+  gap: 4px;
+  padding: calc(var(--reader-top-gap) + 4px) calc(var(--page-gutter) + 8px) 4px;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome .viewer-chrome-button,
+.hymn-detail-page.is-pdf-viewer
+  .hymn-pdf-viewer-chrome
+  .hymn-pdf-text-toggle.reader-mode-button {
+  width: var(--hymn-chrome-control);
+  height: var(--hymn-chrome-control);
+  min-width: var(--hymn-chrome-control);
+  min-height: var(--hymn-chrome-control);
+  border-radius: 12px;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome svg {
+  width: 18px;
+  height: 18px;
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-text-toggle > span {
+  font-size: 0.9375rem;
+}
+@media (max-width: 600px) {
+  .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title strong {
+    font-size: 0.8125rem;
+    line-height: 1.3;
+  }
+  .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title small {
+    font-size: 0.6875rem;
+  }
 }

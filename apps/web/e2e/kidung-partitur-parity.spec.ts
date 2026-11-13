@@ -30,6 +30,27 @@ for (const width of [390, 1440]) {
       .evaluate((node) => getComputedStyle(node).borderRadius);
     expect(textRadius).toBe("12px");
 
+    // Capture the text reader's numbers while it is still on screen: the score
+    // replaces the whole subtree, so these cannot be read after the click.
+    const textControl = await page
+      .locator(".hymn-text-toolbar .hymn-partitur-toggle")
+      .evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        return { w: Math.round(box.width), h: Math.round(box.height) };
+      });
+    const textType = await title.evaluate((node) => {
+      const cs = getComputedStyle(node);
+      return { size: cs.fontSize, weight: cs.fontWeight };
+    });
+    const footer = await page.locator(".hymn-text-footer").evaluate((node) => {
+      const cs = getComputedStyle(node);
+      return {
+        background: cs.backgroundColor,
+        border: cs.borderTopColor,
+        radius: cs.borderRadius,
+      };
+    });
+
     await page.getByRole("button", { name: "Partitur", exact: true }).click();
     const chrome = page.locator(".hymn-pdf-viewer-chrome");
     await expect(chrome).toBeVisible({ timeout: 30_000 });
@@ -52,5 +73,57 @@ for (const width of [390, 1440]) {
     // The way back is named like the way in: no "PDF" anywhere.
     const labels = await chrome.locator("button").allTextContents();
     expect(labels.join(" ")).not.toMatch(/PDF/);
+
+    // Same controls, same type, same paper: the header is one component that
+    // happens to sit in two viewers, so every number below has to match.
+    const scoreControl = await chrome
+      .locator(".hymn-pdf-text-toggle")
+      .evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        return { w: Math.round(box.width), h: Math.round(box.height) };
+      });
+    expect(Math.abs(scoreControl.h - textControl.h)).toBeLessThanOrEqual(1);
+
+    const scoreType = await chromeTitle.evaluate((node) => {
+      const cs = getComputedStyle(node);
+      return { size: cs.fontSize, weight: cs.fontWeight };
+    });
+    expect(scoreType).toEqual(textType);
+
+    // The score sheet sits on the reader's own paper, not on a tinted band.
+    const paper = await page.evaluate(() => {
+      const stage = document.querySelector<HTMLElement>(
+        ".gys-pdf-overlay .pdf-stage",
+      );
+      const probe = document.createElement("div");
+      probe.style.background = "var(--surface)";
+      document.body.append(probe);
+      const surface = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return {
+        surface,
+        stage: stage ? getComputedStyle(stage).backgroundColor : null,
+      };
+    });
+    expect(paper.stage).toBe(paper.surface);
+
+    // The dock is the text footer: one floating pill, same border and radius.
+    const dock = await page
+      .locator(".gys-pdf-overlay .pdf-toolbar")
+      .evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        const cs = getComputedStyle(node);
+        return {
+          x: Math.round(box.x),
+          right: Math.round(window.innerWidth - box.right),
+          radius: cs.borderRadius,
+          border: cs.borderTopColor,
+          background: cs.backgroundColor,
+        };
+      });
+    expect(dock.background).toBe(footer.background);
+    expect(dock.border).toBe(footer.border);
+    expect(dock.radius).toBe(footer.radius);
+    expect(Math.abs(dock.x - dock.right)).toBeLessThanOrEqual(1);
   });
 }

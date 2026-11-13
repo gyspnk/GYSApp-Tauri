@@ -81,13 +81,18 @@ for (const width of [320, 390, 768, 1440]) {
       (width >= 960 ? 72 : 64) * textScale + readerGap,
     );
     await expect(header.locator("button:visible")).toHaveCount(2);
+    // The score chrome is the text chrome (owner, 13 Nov), so it follows the
+    // same pointer rule as the reader header: 32 px on a mouse, 44 on touch.
+    const minimumTarget = await page.evaluate(() =>
+      matchMedia("(pointer: coarse)").matches ? 44 : 32,
+    );
     for (const button of await page
       .locator(".gys-pdf-overlay")
       .locator("button:visible, summary:visible")
       .all()) {
       const box = (await button.boundingBox())!;
-      expect(box.width).toBeGreaterThanOrEqual(44);
-      expect(box.height).toBeGreaterThanOrEqual(44);
+      expect(box.width).toBeGreaterThanOrEqual(minimumTarget);
+      expect(box.height).toBeGreaterThanOrEqual(minimumTarget);
       const svg = button.locator("svg").first();
       if (await svg.count()) {
         const icon = (await svg.boundingBox())!;
