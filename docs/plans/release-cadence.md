@@ -158,3 +158,5 @@ Rilis pertama gagal empat kali, semuanya di jalur rilis, bukan di aplikasi:
 4. **APK dari commit lain.** Draf yang dipakai ulang dibangun dari commit sebelumnya; pemeriksaan provenance sekarang membandingkan kedua commit dan hanya menerima bila semua berkas di antaranya ada di `.github/` atau `docs/`.
 
 Smoke Android juga menunggu judul "JELAJAHI KOLEKSI" yang hilang saat halaman pengaturan diringkas; sekarang memakai judul grup pertama ("AKUN & TAMPILAN"), yang tetap membesar pada `font_scale=2.0`.
+
+Dua koreksi setelah percobaan pertama (13 Nov): `scripts/release-due.mjs` memakai **kode keluar** — `0` rilis sekarang, `2` tunggu putaran berikutnya, `1` keputusannya sendiri rusak — karena `set -e` pada workflow memperlakukan "tunggu" sebagai kegagalan dan cron setiap 6 jam akan merah terus. Cabang "jumlah commit tidak diketahui" juga wajib membawa `turn` dari `nextDueTurn`, sebab gerbang rilis menolak nomor putaran kosong; workflow menghentikan dirinya bila `turn` kosong daripada mengirim dispatch tanpa nomor.
