@@ -1037,13 +1037,16 @@ kidung-row-menu > summary:focus-visible,
   color: var(--blue);
   pointer-events: none;
 }
+/* One search control across the four reading surfaces: the same 48 px height,
+   the same --line border and --surface fill as Literatur, Suara and Iman. The
+   blue tint and the 44 px height made this field read as a different widget. */
 .hymn-page .hymn-search-field input {
   width: 100%;
   min-height: 48px;
   padding: 10px 14px 10px 44px;
-  border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--line));
+  border: 1px solid var(--line);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--blue) 3%, var(--surface));
+  background: var(--surface);
   box-shadow: none;
   color: var(--ink);
   font-size: 0.875rem;
@@ -1413,7 +1416,7 @@ kidung-row-menu > summary:focus-visible,
   color: #fff;
 }
 .hymn-page .hymn-search-field input {
-  min-height: 44px;
+  min-height: 48px;
   border-radius: 12px;
 }
 @media (pointer: coarse) {

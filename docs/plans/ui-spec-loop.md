@@ -355,6 +355,17 @@ Kontrak `apps/web/e2e/kidung-hymnal-window.spec.ts` menjaga aturan itu tanpa per
 
 Kontrak `page-titles.spec.ts` mengukur ketiga rute di 390 dan 1440: satu `h1` terlihat per rute, ukuran dan berat huruf sama, tepi atas dan tepi kiri berselisih ≤1 px. Kunci i18n `suara.backHome` dihapus dari tiga bahasa karena tidak ada lagi yang memakainya (`i18n.test.ts` gagal pada kunci mati).
 
+### Kidung: kolom pencarian ikut keluarga yang sama (putaran 99)
+
+| Butir       | Sebelum                           | Sesudah                                                                                                     |
+| ----------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Tinggi      | 44 px                             | 48 px                                                                                                       |
+| Border      | `color-mix(--blue 16%, --line)`   | `--line`                                                                                                    |
+| Isi         | `color-mix(--blue 3%, --surface)` | `--surface`                                                                                                 |
+| Radius      | 12 px                             | 12 px (tetap)                                                                                               |
+| Ukuran teks | 0.875rem                          | 0.875rem (tetap)                                                                                            |
+| Kontrak     | —                                 | `search-field-family.spec.ts` membandingkan tinggi, radius, border, isi, dan ukuran teks di empat permukaan |
+
 ### Iman: kolom pencarian sama dengan dua katalog lain (putaran 98)
 
 | Butir            | Sebelum                         | Sesudah                                                                                        |
