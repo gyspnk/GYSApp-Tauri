@@ -2387,7 +2387,6 @@ body.gys-viewer-active {
   .quiet-button,
   .reader-toolbar .quiet-button,
   .reader-pagination .quiet-button,
-  .hymn-detail-page .detail-neighbors .quiet-button,
   .primary-button {
     min-height: 44px;
     max-width: 100%;
@@ -2459,7 +2458,6 @@ body.gys-viewer-active {
   .hymn-page-heading h1 {
     font-size: 1.5rem;
   }
-  .bible-page-header .page-intro-actions,
   .hymn-page-header .hymn-catalog-controls {
     justify-content: flex-start;
     gap: 8px;

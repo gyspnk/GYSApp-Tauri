@@ -6,7 +6,6 @@
 .section-title-row .text-button,
 .pack-manager-actions .text-button,
 .more-card-heading .text-button,
-.version-actions .text-button,
 button.text-button {
   min-height: 40px;
   display: inline-flex;
@@ -25,12 +24,7 @@ button.text-button {
    to acquire with touch, pen, trackpad, or motor-impaired pointer input. */
 /* Link-style text actions are 40 px tall by default; coarse pointers need 44. */
 @media (hover: none), (pointer: coarse) {
-  :is(
-      .section-title-row,
-      .pack-manager-actions,
-      .more-card-heading,
-      .version-actions
-    )
+  :is(.section-title-row, .pack-manager-actions, .more-card-heading)
     .text-button,
   a.text-button,
   button.text-button {
@@ -180,8 +174,7 @@ button.text-button {
 @media (hover: none), (pointer: coarse) {
   .verse-panel:hover,
   .continue-panel:hover,
-  .more-card:hover,
-  .kidung-card:hover {
+  .more-card:hover {
     transform: none;
   }
 

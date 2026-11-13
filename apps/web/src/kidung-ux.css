@@ -224,8 +224,7 @@
   color: var(--blue);
 }
 
-.hymn-detail-page .hymn-mode-button,
-.hymn-detail-page .detail-neighbor-button {
+.hymn-detail-page .hymn-mode-button {
   min-height: var(--control-hit, 44px);
 }
 

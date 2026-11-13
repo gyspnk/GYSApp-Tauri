@@ -485,9 +485,6 @@
 
 /* Hide secondary items earlier (was 680) to prevent desktop crop — keep only search + hamburger */
 @media (max-width: 860px) {
-  .reader-context-actions > .reader-typography-wrapper,
-  .reader-context-actions > .reader-split-btn,
-  .reader-context-actions > .reader-sync-btn,
   .reader-context-actions > .reader-speech-btn,
   .reader-context-actions > .speech-settings-toggle {
     display: none !important;

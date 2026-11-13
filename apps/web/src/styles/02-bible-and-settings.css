@@ -2074,9 +2074,7 @@
 }
 
 .hymn-more-actions[open] > .hymn-more-actions-panel,
-.hymn-reader-settings[open] > .song-controls,
-.speech-controls.is-open,
-.reader-action-group.is-open .reader-secondary-action {
+.hymn-reader-settings[open] > .song-controls {
   animation: selector-in 180ms var(--ease-out);
 }
 .media-meta small,

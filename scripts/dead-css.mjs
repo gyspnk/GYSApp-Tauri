@@ -136,4 +136,6 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
     }
     console.log(`\n${dead.length} class selector(s) with no markup mention.`);
   }
+  // `--check` fails the build so a renamed class cannot leave rules behind.
+  if (process.argv.includes("--check") && dead.length > 0) process.exit(1);
 }

@@ -176,6 +176,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify:generated
       - run: pnpm verify:docs
+      # A renamed class must not leave its rules behind.
+      - run: pnpm css:dead --check
       - name: Check formatting with actionable diffs
         run: |
           if ! pnpm format:check; then

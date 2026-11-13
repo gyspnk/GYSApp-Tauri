@@ -440,10 +440,6 @@ summary:focus-visible {
   .navigation-shell .nav-item::after {
     display: none;
   }
-
-  .navigation-shell .sidebar-foot {
-    display: none !important;
-  }
 }
 
 /* Phone navigation stays compact, but its labels should remain readable. */

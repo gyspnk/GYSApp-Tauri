@@ -78,7 +78,7 @@
   padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
-.page:not(.hymn-page) :is(.page-intro h1, .faith-page-title) {
+.page:not(.hymn-page) .page-intro h1 {
   font-family: inherit;
   font-size: clamp(1.75rem, 2.5vw, 2.25rem);
   font-weight: 650;
@@ -503,7 +503,7 @@
   min-width: 0;
 }
 /* Real checkbox semantics, with a clear switch track and moving thumb. */
-:is(.kidung-settings-switch, .kidung-inline-toggle) > input[type="checkbox"] {
+.kidung-settings-switch > input[type="checkbox"] {
   appearance: none;
   position: relative;
   flex: 0 0 36px;
@@ -520,7 +520,7 @@
     background-color 180ms ease,
     border-color 180ms ease;
 }
-:is(.kidung-settings-switch, .kidung-inline-toggle) > input::before {
+.kidung-settings-switch > input::before {
   content: "";
   display: block;
   width: 14px;
@@ -530,29 +530,29 @@
   box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 20%, transparent);
   transition: transform 200ms var(--ease-out);
 }
-:is(.kidung-settings-switch, .kidung-inline-toggle) > input:checked {
+.kidung-settings-switch > input:checked {
   border-color: var(--blue);
   background: var(--blue);
 }
-:is(.kidung-settings-switch, .kidung-inline-toggle) > input:checked::before {
+.kidung-settings-switch > input:checked::before {
   background: var(--on-accent);
   transform: translateX(14px);
 }
-:is(.kidung-settings-switch, .kidung-inline-toggle) > input:focus-visible {
+.kidung-settings-switch > input:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 3px;
 }
 @media (forced-colors: active) {
-  :is(.kidung-settings-switch, .kidung-inline-toggle) > input[type="checkbox"] {
+  .kidung-settings-switch > input[type="checkbox"] {
     appearance: auto;
   }
-  :is(.kidung-settings-switch, .kidung-inline-toggle) > input::before {
+  .kidung-settings-switch > input::before {
     display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(.kidung-settings-switch, .kidung-inline-toggle) > input,
-  :is(.kidung-settings-switch, .kidung-inline-toggle) > input::before {
+  .kidung-settings-switch > input,
+  .kidung-settings-switch > input::before {
     transition: none;
   }
 }
@@ -1906,14 +1906,7 @@
   animation: none;
 }
 @media (prefers-reduced-motion: no-preference) {
-  :is(
-    .reader-hamburger-drawer,
-    .reader-typography-popover,
-    .media-key-dropdown,
-    .media-tempo-popover,
-    .lyrics-key-dropdown,
-    .pdf-key-dropdown
-  ) {
+  :is(.reader-hamburger-drawer, .media-tempo-popover, .pdf-key-dropdown) {
     animation: shared-popover-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
@@ -4386,7 +4379,7 @@ body:has(.hymn-detail-page.is-text-viewer)
     min-height: 48px;
   }
 }
-.hymn-music-settings :is(.transpose-btn-group, .capo-btn-group),
+.hymn-music-settings .capo-btn-group,
 .pdf-transpose-btns {
   display: flex;
   align-items: center;
@@ -4396,7 +4389,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   border-radius: 12px;
   background: var(--surface-soft);
 }
-:is(.transpose-btn-group, .capo-btn-group, .pdf-transpose-btns) button {
+:is(.capo-btn-group, .pdf-transpose-btns) button {
   min-width: 44px;
   min-height: 44px;
   padding: 0;
@@ -4404,7 +4397,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   place-items: center;
   border-radius: 10px;
 }
-:is(.transpose-btn-group, .capo-btn-group, .pdf-transpose-btns) strong {
+:is(.capo-btn-group, .pdf-transpose-btns) strong {
   min-width: 28px;
   flex: 1;
   text-align: center;
@@ -5183,9 +5176,7 @@ body:has(.hymn-detail-page.is-text-viewer)
     :is(
       .lyrics-hdr-btn,
       .lyrics-ctrl-btn,
-      .lyrics-instrument-select,
-      .lyrics-key-select .control-select-trigger,
-      .lyrics-tempo-input
+      .lyrics-key-select .control-select-trigger
     ) {
     height: 32px;
     min-height: 32px;
@@ -5692,7 +5683,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 /* Inside the reader sheet every control stands on its own: the sheet is the
    only card, so a segmented group must not paint a second frame inside it. */
 .hymn-more-actions-panel .hymn-scope-pill-group,
-.hymn-music-settings :is(.transpose-btn-group, .capo-btn-group) {
+.hymn-music-settings .capo-btn-group {
   padding: 0;
   gap: 6px;
   border: 0;

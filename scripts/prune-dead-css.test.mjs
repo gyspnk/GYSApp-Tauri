@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { pruneCss, selectorParts } from "./prune-dead-css.mjs";
+import { pruneCss, selectorParts, shrinkPart } from "./prune-dead-css.mjs";
 
 const CSS = `/* .ghost-in-comment stays because comments are blanked, not parsed */
 .alive { color: red; }
@@ -41,4 +41,30 @@ test("does not split commas inside :is(), :where() or attribute values", () => {
 test("is idempotent", () => {
   const once = pruneCss(CSS, new Set(["ghost"]));
   assert.equal(pruneCss(once, new Set(["ghost"])), once);
+});
+
+test("shrinks a functional pseudo-class argument list", () => {
+  const dead = new Set(["ghost", "wraith"]);
+  assert.equal(shrinkPart(".live:is(.ghost, .other)", dead), ".live.other");
+  assert.equal(
+    shrinkPart(".live :where(.wraith, .other):not(.ghost)", dead),
+    ".live :where(.other)",
+  );
+  assert.equal(shrinkPart(".live:not(.ghost)", dead), ".live");
+  assert.equal(shrinkPart(".live:has(.ghost)", dead), ".live");
+});
+
+test("drops a selector whose functional pseudo-class empties", () => {
+  const dead = new Set(["ghost"]);
+  assert.equal(shrinkPart(".live:is(.ghost)", dead), null);
+  const css = ".live:is(.ghost) { color: red; }\n.other { color: blue; }\n";
+  assert.equal(pruneCss(css, dead).trim(), ".other { color: blue; }");
+});
+
+test("recurses into nested functional pseudo-classes", () => {
+  const dead = new Set(["ghost"]);
+  assert.equal(
+    shrinkPart(".live:is(.other, :where(.ghost, .third))", dead),
+    ".live:is(.other, :where(.third))",
+  );
 });

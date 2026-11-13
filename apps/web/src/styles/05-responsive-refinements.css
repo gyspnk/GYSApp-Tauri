@@ -351,7 +351,6 @@
     min-height: 44px;
   }
 
-  .hymn-detail-page .detail-neighbors .control-copy,
   .asset-action-button .asset-action-copy {
     position: absolute;
     width: 1px;
@@ -1789,8 +1788,7 @@ body:has(.home-page)::-webkit-scrollbar {
    Keep accessible names on links while hiding visual copy that otherwise
    overflows the 80px rail into reader content. */
 @media (min-width: 600px) and (max-width: 959px) {
-  .navigation-shell .nav-copy,
-  .navigation-shell .sidebar-foot {
+  .navigation-shell .nav-copy {
     display: none !important;
   }
   .navigation-shell .nav-item {
