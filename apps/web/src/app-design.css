@@ -1339,9 +1339,15 @@
   grid-column: 1 / -1;
 }
 .literature-toolbar > .search-field {
-  grid-column: auto;
+  grid-column: 1;
+  grid-row: 1;
 }
-.literature-toolbar .control-select {
+/* The chips span both columns, so without an explicit cell the sort select
+   auto-places into the next free row and stretches to the full first column
+   (measured 980 px at 1440 instead of the 180 px track). */
+.literature-toolbar > .control-select {
+  grid-column: 2;
+  grid-row: 1;
   min-width: 0;
 }
 .literature-toolbar .control-select-trigger {
@@ -1364,8 +1370,11 @@
   }
   .literature-toolbar > .search-field {
     grid-column: 1 / -1;
+    grid-row: auto;
   }
   .literature-toolbar > .control-select {
+    grid-column: 1 / -1;
+    grid-row: auto;
     max-width: 220px;
   }
 }
