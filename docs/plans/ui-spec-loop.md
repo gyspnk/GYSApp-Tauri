@@ -398,3 +398,39 @@ Kontrak `page-titles.spec.ts` mengukur ketiga rute di 390 dan 1440: satu `h1` te
 | Kontrak         | tidak ada                                | `apps/web/e2e/kidung-mode-name.spec.ts`              |
 
 Tombol ini satu-satunya kontrol di katalog yang mengubah mode, dan `aria-pressed` sudah menyatakan keadaan; nama yang mengulang keadaan membuat pembaca layar mengumumkan "Teks, tidak ditekan" pada tombol yang justru membuka partitur.
+
+### Tema gelap: kontras ditokenkan, target sentuh 44 px di semua pointer (putaran 101)
+
+Audit tiga subagent atas `kidung-*.css`, `styles/01-03`, `app-design.css`, dan
+`reading-surfaces.css` menemukan literal warna yang hanya benar di shell terang.
+Enam di antaranya gagal kontras di dark/amoled karena tokennya berubah:
+
+| Elemen                                    | Sebelum                      | Sesudah                            | Kontras gelap                  |
+| ----------------------------------------- | ---------------------------- | ---------------------------------- | ------------------------------ |
+| `.kidung-mode-cycle[aria-pressed="true"]` | `#fff` di `var(--blue)`      | `var(--on-accent)`                 | 1,6:1 → 9,6:1                  |
+| `.more-cat-btn.is-active`                 | `#ffffff` di `var(--navy)`   | `var(--on-accent)`                 | ~1,3:1 → 10,2:1                |
+| `.confirm-dialog-confirm`                 | `#fff` di `var(--danger)`    | `var(--on-accent)`                 | ~1,5:1 → 8,9:1                 |
+| `.hamburger-switch .switch-thumb`         | `#fff`                       | `var(--on-accent)`                 | kenop hilang di trek biru muda |
+| gambar cadangan `.img-fallback`           | `#102536` / `#fff`           | `var(--navy)` / `var(--on-accent)` | tetap mengikuti tema           |
+| `.route-recovery-mark`                    | `#9a671c` (+ tint `#b98132`) | `var(--gold)` + `color-mix`        | amber gelap → amber tema       |
+
+Selain itu `.kidung-row-menu > summary:focus-visible` kehilangan titik di depannya,
+sehingga **seluruh selector list** tidak valid dan ring fokus hilang untuk menu baris
+maupun menu musik PDF. Sekarang `.kidung-row-menu > summary:focus-visible`.
+
+Target sentuh: sembilan kontrol hanya naik ke 44 px di dalam blok `max-width: 599px`,
+sehingga tablet 820 px dengan jari tetap mendapat 24–36 px. Satu blok
+`@media (pointer: coarse)` di `apps/web/src/styles/05-responsive-refinements.css`
+menaikkan `.faith-selection-close`, `.faith-search-clear`, `.article-resume-toggle`,
+`.article-resume-options button`, `.bible-crossref-nav-btn`,
+`.bible-crossref-header button`, `.bible-notes-close`,
+`.bible-typography-controls button`, `.hamburger-drawer-close`, dan `.highlight-dot`.
+`.pdf-loading-actions :is(button, a)` juga ikut memakai `var(--control-hit)`.
+
+Kontrak baru: `shell-a11y.spec.ts` menjalankan enam tag axe atas beranda, Alkitab,
+pembaca kidung, katalog kidung, dan pengaturan di **tiga shell gelap** (dark, sepia,
+amoled) — terang sudah diaudit tes per permukaan — plus dua rute desktop di dark dan
+amoled. `responsive-touch-targets.spec.ts` menambah konteks `hasTouch` 820×1180 dan
+memastikan `(pointer: coarse)` benar-benar aktif sebelum mengukur.
+`kidung-mode-contrast.test.ts` mengunci aturan CSS-nya supaya literal putih tidak
+kembali.

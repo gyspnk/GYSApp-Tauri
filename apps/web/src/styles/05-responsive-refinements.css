@@ -1750,6 +1750,25 @@ body:has(.home-page)::-webkit-scrollbar {
   min-height: 44px;
 }
 
+/* The goal asks for 44 px targets on every pointer. These controls were sized
+   for a mouse and only some of them had a phone-sized rescue, so a tablet with
+   a finger got 24-36 px rows. A coarse pointer is the honest signal. */
+@media (pointer: coarse) {
+  .faith-selection-close,
+  .faith-search-clear,
+  .article-resume-toggle,
+  .article-resume-options button,
+  .bible-crossref-nav-btn,
+  .bible-crossref-header button,
+  .bible-notes-close,
+  .bible-typography-controls button,
+  .hamburger-drawer-close,
+  .highlight-dot {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
 .search-trigger:hover,
 .account-button:hover,
 .global-search-result:hover,

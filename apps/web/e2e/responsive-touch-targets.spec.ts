@@ -228,3 +228,33 @@ test.describe("coarse pointers get the full 44 px target", () => {
     await expectTouchTarget(page.locator(".audio-setting-link").first());
   });
 });
+
+// A coarse pointer can be a 820 px tablet, not only a 320 px phone. Several
+// controls were sized for a mouse and lifted to 44 px only inside a
+// max-width: 599px block, so a finger on a bigger screen still hit 24-36 px.
+test.describe("coarse pointer on a wide screen", () => {
+  test.use({ hasTouch: true, viewport: { width: 820, height: 1180 } });
+
+  test("search clear and drawer close reach 44 pixels", async ({ page }) => {
+    expect(
+      await page.evaluate(() => matchMedia("(pointer: coarse)").matches),
+      "the context must report a coarse pointer for this contract to mean anything",
+    ).toBe(true);
+
+    await page.goto("/GYSApp-Tauri/iman");
+    const search = page.locator(".faith-search-bar input").first();
+    await expect(search).toBeVisible({ timeout: 30_000 });
+    await search.fill("iman");
+    const clear = page.locator(".faith-search-clear").first();
+    await expect(clear).toBeVisible();
+    await expectTouchTarget(clear);
+
+    await page.goto("/GYSApp-Tauri/");
+    const menu = page.locator(".hamburger-button, [aria-controls]").first();
+    if (await menu.count()) {
+      await menu.click({ force: true });
+      const close = page.locator(".hamburger-drawer-close").first();
+      if (await close.count()) await expectTouchTarget(close);
+    }
+  });
+});

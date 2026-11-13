@@ -1305,7 +1305,7 @@
 .more-cat-btn.is-active {
   border-color: var(--navy);
   background: var(--navy);
-  color: #ffffff;
+  color: var(--on-accent);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 .more-settings-list {

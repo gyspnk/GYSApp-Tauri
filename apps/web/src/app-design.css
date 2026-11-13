@@ -892,8 +892,8 @@
   bottom: 10px;
   padding: 4px 8px;
   border-radius: 6px;
-  background: #102536;
-  color: #fff;
+  background: var(--navy);
+  color: var(--on-accent);
   max-width: calc(100% - 20px);
 }
 .literature-cover.is-compact .img-fallback-placeholder > small,
@@ -4708,7 +4708,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: var(--control-hit, 44px);
   padding: 6px 10px;
   font-size: inherit;
   white-space: nowrap;
@@ -6315,7 +6315,8 @@ body:has(.hymn-detail-page.is-text-viewer)
 .confirm-dialog-confirm {
   border: 1px solid var(--danger);
   background: var(--danger);
-  color: #fff;
+  /* --danger is #ffb4ab once the surface turns dark. */
+  color: var(--on-accent);
 }
 
 .confirm-dialog-actions button:focus-visible {

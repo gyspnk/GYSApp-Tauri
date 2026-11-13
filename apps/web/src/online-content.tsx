@@ -639,7 +639,10 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
         />
       )}
       {state.status === "ready" && (
-        <article className="online-article-card suara-article-card">
+        <article
+          className="online-article-card suara-article-card"
+          data-preview={state.previewOnly ? "true" : undefined}
+        >
           <p className="date-line">
             {translate(locale, "suara.title")} ·{" "}
             {new Date(state.post.publishedAt).toLocaleDateString(locale)}

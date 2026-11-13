@@ -649,3 +649,100 @@ test("the collection chip's aria-controls resolves to its listbox", async ({
   expect(target?.role).toBe("listbox");
   expect(target?.hidden).toBe("false");
 });
+
+// The axe audit used to see one shell: light. Dark, amoled and sepia are real
+// products with their own surfaces, borders and muted text, and the only
+// cross-theme check was the delete dialog's paragraph. This matrix runs the same
+// six tags over the three reading surfaces in all four themes.
+// `ready` is the element that proves this route painted. Without it the audit
+// sometimes ran during the view transition, when the outgoing document was
+// already gone and axe reported a page with no h1.
+const THEME_ROUTES = [
+  { name: "beranda", path: "/", ready: ".home-portals" },
+  {
+    name: "alkitab",
+    path: "/bible?book=kejadian&chapter=1",
+    ready: ".verse-content",
+  },
+  { name: "kidung", path: "/kidung/hymn-001", ready: ".hymn-text-title h1" },
+  { name: "katalog", path: "/kidung", ready: ".pujian-list .pujian-item" },
+  {
+    name: "pengaturan",
+    path: "/lainnya?section=appearance",
+    ready: '[data-setting="appearance"]',
+  },
+];
+
+// Light is already audited by the per-surface tests above; the matrix exists
+// because the other three shells were never measured on these routes.
+const SHELL_THEMES = ["dark", "sepia", "amoled"] as const;
+
+test("reading surfaces stay axe clean in every shell theme", async ({
+  page,
+}) => {
+  test.setTimeout(240_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+
+  for (const theme of SHELL_THEMES) {
+    await page.addInitScript((value: string) => {
+      localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({
+          version: 1,
+          locale: "id",
+          theme: value,
+          onboarded: true,
+        }),
+      );
+    }, theme);
+
+    for (const route of THEME_ROUTES) {
+      await test.step(`${route.name} in ${theme}`, async () => {
+        await page.goto(`/GYSApp-Tauri${route.path}`);
+        await expect(page.locator(route.ready).first()).toBeVisible({
+          timeout: 30_000,
+        });
+        await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+        await expect(page.locator("main h1").first()).toBeAttached();
+        await settled(page.locator("main"));
+        await expectNoAxeViolations(page);
+      });
+    }
+  }
+});
+
+test("the desktop shell stays axe clean in the dark and amoled themes", async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+
+  for (const theme of ["dark", "amoled"] as const) {
+    await page.addInitScript((value: string) => {
+      localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({
+          version: 1,
+          locale: "id",
+          theme: value,
+          onboarded: true,
+        }),
+      );
+    }, theme);
+
+    for (const route of [THEME_ROUTES[0], THEME_ROUTES[2]]) {
+      await test.step(`${route.name} in ${theme} at 1440`, async () => {
+        await page.goto(`/GYSApp-Tauri${route.path}`);
+        await expect(page.locator(route.ready).first()).toBeVisible({
+          timeout: 30_000,
+        });
+        await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+        await expect(page.locator("main h1").first()).toBeAttached();
+        await settled(page.locator("main"));
+        await expectNoAxeViolations(page);
+      });
+    }
+  }
+});

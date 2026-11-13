@@ -724,7 +724,8 @@
   padding: 8px 8px;
   border-radius: 6px;
   background: var(--navy);
-  color: white;
+  /* --navy is a pale #a9d8ef in dark and amoled; white on it is ~1.3:1. */
+  color: var(--on-accent);
   object-fit: cover;
   box-shadow: var(--shadow);
   flex: 0 0 auto;

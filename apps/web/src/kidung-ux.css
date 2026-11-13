@@ -623,7 +623,7 @@
 .pdf-music-menu > summary::-webkit-details-marker {
   display: none;
 }
-kidung-row-menu > summary:focus-visible,
+.kidung-row-menu > summary:focus-visible,
 .pdf-music-menu > summary:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
@@ -723,7 +723,7 @@ kidung-row-menu > summary:focus-visible,
 
 .kidung-row-menu-panel > button,
 .kidung-manage-saved-items button {
-  min-height: 42px;
+  min-height: var(--control-hit, 44px);
   width: 100%;
   justify-content: flex-start;
   padding-inline: 10px;
@@ -1408,12 +1408,14 @@ kidung-row-menu > summary:focus-visible,
 .kidung-mode-cycle[aria-pressed="true"] {
   background: var(--blue);
   border-color: var(--blue);
-  color: #fff;
+  /* --blue is a pale #7fc6e8 in dark and amoled, so a white label there is
+     ~1.6:1. --on-accent is the token that flips with the surface. */
+  color: var(--on-accent);
 }
 .kidung-mode-cycle[aria-pressed="true"]:hover {
   background: var(--navy);
   border-color: var(--navy);
-  color: #fff;
+  color: var(--on-accent);
 }
 .hymn-page .hymn-search-field input {
   min-height: 48px;

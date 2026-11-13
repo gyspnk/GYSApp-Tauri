@@ -42,6 +42,9 @@ yang benar-benar berbeda permukaan.
 | `A11y — rute tersisa`        | `50b0904c-e247-4b68-891e-278b7ca89b8d` | axe enam tag untuk beranda, Alkitab, Suara, Lainnya      |
 | `Docs — ekor ledger`         | `0d67ec2e-e69d-4ec2-8d8a-c7669bdb6b40` | ledger panjang `2026-10-30`, catatan putaran, gaya entri |
 | `Perf — audit bundel web`    | `81c15612-7a1c-452e-90c7-4e374af989a1` | ukuran chunk, jalur muat awal, peluang penghematan       |
+| `Kidung — audit token CSS`   | `f3c00fd0-010e-4e33-a783-47ff6de5ede4` | `kidung-*.css`: warna literal, target <44 px, duplikat   |
+| `Alkitab — audit token CSS`  | `d213000a-76ed-47fd-8218-551bfd427264` | `styles/01-03` + Alkitab: warna literal, target <44 px   |
+| `Shell — audit token CSS`    | `3542ca7d-1c10-43b7-a965-5843bb5f1296` | `app-design.css`, `reading-surfaces.css`, `ui-hardening` |
 
 Panel otak di GB Tools menampilkan `displayTitle` tiap sesi dan menyalin id ke
 clipboard saat simpul diklik, jadi id untuk `send_message` diambil langsung dari

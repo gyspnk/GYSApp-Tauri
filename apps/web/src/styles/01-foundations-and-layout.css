@@ -554,8 +554,8 @@ a:focus-visible {
   height: 52px;
   margin-bottom: 4px;
   border-radius: 50%;
-  background: color-mix(in srgb, #b98132 14%, var(--surface));
-  color: #9a671c;
+  background: color-mix(in srgb, var(--gold) 14%, var(--surface));
+  color: var(--gold);
 }
 .route-recovery h1 {
   margin: 0;
@@ -1731,7 +1731,12 @@ blockquote {
   font-size: 0.98em;
 }
 
+/* The closing lines of a testimony are centred and italic, but an article
+   that only carries its excerpt (the preview after a failed fetch) has no
+   closing lines: the whole body is one paragraph, so the treatment turned the
+   entire text italic and centred. */
 .suara-detail-page
+  .suara-article-card:not([data-preview="true"])
   .online-article-body.suara-article-body
   p:nth-last-child(-n + 2):not(.online-article-byline) {
   font-weight: 650;
