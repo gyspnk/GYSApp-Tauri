@@ -9,6 +9,7 @@
 //
 // Report only, on purpose: deleting a rule changes what the browser paints, so
 // a human or an agent reads the list and removes rules in a reviewed commit.
+import { execFileSync } from "node:child_process";
 import { readdir, readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { join, relative } from "node:path";
@@ -81,9 +82,35 @@ async function walk(dir, out) {
   return out;
 }
 
+/**
+ * Files git would check out. A scratch file that is gitignored must not be
+ * able to hide a dead selector locally and then fail the same check in CI.
+ */
+export function trackedFiles(root) {
+  try {
+    const output = execFileSync("git", ["ls-files", "-z"], {
+      cwd: root,
+      maxBuffer: 32 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const listed = output
+      .toString("utf8")
+      .split("\0")
+      .filter(Boolean)
+      .map((path) => join(root, path));
+    const usable = listed.filter((path) => {
+      const parts = relative(root, path).split("/");
+      return !parts.some((part) => SKIP_DIRS.has(part)) && parts[0] !== "docs";
+    });
+    return usable.length > 0 ? usable : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Classes declared in CSS but mentioned in no other file. */
 export async function deadClasses(root) {
-  const paths = await walk(root, []);
+  const paths = trackedFiles(root) ?? (await walk(root, []));
   const styles = paths.filter((path) => path.endsWith(".css"));
   const sources = paths.filter((path) =>
     SOURCE_EXT.some((extension) => path.endsWith(extension)),

@@ -2419,19 +2419,13 @@ body.gys-viewer-active {
     min-width: 0;
     max-width: 100%;
   }
-  .search-row {
-    gap: 8px;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-  .search-row input,
+
   .search-field input,
   .global-search-form input {
     min-width: 0;
     min-height: 44px;
   }
-  .search-row .primary-button {
-    padding-inline: 10px;
-  }
+
   .catalog-toolbar {
     gap: 8px;
     margin-bottom: 18px;

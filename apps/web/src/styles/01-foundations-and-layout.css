@@ -2202,19 +2202,7 @@ blockquote {
   font-size: 0.6875rem;
   text-align: center;
 }
-.check-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-.check-option input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--blue);
-}
+
 .inline-error {
   display: flex;
   align-items: center;
@@ -2231,11 +2219,7 @@ blockquote {
 .inline-error .text-button {
   flex: 0 0 auto;
 }
-.search-row {
-  display: flex;
-  gap: 8px;
-}
-.search-row input,
+
 .search-field input {
   flex: 1;
   min-width: 0;
@@ -2247,7 +2231,6 @@ blockquote {
   color: var(--ink);
   font: inherit;
 }
-.search-row input::placeholder,
 .search-field input::placeholder {
   color: var(--muted);
 }
@@ -2266,10 +2249,7 @@ textarea::placeholder {
   cursor: pointer;
   font-size: 0.75rem;
 }
-.result-list {
-  display: grid;
-  border-top: 1px solid var(--line);
-}
+
 .loading-panel,
 .error-panel {
   display: grid;
