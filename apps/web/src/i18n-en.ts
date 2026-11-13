@@ -539,6 +539,8 @@ export const enFeatureMessages: Record<string, string> = {
   "kidung.textSettings": "Text settings",
   "kidung.text": "Text",
   "kidung.score": "Score",
+  "kidung.showScore": "Show score",
+  "kidung.showText": "Show text",
   "kidung.decreaseSpacing": "Tighten line spacing",
   "kidung.increaseSpacing": "Increase line spacing",
   "kidung.resetText": "Reset text",

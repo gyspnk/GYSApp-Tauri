@@ -354,3 +354,15 @@ Kontrak `apps/web/e2e/kidung-hymnal-window.spec.ts` menjaga aturan itu tanpa per
 | Kontrak                 | tidak ada yang membandingkan rute                | `apps/web/e2e/page-titles.spec.ts` |
 
 Kontrak `page-titles.spec.ts` mengukur ketiga rute di 390 dan 1440: satu `h1` terlihat per rute, ukuran dan berat huruf sama, tepi atas dan tepi kiri berselisih ≤1 px. Kunci i18n `suara.backHome` dihapus dari tiga bahasa karena tidak ada lagi yang memakainya (`i18n.test.ts` gagal pada kunci mati).
+
+### Kidung: tombol mode dinamai perbuatannya (putaran 98)
+
+| Butir           | Sebelum                                  | Sesudah                                              |
+| --------------- | ---------------------------------------- | ---------------------------------------------------- |
+| Nama aksesibel  | "Teks" saat mode teks (menyebut keadaan) | "Tampilkan partitur" (menyebut perbuatan)            |
+| Setelah ditekan | "Partitur"                               | "Tampilkan teks"                                     |
+| Grup            | "Mode tampilan kidung"                   | tetap                                                |
+| Kunci i18n      | `kidung.text` / `kidung.score`           | `kidung.showText` / `kidung.showScore` (tiga bahasa) |
+| Kontrak         | tidak ada                                | `apps/web/e2e/kidung-mode-name.spec.ts`              |
+
+Tombol ini satu-satunya kontrol di katalog yang mengubah mode, dan `aria-pressed` sudah menyatakan keadaan; nama yang mengulang keadaan membuat pembaca layar mengumumkan "Teks, tidak ditekan" pada tombol yang justru membuka partitur.

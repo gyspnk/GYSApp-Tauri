@@ -284,14 +284,17 @@ export function HymnCatalog({
             <button
               type="button"
               className="kidung-mode-cycle"
+              // The name states what the press will do. Naming the current
+              // mode made a screen reader announce "Teks, not pressed" on a
+              // button that actually opens the score.
               aria-label={translate(
                 locale,
-                pdfMode ? "kidung.score" : "kidung.text",
+                pdfMode ? "kidung.showText" : "kidung.showScore",
               )}
               aria-pressed={pdfMode}
               title={translate(
                 locale,
-                pdfMode ? "kidung.score" : "kidung.text",
+                pdfMode ? "kidung.showText" : "kidung.showScore",
               )}
               onClick={() => {
                 const mode = pdfMode ? "lyrics" : "pdf";

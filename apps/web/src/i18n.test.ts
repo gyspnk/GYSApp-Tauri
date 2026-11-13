@@ -28,6 +28,8 @@ function allKeys(locale: Locale): Set<string> {
 // completeness guard also covers dynamic lookups.
 const DYNAMIC_KEYS = [
   "kidung.openMidi",
+  "kidung.showScore",
+  "kidung.showText",
   "kidung.closeMidi",
   "more.collectionLiterature",
   "more.collectionSuara",

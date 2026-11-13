@@ -526,6 +526,8 @@ export const zhFeatureMessages: Record<string, string> = {
   "kidung.textSettings": "文字设置",
   "kidung.text": "文字",
   "kidung.score": "乐谱",
+  "kidung.showScore": "显示乐谱",
+  "kidung.showText": "显示文字",
   "kidung.decreaseSpacing": "缩小行距",
   "kidung.increaseSpacing": "增大行距",
   "kidung.resetText": "重置文字",

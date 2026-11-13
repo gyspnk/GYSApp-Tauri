@@ -566,6 +566,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.textSettings": "Pengaturan teks",
     "kidung.text": "Teks",
     "kidung.score": "Partitur",
+    "kidung.showScore": "Tampilkan partitur",
+    "kidung.showText": "Tampilkan teks",
     "kidung.decreaseSpacing": "Rapatkan jarak baris",
     "kidung.increaseSpacing": "Lebarkan jarak baris",
     "kidung.resetText": "Reset teks",
