@@ -660,10 +660,7 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
 
     await page.goto("/GYSApp-Tauri/lainnya");
     await page.locator('[data-setting="appearance"] > summary').click();
-    await page.getByRole("button", { name: "Tampilan & keterbacaan" }).click();
-    await expect(
-      page.getByRole("dialog", { name: "Tampilan & keterbacaan" }),
-    ).toBeVisible();
+    await expect(page.locator(".appearance-card")).toBeVisible();
     await expectNoAxeViolations(page);
   });
 });

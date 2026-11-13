@@ -293,3 +293,16 @@ Kotak Google di kartu akun tidak lagi memipihkan tombol Google: aturan lama mema
 | Kontrak         | `apps/web/e2e/kidung-reader-picker.spec.ts` (912x420 memilih lagu 002 lalu menutup; 390 dan 1440 tidak merender pemilih) |
 
 Aturan `.kidung-rail-list`/`.kidung-rail-row` dipindah keluar dari media query 1200 px supaya baris yang sama dipakai rail desktop dan pemilih landscape; hanya tata letak kolom yang tetap di dalam media query.
+
+### Tampilan: kepadatan dan gaya huruf jadi baris biasa (putaran 85)
+
+| Aspek          | Ketentuan                                                                                                                                     |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bentuk         | Dua baris `.appearance-setting-row` di dalam grup Tampilan, sejajar Tema Layar dan Warna Aksen. Tidak ada dialog, scrim, atau tombol pembuka. |
+| Kontrol        | `Select` bersama (`role="combobox"`), label baris menjadi nama combobox; opsi dari `more.density.*` dan `more.font.*`.                        |
+| Sasaran sentuh | Baris ≥44 px, trigger ≥44 px, swatch aksen tetap 44×44.                                                                                       |
+| Kolom label    | Semua baris mulai di x yang sama; nilai di kanan.                                                                                             |
+| Teks 200%      | Tidak ada overflow dokumen di 320 px.                                                                                                         |
+| Gerak          | Tidak ada animasi panel; `prefers-reduced-motion` tidak mengubah apa pun karena tidak ada transisi.                                           |
+
+Alasan: panel modal membuat pilihan yang sama terlihat seperti jenis pengaturan lain, dan di 390 px ia menutupi hampir seluruh layar padahal pengaturan lain hanya membuka satu baris. `apps/web/src/ui-preferences-panel.tsx` dihapus; penggantinya `apps/web/src/ui-preferences-rows.tsx`. Kontrak: `apps/web/e2e/appearance-preferences.spec.ts` (12 tes) dan audit axe di `apps/web/e2e/accessibility.spec.ts`.

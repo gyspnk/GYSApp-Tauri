@@ -47,42 +47,23 @@
     translate: 16px 0;
   }
 }
-:is(
-  .ui-preferences-dialog-layer,
-  .search-backdrop,
-  .bible-picker-backdrop
-)[data-menu-open] {
+:is(.search-backdrop, .bible-picker-backdrop)[data-menu-open] {
   scale: 1;
   transition: opacity 180ms var(--ease-out);
 }
-.ui-preferences-dialog-layer[data-menu-open] .ui-preferences-scrim {
-  animation: none;
-}
-:is(
-    .ui-preferences-dialog-layer,
-    .search-backdrop,
-    .bible-picker-backdrop
-  )[data-menu-open]
-  > :is(.ui-preferences-panel, .global-search, .bible-picker-modal) {
+:is(.search-backdrop, .bible-picker-backdrop)[data-menu-open]
+  > :is(.global-search, .bible-picker-modal) {
   animation: none;
   scale: 0.98;
   transition: scale 180ms var(--ease-out);
 }
-:is(
-    .ui-preferences-dialog-layer,
-    .search-backdrop,
-    .bible-picker-backdrop
-  )[data-menu-open="true"]
-  > :is(.ui-preferences-panel, .global-search, .bible-picker-modal) {
+:is(.search-backdrop, .bible-picker-backdrop)[data-menu-open="true"]
+  > :is(.global-search, .bible-picker-modal) {
   scale: 1;
 }
 @starting-style {
-  :is(
-      .ui-preferences-dialog-layer,
-      .search-backdrop,
-      .bible-picker-backdrop
-    )[data-menu-open="true"]
-    > :is(.ui-preferences-panel, .global-search, .bible-picker-modal) {
+  :is(.search-backdrop, .bible-picker-backdrop)[data-menu-open="true"]
+    > :is(.global-search, .bible-picker-modal) {
     scale: 0.98;
   }
 }
@@ -172,17 +153,9 @@
   [data-menu-open],
   .reader-hamburger-backdrop[data-menu-open],
   .reader-hamburger-drawer[data-menu-open],
-  :is(
-    .ui-preferences-dialog-layer,
-    .search-backdrop,
-    .bible-picker-backdrop
-  )[data-menu-open],
-  :is(
-      .ui-preferences-dialog-layer,
-      .search-backdrop,
-      .bible-picker-backdrop
-    )[data-menu-open]
-    > :is(.ui-preferences-panel, .global-search, .bible-picker-modal),
+  :is(.search-backdrop, .bible-picker-backdrop)[data-menu-open],
+  :is(.search-backdrop, .bible-picker-backdrop)[data-menu-open]
+    > :is(.global-search, .bible-picker-modal),
   .drawer-speech-motion[data-menu-open],
   details::details-content {
     transition: none;

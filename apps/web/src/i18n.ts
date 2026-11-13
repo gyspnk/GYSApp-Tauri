@@ -974,8 +974,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.loginFailed": "Login e-GYS belum berhasil. Coba lagi.",
     "more.googleButtonFailed":
       "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
-    "more.readabilityTitle": "Tampilan & keterbacaan",
-    "more.closeAppearance": "Tutup pengaturan tampilan",
     "more.densityTitle": "Kepadatan antarmuka",
     "more.density.comfortable": "Nyaman",
     "more.density.standard": "Standar",
@@ -984,7 +982,6 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.font.auto": "Otomatis",
     "more.font.hymnal": "Himne",
     "more.font.sans": "Sans modern",
-    "more.done": "Selesai",
   },
   en: {},
   zh: {},

@@ -526,33 +526,6 @@ test("Bible menu fades and slides out, restores focus and reopens smoothly", asy
   await expect(drawer).toHaveCount(0);
 });
 
-test("appearance panel animates its exit and returns focus to its launcher", async ({
-  page,
-}) => {
-  await page.route(/^https:\/\//, (route) => route.abort());
-  await page.goto("/GYSApp-Tauri/lainnya");
-  await page.locator('[data-setting="appearance"] > summary').click();
-  const launcher = page.locator(".ui-preferences-open");
-  const panel = page.locator(".ui-preferences-dialog-layer");
-  await launcher.click();
-  await expect
-    .poll(() => panel.evaluate((node) => getComputedStyle(node).opacity))
-    .toBe("1");
-  const frames = await sampleExit(page, ".ui-preferences-dialog-layer", false, {
-    selector: ".ui-preferences-close",
-  });
-  expect(
-    frames.some(
-      (frame) => frame.visible && frame.opacity > 0.01 && frame.opacity < 0.99,
-    ),
-  ).toBe(true);
-  expect(
-    frames.filter((frame) => frame.visible).every((frame) => frame.inert),
-  ).toBe(true);
-  await expect(panel).toHaveCount(0);
-  await expect(launcher).toBeFocused();
-});
-
 test("main search and Bible picker retain their closing animation", async ({
   page,
 }) => {

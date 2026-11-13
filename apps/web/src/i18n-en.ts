@@ -944,8 +944,6 @@ export const enFeatureMessages: Record<string, string> = {
   "more.loginFailed": "e-GYS sign-in was not successful. Try again.",
   "more.googleButtonFailed":
     "The Google button could not be loaded. Check your connection and try again.",
-  "more.readabilityTitle": "Appearance & readability",
-  "more.closeAppearance": "Close appearance settings",
   "more.densityTitle": "Interface density",
   "more.density.comfortable": "Comfortable",
   "more.density.standard": "Standard",
@@ -954,5 +952,4 @@ export const enFeatureMessages: Record<string, string> = {
   "more.font.auto": "Automatic",
   "more.font.hymnal": "Hymnal",
   "more.font.sans": "Modern sans",
-  "more.done": "Done",
 };

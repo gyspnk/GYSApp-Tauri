@@ -33,21 +33,23 @@ async function expectContainedAtDoubleText(page: Page) {
     .toBe(true);
 }
 
-async function openAppearance(
-  page: Page,
-): Promise<{ dialog: Locator; opener: Locator }> {
+async function openAppearance(page: Page): Promise<Locator> {
   await page.goto("/GYSApp-Tauri/lainnya");
   await page.locator('[data-setting="appearance"] > summary').click();
-  const opener = page.getByRole("button", { name: "Tampilan & keterbacaan" });
-  await opener.click();
-  const dialog = page.getByRole("dialog", { name: "Tampilan & keterbacaan" });
-  await expect(dialog).toBeVisible();
-  await expect
-    .poll(() =>
-      dialog.evaluate((element) => getComputedStyle(element).transform),
-    )
-    .toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
-  return { dialog, opener };
+  const card = page.locator(".appearance-card");
+  await expect(card).toBeVisible();
+  return card;
+}
+
+/** The shared listbox needs a real click on its trigger, then a click on the
+ * option; the trigger is a combobox named by the row label. */
+async function choosePreference(
+  page: Page,
+  label: string,
+  option: string,
+): Promise<void> {
+  await page.getByRole("combobox", { name: label, exact: true }).click();
+  await page.getByRole("option", { name: option, exact: true }).click();
 }
 
 async function savePreview(page: Page, name: string): Promise<void> {
@@ -59,11 +61,71 @@ async function savePreview(page: Page, name: string): Promise<void> {
   });
 }
 
+test("density and font are inline rows in the appearance group, not a modal", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const card = await openAppearance(page);
+
+  // The old design opened a second surface for the same two choices; the
+  // appearance group must stay one list of label/control rows.
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(card.locator(".ui-preferences-open")).toHaveCount(0);
+
+  const rows = card.locator(".appearance-setting-row");
+  await expect(rows).toHaveCount(4);
+  const labels = await rows
+    .locator(".appearance-setting-name")
+    .allTextContents();
+  expect(labels.map((label) => label.trim())).toEqual([
+    "Tema Layar",
+    "Warna Aksen",
+    "Kepadatan antarmuka",
+    "Gaya huruf",
+  ]);
+
+  // Every row keeps the same label column; the accent row shows a value and
+  // puts its 44px targets in the palette underneath, the other three carry a
+  // select trigger.
+  const geometry = await rows.evaluateAll((elements) =>
+    elements.map((element) => {
+      const name = element.querySelector(".appearance-setting-name");
+      const trigger = element.querySelector(".control-select-trigger");
+      const rowBox = element.getBoundingClientRect();
+      return {
+        rowHeight: rowBox.height,
+        nameLeft: name ? name.getBoundingClientRect().left : -1,
+        triggerHeight: trigger ? trigger.getBoundingClientRect().height : null,
+      };
+    }),
+  );
+  const lefts = new Set(geometry.map((row) => Math.round(row.nameLeft)));
+  expect(lefts.size, "every row starts its label at the same x").toBe(1);
+  for (const row of geometry) {
+    expect(row.rowHeight).toBeGreaterThanOrEqual(44);
+    if (row.triggerHeight !== null) {
+      expect(row.triggerHeight).toBeGreaterThanOrEqual(43.5);
+    }
+  }
+  const swatches = await card
+    .locator('.accent-palette-grid [role="radio"]')
+    .evaluateAll((elements) =>
+      elements.map((element) => element.getBoundingClientRect().height),
+    );
+  expect(swatches.length).toBeGreaterThan(0);
+  for (const height of swatches) expect(height).toBeGreaterThanOrEqual(43.5);
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
+});
+
 test("appearance preferences apply immediately and survive reload/navigation", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 768, height: 1024 });
-  const { dialog } = await openAppearance(page);
+  await openAppearance(page);
 
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
@@ -71,12 +133,12 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   );
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "auto");
 
-  await dialog.getByRole("radio", { name: /^Nyaman/ }).click();
+  await choosePreference(page, "Kepadatan antarmuka", "Nyaman");
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "comfortable",
   );
-  await dialog.getByRole("radio", { name: /^Himne/ }).click();
+  await choosePreference(page, "Gaya huruf", "Himne");
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "hymnal");
 
   await savePreview(page, "appearance-comfortable-tablet-768x1024.png");
@@ -100,25 +162,22 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   expect(headingFont.toLowerCase()).toContain("source serif 4");
 });
 
-test("compact mode stays touch-safe and keeps mobile sheet controls reachable", async ({
+test("compact mode stays touch-safe and keeps the appearance rows reachable", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const { dialog } = await openAppearance(page);
-  await dialog.getByRole("radio", { name: /^Ringkas/ }).click();
+  const card = await openAppearance(page);
+  await choosePreference(page, "Kepadatan antarmuka", "Ringkas");
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "compact",
   );
 
-  const heading = dialog.getByRole("heading", {
-    name: "Tampilan & keterbacaan",
-  });
-  const closeButton = dialog.getByRole("button", {
-    name: "Tutup pengaturan tampilan",
-  });
-  await expect(heading).toBeInViewport();
-  await expect(closeButton).toBeInViewport();
+  const fontRow = card
+    .locator(".appearance-setting-row")
+    .filter({ hasText: "Gaya huruf" });
+  await fontRow.scrollIntoViewIfNeeded();
+  await expect(fontRow).toBeInViewport();
 
   const navTargets = page.locator(".navigation-shell .nav-item");
   const undersized = await navTargets.evaluateAll((elements) =>
@@ -145,16 +204,17 @@ test("standard desktop, automatic font, and sans font remain readable", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  const { dialog } = await openAppearance(page);
-  await dialog.getByRole("radio", { name: /^Standar/ }).click();
-  await dialog.getByRole("radio", { name: /^Sans modern/ }).click();
+  const card = await openAppearance(page);
+  await choosePreference(page, "Kepadatan antarmuka", "Standar");
+  await choosePreference(page, "Gaya huruf", "Sans modern");
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "sans");
-  const sansHeadingFont = await dialog
-    .locator("h2")
+  const sansHeadingFont = await card
+    .locator(".appearance-setting-name")
+    .first()
     .evaluate((element) => getComputedStyle(element).fontFamily);
   expect(sansHeadingFont.toLowerCase()).not.toContain("source serif 4");
 
-  await dialog.getByRole("radio", { name: /^Otomatis/ }).click();
+  await choosePreference(page, "Gaya huruf", "Otomatis");
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "standard",
@@ -184,9 +244,9 @@ test("appearance controls stay legible with the existing dark theme", async ({
     );
   });
   await page.setViewportSize({ width: 768, height: 1024 });
-  const { dialog } = await openAppearance(page);
+  await openAppearance(page);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await dialog.getByRole("radio", { name: /^Nyaman/ }).click();
+  await choosePreference(page, "Kepadatan antarmuka", "Nyaman");
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "comfortable",
@@ -194,102 +254,82 @@ test("appearance controls stay legible with the existing dark theme", async ({
   await savePreview(page, "appearance-dark-comfortable-tablet-768x1024.png");
 });
 
-test("Escape closes appearance settings and restores focus to the launcher", async ({
+test("the density listbox is keyboard operable and closes on Escape", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  const { dialog, opener } = await openAppearance(page);
+  await openAppearance(page);
+  const trigger = page.getByRole("combobox", {
+    name: "Kepadatan antarmuka",
+    exact: true,
+  });
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-ui-density",
+    "compact",
+  );
+  await expect(trigger).toBeFocused();
+
+  await page.keyboard.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
   await page.keyboard.press("Escape");
-  await expect(dialog).toBeHidden();
-  await expect(opener).toBeFocused();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-ui-density",
+    "compact",
+  );
 });
 
-test("reduced motion keeps the appearance panel usable without nonessential animation", async ({
+test("reduced motion keeps the appearance rows usable without nonessential animation", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
-  const { dialog } = await openAppearance(page);
-  const transitionDuration = await dialog.evaluate(
+  const card = await openAppearance(page);
+  const transitionDuration = await card.evaluate(
     (element) => getComputedStyle(element).transitionDuration,
   );
   expect(
     transitionDuration.split(",").every((value) => value.trim() === "0s"),
   ).toBe(true);
+  await choosePreference(page, "Gaya huruf", "Himne");
+  await expect(page.locator("html")).toHaveAttribute("data-ui-font", "hymnal");
 });
 
-test("phone sheet exposes every preference before any selection", async ({
+test("every preference row is visible on a small phone before any selection", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 640 });
-  const { dialog } = await openAppearance(page);
-
-  for (const name of [
-    "Nyaman",
-    "Standar",
-    "Ringkas",
-    "Otomatis",
-    "Himne",
-    "Sans modern",
+  const card = await openAppearance(page);
+  for (const label of [
+    "Tema Layar",
+    "Warna Aksen",
+    "Kepadatan antarmuka",
+    "Gaya huruf",
   ]) {
-    const option = dialog.getByRole("radio", {
-      name: new RegExp(`^${name}`),
-    });
-    await option.scrollIntoViewIfNeeded();
-    await expect(option).toBeVisible();
+    const row = card
+      .locator(".appearance-setting-row")
+      .filter({ hasText: label });
+    await row.scrollIntoViewIfNeeded();
+    await expect(row).toBeVisible();
   }
-  await expect(dialog.getByRole("button", { name: "Selesai" })).toBeVisible();
-});
-
-for (const width of [599, 600, 959, 960]) {
-  test(`appearance panel uses the correct sheet boundary at ${width}px`, async ({
-    page,
-  }) => {
-    const height = 640;
-    await page.setViewportSize({ width, height });
-    const { dialog } = await openAppearance(page);
-    const box = await dialog.boundingBox();
-    expect(box).not.toBeNull();
-    if (width < 600) {
-      expect(box!.y + box!.height).toBeCloseTo(height, -1);
-    } else {
-      expect(box!.y).toBeGreaterThan(8);
-    }
-  });
-}
-
-test("keyboard traversal stays inside preferences and restores focus", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 768, height: 1024 });
-  const { dialog, opener } = await openAppearance(page);
-  const radios = dialog.getByRole("radio");
-  await radios.first().focus();
-
-  for (let index = 0; index < 7; index += 1) {
-    await page.keyboard.press("Tab");
-    await expect
-      .poll(() =>
-        dialog.evaluate((element) => element.contains(document.activeElement)),
-      )
-      .toBe(true);
-  }
-
-  await page.keyboard.press("Escape");
-  await expect(dialog).toBeHidden();
-  await expect(opener).toBeFocused();
 });
 
 test("preferences contain enlarged text without document overflow", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 640 });
-  const { dialog } = await openAppearance(page);
+  const card = await openAppearance(page);
   await page.evaluate(() => {
     document.documentElement.style.fontSize = "200%";
   });
-  await dialog
-    .getByRole("radio", { name: /^Sans modern/ })
+  await card
+    .locator(".appearance-setting-row")
+    .filter({ hasText: "Gaya huruf" })
     .scrollIntoViewIfNeeded();
   await expect
     .poll(() =>

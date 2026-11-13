@@ -54,7 +54,7 @@ import { EgysLoginMethods } from "./egys-login-methods.js";
 import { AudioSettingsInline } from "./audio-settings-inline.js";
 import { Select } from "./select.js";
 import { readStorageUsage, type StorageUsage } from "./storage-usage.js";
-import { UiPreferencesPanel } from "./ui-preferences-panel.js";
+import { UiPreferencesRows } from "./ui-preferences-rows.js";
 import { REMINDER_CHANGE_EVENT } from "./daily-reminder.js";
 import { Icon, type IconName } from "./icons.js";
 import { AccountAvatar } from "./account-avatar.js";
@@ -1399,8 +1399,8 @@ export function MorePage({
                   </label>
                 </div>
               </section>
+              <UiPreferencesRows locale={locale} />
             </div>
-            <UiPreferencesPanel locale={locale} />
           </article>
         </details>
 

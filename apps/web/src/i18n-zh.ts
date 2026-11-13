@@ -911,8 +911,6 @@ export const zhFeatureMessages: Record<string, string> = {
     "未检测到 Google 登录。请完成 Google 账户选择后重试。",
   "more.loginFailed": "e-GYS 登录未成功。请重试。",
   "more.googleButtonFailed": "无法加载 Google 按钮。请检查网络后重试。",
-  "more.readabilityTitle": "外观与可读性",
-  "more.closeAppearance": "关闭外观设置",
   "more.densityTitle": "界面密度",
   "more.density.comfortable": "舒适",
   "more.density.standard": "标准",
@@ -921,5 +919,4 @@ export const zhFeatureMessages: Record<string, string> = {
   "more.font.auto": "自动",
   "more.font.hymnal": "圣诗",
   "more.font.sans": "现代无衬线",
-  "more.done": "完成",
 };
