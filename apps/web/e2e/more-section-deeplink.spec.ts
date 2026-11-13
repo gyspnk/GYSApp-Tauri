@@ -152,9 +152,9 @@ test("More setting categories are localized in Indonesian, English, and Chinese"
     ],
   } as const;
   const appearanceLabels = {
-    id: ["Tema Layar", "Warna Aksen"],
-    en: ["Screen theme", "Accent color"],
-    zh: ["屏幕主题", "强调色"],
+    id: ["Tema Layar", "Warna Aksen", "Kepadatan antarmuka", "Gaya huruf"],
+    en: ["Screen theme", "Accent color", "Interface density", "Font style"],
+    zh: ["屏幕主题", "强调色", "界面密度", "字体风格"],
   } as const;
 
   for (const locale of ["id", "en", "zh"] as const) {
