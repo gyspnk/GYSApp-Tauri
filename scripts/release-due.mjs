@@ -39,7 +39,13 @@ export function cadenceDue(cadence, commits) {
     return { due: false, reason: "cadence file has no usable nextDueTurn" };
   }
   if (!Number.isInteger(commits) || commits < 0) {
-    return { due: true, reason: "commit count unknown; releasing is safer" };
+    // Without a count the cadence's own due turn is the only number to trust;
+    // dispatching with an undefined turn would be rejected by the release gate.
+    return {
+      due: true,
+      turn: dueTurn,
+      reason: "commit count unknown; releasing is safer",
+    };
   }
   if (commits >= interval) {
     return {
@@ -70,7 +76,9 @@ function main(argv) {
     if (decision.due) console.log(decision.turn);
     return;
   }
-  process.exitCode = decision.due ? 0 : 1;
+  // 0 = release now, 2 = wait for more rounds, 1 = the decision itself broke.
+  // The workflow reads 2 as "nothing to do", so a waiting cron run stays green.
+  process.exitCode = decision.due ? 0 : 2;
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href)

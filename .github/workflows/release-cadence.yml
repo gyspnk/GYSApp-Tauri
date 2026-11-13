@@ -40,7 +40,14 @@ jobs:
             echo "due=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          message=$(node scripts/release-due.mjs)
+          # Exit 0 means release now, 2 means waiting; anything else is a real
+          # failure and must stay red instead of silently skipping releases.
+          status=0
+          message=$(node scripts/release-due.mjs) || status=$?
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            echo "release-due exited $status" >> "$GITHUB_STEP_SUMMARY"
+            exit "$status"
+          fi
           echo "$message" >> "$GITHUB_STEP_SUMMARY"
           if [ "${message#due:}" != "$message" ]; then
             echo "due=true" >> "$GITHUB_OUTPUT"
@@ -55,5 +62,9 @@ jobs:
         run: |
           set -euo pipefail
           turn=$(node scripts/release-due.mjs --turn | tail -n 1)
+          if [ -z "$turn" ]; then
+            echo "no turn to dispatch; the cadence file is incomplete" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
           echo "dispatching android-release.yml for turn $turn" | tee -a "$GITHUB_STEP_SUMMARY"
           gh workflow run android-release.yml --ref main -f "turn=$turn"

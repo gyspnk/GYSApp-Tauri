@@ -26,6 +26,8 @@ test("waits while fewer commits than the interval have landed", () => {
 test("releases when the commit count cannot be read, rather than skipping it", () => {
   assert.equal(cadenceDue(cadence, null).due, true);
   assert.equal(cadenceDue(cadence, undefined).due, true);
+  // An unknown count still needs a turn: the release gate rejects a blank one.
+  assert.equal(cadenceDue(cadence, null).turn, cadence.nextDueTurn);
 });
 
 test("refuses a cadence file that cannot say when the release is due", () => {
