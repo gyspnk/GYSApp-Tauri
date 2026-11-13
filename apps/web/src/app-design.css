@@ -6582,6 +6582,9 @@ body:has(.hymn-detail-page.is-text-viewer)
   align-items: baseline;
   gap: 8px;
   min-width: 0;
+  /* The title starts on the text title's left edge; only the trailing gap
+     stays, so a long hymn name can still breathe before the controls. */
+  padding-inline: 0 6px;
 }
 .hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-title strong {
   display: block;
