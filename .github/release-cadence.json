@@ -1,8 +1,8 @@
 {
   "intervalTurns": 25,
-  "lastTurn": 276,
-  "lastTag": "v0.1.0-preview.20261112.1",
-  "nextDueTurn": 301,
+  "lastTurn": 301,
+  "lastTag": "v0.1.0-preview.20261113.1",
+  "nextDueTurn": 326,
   "history": [
     {
       "turn": 226,
@@ -29,6 +29,15 @@
       "apkBytes": 36120335,
       "run": 43136806125,
       "url": "https://github.com/gyspnk/GYSApp-Tauri/releases/tag/v0.1.0-preview.20261112.1",
+      "signing": "Android debug identity"
+    },
+    {
+      "turn": 301,
+      "tag": "v0.1.0-preview.20261113.1",
+      "commit": "a0cb499efd66c5047f0d11417856a0354fefce6b",
+      "apkBytes": 36124083,
+      "run": 43378804158,
+      "url": "https://github.com/gyspnk/GYSApp-Tauri/releases/tag/v0.1.0-preview.20261113.1",
       "signing": "Android debug identity"
     }
   ]
