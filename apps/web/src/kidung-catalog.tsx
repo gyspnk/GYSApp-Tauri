@@ -1,6 +1,6 @@
 import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
-import { startTransition, useCallback, useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import {
   useEffect,
   useDeferredValue,
@@ -47,8 +47,6 @@ import { navigateSmooth } from "./route-transitions.js";
 // twenty-six rows, so a fourteen-row first batch left the card half height and
 // grew in visible steps while the entrance ran — "the animation only covers
 // half the page". The rest still arrives in idle batches.
-const FIRST_SCREEN_ROWS = 40;
-const ROW_BATCH = 80;
 
 export function HymnCatalog({
   locale,
@@ -182,42 +180,11 @@ export function HymnCatalog({
       .filter((item) => item.book === activeBook)
       .sort((a, b) => a.number - b.number);
   }, [activeBook, allItems, deferredQuery, searchIndex]);
-  // Opening the catalogue used to commit all 533 rows in the navigation frame.
-  // Render a screenful first and append the rest when the browser is idle: the
-  // heading and the first rows paint immediately, and the full list still ends
-  // up in the DOM (search, counts and deep links keep working).
-  const [visibleRows, setVisibleRows] = useState(FIRST_SCREEN_ROWS);
-  useEffect(() => {
-    if (filtered.length <= FIRST_SCREEN_ROWS) {
-      setVisibleRows(filtered.length);
-      return;
-    }
-    setVisibleRows(FIRST_SCREEN_ROWS);
-    const idle = window.requestIdleCallback;
-    const cancelIdle = window.cancelIdleCallback;
-    let cancelled = false;
-    let batchHandle: number | undefined;
-    let firstHandle: number | undefined;
-    // Append a batch per idle turn instead of one 533-row commit: React can
-    // interrupt each batch if the reader starts typing or taps elsewhere.
-    const batch = (current: number) => {
-      if (cancelled) return;
-      const next = Math.min(current + ROW_BATCH, filtered.length);
-      startTransition(() => setVisibleRows(next));
-      if (next < filtered.length)
-        batchHandle = window.setTimeout(() => batch(next), 16);
-    };
-    if (typeof idle === "function")
-      firstHandle = idle(() => batch(FIRST_SCREEN_ROWS), { timeout: 200 });
-    else firstHandle = window.setTimeout(() => batch(FIRST_SCREEN_ROWS), 50);
-    return () => {
-      cancelled = true;
-      if (typeof cancelIdle === "function" && typeof idle === "function")
-        cancelIdle(firstHandle);
-      else window.clearTimeout(firstHandle);
-      if (batchHandle !== undefined) window.clearTimeout(batchHandle);
-    };
-  }, [filtered.length, deferredQuery, book]);
+  // One commit renders the list. The progressive batches that used to guard
+  // this were measured on 13 Nov: a run row arrives at 640–720 ms either way,
+  // and the whole 533-row list lands at ~700 ms in one commit against 900–940
+  // ms through idle batches — the screenful-first version only added timing
+  // state and two broken contracts.
   // Marks let the hosted navigation baseline say whether a slow step was
   // mount work or data; they are two entries and cost nothing at runtime.
   useEffect(() => {
@@ -445,7 +412,7 @@ export function HymnCatalog({
             className={`pujian-list${staggering ? " is-staggering" : ""}`}
             ref={listRef}
           >
-            {filtered.slice(0, visibleRows).map((item, index) => {
+            {filtered.map((item, index) => {
               const inQueue = queueIds.has(item.id);
               return (
                 <li
