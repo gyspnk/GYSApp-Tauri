@@ -13,13 +13,19 @@ for (const width of [320, 390, 1440]) {
     // asserting the hex here made every palette tune a browser failure.
     await expect(page.locator(".nav-copy small")).toHaveCount(0);
     const modes = page.getByRole("group", { name: "Mode tampilan kidung" });
-    await expect(
-      modes.getByRole("button", { name: "Teks", exact: true }),
-    ).toHaveAttribute("aria-pressed", "false");
-    await modes.getByRole("button", { name: "Teks", exact: true }).click();
-    await expect(
-      modes.getByRole("button", { name: "Partitur", exact: true }),
-    ).toHaveAttribute("aria-pressed", "true");
+    // The one mode button is named for the action, so its name flips with the
+    // mode: "Tampilkan partitur" while text is showing, "Tampilkan teks" after.
+    const toScore = modes.getByRole("button", {
+      name: "Tampilkan partitur",
+      exact: true,
+    });
+    await expect(toScore).toHaveAttribute("aria-pressed", "false");
+    await toScore.click();
+    const toText = modes.getByRole("button", {
+      name: "Tampilkan teks",
+      exact: true,
+    });
+    await expect(toText).toHaveAttribute("aria-pressed", "true");
     const row = page.locator(".pujian-title").first();
     await row.click();
     await expect(page).not.toHaveURL(/mode=/);
@@ -36,7 +42,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page).toHaveURL(/\/kidung$/);
     await expect(row).toBeVisible();
     await expect(page.locator(".lyrics-sheet")).toHaveCount(0);
-    await modes.getByRole("button", { name: "Partitur", exact: true }).click();
+    await toText.click();
     await row.click();
     await expect(page).not.toHaveURL(/mode=/);
     await expect(page.locator(".lyrics-sheet")).toBeVisible();
