@@ -104,20 +104,20 @@ export async function watchRun({
   }
 }
 
-const invokedDirectly =
-  process.argv[1] && process.argv[1].endsWith("watch-run.mjs");
-if (invokedDirectly) {
-  const args = process.argv.slice(2);
-  const runId = args.find((arg) => /^\d+$/.test(arg));
-  if (!runId) {
-    console.error(
-      "usage: pnpm run:watch <runId> [--interval 20] [--timeout 45]",
-    );
-    process.exit(1);
-  }
-  const interval = Number(args[args.indexOf("--interval") + 1]);
-  const timeout = Number(args[args.indexOf("--timeout") + 1]);
-  const status = await watchRun({
+/**
+ * `args.indexOf(name)` is -1 when the option is absent, and `args[-1 + 1]` is
+ * the first argument — which turned a run id into a timeout and overflowed the
+ * timer. Read the option only when it is really there.
+ */
+export function parseArguments(args) {
+  const value = (name) => {
+    const at = args.indexOf(name);
+    return at >= 0 ? Number(args[at + 1]) : Number.NaN;
+  };
+  const runId = args.find((arg) => /^\d+$/.test(arg)) ?? "";
+  const interval = value("--interval");
+  const timeout = value("--timeout");
+  return {
     runId,
     ...(Number.isFinite(interval) && interval > 0
       ? { intervalMs: interval * 1000 }
@@ -125,6 +125,18 @@ if (invokedDirectly) {
     ...(Number.isFinite(timeout) && timeout > 0
       ? { timeoutMs: timeout * 60_000 }
       : {}),
-  });
-  process.exit(status);
+  };
+}
+
+const invokedDirectly =
+  process.argv[1] && process.argv[1].endsWith("watch-run.mjs");
+if (invokedDirectly) {
+  const options = parseArguments(process.argv.slice(2));
+  if (!options.runId) {
+    console.error(
+      "usage: pnpm run:watch <runId> [--interval 20] [--timeout 45]",
+    );
+    process.exit(1);
+  }
+  process.exit(await watchRun(options));
 }

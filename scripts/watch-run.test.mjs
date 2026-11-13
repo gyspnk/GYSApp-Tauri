@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { failingJobs, parseRun, verdict, watchRun } from "./watch-run.mjs";
+import {
+  failingJobs,
+  parseArguments,
+  parseRun,
+  verdict,
+  watchRun,
+} from "./watch-run.mjs";
 
 const run = (status, conclusion, updated = "2026-11-13T07:10:00Z") =>
   JSON.stringify({
@@ -93,4 +99,17 @@ test("reports a failed run as a failure, not a crash", async () => {
     print: () => {},
   });
   assert.equal(status, 1);
+});
+
+test("a bare run id never becomes a timeout", () => {
+  assert.deepEqual(parseArguments(["43385743206"]), { runId: "43385743206" });
+  assert.deepEqual(
+    parseArguments(["42", "--interval", "5", "--timeout", "10"]),
+    {
+      runId: "42",
+      intervalMs: 5000,
+      timeoutMs: 10 * 60_000,
+    },
+  );
+  assert.equal(parseArguments([]).runId, "");
 });
