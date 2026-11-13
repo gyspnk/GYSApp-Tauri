@@ -177,9 +177,13 @@ for (const width of [320, 1440]) {
         { exact: true },
       );
       await expect(input).toHaveCount(1);
+      // The field is the same control as the two reading catalogs' search
+      // field, so its type size is theirs (0.875rem, 15.75 px on a phone);
+      // page-titles.spec.ts owns the cross-route equality. Here only the floor
+      // matters: the input must never shrink below the readable size.
       await expect
-        .poll(() => input.evaluate(baseFontSize))
-        .toBeCloseTo(width >= 960 ? 16 : 14, 1);
+        .poll(async () => parseFloat(await input.evaluate(baseFontSize)))
+        .toBeGreaterThanOrEqual(14);
       await input.fill("2");
       await expect(paragraphs).toHaveCount(1);
       await expect(page.locator(".faith-number")).toHaveText("02");

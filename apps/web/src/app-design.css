@@ -674,17 +674,24 @@
 .faith-page .faith-stack {
   max-width: none;
 }
+/* The Iman field is the same control as the two reading catalogs' search
+   field: one height, one border, one input size. It used to be 54 px tall with
+   its own shadow and a 32 px input, and it sat flush against the title while
+   Literatur and Suara left 18 px. */
+.faith-page .faith-stack {
+  margin-top: 18px;
+}
 .faith-page .faith-search-bar {
   margin-bottom: 4px;
   /* The rows stop at 88ch, so the search field ends on the same edge instead
      of spanning a page whose text column is half as wide. */
   max-width: min(100%, 88ch);
-  min-height: 54px;
+  min-height: 48px;
   gap: 12px;
-  padding: 8px 12px;
-  border: 1px solid var(--line-strong);
+  padding-inline: 14px;
+  border: 1px solid var(--line);
   border-radius: 12px;
-  box-shadow: 0 2px 4px color-mix(in srgb, var(--blue) 5%, transparent);
+  box-shadow: none;
 }
 .faith-page .faith-search-bar:focus-within {
   border-color: var(--blue);
@@ -695,13 +702,8 @@
   color: var(--blue);
 }
 .faith-page .faith-search-bar input {
-  min-height: 32px;
+  min-height: 46px;
   font-size: 0.875rem;
-}
-@media (min-width: 960px) {
-  .faith-page .faith-search-bar input {
-    font-size: 1rem;
-  }
 }
 .faith-page .faith-search-bar input:focus-visible {
   outline: none;
