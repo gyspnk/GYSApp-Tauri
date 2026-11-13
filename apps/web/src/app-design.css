@@ -1272,11 +1272,25 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  align-items: center;
+  /* Literatur aligns the search field and the sort select on their bottom edge
+     (grid `align-items: end`); centring them here made the select sit 8 px
+     lower for the same pair of controls. */
+  align-items: end;
 }
 
 .suara-page .suara-toolbar .search-field {
   flex: 1 1 240px;
+}
+/* On a phone the sort control used to share the row and squeezed the search
+   field to 257 px, where the placeholder is cut mid-word ("...dalam kesa").
+   The field takes the row; the sort drops below it, like Literatur. */
+@media (max-width: 767px) {
+  .suara-page .suara-toolbar .search-field {
+    flex: 1 1 100%;
+  }
+  .suara-page .suara-toolbar .control-select {
+    max-width: 220px;
+  }
 }
 
 /* Search feedback is shared by the two reading catalogs. */
