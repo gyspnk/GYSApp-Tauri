@@ -355,6 +355,16 @@ Kontrak `apps/web/e2e/kidung-hymnal-window.spec.ts` menjaga aturan itu tanpa per
 
 Kontrak `page-titles.spec.ts` mengukur ketiga rute di 390 dan 1440: satu `h1` terlihat per rute, ukuran dan berat huruf sama, tepi atas dan tepi kiri berselisih ≤1 px. Kunci i18n `suara.backHome` dihapus dari tiga bahasa karena tidak ada lagi yang memakainya (`i18n.test.ts` gagal pada kunci mati).
 
+### Suara & Literatur: judul artikel memakai suara judul katalog (putaran 100)
+
+| Butir          | Sebelum (Suara)                   | Sebelum (Literatur)               | Sesudah                                                                                                         |
+| -------------- | --------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Keluarga huruf | Source Serif 4                    | Source Serif 4                    | GYS Reading Sans (sama dengan katalog)                                                                          |
+| Ukuran         | `clamp(1.625rem, 3.4vw, 2.25rem)` | `clamp(1.6875rem, 3.5vw, 2.5rem)` | `clamp(1.75rem, 2.5vw, 2.25rem)`                                                                                |
+| Berat          | 740                               | 600                               | 650                                                                                                             |
+| Tracking       | -0.038em                          | -0.04em                           | -0.035em                                                                                                        |
+| Kontrak        | —                                 | —                                 | `page-titles.spec.ts` membandingkan keluarga, ukuran, berat, dan tracking judul artikel dengan judul katalognya |
+
 ### Kidung: kolom pencarian ikut keluarga yang sama (putaran 99)
 
 | Butir       | Sebelum                           | Sesudah                                                                                                     |

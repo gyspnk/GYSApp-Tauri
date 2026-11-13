@@ -859,11 +859,17 @@
   min-width: 0;
 }
 
-.literature-detail-copy h1 {
+/* Same voice as the catalogue heading: one size, one weight, one tracking for
+   every route title. `.page` is repeated because calm-liturgical.css loads
+   after this file and sets `.page h1` to the reading serif at weight 600. */
+.page .literature-detail-copy h1 {
   max-width: 760px;
   margin: 4px 0 12px;
-  font-size: clamp(1.6875rem, 3.5vw, 2.5rem);
-  letter-spacing: -0.04em;
+  font-family: inherit;
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
 }
 
 .literature-detail-meta {
@@ -1095,8 +1101,8 @@
     height: 132px;
   }
 
-  .literature-detail-copy h1 {
-    font-size: clamp(1.4375rem, 7vw, 2rem);
+  .page .literature-detail-copy h1 {
+    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
   }
 
   .literature-detail-copy .detail-actions {

@@ -134,3 +134,61 @@ for (const viewport of [
     }
   });
 }
+
+// A route keeps one voice: the article heading must not switch family, size or
+// weight on the way in from the catalogue. Suara's article used the reading
+// serif at 740 weight and Literatur's at 600, so the same destination changed
+// voice between the list and the article it opened.
+const detailPairs = [
+  {
+    list: "/suara",
+    detail: "/suara/147-menapaki-tiga-iman",
+    heading: ".suara-article-card h1",
+  },
+  {
+    list: "/literatur",
+    detail:
+      "/literatur/pelita-kecil-https-3A-2F-2Ftjc.org-2Fid-2Fpelitakecil-2Fpk46-2F",
+    heading: ".literature-detail-copy h1",
+  },
+];
+
+for (const viewport of [
+  { width: 390, height: 844 },
+  { width: 1440, height: 900 },
+]) {
+  test(`detail headings keep the catalogue voice at ${viewport.width}`, async ({
+    page,
+  }) => {
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.setViewportSize(viewport);
+
+    const read = (locator: ReturnType<typeof page.locator>) =>
+      locator.evaluate((node) => {
+        const computed = getComputedStyle(node);
+        return {
+          family: computed.fontFamily,
+          size: computed.fontSize,
+          weight: computed.fontWeight,
+          tracking: computed.letterSpacing,
+        };
+      });
+
+    for (const pair of detailPairs) {
+      await page.goto(`/GYSApp-Tauri${pair.list}`, { waitUntil: "load" });
+      const listHeading = page.locator(".page-intro h1").first();
+      await expect(listHeading).toBeVisible();
+      const list = await read(listHeading);
+
+      await page.goto(`/GYSApp-Tauri${pair.detail}`, { waitUntil: "load" });
+      const detailHeading = page.locator(pair.heading).first();
+      await expect(detailHeading).toBeVisible();
+      const detail = await read(detailHeading);
+
+      expect(detail.family, `${pair.detail} family`).toBe(list.family);
+      expect(detail.size, `${pair.detail} size`).toBe(list.size);
+      expect(detail.weight, `${pair.detail} weight`).toBe(list.weight);
+      expect(detail.tracking, `${pair.detail} tracking`).toBe(list.tracking);
+    }
+  });
+}

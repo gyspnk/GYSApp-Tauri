@@ -4196,10 +4196,16 @@ body:has(.hymn-detail-page.is-text-viewer)
     transition: none;
   }
 }
+/* The article heading speaks with the same voice as the catalogue heading it
+   was opened from: one family, one size, one weight, one tracking. It used to
+   switch to the reading serif at a larger size, so the same route changed
+   voice between the list and the article. */
 .app-frame .online-content-page .online-article-card > h1 {
-  font-family: var(--font-reading);
-  font-size: clamp(1.5625rem, 2.7vw, 2.375rem);
-  line-height: 1.22;
+  font-family: inherit;
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
   margin-block: 10px 18px;
   text-wrap: balance;
 }
