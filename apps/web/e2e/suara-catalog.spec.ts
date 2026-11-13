@@ -32,19 +32,16 @@ const feed = {
 
 const localeCopy = {
   id: {
-    back: "← Beranda",
     title: "Suara Sejati",
     date: /Des/i,
     alt: "Sampul Menapaki Tiga Iman Bag",
   },
   en: {
-    back: "← Home",
     title: "True Voice",
     date: /Dec/i,
     alt: "Cover of Menapaki Tiga Iman Bag",
   },
   zh: {
-    back: "← 主页",
     title: "真实声音",
     date: /12月|2023年/,
     alt: "Menapaki Tiga Iman Bag 的封面",
@@ -95,9 +92,6 @@ test("Suara catalog keeps locale, image, focus, and card geometry contracts", as
       await page.goto(`/GYSApp-Tauri/suara?__gys_locale=${locale}`);
       const catalog = page.getByTestId("suara-page");
       await expect(catalog).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: localeCopy[locale].back }),
-      ).toBeVisible();
       await expect(
         catalog.getByRole("heading", { name: localeCopy[locale].title }),
       ).toBeVisible();

@@ -143,7 +143,9 @@ test("Sauh and Suara back links stay reachable around their inline text", async 
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  for (const route of ["sauh", "suara", "suara/147-menapaki-tiga-iman"]) {
+  // The Suara list has no breadcrumb any more (it pushed the title below its
+  // siblings); its detail page still carries one.
+  for (const route of ["sauh", "suara/147-menapaki-tiga-iman"]) {
     await page.goto(`/GYSApp-Tauri/${route}`);
     const link = page.locator(".detail-back .text-button").first();
     await expect(link).toBeVisible();
