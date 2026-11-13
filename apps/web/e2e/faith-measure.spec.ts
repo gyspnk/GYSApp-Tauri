@@ -1,43 +1,79 @@
 import { expect, test } from "@playwright/test";
 
-// 1920 px is the widest desktop pass: the statement must use the page column
-// instead of stopping at a character measure, and must not cause side scroll.
-test.use({ viewport: { width: 1920, height: 1080 } });
+// The Iman page had no measure ceiling: at 1440 its rows ran 1170 px, about
+// 145 characters per line, twice what the Bible reader allows. Both the rows
+// and the search field now stop at the reader's 88ch roof.
 
-test("the doctrine text fills the page column without overflowing", async ({
+const MEASURE = 88;
+
+async function measureCap(page: import("@playwright/test").Page) {
+  return page.evaluate((ch: number) => {
+    const probe = document.createElement("span");
+    probe.style.cssText = `position:absolute;visibility:hidden;width:${ch}ch`;
+    document.body.append(probe);
+    const cap = probe.getBoundingClientRect().width;
+    probe.remove();
+    return cap;
+  }, MEASURE);
+}
+
+test("the Iman rows stop at the reader's measure on a desktop", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({
+        version: 1,
+        locale: "id",
+        theme: "light",
+        onboarded: true,
+      }),
+    );
+  });
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/iman");
-  const statement = page.locator(".faith-statement").first();
-  await expect(statement).toBeVisible();
 
-  const boxes = await statement.evaluate((node) => {
-    const page = node.closest(".faith-page")!;
-    const row = node.closest(".faith-row")!;
-    const p = page.getBoundingClientRect();
-    const r = row.getBoundingClientRect();
-    const s = node.getBoundingClientRect();
-    return {
-      pageRight: p.right,
-      rowRight: r.right,
-      rowWidth: r.width,
-      textRight: s.right,
-      textWidth: s.width,
-      overflowX:
-        document.documentElement.scrollWidth -
-        document.documentElement.clientWidth,
-    };
+  const row = page.locator(".faith-row").first();
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  const cap = await measureCap(page);
+  const rowBox = await row.boundingBox();
+  const searchBox = await page.locator(".faith-search-bar").boundingBox();
+  if (!rowBox || !searchBox) throw new Error("Iman measures are missing");
+
+  expect(rowBox.width).toBeLessThanOrEqual(cap + 1);
+  expect(rowBox.width).toBeGreaterThanOrEqual(cap - 1);
+  expect(Math.abs(searchBox.width - rowBox.width)).toBeLessThanOrEqual(1);
+  expect(rowBox.height).toBeGreaterThanOrEqual(44);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test("the Iman rows still fill a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({
+        version: 1,
+        locale: "id",
+        theme: "light",
+        onboarded: true,
+      }),
+    );
   });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/iman");
 
-  expect(boxes.overflowX, "no sideways scroll").toBeLessThanOrEqual(0);
-  expect(boxes.rowRight).toBeLessThanOrEqual(boxes.pageRight + 1);
-  expect(
-    boxes.textWidth / boxes.rowWidth,
-    "the statement takes the row's copy column",
-  ).toBeGreaterThan(0.85);
-  expect(
-    Math.abs(boxes.rowRight - boxes.textRight),
-    "the statement ends where the row ends",
-  ).toBeLessThanOrEqual(2);
+  const row = page.locator(".faith-row").first();
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  const rowBox = await row.boundingBox();
+  const pageBox = await page.locator(".faith-page").boundingBox();
+  if (!rowBox || !pageBox) throw new Error("Iman measures are missing");
+
+  expect(rowBox.width).toBeGreaterThan(pageBox.width * 0.8);
+  expect(rowBox.height).toBeGreaterThanOrEqual(44);
 });

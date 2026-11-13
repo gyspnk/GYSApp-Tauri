@@ -676,7 +676,9 @@
 }
 .faith-page .faith-search-bar {
   margin-bottom: 4px;
-  max-width: none;
+  /* The rows stop at 88ch, so the search field ends on the same edge instead
+     of spanning a page whose text column is half as wide. */
+  max-width: min(100%, 88ch);
   min-height: 54px;
   gap: 12px;
   padding: 8px 12px;
@@ -734,6 +736,11 @@
   border-block: 0;
   display: grid;
   gap: 0;
+  /* Same 88ch ceiling as the Bible reader: at 1440 the rows would otherwise
+     run ~145 characters per line, which is twice the readable measure. The
+     roof is in ch so it tracks the reader's font size, and the separators end
+     with the text instead of crossing a mostly empty page. */
+  max-width: min(100%, 88ch);
 }
 .faith-page .faith-row {
   width: 100%;
