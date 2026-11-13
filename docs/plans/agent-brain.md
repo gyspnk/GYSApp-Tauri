@@ -252,4 +252,6 @@ Antrean putaran dibaca dengan `pnpm issue:next`, bukan dari ingatan: skrip `scri
 
 Panel sekarang memetakan view model murni (`brainNodeView`) ke `h(...)` tanpa logika di markup; `test/brain-render.test.js` menguji model itu headless (26 tes di plugin), karena `react`/`react-dom/server` tidak dapat di-resolve dari Node. Kontrak browser tetap hilang sampai sesi non-operator bisa membuka 127.0.0.1:3080 (#12).
 
+Menonton run hosted sekarang satu perintah: `pnpm run:watch <runId>` (`scripts/watch-run.mjs`) memanggil `gh api .../runs/<id>` sampai selesai, lalu mencetak satu blok berisi hasil, durasi, job yang gagal, dan perintah lanjutannya (`pnpm verify --explain <id>`). Tidak ada keluaran selama run berjalan, jadi putaran tidak lagi menulis lima sampai sepuluh panggilan polling per run; skripnya keluar 0 untuk hijau, 1 untuk merah, dan 2 bila anggaran waktunya habis (default 45 menit) supaya tidak pernah menggantung. Enam tes di `scripts/watch-run.test.mjs` menjalankan `gh` palsu — termasuk kasus run yang masih berjalan, merah, dan kehabisan waktu.
+
 `pnpm check:fast` ikut menjalankan gerbang dokumentasi (`node scripts/verify-documentation.mjs`) begitu ada berkas `docs/` atau `README.md` yang berubah, jadi tautan rusak dan catatan putaran yang belum ditulis ketahuan dalam hitungan detik, bukan di CI.
