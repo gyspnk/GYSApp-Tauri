@@ -598,6 +598,10 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.pdfOpening": "PDF reader sedang dibuka…",
     "kidung.pdfFailed": "PDF gagal dimuat",
     "kidung.pdfRetry": "Periksa koneksi atau cache, lalu coba lagi.",
+    "kidung.partiturUnmapped": "Halaman lagu ini belum dipetakan",
+    "kidung.partiturUnmappedHint":
+      "Buku ini belum menyebut halaman lagu tersebut, jadi seluruh buku hanya dibuka bila Anda memintanya.",
+    "kidung.partiturOpenBook": "Buka seluruh buku",
     "kidung.notFound": "Pujian tidak ditemukan",
     "kidung.notFoundBody":
       "Pujian ini tidak ada di katalog. Periksa tautannya, atau kembali ke daftar kidung.",

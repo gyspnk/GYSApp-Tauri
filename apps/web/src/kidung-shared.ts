@@ -27,6 +27,25 @@ export function numberLabel(number: number, id?: string) {
   return canonicalNumber ?? String(number).padStart(3, "0");
 }
 
+/**
+ * The page window a score viewer may show. Every hymnal that ships one master
+ * PDF (the Fork master, and each distributed book) states where a song starts
+ * and how many pages it owns; without that window the reader paints the whole
+ * book — hundreds of pages for a single hymn.
+ */
+export function hymnPdfPageRange(asset: {
+  initialPage: number;
+  pageCount?: number | undefined;
+}): { start: number; count: number } | undefined {
+  const count = asset.pageCount;
+  if (count === undefined || !Number.isFinite(count) || count < 1)
+    return undefined;
+  const start = Number.isFinite(asset.initialPage)
+    ? Math.max(1, Math.trunc(asset.initialPage))
+    : 1;
+  return { start, count: Math.trunc(count) };
+}
+
 export function hymnCollectionLabel(book: string) {
   if (book === "rohani") return "KR";
   // Installed packs carry their code as the book; do not title-case it into

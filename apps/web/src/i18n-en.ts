@@ -571,6 +571,10 @@ export const enFeatureMessages: Record<string, string> = {
   "kidung.pdfOpening": "Opening PDF reader…",
   "kidung.pdfFailed": "PDF failed to load",
   "kidung.pdfRetry": "Check your connection or cache, then try again.",
+  "kidung.partiturUnmapped": "This hymn has no page in the book map",
+  "kidung.partiturUnmappedHint":
+    "The book does not name this hymn's page yet, so the whole book opens only when you ask for it.",
+  "kidung.partiturOpenBook": "Open the whole book",
   "kidung.notFound": "Hymn not found",
   "kidung.notFoundBody":
     "This hymn is not in the catalogue. Check the link, or go back to the hymn list.",

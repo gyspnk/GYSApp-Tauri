@@ -558,6 +558,10 @@ export const zhFeatureMessages: Record<string, string> = {
   "kidung.pdfOpening": "正在打开 PDF 阅读器…",
   "kidung.pdfFailed": "PDF 加载失败",
   "kidung.pdfRetry": "请检查网络或缓存后重试。",
+  "kidung.partiturUnmapped": "这首诗歌尚未映射到书页",
+  "kidung.partiturUnmappedHint":
+    "这本书还没有标注这首诗歌的页码，因此只有你要求时才打开整本书。",
+  "kidung.partiturOpenBook": "打开整本书",
   "kidung.notFound": "未找到诗歌",
   "kidung.notFoundBody": "这首诗歌不在目录中。请检查链接，或返回诗歌列表。",
   "kidung.settingsMidiPlayer": "MIDI 播放器",

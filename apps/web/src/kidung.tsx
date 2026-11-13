@@ -102,6 +102,7 @@ import {
   type CatalogState,
   numberLabel,
   formatMidiTime,
+  hymnPdfPageRange,
   uniqueItems,
 } from "./kidung-shared.js";
 
@@ -229,6 +230,9 @@ export function HymnDetail({
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
   const [pdfInitialPage, setPdfInitialPage] = useState(1);
   const [pdfPageCount, setPdfPageCount] = useState<number>();
+  // A distributed hymnal ships one master PDF; a song whose index page is
+  // missing would otherwise paint every page of the book at once.
+  const [pdfWholeBook, setPdfWholeBook] = useState(false);
   const [pdfSource, setPdfSource] = useState<
     "fork" | "canonical" | "distributed"
   >("fork");
@@ -236,6 +240,12 @@ export function HymnDetail({
   const [pdfStatus, setPdfStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
+  const pdfPageRange = hymnPdfPageRange({
+    initialPage: pdfInitialPage,
+    pageCount: pdfPageCount,
+  });
+  /** True when a hymnal master is the only source and this song has no page. */
+  const pdfUnmapped = pdfSource === "distributed" && !pdfPageRange;
   // A reader in text mode nearly always offers the printed score next. Warm
   // that chunk while the page is idle so the first PDF tap paints instead of
   // downloading it (measured: cold 679 ms, warm 130 ms at 390x844).
@@ -1438,6 +1448,7 @@ export function HymnDetail({
     writeHymnViewerMode("pdf");
     setPdfStatus("loading");
     setPdfVersion(undefined);
+    setPdfWholeBook(false);
     try {
       const [asset] = await Promise.all([loadPdfAsset(), preloadPdfReader()]);
       const nextUrl =
@@ -2644,7 +2655,20 @@ export function HymnDetail({
                 </button>
               </div>
             )}
-            {pdfStatus === "ready" && (
+            {pdfStatus === "ready" && pdfUnmapped && !pdfWholeBook && (
+              <div className="hymn-pdf-unmapped" role="status">
+                <strong>{translate(locale, "kidung.partiturUnmapped")}</strong>
+                <span>{translate(locale, "kidung.partiturUnmappedHint")}</span>
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => setPdfWholeBook(true)}
+                >
+                  {translate(locale, "kidung.partiturOpenBook")}
+                </button>
+              </div>
+            )}
+            {pdfStatus === "ready" && (!pdfUnmapped || pdfWholeBook) && (
               <Suspense
                 fallback={
                   <div className="loading-panel">
@@ -2659,14 +2683,7 @@ export function HymnDetail({
                   {...(pdfBytes ? { data: pdfBytes } : {})}
                   initialPage={pdfInitialPage}
                   locale={locale}
-                  {...(pdfSource === "fork" && pdfPageCount
-                    ? {
-                        pageRange: {
-                          start: pdfInitialPage,
-                          count: pdfPageCount,
-                        },
-                      }
-                    : {})}
+                  {...(pdfPageRange ? { pageRange: pdfPageRange } : {})}
                   progressKey={`hymn:${item.id}:${pdfVersion ?? pdfSource}`}
                   {...(pdfUrl ? { downloadUrl: pdfUrl } : {})}
                   title={item.title}

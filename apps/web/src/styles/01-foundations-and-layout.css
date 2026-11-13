@@ -2311,6 +2311,28 @@ textarea::placeholder {
 .error-panel {
   border-color: color-mix(in srgb, #b98132 45%, var(--line));
 }
+/* A hymnal master is one PDF; when the book map has no page for this song the
+   reader asks before painting hundreds of pages. */
+.hymn-pdf-unmapped {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+.hymn-pdf-unmapped strong {
+  color: var(--ink);
+}
+.hymn-pdf-unmapped .secondary-button {
+  justify-self: start;
+  width: auto;
+  min-height: var(--control-hit, 44px);
+  margin-top: 4px;
+}
 .error-panel strong {
   color: var(--ink);
 }
