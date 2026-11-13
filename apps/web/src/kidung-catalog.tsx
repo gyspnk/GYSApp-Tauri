@@ -43,7 +43,11 @@ import { navigateSmooth } from "./route-transitions.js";
 // First paint commits only half a phone screen; the rest arrives in batches
 // while the browser is idle. Committing all 533 at once measured 1 314 ms to
 // first row on the hosted runner.
-const FIRST_SCREEN_ROWS = 14;
+// One commit must fill the screen it lands on: a two-column desktop shows
+// twenty-six rows, so a fourteen-row first batch left the card half height and
+// grew in visible steps while the entrance ran — "the animation only covers
+// half the page". The rest still arrives in idle batches.
+const FIRST_SCREEN_ROWS = 40;
 const ROW_BATCH = 80;
 
 export function HymnCatalog({
@@ -72,12 +76,20 @@ export function HymnCatalog({
   // and section switches can fold away so the list starts higher.
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
   // Rows arrive once, with a short stagger; afterwards the list keeps still.
-  const [staggering, setStaggering] = useState(true);
+  // The clock starts when the first row exists, not when the page mounts: a
+  // slow load would otherwise spend the whole wave on an empty list and paint
+  // every row at once.
+  const [staggering, setStaggering] = useState(false);
+  const hasRows = state.status === "ready" && state.items.length > 0;
   useEffect(() => {
-    if (!staggering) return;
+    if (!hasRows) return;
+    setStaggering(true);
     const timer = window.setTimeout(() => setStaggering(false), 760);
-    return () => window.clearTimeout(timer);
-  }, [staggering]);
+    return () => {
+      window.clearTimeout(timer);
+      setStaggering(false);
+    };
+  }, [hasRows]);
   // The reader picks a collection once; reopening the catalogue should land on
   // the same book instead of jumping back to the first one.
   const [book, setBookState] = useState(readStoredCollection);
@@ -443,7 +455,7 @@ export function HymnCatalog({
                   data-nomor={String(item.number).toLowerCase()}
                   data-judul={item.title.toLowerCase()}
                   style={
-                    { "--row-index": Math.min(index, 11) } as CSSProperties
+                    { "--row-index": Math.min(index, 59) } as CSSProperties
                   }
                 >
                   <span className="pujian-nomor" aria-hidden="true">

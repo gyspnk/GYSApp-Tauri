@@ -6202,14 +6202,22 @@ body:has(.hymn-detail-page.is-text-viewer)
     animation: none;
   }
 
-  /* Every row painted in the first frame settles, not only the first twelve:
-     the catalogue commits a full screen at once, so a cap left the lower half
-     of that screen standing still while the top half moved. The row index is
-     already capped at 11 in the markup, so the wave still never trails. */
+  /* Every row painted in the first frame settles, and it settles together: a
+     two-column desktop screen shows twenty-six rows, so a twelve-row wave left
+     the lower half of that screen waiting and then popping — the "half the page
+     moved" report. The delay therefore saturates at 240 ms instead of growing
+     with the row, and rows past the sixtieth (never on screen at the first
+     paint) skip the entrance entirely. */
   .pujian-list.is-staggering .pujian-item {
     animation: catalogue-row-in var(--motion-entrance)
       var(--motion-ease-entrance) backwards;
-    animation-delay: calc(var(--row-index, 0) * var(--motion-stagger));
+    animation-delay: min(
+      calc(var(--row-index, 0) * var(--motion-stagger)),
+      240ms
+    );
+  }
+  .pujian-list.is-staggering .pujian-item:nth-child(n + 61) {
+    animation: none;
   }
 }
 
