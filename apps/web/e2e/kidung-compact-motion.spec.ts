@@ -317,5 +317,7 @@ test("every catalogue row on the first screen settles, not only a prefix", async
     return { rows: rows.length, moving: moving.length };
   });
   expect(frame.rows).toBeGreaterThanOrEqual(14);
-  expect(frame.moving).toBe(frame.rows);
+  // The wave is capped at sixty rows: the off-screen tail stays still, so a
+  // 533-row catalogue does not run 533 animations at once.
+  expect(frame.moving).toBe(Math.min(frame.rows, 60));
 });

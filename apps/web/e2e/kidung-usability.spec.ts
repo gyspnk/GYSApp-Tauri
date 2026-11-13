@@ -1374,11 +1374,12 @@ test("catalog branding and title metrics stay stable through font readiness", as
   await expect(page.locator(".brand-mark")).toBeVisible();
   await expect(page.locator(".reader-context-title")).toHaveCount(0);
 
-  // Wait for the reading font before the first sample. The earlier variant
-  // sampled while the swap could still be in flight, so a visible change in
-  // first-paint timing (a search row that pushes rows below the fold) made the
-  // comparison fail without any typography regression. The contract kept here
-  // is that once fonts are ready the catalogue titles do not move again.
+  // Wait for the entrance and the reading font before the first sample: the
+  // wave moves rows by a fraction of a pixel while it runs, and comparing an
+  // animated box with a settled one failed on 59.99998474121094 vs 60 without
+  // any typography regression. The contract kept here is that once the list and
+  // the fonts are settled, the catalogue titles do not move again.
+  await expect(page.locator(".pujian-list.is-staggering")).toHaveCount(0);
   await page.evaluate(async () => {
     await document.fonts.ready;
     await new Promise<void>((resolve) =>
@@ -1393,7 +1394,7 @@ test("catalog branding and title metrics stay stable through font readiness", as
         fontFamily: style.fontFamily,
         fontSize: style.fontSize,
         lineHeight: style.lineHeight,
-        height: box.height,
+        height: Math.round(box.height * 100) / 100,
       };
     }),
   );
@@ -1411,7 +1412,7 @@ test("catalog branding and title metrics stay stable through font readiness", as
         fontFamily: style.fontFamily,
         fontSize: style.fontSize,
         lineHeight: style.lineHeight,
-        height: box.height,
+        height: Math.round(box.height * 100) / 100,
       };
     }),
   );
