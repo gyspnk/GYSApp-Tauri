@@ -149,10 +149,16 @@ for (const width of [320, 1440]) {
       await expect(heading).toBeVisible();
       await expect(heading).toHaveCSS("white-space", "normal");
       const bounds = await page.locator(".faith-page").boundingBox();
-      for (const selector of [".faith-search-bar", ".faith-row"]) {
-        const box = await page.locator(selector).first().boundingBox();
-        expect(box!.width).toBeCloseTo(bounds!.width, 1);
-      }
+      const searchBox = await page
+        .locator(".faith-search-bar")
+        .first()
+        .boundingBox();
+      const rowBox = await page.locator(".faith-row").first().boundingBox();
+      // The rows and the search field share one edge: the page on a phone, the
+      // reader's 88ch measure on a desktop (faith-measure.spec.ts owns the cap).
+      expect(searchBox!.width).toBeCloseTo(rowBox!.width, 1);
+      expect(rowBox!.width).toBeLessThanOrEqual(bounds!.width + 0.5);
+      if (width > 767) expect(rowBox!.width).toBeLessThan(bounds!.width - 1);
       // One tap per row: the row itself is the button and the PDF lives in
       // the sheet it opens.
       const row = page.locator(".faith-row").first();
