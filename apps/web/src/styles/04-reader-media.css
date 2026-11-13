@@ -8,47 +8,6 @@
 :root[data-theme="amoled"] .hymn-detail-page {
   --kidung-accent: color-mix(in srgb, var(--accent, #8d6e3f) 80%, #ffffff);
 }
-/* gyschordweb two-mode header toggle (Teks / PDF). */
-.hymn-mode-toggle {
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface-soft);
-  animation: hymn-surface-fade-in 0.18s ease both;
-}
-.hymn-mode-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 34px;
-  padding: 0 14px;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    box-shadow 0.16s ease;
-}
-.hymn-mode-button:hover:not(:disabled):not(.is-active) {
-  color: var(--ink);
-}
-.hymn-mode-button.is-active {
-  background: color-mix(in srgb, var(--kidung-accent) 12%, var(--surface));
-  color: color-mix(in srgb, var(--kidung-accent) 72%, var(--ink));
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--kidung-accent) 22%, transparent);
-}
-.hymn-mode-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 /* e-GYS login tracking line on the account card. */
 
 /* e-GYS profile check state: same visual language as loading-panel. */
@@ -526,16 +485,6 @@
     align-items: start;
   }
 
-  .hymn-mode-toggle {
-    justify-self: start;
-    max-width: 100%;
-  }
-  .hymn-mode-button {
-    flex: 1;
-    justify-content: center;
-    min-height: 40px;
-  }
-
   /* The header mode toggle must not push the compact text-mode reader past
      the fold: title and toggle share one row, neighbor buttons move to the
      text footer / pdf chrome that already provide song navigation. */
@@ -553,13 +502,6 @@
 
   .hymn-detail-surface {
     gap: 12px;
-  }
-  .hymn-mode-toggle {
-    padding: 4px;
-  }
-  .hymn-mode-button {
-    min-height: 34px;
-    padding-inline: 12px;
   }
   .detail-actions .quiet-button,
   .detail-actions .primary-button {

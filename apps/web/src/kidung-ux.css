@@ -224,10 +224,6 @@
   color: var(--blue);
 }
 
-.hymn-detail-page .hymn-mode-button {
-  min-height: var(--control-hit, 44px);
-}
-
 .hymn-text-toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 44px;
@@ -1008,10 +1004,6 @@ kidung-row-menu > summary:focus-visible,
     grid-row: 1;
     padding: 0;
     border: 0;
-  }
-  .kidung-index-toolbar .hymn-mode-toggle {
-    grid-column: 4;
-    grid-row: 1;
   }
   .kidung-index-toolbar .search-field > span {
     position: absolute;

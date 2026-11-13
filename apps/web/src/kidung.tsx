@@ -1640,37 +1640,6 @@ export function HymnDetail({
           </Link>
           <h1 title={item.title}>{item.title}</h1>
         </div>
-        {/* gyschordweb two-mode presentation: text and PDF are equal citizens
-            switched straight from the header, persisted per hymn. */}
-        {viewerMode === "pdf" && (
-          <div
-            className="hymn-mode-toggle"
-            role="tablist"
-            aria-label={translate(locale, "kidung.viewMode")}
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={viewerMode !== "pdf"}
-              className={`hymn-mode-button${viewerMode !== "pdf" ? " is-active" : ""}`}
-              onClick={() => selectViewerMode("lyrics")}
-            >
-              <Icon name="book" size={16} />
-              <span>{translate(locale, "kidung.text")}</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={viewerMode === "pdf"}
-              className={`hymn-mode-button${viewerMode === "pdf" ? " is-active" : ""}`}
-              disabled={!item.pdfPath && !item.assetCode}
-              onClick={() => selectViewerMode("pdf")}
-            >
-              <Icon name="file" size={16} />
-              <span>{translate(locale, "kidung.score")}</span>
-            </button>
-          </div>
-        )}
         <div className="hymn-text-toolbar">
           <div className="detail-actions">
             {!item.assetCode && (

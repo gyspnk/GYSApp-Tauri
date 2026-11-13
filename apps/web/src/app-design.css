@@ -2021,22 +2021,6 @@
   color: var(--blue);
 }
 
-.hymn-detail-page.is-text-viewer .hymn-mode-toggle {
-  padding: 4px;
-  gap: 4px;
-  border-radius: 16px;
-  border-color: color-mix(in srgb, var(--blue) 18%, var(--line));
-  background: var(--blue-soft);
-}
-.hymn-detail-page.is-text-viewer .hymn-mode-button {
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--navy);
-  box-shadow: none;
-  font-weight: 600;
-}
-.hymn-detail-page.is-text-viewer .hymn-mode-button.is-active,
 .hymn-detail-page.is-text-viewer .hymn-action-primary,
 .hymn-detail-page.is-text-viewer .hymn-scope-pill-btn.is-active {
   background: var(--blue);
@@ -2045,13 +2029,7 @@
   box-shadow: none;
 }
 .hymn-detail-page.is-text-viewer
-  :is(
-    .viewer-chrome-button,
-    .hymn-action,
-    .hymn-more-actions-summary,
-    .hymn-text-footer > button,
-    .hymn-mode-button
-  )
+  :is(.viewer-chrome-button, .hymn-action, .hymn-more-actions-summary)
   svg {
   margin: 0;
   color: inherit;

@@ -109,9 +109,6 @@
   gap: 16px;
   flex-wrap: wrap;
 }
-.hymn-index-heading .hymn-mode-button {
-  min-height: 44px;
-}
 /* Shared controls retain clear silhouettes and consistent optical icon weight. */
 :where(
   .primary-button,
@@ -120,7 +117,7 @@
   .viewer-chrome-button,
   .media-control,
   .media-minimize,
-  .hymn-mode-button
+
 ) {
   transition:
     background-color 160ms ease,
@@ -204,7 +201,7 @@
     .viewer-chrome-button,
     .media-control,
     .media-minimize,
-    .hymn-mode-button
+
   ) {
     transition: none;
   }
@@ -265,7 +262,7 @@
     .viewer-chrome-button,
     .media-control,
     .media-minimize,
-    .hymn-mode-button
+
   ) {
     transition: none;
   }
