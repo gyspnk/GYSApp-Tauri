@@ -857,6 +857,27 @@ test("online content opens inside the application shell", async ({ page }) => {
   await expect(page.getByTestId("suara-detail-page")).toBeVisible();
 });
 
+async function overflowReport(page: Page) {
+  return page.evaluate(() => {
+    const root = document.documentElement;
+    const offenders = [...document.querySelectorAll("body *")]
+      .filter((node) => node.getBoundingClientRect().right > innerWidth + 1)
+      .slice(0, 5)
+      .map((node) => {
+        const rect = node.getBoundingClientRect();
+        const name = `${node.tagName.toLowerCase()}.${[...node.classList].join(".")}`;
+        return `${name} right=${Math.round(rect.right)} width=${Math.round(rect.width)}`;
+      });
+    return {
+      overflow: root.scrollWidth > innerWidth,
+      scrollWidth: root.scrollWidth,
+      clientWidth: root.clientWidth,
+      innerWidth,
+      offenders,
+    };
+  });
+}
+
 test("Sauh article adapts from split desktop layout to a single mobile column", async ({
   page,
 }) => {
@@ -905,16 +926,15 @@ test("Sauh article adapts from split desktop layout to a single mobile column", 
   await page.reload();
   await expect(page.locator(".sauh-article")).toBeVisible();
   // The preview image is aborted in this test, so the fallback paints after the
-  // article does. On a loaded runner that swap landed after the 5 s default and
-  // the poll read a transient width (run 43626462469); the layout itself is
-  // 1024 px wide at this viewport.
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
-      { timeout: 15_000 },
-    )
-    .toBe(true);
+  // article does. Poll with a report instead of a bare boolean: two hosted runs
+  // (43626462469, 43627535971) timed out here while the same layout measured
+  // 1024 px wide locally, so the failure message has to name the offender.
+  let overflow = await overflowReport(page);
+  for (let attempt = 0; attempt < 30 && overflow.overflow; attempt += 1) {
+    await page.waitForTimeout(500);
+    overflow = await overflowReport(page);
+  }
+  expect(overflow, JSON.stringify(overflow)).toMatchObject({ overflow: false });
   const desktopColumns = await page
     .locator(".sauh-article")
     .evaluate((element) => getComputedStyle(element).gridTemplateColumns);
