@@ -297,7 +297,8 @@
   gap: 6px;
   flex-wrap: wrap;
   color: var(--muted);
-  font-size: 0.6875rem;
+  /* The A-/A+ pair and its readout are painted text: 12 px floor. */
+  font-size: 0.75rem;
 }
 .reader-preferences > span {
   margin-right: 2px;

@@ -505,7 +505,8 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     text-align: center;
-    font-size: 0.6875rem;
+    /* Painted labels follow the shell's 12 px micro-text floor. */
+    font-size: 0.75rem;
     line-height: 1.1;
   }
 
@@ -572,7 +573,7 @@
   .kidung-local-nav a {
     gap: 4px;
     padding-inline: 4px;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
   }
 
   .kidung-local-nav a svg {
@@ -916,6 +917,11 @@
 .reader-settings-group-body > .transpose-control,
 .reader-settings-group-body > .capo-control {
   margin: 0;
+}
+
+/* The capo readout is painted text, so it follows the 12 px floor. */
+.reader-settings-group-body > .capo-control > span {
+  font-size: 0.75rem;
 }
 
 @keyframes kidung-disclosure-in {

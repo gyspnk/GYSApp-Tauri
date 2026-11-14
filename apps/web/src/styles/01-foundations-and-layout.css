@@ -148,6 +148,8 @@ a:focus-visible {
 }
 .search-trigger kbd,
 .global-search kbd {
+  /* The shortcut badge is painted text, so it follows the 12 px floor too. */
+  font-size: 0.75rem;
   border: 1px solid var(--line-strong);
   border-bottom-width: 2px;
   border-radius: 6px;
@@ -1005,7 +1007,8 @@ h1 {
   justify-content: space-between;
   gap: 20px;
   color: var(--muted);
-  font-size: 0.6875rem;
+  /* Painted section labels follow the shell's 12 px micro-text floor. */
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1276,7 +1279,9 @@ blockquote {
 }
 
 .suara-card-content .suara-date {
-  font-size: 0.625rem;
+  /* 10 px uppercase with tracking was the smallest painted text in the shell;
+     the floor is 12 px (see the micro-text contract). */
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--blue);
   letter-spacing: 0.04em;

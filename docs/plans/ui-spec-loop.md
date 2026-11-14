@@ -586,3 +586,21 @@ Axe tidak mengaudit cincin fokus, dan stylesheet bisa kehilangannya tanpa ada te
 | Cincin sah      | `outline-width > 0` dengan `outline-style` bukan `none`, atau `box-shadow` yang tidak transparan |
 | Cincin di induk | dihitung sah — kolom pencarian melukis fokusnya di pembungkus                                    |
 | Kegagalan       | daftar kontrol tanpa cincin harus kosong                                                         |
+
+### Shell: lantai teks mikro berlaku untuk setiap daun yang dilukis (putaran 109)
+
+| Butir spec                                      | Sebelum                               | Sesudah                                                                 |
+| ----------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------- |
+| Lantai ukuran                                   | 12 px hanya di pengaturan dan tanggal | 12 px untuk **setiap** teks yang benar-benar dilukis, di tujuh rute     |
+| Badge pintasan `kbd`                            | 10 px                                 | 12 px                                                                   |
+| Label bagian (`.section-heading`)               | 11 px                                 | 12 px                                                                   |
+| Label kolom pilihan (`.control-select-label`)   | 11 px                                 | 12 px                                                                   |
+| Keterangan aksi kidung (`.hymn-action-caption`) | 10 px                                 | 12 px                                                                   |
+| Pil cakupan bait (`.hymn-scope-pill-btn`)       | 11 px                                 | 12 px                                                                   |
+| Preferensi pembaca (A−/A+ dan bacaannya)        | 11 px                                 | 12 px                                                                   |
+| Keterangan kunci nada, label BPM, capo          | 10–11 px                              | 12 px                                                                   |
+| Tanggal kartu Suara                             | 10 px                                 | 12 px                                                                   |
+| Teks miring Literatur                           | 11 px                                 | 12 px                                                                   |
+| Kontrak                                         | hanya `.date-line` dan `.more-page`   | `apps/web/e2e/micro-text.spec.ts` menelusuri tujuh rute di 390 dan 1440 |
+
+Teks yang hanya untuk pembaca layar (`.sr-only`) tidak dihitung: ia tidak pernah dilukis, jadi tidak punya ukuran yang perlu dijaga. Kontrak membaca ulang sampai halaman tenang, lalu menunggu satu detik lagi sebelum menuduh — panel aset sempat melukis catatan muat 10 px yang membuat tes berkedip.

@@ -605,7 +605,7 @@
   clip-path: none;
   display: block;
   margin: 0 0 4px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .media-surface.is-kidung-media .media-advanced-panel .media-transpose {
@@ -915,7 +915,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: auto;
   clip-path: none;
   margin: 0;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .lyrics-extra .media-instrument-control .control-select-menu {
@@ -958,6 +958,8 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: flex;
   align-items: center;
   gap: 4px;
+  /* The unit badge is painted text: 12 px floor. */
+  font-size: 0.75rem;
   height: var(--tempo-target);
   padding: 0 6px;
   border: 1px solid var(--line);
@@ -984,7 +986,8 @@ body:has(.hymn-detail-page.is-text-viewer)
   appearance: none;
 }
 .midi-tempo-stepper label > span {
-  font-size: 0.625rem;
+  /* The unit badge is painted text: 12 px floor. */
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .midi-tempo-stepper button:disabled {
@@ -1042,7 +1045,8 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 .hymn-key-description {
   color: var(--muted);
-  font-size: 0.6875rem;
+  /* Painted readouts follow the shell's 12 px micro-text floor. */
+  font-size: 0.75rem;
 }
 .hymn-music-settings .hymn-midi-reader-controls {
   grid-template-columns: minmax(0, 1fr);
@@ -1187,7 +1191,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 
 .media-surface.is-kidung-media .media-advanced-panel .control-select-label {
   overflow: hidden;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   white-space: nowrap;
   text-overflow: ellipsis;
 }

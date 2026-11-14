@@ -786,7 +786,8 @@
   display: block;
   margin-bottom: 4px;
   color: var(--muted);
-  font-size: 0.6875rem;
+  /* Painted field labels follow the shell's 12 px micro-text floor. */
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
 .control-select-trigger {

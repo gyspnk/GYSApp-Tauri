@@ -366,7 +366,7 @@
   line-clamp: 3;
 }
 .home-literature-shelf .suara-card-content .suara-date {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   color: var(--muted);
   text-shadow: none;
@@ -1570,6 +1570,8 @@
   padding: 0;
   border: 0;
   background: transparent;
+  /* The badge is painted text; 10 px sat below the shell's 12 px floor. */
+  font-size: 0.75rem;
   color: var(--navy);
   opacity: 1;
 }
@@ -4994,7 +4996,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 /* A title row and a labelled action row form predictable phone chrome. */
 .hymn-detail-page.is-text-viewer .hymn-action-caption {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
