@@ -465,21 +465,21 @@ test.describe("responsive reader navigation", () => {
     const copies = [
       {
         locale: "id",
-        more: "Lainnya",
+        more: "Pengaturan & perangkat",
         title: "Halaman tidak ditemukan",
         body: "Alamat ini tidak tersedia. Kembali ke Beranda untuk melanjutkan.",
         home: "Kembali ke Beranda",
       },
       {
         locale: "en",
-        more: "More",
+        more: "Settings & device",
         title: "Page not found",
         body: "This address is not available. Return home to continue.",
         home: "Back to Home",
       },
       {
         locale: "zh",
-        more: "更多",
+        more: "设置与设备",
         title: "页面未找到",
         body: "此地址不可用。返回主页以继续。",
         home: "返回主页",
@@ -597,7 +597,10 @@ test.describe("responsive reader navigation", () => {
       await page.setViewportSize(viewport);
       await page.goto("/GYSApp-Tauri/lainnya");
       await expect(
-        page.getByRole("heading", { name: "Lainnya", exact: true }),
+        page.getByRole("heading", {
+          name: "Pengaturan & perangkat",
+          exact: true,
+        }),
       ).toBeVisible({ timeout: 15_000 });
 
       const rows = page.locator(".more-setting-section");

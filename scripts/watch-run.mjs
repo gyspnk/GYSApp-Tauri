@@ -115,10 +115,12 @@ export function parseArguments(args) {
     return at >= 0 ? Number(args[at + 1]) : Number.NaN;
   };
   const runId = args.find((arg) => /^\d+$/.test(arg)) ?? "";
+  const last = args.includes("--last");
   const interval = value("--interval");
   const timeout = value("--timeout");
   return {
     runId,
+    ...(last ? { last: true } : {}),
     ...(Number.isFinite(interval) && interval > 0
       ? { intervalMs: interval * 1000 }
       : {}),
@@ -128,15 +130,32 @@ export function parseArguments(args) {
   };
 }
 
+/**
+ * The newest run in this repository, so a round need not paste an id after a
+ * dispatch. A failed `gh` call is not an exception: the caller reports usage.
+ */
+export function latestRunId(read = (args) => gh(args)) {
+  const reply = read(["run", "list", "--limit", "1", "--json", "databaseId"]);
+  if (reply.code !== 0) return "";
+  try {
+    const runs = JSON.parse(reply.out);
+    const id = Array.isArray(runs) ? runs[0]?.databaseId : undefined;
+    return id ? String(id) : "";
+  } catch {
+    return "";
+  }
+}
+
 const invokedDirectly =
   process.argv[1] && process.argv[1].endsWith("watch-run.mjs");
 if (invokedDirectly) {
   const options = parseArguments(process.argv.slice(2));
-  if (!options.runId) {
+  const runId = options.runId || (options.last ? latestRunId() : "");
+  if (!runId) {
     console.error(
-      "usage: pnpm run:watch <runId> [--interval 20] [--timeout 45]",
+      "usage: pnpm run:watch <runId>|--last [--interval 20] [--timeout 45]",
     );
     process.exit(1);
   }
-  process.exit(await watchRun(options));
+  process.exit(await watchRun({ ...options, runId }));
 }

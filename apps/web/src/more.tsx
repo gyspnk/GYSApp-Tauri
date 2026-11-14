@@ -1095,9 +1095,9 @@ export function MorePage({
       </nav>
 
       <section className="more-settings-list">
-        <h3 className="more-settings-group">
+        <h2 className="more-settings-group">
           {translate(locale, "more.groupAccount")}
-        </h3>
+        </h2>
         <details
           className="more-setting-section more-account-section"
           data-setting="account"
@@ -1405,9 +1405,9 @@ export function MorePage({
           </article>
         </details>
 
-        <h3 className="more-settings-group">
+        <h2 className="more-settings-group">
           {translate(locale, "more.groupContent")}
-        </h3>
+        </h2>
 
         <details className="more-setting-section" data-setting="audio">
           <summary className="more-setting-row">
@@ -1728,9 +1728,9 @@ export function MorePage({
           </div>
         </details>
 
-        <h3 className="more-settings-group">
+        <h2 className="more-settings-group">
           {translate(locale, "more.categoryAbout")}
-        </h3>
+        </h2>
 
         <details className="more-setting-section" data-setting="about">
           <summary className="more-setting-row">

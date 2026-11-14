@@ -30,14 +30,14 @@ test("settings read as three labelled groups with compact, touch-sized rows", as
   // Still a full touch target, no longer a two-line block.
   expect(box!.height).toBeGreaterThanOrEqual(44);
 
-  // The page explains itself with one line per row: no hero, no second line of
+  // The page paints its own name, then one line per row: no second line of
   // description repeating the title.
-  await expect(page.locator(".page-intro")).toHaveCount(0);
+  await expect(page.locator(".page-intro h1")).toHaveCount(1);
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(list.locator(".more-setting-hint")).toHaveCount(0);
 });
 
-test("desktop lays the settings out in two columns", async ({ page }) => {
+test("desktop keeps the settings on one centred column", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(SETTINGS);
 
@@ -47,5 +47,9 @@ test("desktop lays the settings out in two columns", async ({ page }) => {
     const value = getComputedStyle(node).gridTemplateColumns;
     return value.split(" ").filter(Boolean).length;
   });
-  expect(columns).toBe(2);
+  // Two columns put every other chevron in the middle of the screen and split
+  // one group across both halves; the list is one column of the page.
+  expect(columns).toBe(1);
+  const box = (await list.boundingBox())!;
+  expect(box.width).toBeLessThanOrEqual(761);
 });

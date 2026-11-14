@@ -282,7 +282,10 @@ test.describe("Quiet Sanctuary accessibility release gate", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/GYSApp-Tauri/lainnya?section=help");
     await expect(
-      page.getByRole("heading", { name: "Lainnya", exact: true }),
+      page.getByRole("heading", {
+        name: "Pengaturan & perangkat",
+        exact: true,
+      }),
     ).toBeVisible({ timeout: 15_000 });
     await expect(
       page.getByRole("textbox", { name: "Pesan laporan" }),

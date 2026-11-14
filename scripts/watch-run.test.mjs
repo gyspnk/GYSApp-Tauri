@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   failingJobs,
+  latestRunId,
   parseArguments,
   parseRun,
   verdict,
@@ -112,4 +113,33 @@ test("a bare run id never becomes a timeout", () => {
     },
   );
   assert.equal(parseArguments([]).runId, "");
+});
+
+test("--last asks for the newest run and nothing else", () => {
+  assert.deepEqual(parseArguments(["42", "--last"]), {
+    runId: "42",
+    last: true,
+  });
+  assert.deepEqual(parseArguments(["--last"]), { runId: "", last: true });
+  assert.equal(parseArguments(["42"]).last, undefined);
+});
+
+test("resolves the newest run id, and stays quiet when gh fails", () => {
+  const reply = (code, out) => ({ code, out });
+  assert.equal(
+    latestRunId(() => reply(0, JSON.stringify([{ databaseId: 43525164712 }]))),
+    "43525164712",
+  );
+  assert.equal(
+    latestRunId(() => reply(1, "")),
+    "",
+  );
+  assert.equal(
+    latestRunId(() => reply(0, "not json")),
+    "",
+  );
+  assert.equal(
+    latestRunId(() => reply(0, "[]")),
+    "",
+  );
 });
