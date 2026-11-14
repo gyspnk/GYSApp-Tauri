@@ -865,8 +865,16 @@ async function overflowReport(page: Page) {
       .slice(0, 5)
       .map((node) => {
         const rect = node.getBoundingClientRect();
-        const name = `${node.tagName.toLowerCase()}.${[...node.classList].join(".")}`;
-        return `${name} right=${Math.round(rect.right)} width=${Math.round(rect.width)}`;
+        const chain: string[] = [];
+        let current: Element | null = node;
+        for (let depth = 0; depth < 4 && current; depth += 1) {
+          chain.push(
+            `${current.tagName.toLowerCase()}.${[...current.classList].join(".")}`,
+          );
+          current = current.parentElement;
+        }
+        const text = (node.textContent ?? "").trim().slice(0, 40);
+        return `${chain.join(" < ")} right=${Math.round(rect.right)} width=${Math.round(rect.width)} text="${text}"`;
       });
     return {
       overflow: root.scrollWidth > innerWidth,

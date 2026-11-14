@@ -1473,7 +1473,10 @@ blockquote {
 }
 .sauh-article .online-article-body p,
 .sauh-article blockquote {
-  overflow-wrap: break-word;
+  /* `anywhere` also shrinks the min-content width, which is what lets the grid
+     track hold a long URL; `break-word` only breaks lines after the box has
+     already been sized by its widest word (run 43628116451 overflowed 35 px). */
+  overflow-wrap: anywhere;
   hyphens: auto;
   text-wrap: pretty;
 }
@@ -1696,7 +1699,7 @@ blockquote {
 }
 
 .suara-detail-page .online-article-body.suara-article-body p {
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   hyphens: auto;
   text-wrap: pretty;
   white-space: normal;
