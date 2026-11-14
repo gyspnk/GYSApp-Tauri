@@ -6762,6 +6762,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .more-page .distributed-asset-copy small,
 .more-page .distributed-asset-actions .account-sync-note,
 .more-page .search-field > span,
+.more-page .account-sync-note,
 .more-page .egys-google-origin-current,
 .more-page .report-card .form-status,
 .more-page .report-card .report-email-hint {
