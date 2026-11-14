@@ -160,8 +160,9 @@ for (const width of [320, 1440]) {
       // Above 900 px the list itself splits into two columns, so a single row
       // is half the list — compare the field with the list, not with one row.
       expect(searchBox!.width).toBeCloseTo(rowsBox!.width, 1);
+      // The list follows the page plane on every width (the owner's landscape
+      // rule); faith-measure.spec.ts owns the "fills the page" threshold.
       expect(rowsBox!.width).toBeLessThanOrEqual(bounds!.width + 0.5);
-      if (width > 767) expect(rowsBox!.width).toBeLessThan(bounds!.width - 1);
       expect(rowBox!.width).toBeLessThanOrEqual(rowsBox!.width + 0.5);
       // One tap per row: the row itself is the button and the PDF lives in
       // the sheet it opens.

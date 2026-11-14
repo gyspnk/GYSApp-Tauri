@@ -475,3 +475,20 @@ Kontrak: `apps/web/e2e/settings-layout.spec.ts` (3 tes, 6,7 dtk) dan
 intro/pintu/daftar sama ±1 px, semua baris satu `x`, chevron ≤24 px dari tepi, 44 px,
 dan nol overflow; Iman memeriksa dua kolom sejajar pada 1440 dan satu kolom penuh
 pada 844×390.
+
+### Iman: creed justified only where the measure is comfortable (putaran 102)
+
+Dua kolom selebar ~55 karakter membuka sungai antar kata bila diratakan kiri-kanan,
+jadi aturan dasar tetap `text-align: start`. Perataan kembali hanya di atas 768 px,
+tempat ukuran bacanya cukup lebar untuk menutup baris tanpa celah aneh.
+
+| Butir   | Aturan                                                              |
+| ------- | ------------------------------------------------------------------- |
+| Dasar   | `.faith-page .faith-statement { text-align: start }`                |
+| Lebar   | `@media (min-width: 768px) { … text-align: justify }`               |
+| Alasan  | kolom sempit + justify = sungai; kolom lebar = tepi kanan rata      |
+| Kontrak | `apps/web/e2e/faith-zoom.spec.ts` (3 tes) memaku keduanya per lebar |
+
+Kontrak `faith-zoom.spec.ts` juga membandingkan lebar kolom pencarian dengan
+**daftar** `.faith-rows`, bukan dengan satu baris: di atas 900 px daftar itu dua
+kolom, jadi satu baris hanya separuh daftar (568,97 px vs 1169,94 px pada 1440).
