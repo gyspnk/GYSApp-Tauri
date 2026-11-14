@@ -557,3 +557,17 @@ Kontrak: `apps/web/e2e/micro-text.spec.ts` menelusuri setiap elemen daun yang te
 | Kontrak            | tidak ada | `apps/web/e2e/micro-text.spec.ts` |
 
 `apps/web/src/app-design.css` menimpa ukuran dasar 0,75rem dari `apps/web/src/styles/01-foundations-and-layout.css` dengan 0,625rem, jadi label terkecil di shell (eyebrow di atas judul) jatuh ke 10 px di desktop — di bawah lantai 12 px yang dipakai seluruh aplikasi untuk teks mikro. Label Alkitab tetap 10 px karena berada di dalam heading `sr-only` dan tidak pernah dicat.
+
+### Kidung: katalog membuka dengan judul yang terlihat (putaran 107)
+
+Katalog kidung adalah permukaan terakhir yang namanya hanya ada untuk pembaca layar: `apps/web/src/kidung-catalog.tsx:240` merender `<h1 className="sr-only">`, sehingga `/kidung` terbuka tanpa judul sementara Literatur, Suara, Iman, dan Pengaturan semuanya membuka dengan judul yang sama bentuknya. Aturan judul katalog di `apps/web/src/app-design.css:81` bahkan mengecualikan `.hymn-page`, jadi halaman ini mewarisi serif `clamp(1.75rem, 3vw, 2.375rem)` dari `calm-liturgical.css:527` pada bobot 600 — 38 px di 1440, bukan 36 px.
+
+| Butir            | Sebelum               | Sesudah                      |
+| ---------------- | --------------------- | ---------------------------- |
+| Judul terlihat   | tidak ada (`sr-only`) | `Kidung` di `.page-intro`    |
+| Keluarga huruf   | Source Serif 4        | GYS Reading Sans (`inherit`) |
+| Ukuran           | 38 px @1440           | 31,5 px @390, 36 px @1440    |
+| Bobot            | 600                   | 650                          |
+| Jarak ke toolbar | 3 px @1440            | 21 px @1440                  |
+
+Kontrak: `apps/web/e2e/page-titles.spec.ts` ("the hymn catalogue opens on the same title as its siblings") membandingkan ukuran, bobot, baris, dan tepi kiri judul katalog dengan `/literatur`, lalu menuntut jarak ≥16 px ke `.kidung-index-toolbar`.

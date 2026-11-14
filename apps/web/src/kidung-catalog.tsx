@@ -237,7 +237,12 @@ export function HymnCatalog({
   };
   return (
     <div className="page hymn-page">
-      <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
+      {/* The catalogue used to hide its name from sighted readers: every other
+          destination (Literatur, Suara, Iman, settings) opens on a painted
+          title, so this route looked like it had none. */}
+      <section className="page-intro">
+        <h1>{translate(locale, "page.kidungTitle")}</h1>
+      </section>
       <div
         className={`kidung-index-toolbar${filtersCollapsed ? " is-collapsed" : ""}`}
       >

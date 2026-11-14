@@ -192,3 +192,54 @@ for (const viewport of [
     }
   });
 }
+
+// The hymn catalogue was the last destination whose name existed only for
+// screen readers: every sibling opened on a painted title, so /kidung looked
+// like a page without a name (and the toolbar started 3 px under nothing).
+test("the hymn catalogue opens on the same title as its siblings", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  const read = async (path: string) => {
+    await page.goto(`/GYSApp-Tauri${path}`, { waitUntil: "load" });
+    const heading = page.locator(".page-intro h1").first();
+    await expect(heading).toBeVisible();
+    const box = await heading.boundingBox();
+    const style = await heading.evaluate((node) => {
+      const computed = getComputedStyle(node);
+      return {
+        size: computed.fontSize,
+        weight: computed.fontWeight,
+        left: Math.round(node.getBoundingClientRect().left),
+        top: Math.round(node.getBoundingClientRect().top),
+      };
+    });
+    const gap = await page.evaluate(() => {
+      const intro = document
+        .querySelector(".page-intro")
+        ?.getBoundingClientRect();
+      const toolbar = document.querySelector(".kidung-index-toolbar");
+      if (!intro || !toolbar) return null;
+      return Math.round(toolbar.getBoundingClientRect().top - intro.bottom);
+    });
+    return { text: await heading.textContent(), box, gap, ...style };
+  };
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const hymn = await read("/kidung");
+    const literature = await read("/literatur");
+    expect(hymn.text).toBe("Kidung");
+    expect(hymn.size, "catalogue title size").toBe(literature.size);
+    expect(hymn.weight, "catalogue title weight").toBe(literature.weight);
+    expect(hymn.top, "catalogue title row").toBe(literature.top);
+    expect(hymn.left, "catalogue title edge").toBe(literature.left);
+
+    // The catalogue's own toolbar must not sit flush under the heading.
+    expect(hymn.gap, "toolbar gap under the title").not.toBeNull();
+    expect(hymn.gap!, "toolbar gap under the title").toBeGreaterThanOrEqual(16);
+  }
+});

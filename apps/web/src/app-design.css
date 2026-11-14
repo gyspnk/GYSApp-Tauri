@@ -78,12 +78,19 @@
   padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
-.page:not(.hymn-page) .page-intro h1 {
+.page:not(.hymn-page) .page-intro h1,
+.page.hymn-page .page-intro h1 {
   font-family: inherit;
   font-size: clamp(1.75rem, 2.5vw, 2.25rem);
   font-weight: 650;
   line-height: 1.2;
   letter-spacing: -0.035em;
+}
+
+/* The catalogue now opens on its own title; the toolbar below it had no top
+   margin, so the heading sat 3 px above the segmented control at 1440. */
+.page.hymn-page > .page-intro {
+  margin-bottom: 18px;
 }
 .page-intro h1 {
   margin-bottom: 0;
