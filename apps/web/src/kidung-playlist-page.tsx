@@ -156,11 +156,14 @@ export function HymnPlaylistPage({
 
   return (
     <div className="page hymn-page kidung-tool-page">
-      {/* The queue shares the catalogue's toolbar row so switching between the
-          two pages keeps one header size instead of jumping to a big title. */}
+      {/* The queue shares the catalogue's header rhythm — title, then toolbar —
+          so switching tabs keeps the tab row where it was. Hiding the heading
+          here while the catalogue paints one moved the row 94 px. */}
+      <section className="page-intro">
+        <h1>{translate(locale, "kidung.playlist")}</h1>
+      </section>
       <div className="kidung-index-toolbar">
         <div className="kidung-controls-field">
-          <h1 className="sr-only">{translate(locale, "kidung.playlist")}</h1>
           <KidungLocalNav active="playlist" locale={locale} />
           <div className="kidung-tool-heading-actions">
             <details className="kidung-row-menu">

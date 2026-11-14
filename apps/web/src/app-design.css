@@ -92,6 +92,13 @@
 .page.hymn-page > .page-intro {
   margin-bottom: 18px;
 }
+
+/* The queue page is a grid with a 10 px row gap, so its heading needs only the
+   remaining 8 px to leave the same 18 px the catalogue uses — otherwise the tab
+   row jumps by 10 px when the reader switches between the two sections. */
+.page.hymn-page.kidung-tool-page > .page-intro {
+  margin-bottom: 8px;
+}
 .page-intro h1 {
   margin-bottom: 0;
 }
@@ -6496,7 +6503,8 @@ body:has(.hymn-detail-page.is-text-viewer)
 .kidung-tool-page {
   gap: 10px;
 }
-.kidung-tool-page > .kidung-index-toolbar {
+.kidung-tool-page > .kidung-index-toolbar,
+.kidung-tool-page > .page-intro {
   grid-column: 1 / -1;
 }
 

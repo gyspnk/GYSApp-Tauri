@@ -571,3 +571,5 @@ Katalog kidung adalah permukaan terakhir yang namanya hanya ada untuk pembaca la
 | Jarak ke toolbar | 3 px @1440            | 21 px @1440                  |
 
 Kontrak: `apps/web/e2e/page-titles.spec.ts` ("the hymn catalogue opens on the same title as its siblings") membandingkan ukuran, bobot, baris, dan tepi kiri judul katalog dengan `/literatur`, lalu menuntut jarak ≥16 px ke `.kidung-index-toolbar`.
+
+Kolom "Jarak ke toolbar" di atas berlaku untuk kedua bagian Kidung: halaman antrean ("Antrean MIDI") ikut mendapat `.page-intro` sendiri, karena tanpa judul baris tab-nya duduk 10–94 px lebih tinggi daripada katalog dan berpindah bagian membuat baris itu melompat. Halaman antrean adalah grid dengan `row-gap: 10px`, jadi judulnya hanya butuh `margin-bottom: 8px` (8 + 10 = 18) — dan selektornya harus `.page.hymn-page.kidung-tool-page > .page-intro`, karena `.page.hymn-page > .page-intro` (3 kelas) mengalahkan versi 2 kelas.
