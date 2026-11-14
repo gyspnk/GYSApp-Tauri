@@ -6729,3 +6729,21 @@ body:has(.hymn-detail-page.is-text-viewer)
     text-align: justify;
   }
 }
+
+/* Long-form copy keeps the same 88ch ceiling as the Bible reader and the Iman
+   rows. Without it the article column grows with the window — 1613 px at
+   2560 px wide, about 176 characters per line — while the heading above it
+   stays short, so the text alone runs past the page's reading rhythm. The
+   ceiling sits on the text column, not on the body alone, so the date, the
+   heading, the note and the actions all end on the same edge. */
+.app-frame .online-content-page .online-article-body {
+  max-width: min(100%, 88ch);
+}
+@media (min-width: 1000px) {
+  .app-frame
+    .online-content-page
+    .online-article-card:has(.img-skeleton-wrapper) {
+    grid-template-columns: minmax(220px, 22rem) minmax(0, 88ch);
+    justify-content: center;
+  }
+}

@@ -503,3 +503,16 @@ kolom, jadi satu baris hanya separuh daftar (568,97 px vs 1169,94 px pada 1440).
 | Kontrak              | `appearance-preferences.spec.ts` mencari nama lama                                     | mencari "Kepadatan" dan tetap menuntut empat baris satu kolom label                        |
 
 Keputusan yang dicatat: kolom label yang melebar di desktop **bukan** cacat — baris pengaturan lain (Akun e-GYS, Tampilan, Data Offline) memakai pola label kiri / nilai kanan yang sama, dan nilai yang menempel ke chevron membuat baris terbaca sebagai satu baris. Yang diperbaiki hanya label yang membungkus.
+
+### Suara & Literatur: kolom artikel berhenti di 88ch (putaran 104)
+
+| Permukaan                    | Sebelum                                         | Sesudah                          |
+| ---------------------------- | ----------------------------------------------- | -------------------------------- |
+| `.online-article-body` @1440 | 811 px, ~88 karakter/baris                      | 704 px, ~88 karakter/baris       |
+| `.online-article-body` @2560 | **1613 px, ~176 karakter/baris**                | 704 px, ~88 karakter/baris       |
+| Kolom teks @1440             | tanggal/judul/catatan/aksi 811 px, badan 803 px | semuanya 704 px, satu tepi kanan |
+| Kolom gambar @1440           | 315 px (0.7fr dari sisa)                        | 352 px, tetap proporsional       |
+
+Aturan: `max-width: min(100%, 88ch)` pada `.online-article-body` (batas yang sama dengan pembaca Alkitab dan baris Iman), dan grid artikel ≥1000 px memakai `minmax(220px, 22rem) minmax(0, 88ch)` dengan `justify-content: center` supaya kolom teks berhenti di ukuran baca dan sisa lebar dibagi rata, bukan ditarik ke kiri.
+
+Kontrak: `apps/web/e2e/article-measure.spec.ts` (1440 dan 2560) mengukur 88ch dengan span probe di dalam halaman, menuntut lebar badan ≤ batas itu +1 px, ≤92 karakter per baris, dan **satu** tepi kanan untuk tanggal, judul, catatan, badan, dan aksi (kolom gambar dikecualikan).
