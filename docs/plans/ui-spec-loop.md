@@ -604,3 +604,16 @@ Axe tidak mengaudit cincin fokus, dan stylesheet bisa kehilangannya tanpa ada te
 | Kontrak                                         | hanya `.date-line` dan `.more-page`   | `apps/web/e2e/micro-text.spec.ts` menelusuri tujuh rute di 390 dan 1440 |
 
 Teks yang hanya untuk pembaca layar (`.sr-only`) tidak dihitung: ia tidak pernah dilukis, jadi tidak punya ukuran yang perlu dijaga. Kontrak membaca ulang sampai halaman tenang, lalu menunggu satu detik lagi sebelum menuduh — panel aset sempat melukis catatan muat 10 px yang membuat tes berkedip.
+
+### Shell: reduced-motion berlaku untuk setiap rute (putaran 110)
+
+| Butir            | Aturan                                                                          | Kontrak                                          |
+| ---------------- | ------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Cakupan          | Setiap rute, bukan satu elemen yang kebetulan diuji                             | `apps/web/e2e/reduced-motion.spec.ts`            |
+| Sumber kebenaran | `prefers-reduced-motion: reduce` dari browser, bukan kelas yang disuntik        | `page.emulateMedia({ reducedMotion: "reduce" })` |
+| Ambang           | Animasi > 50 ms dianggap gerak; di bawahnya fade mikro                          | `longest <= 0.05` dilewati                       |
+| Waktu sampel     | 900 ms setelah rute siap, karena entrance mulai saat mount dan saat data tiba   | `waitForTimeout(900)`                            |
+| Rute             | `/`, `/kidung`, `/kidung/hymn-001`, `/bible`, `/literatur`, `/iman`, `/lainnya` | `SURFACES`                                       |
+| Lebar            | 390 dan 1440                                                                    | dua tes                                          |
+
+Hasil: **0** animasi berjalan di ketujuh rute pada kedua lebar. Sebelumnya tidak ada kontrak yang memeriksa ini; setiap tes reduced-motion hanya memeriksa elemen yang sudah dikenal, sehingga entrance baru tanpa penjaga akan lolos.

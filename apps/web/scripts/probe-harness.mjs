@@ -26,6 +26,7 @@ export async function withPage(route, options, run) {
     offline = true,
     waitFor,
     settle = 1200,
+    reducedMotion,
     browser: shared,
   } = options ?? {};
   const browser = shared ?? (await chromium.launch());
@@ -33,6 +34,9 @@ export async function withPage(route, options, run) {
     viewport,
     hasTouch: viewport.width < 768,
     isMobile: viewport.width < 768,
+    // Playwright's own emulation, so `prefers-reduced-motion` is answered by the
+    // browser rather than by a stylesheet the probe has to inject.
+    ...(reducedMotion ? { reducedMotion } : {}),
   });
   try {
     await page.addInitScript(
