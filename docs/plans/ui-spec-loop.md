@@ -492,3 +492,14 @@ tempat ukuran bacanya cukup lebar untuk menutup baris tanpa celah aneh.
 Kontrak `faith-zoom.spec.ts` juga membandingkan lebar kolom pencarian dengan
 **daftar** `.faith-rows`, bukan dengan satu baris: di atas 900 px daftar itu dua
 kolom, jadi satu baris hanya separuh daftar (568,97 px vs 1169,94 px pada 1440).
+
+### Pengaturan: label dan nilai berbagi satu kolom (putaran 103)
+
+| Butir                | Sebelum                                                                                | Sesudah                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Label baris tampilan | "Kepadatan antarmuka" membungkus dua baris di 390 dan 320 (butuh 152 px, tersedia 102) | "Kepadatan" / "Density" / "密度" — satu baris di semua lebar                               |
+| Tinggi baris         | 56 px, tetapi label dua baris membuat baris kepadatan 44 px label di dalam 56 px       | 56 px dengan label satu baris, sejajar dengan tiga baris lain                              |
+| Kolom label          | `minmax(96px, 1fr)` — label 488 px di 1440 sehingga nilai terdorong ke tepi kanan      | tetap `1fr` (keputusan: nilai 220 px di kanan adalah pola baris pengaturan yang sudah ada) |
+| Kontrak              | `appearance-preferences.spec.ts` mencari nama lama                                     | mencari "Kepadatan" dan tetap menuntut empat baris satu kolom label                        |
+
+Keputusan yang dicatat: kolom label yang melebar di desktop **bukan** cacat — baris pengaturan lain (Akun e-GYS, Tampilan, Data Offline) memakai pola label kiri / nilai kanan yang sama, dan nilai yang menempel ke chevron membuat baris terbaca sebagai satu baris. Yang diperbaiki hanya label yang membungkus.

@@ -80,7 +80,7 @@ test("density and font are inline rows in the appearance group, not a modal", as
   expect(labels.map((label) => label.trim())).toEqual([
     "Tema Layar",
     "Warna Aksen",
-    "Kepadatan antarmuka",
+    "Kepadatan",
     "Gaya huruf",
   ]);
 
@@ -133,7 +133,7 @@ test("appearance preferences apply immediately and survive reload/navigation", a
   );
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "auto");
 
-  await choosePreference(page, "Kepadatan antarmuka", "Nyaman");
+  await choosePreference(page, "Kepadatan", "Nyaman");
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "comfortable",
@@ -167,7 +167,7 @@ test("compact mode stays touch-safe and keeps the appearance rows reachable", as
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const card = await openAppearance(page);
-  await choosePreference(page, "Kepadatan antarmuka", "Ringkas");
+  await choosePreference(page, "Kepadatan", "Ringkas");
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "compact",
@@ -205,7 +205,7 @@ test("standard desktop, automatic font, and sans font remain readable", async ({
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const card = await openAppearance(page);
-  await choosePreference(page, "Kepadatan antarmuka", "Standar");
+  await choosePreference(page, "Kepadatan", "Standar");
   await choosePreference(page, "Gaya huruf", "Sans modern");
   await expect(page.locator("html")).toHaveAttribute("data-ui-font", "sans");
   const sansHeadingFont = await card
@@ -246,7 +246,7 @@ test("appearance controls stay legible with the existing dark theme", async ({
   await page.setViewportSize({ width: 768, height: 1024 });
   await openAppearance(page);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await choosePreference(page, "Kepadatan antarmuka", "Nyaman");
+  await choosePreference(page, "Kepadatan", "Nyaman");
   await expect(page.locator("html")).toHaveAttribute(
     "data-ui-density",
     "comfortable",
@@ -260,7 +260,7 @@ test("the density listbox is keyboard operable and closes on Escape", async ({
   await page.setViewportSize({ width: 1440, height: 900 });
   await openAppearance(page);
   const trigger = page.getByRole("combobox", {
-    name: "Kepadatan antarmuka",
+    name: "Kepadatan",
     exact: true,
   });
   await trigger.focus();
@@ -308,7 +308,7 @@ test("every preference row is visible on a small phone before any selection", as
   for (const label of [
     "Tema Layar",
     "Warna Aksen",
-    "Kepadatan antarmuka",
+    "Kepadatan",
     "Gaya huruf",
   ]) {
     const row = card

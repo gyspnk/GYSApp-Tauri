@@ -979,7 +979,7 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "more.loginFailed": "Login e-GYS belum berhasil. Coba lagi.",
     "more.googleButtonFailed":
       "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
-    "more.densityTitle": "Kepadatan antarmuka",
+    "more.densityTitle": "Kepadatan",
     "more.density.comfortable": "Nyaman",
     "more.density.standard": "Standar",
     "more.density.compact": "Ringkas",
