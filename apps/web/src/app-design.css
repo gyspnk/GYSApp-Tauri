@@ -6719,3 +6719,13 @@ body:has(.hymn-detail-page.is-text-viewer)
     display: none;
   }
 }
+
+/* The creed reads justified once its measure is comfortable: two columns of
+   about 55 characters on a desktop, one wide column on a landscape phone.
+   Below that the ragged edge stays, because justification in a narrow column
+   opens rivers between words (the reason the base rule is `start`). */
+@media (min-width: 768px) {
+  .faith-page .faith-statement {
+    text-align: justify;
+  }
+}

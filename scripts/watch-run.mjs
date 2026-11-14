@@ -114,7 +114,11 @@ export function parseArguments(args) {
     const at = args.indexOf(name);
     return at >= 0 ? Number(args[at + 1]) : Number.NaN;
   };
-  const runId = args.find((arg) => /^\d+$/.test(arg)) ?? "";
+  const flagged = new Set(["--interval", "--timeout"]);
+  const runId =
+    args.find(
+      (arg, index) => /^\d+$/.test(arg) && !flagged.has(args[index - 1] ?? ""),
+    ) ?? "";
   const last = args.includes("--last");
   const interval = value("--interval");
   const timeout = value("--timeout");

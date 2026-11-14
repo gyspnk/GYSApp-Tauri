@@ -143,3 +143,15 @@ test("resolves the newest run id, and stays quiet when gh fails", () => {
     "",
   );
 });
+
+test("an option value is never mistaken for a run id", () => {
+  assert.deepEqual(parseArguments(["--last", "--interval", "20"]), {
+    runId: "",
+    last: true,
+    intervalMs: 20_000,
+  });
+  assert.deepEqual(parseArguments(["--timeout", "45", "43568642494"]), {
+    runId: "43568642494",
+    timeoutMs: 45 * 60_000,
+  });
+});
