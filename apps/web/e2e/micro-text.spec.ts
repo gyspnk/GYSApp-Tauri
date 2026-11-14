@@ -58,19 +58,30 @@ for (const width of [390, 1440]) {
     await page.goto("/GYSApp-Tauri/lainnya");
     await expect(page.locator(".more-page h1")).toBeVisible();
 
-    const small = await page.evaluate(() => {
-      const found: { text: string; size: number }[] = [];
-      for (const node of document.querySelectorAll(".more-page *")) {
-        const text = (node.textContent ?? "").trim();
-        if (!text || node.children.length > 0) continue;
-        const box = node.getBoundingClientRect();
-        if (box.width < 2 || box.height < 2) continue;
-        const size = parseFloat(getComputedStyle(node).fontSize);
-        if (size < 12) found.push({ text: text.slice(0, 24), size });
-      }
-      return found;
-    });
+    // The panel paints a loading note, then the asset rows, then the check
+    // results; measuring mid-flight catches a transient state. Wait for two
+    // consecutive reads to agree before judging.
+    const read = () =>
+      page.evaluate(() => {
+        const found: { text: string; size: number }[] = [];
+        for (const node of document.querySelectorAll(".more-page *")) {
+          const text = (node.textContent ?? "").trim();
+          if (!text || node.children.length > 0) continue;
+          const box = node.getBoundingClientRect();
+          if (box.width < 2 || box.height < 2) continue;
+          const size = parseFloat(getComputedStyle(node).fontSize);
+          if (size < 12) found.push({ text: text.slice(0, 24), size });
+        }
+        return found;
+      });
+    let previous = await read();
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      await page.waitForTimeout(250);
+      const current = await read();
+      if (JSON.stringify(current) === JSON.stringify(previous)) break;
+      previous = current;
+    }
 
-    expect(small).toEqual([]);
+    expect(previous).toEqual([]);
   });
 }
