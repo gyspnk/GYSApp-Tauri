@@ -6749,3 +6749,21 @@ body:has(.hymn-detail-page.is-text-viewer)
     justify-content: center;
   }
 }
+
+/* The settings page carried its own micro text below the shell floor: the group
+   labels, the pack badges, the origin line and the form hints all rendered at
+   10-11 px on a desktop, while the eyebrow above every heading was lifted to
+   12 px in round 105. One floor for the whole page. */
+.more-page .more-settings-group,
+.more-page .pack-stats small,
+.more-page .pack-manager-actions > small,
+.more-page .pack-badge,
+.more-page .more-action small,
+.more-page .distributed-asset-copy small,
+.more-page .distributed-asset-actions .account-sync-note,
+.more-page .search-field > span,
+.more-page .egys-google-origin-current,
+.more-page .report-card .form-status,
+.more-page .report-card .report-email-hint {
+  font-size: 0.75rem;
+}

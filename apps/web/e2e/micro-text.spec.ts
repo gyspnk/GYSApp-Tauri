@@ -36,3 +36,41 @@ for (const width of [390, 1440]) {
     }
   });
 }
+
+// The settings page carried its own micro text below the shell floor: group
+// labels, pack badges, the origin line, form hints and the field labels all
+// rendered at 10-11 px on a desktop. One floor for every painted leaf.
+for (const width of [390, 1440]) {
+  test(`settings keep the micro-text floor at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        "gys-shell-settings-v1",
+        JSON.stringify({
+          version: 1,
+          locale: "id",
+          theme: "light",
+          onboarded: true,
+        }),
+      );
+    });
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.goto("/GYSApp-Tauri/lainnya");
+    await expect(page.locator(".more-page h1")).toBeVisible();
+
+    const small = await page.evaluate(() => {
+      const found: { text: string; size: number }[] = [];
+      for (const node of document.querySelectorAll(".more-page *")) {
+        const text = (node.textContent ?? "").trim();
+        if (!text || node.children.length > 0) continue;
+        const box = node.getBoundingClientRect();
+        if (box.width < 2 || box.height < 2) continue;
+        const size = parseFloat(getComputedStyle(node).fontSize);
+        if (size < 12) found.push({ text: text.slice(0, 24), size });
+      }
+      return found;
+    });
+
+    expect(small).toEqual([]);
+  });
+}

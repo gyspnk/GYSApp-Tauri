@@ -531,6 +531,23 @@ Batas 88ch sama dengan pembaca Alkitab dan baris Iman. Kolom gambar butuh batas 
 
 Teks panjang tanpa spasi (URL audio di artikel Sauh) memakai `overflow-wrap: anywhere`, bukan `break-word`: hanya `anywhere` yang ikut mengecilkan lebar min-content sehingga track `minmax(0, 88ch)` bisa menyusut (run 43628116451).
 
+### Pengaturan: teks mikro tidak lagi di bawah lantai (putaran 106)
+
+Halaman pengaturan membawa aturan tipografinya sendiri, dan beberapa di antaranya turun ke 10–11 px di desktop sementara label di atas judul sudah dinaikkan ke 12 px pada putaran 105. Satu lantai untuk seluruh halaman.
+
+| Bagian                                                     | Sebelum           | Sesudah         |
+| ---------------------------------------------------------- | ----------------- | --------------- |
+| Label grup (`.more-settings-group`)                        | 0,6875rem → 11 px | 0,75rem → 12 px |
+| Badge paket (`.pack-badge`)                                | 0,6875rem         | 0,75rem         |
+| Statistik paket (`.pack-stats small`)                      | 0,625rem → 10 px  | 0,75rem         |
+| Status periksa paket (`.pack-manager-actions > small`)     | 0,625rem          | 0,75rem         |
+| Baris aset terdistribusi (`.distributed-asset-copy small`) | 0,6875rem         | 0,75rem         |
+| Label kolom (`.search-field > span`)                       | 0,6875rem         | 0,75rem         |
+| Asal Google (`.egys-google-origin-current`)                | 0,6875rem         | 0,75rem         |
+| Petunjuk formulir (`.form-status`, `.report-email-hint`)   | 0,6875rem         | 0,75rem         |
+
+Kontrak: `apps/web/e2e/micro-text.spec.ts` menelusuri setiap elemen daun yang terlihat di `.more-page` pada 390 dan 1440 dan menuntut ukuran ≥12 px. Diukur nol pelanggaran di 320, 390, 768, 844×390, dan 1440.
+
 ### Shell: label mikro tidak turun di bawah 12 px (putaran 105)
 
 | Aspek              | Sebelum   | Sesudah                           |
