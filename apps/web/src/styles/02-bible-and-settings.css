@@ -2618,20 +2618,25 @@
   padding-block: 4px;
 }
 @media (min-width: 720px) {
-  /* Two columns keep the settings page short without widening the text: a
-     single column left half of a landscape window empty and stretched every
-     expanded panel past a readable line length. */
+  /* One column of the page. Two columns put every other chevron in the middle
+     of the screen, split one group's rows across both halves, and made an
+     opened panel wider than the rows above it; a single centred column keeps
+     the label next to its value and the page on one axis. */
+  .more-page .more-library-grid,
+  .more-page .more-settings-list,
+  .more-page > .page-intro {
+    max-width: 760px;
+    width: 100%;
+    margin-inline: auto;
+  }
   .more-page .more-settings-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 24px;
+    margin-top: 18px;
   }
   .more-page .more-settings-content {
-    max-width: 72ch;
+    max-width: none;
   }
-  /* An expanded panel holds a form, a list or a paragraph, not a setting
-     label: half a column squeezes it into narrow wrapped lines. */
   .more-page .more-setting-section[open] {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 }
 @media (max-height: 540px) and (orientation: landscape) {

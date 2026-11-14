@@ -1055,7 +1055,11 @@ export function MorePage({
 
   return (
     <div className="page more-page">
-      <h1 className="sr-only">{translate(locale, "page.moreTitle")}</h1>
+      {/* Every destination paints its own name; this page used to hide it and
+          let a small eyebrow carry the title. */}
+      <section className="page-intro">
+        <h1>{translate(locale, "more.preferences")}</h1>
+      </section>
 
       <nav
         className="more-library-hub"
@@ -1090,9 +1094,6 @@ export function MorePage({
         </div>
       </nav>
 
-      <h2 className="more-settings-heading">
-        {translate(locale, "more.preferences")}
-      </h2>
       <section className="more-settings-list">
         <h3 className="more-settings-group">
           {translate(locale, "more.groupAccount")}

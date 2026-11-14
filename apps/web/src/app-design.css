@@ -744,6 +744,22 @@
      with the text instead of crossing a mostly empty page. */
   max-width: min(100%, 88ch);
 }
+/* The 88ch ceiling keeps a single column readable, but once the shell is wide
+   it left the list pinned to the left edge while the heading crossed the whole
+   page — the surface looked like it had forgotten its own width. Two columns
+   hold the measure and use the page. */
+@media (min-width: 900px) {
+  .faith-page .faith-rows {
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+  }
+
+  .faith-page .faith-search-bar {
+    max-width: none;
+  }
+}
+
 .faith-page .faith-row {
   width: 100%;
   min-height: 44px;
@@ -781,7 +797,9 @@
 }
 .faith-page .faith-statement {
   margin: 0;
-  text-align: justify;
+  /* Justified text in a two-column list opens rivers between words; the lists
+     beside this one (Alkitab, Suara) are ragged-right and read better. */
+  text-align: start;
   /* The owner reads this page as one column of the page itself: the statement
      spans the row's copy column instead of stopping at a measure, so nothing
      sits unused on the right while the rows run full width. */
@@ -1046,10 +1064,9 @@
 
 /* Collection discovery and settings have distinct visual hierarchy. */
 .more-library-hub {
-  margin-top: 12px;
+  margin-top: 18px;
 }
-.more-library-hub h2,
-.more-settings-heading {
+.more-library-hub h2 {
   font-size: 0.75rem;
   font-weight: 650;
   letter-spacing: 0.07em;
@@ -1107,9 +1124,6 @@
 .more-library-link:hover {
   border-color: var(--blue);
   background: var(--blue-soft);
-}
-.more-settings-heading {
-  margin-top: 14px;
 }
 .more-page .more-settings-list {
   width: 100%;

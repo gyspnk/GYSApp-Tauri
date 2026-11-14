@@ -42,10 +42,53 @@ test("the Iman rows stop at the reader's measure on a desktop", async ({
   const searchBox = await page.locator(".faith-search-bar").boundingBox();
   if (!rowBox || !searchBox) throw new Error("Iman measures are missing");
 
+  // Above 900 px the list uses the page's width in two columns: each row still
+  // respects the readable measure, while the surface itself fills the page.
+  const rowsBox = await page.locator(".faith-rows").boundingBox();
+  const pageBox = await page.locator(".faith-page").boundingBox();
+  if (!rowsBox || !pageBox) throw new Error("Iman measures are missing");
+  expect(rowsBox.width).toBeGreaterThanOrEqual(pageBox.width * 0.95);
   expect(rowBox.width).toBeLessThanOrEqual(cap + 1);
-  expect(rowBox.width).toBeGreaterThanOrEqual(cap - 1);
-  expect(Math.abs(searchBox.width - rowBox.width)).toBeLessThanOrEqual(1);
   expect(rowBox.height).toBeGreaterThanOrEqual(44);
+  expect(Math.abs(searchBox.width - rowsBox.width)).toBeLessThanOrEqual(1);
+  const ladder = page.locator(".faith-row");
+  const first = await ladder.nth(0).boundingBox();
+  const second = await ladder.nth(1).boundingBox();
+  if (!first || !second) throw new Error("Iman rows are missing");
+  expect(Math.abs(first.y - second.y)).toBeLessThanOrEqual(1);
+  expect(second.x).toBeGreaterThan(first.x + first.width - 1);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test("the Iman list stays one column in a landscape phone", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({
+        version: 1,
+        locale: "id",
+        theme: "light",
+        onboarded: true,
+      }),
+    );
+  });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/iman");
+
+  const row = page.locator(".faith-row").first();
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  const rowBox = await row.boundingBox();
+  const pageBox = await page.locator(".faith-page").boundingBox();
+  if (!rowBox || !pageBox) throw new Error("Iman measures are missing");
+  // A landscape phone is wide but short: the rows take the page's width and
+  // stay in one column, because two columns would not fit the height.
+  expect(rowBox.width).toBeGreaterThan(pageBox.width * 0.95);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - window.innerWidth,
   );

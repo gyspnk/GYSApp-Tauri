@@ -1,15 +1,15 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-// A landscape phone has width but no height: one wide column left half the
-// window empty and stretched every panel past a readable line length. A very
-// short landscape window goes the other way — one row per setting — because two
-// columns beside an open panel cannot show both at once.
+// The settings list is one centred column of the page at every width: two
+// columns put every other chevron in the middle of the screen and made an open
+// panel wider than the rows above it. A landscape phone keeps the same column,
+// only tighter.
 for (const viewport of [
   { width: 844, height: 390 },
   { width: 1024, height: 600 },
 ]) {
-  test(`settings use both columns in landscape at ${viewport.width}px`, async ({
+  test(`settings keep one column of the page at ${viewport.width}px`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport);
@@ -18,14 +18,16 @@ for (const viewport of [
 
     const list = page.locator(".more-settings-list");
     await expect(list).toBeVisible();
-    const count = await list.evaluate(
+    const box = (await list.boundingBox())!;
+    // One track, capped at the readable column and never wider than the page.
+    expect(
+      box.width,
+      "the settings list stays on one column",
+    ).toBeLessThanOrEqual(761);
+    const columns = await list.evaluate(
       (node) => getComputedStyle(node).gridTemplateColumns.split(" ").length,
     );
-    // Under 540 px of height each setting owns a full row; taller landscape
-    // windows keep the two readable columns.
-    expect(count, "the settings list fills the width it has").toBe(
-      viewport.height <= 540 ? 1 : 2,
-    );
+    expect(columns, "one column, not two").toBe(1);
 
     // An open panel carries a form or a paragraph, so it takes the whole width
     // instead of wrapping inside half of it.

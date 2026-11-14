@@ -434,3 +434,44 @@ amoled. `responsive-touch-targets.spec.ts` menambah konteks `hasTouch` 820×1180
 memastikan `(pointer: coarse)` benar-benar aktif sebelum mengukur.
 `kidung-mode-contrast.test.ts` mengunci aturan CSS-nya supaya literal putih tidak
 kembali.
+
+### Iman dan Pengaturan: satu bidang halaman (putaran 102)
+
+Dua permukaan yang sama-sama "tidak mengikuti halaman" saat dibuka lebar.
+
+**Iman.** Baris berhenti di 88ch, jadi pada 1280 px daftar menempel di kiri
+sementara judul melintang penuh: 1015 px judul, 704 px isi, 311 px kosong di kanan.
+Sejak 900 px daftar memakai **dua kolom** yang mengisi bidang halaman (padding
+kolom 32 px), sehingga tiap baris tetap ~55 karakter — bukan 100 — dan tidak ada
+ruang yang menganggur. Di bawah 900 px tetap satu kolom penuh (844×390 terukur 725
+px = 100% halaman). Kolom pencarian ikut selebar daftar, bukan 88ch.
+
+| Butir           | Aturan                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------ |
+| ≥900 px         | `.faith-rows` `grid-template-columns: repeat(2, minmax(0,1fr))`, `column-gap: 32px`, `max-width: none` |
+| <900 px         | satu kolom, `max-width: min(100%, 88ch)`                                                               |
+| Kolom pencarian | selebar daftar pada semua lebar                                                                        |
+| Teks pernyataan | `text-align: start` (justify membuka sungai kata di kolom sempit)                                      |
+
+**Pengaturan.** Halaman ini menyembunyikan judulnya (`h1.sr-only` "Lainnya"),
+menaruh eyebrow kecil sebagai pengganti, dan membagi daftar jadi dua kolom: setiap
+chevron kedua jatuh di tengah layar (x818 dari 1440), satu grup terbelah ke dua
+separuh, dan panel yang dibuka selebar 1170 px sementara baris di atasnya 585 px.
+Sekarang: judul **terlihat** "Pengaturan & perangkat" dengan suara judul katalog,
+lalu tiga pintu (Literatur / Suara Sejati / Sauh Bagi Jiwa), lalu satu kolom
+`max-width: 760px` yang sepusat — 452..1212 pada 1440, 12..378 pada 390. Nilai dan
+chevron menempel di tepi kanan barisnya sendiri.
+
+| Butir         | Aturan                                                                      |
+| ------------- | --------------------------------------------------------------------------- |
+| Judul         | `h1` terlihat di `.page-intro`, satu per halaman                            |
+| Kolom         | `max-width: 760px; margin-inline: auto` untuk intro, grid pintu, dan daftar |
+| Baris         | satu kolom, 52 px, hairline, chevron di tepi kanan                          |
+| Panel terbuka | `grid-column: auto` — selebar kolom, bukan selebar halaman                  |
+| Jarak         | 18 px antara pintu dan grup pertama                                         |
+
+Kontrak: `apps/web/e2e/settings-layout.spec.ts` (3 tes, 6,7 dtk) dan
+`apps/web/e2e/faith-measure.spec.ts` (3 tes) — memeriksa satu `h1` terlihat, tepi
+intro/pintu/daftar sama ±1 px, semua baris satu `x`, chevron ≤24 px dari tepi, 44 px,
+dan nol overflow; Iman memeriksa dua kolom sejajar pada 1440 dan satu kolom penuh
+pada 844×390.
