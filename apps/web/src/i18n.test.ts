@@ -158,6 +158,9 @@ const DYNAMIC_KEYS = [
   "kidung.score",
   "kidung.showFilters",
   "kidung.hideFilters",
+  // Returned by getRouteTitleKey() in route-frames.tsx, never written as a
+  // literal translate() call, so the source scan cannot see it.
+  "page.moreTitle",
 ];
 
 // Raw source scan without node types: Vite resolves the module list at build

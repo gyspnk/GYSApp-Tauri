@@ -904,9 +904,15 @@ test("Sauh article adapts from split desktop layout to a single mobile column", 
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.reload();
   await expect(page.locator(".sauh-article")).toBeVisible();
+  // The preview image is aborted in this test, so the fallback paints after the
+  // article does. On a loaded runner that swap landed after the 5 s default and
+  // the poll read a transient width (run 43626462469); the layout itself is
+  // 1024 px wide at this viewport.
   await expect
-    .poll(() =>
-      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    .poll(
+      () =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      { timeout: 15_000 },
     )
     .toBe(true);
   const desktopColumns = await page
