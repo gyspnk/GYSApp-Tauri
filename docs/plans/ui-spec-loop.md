@@ -516,3 +516,17 @@ Keputusan yang dicatat: kolom label yang melebar di desktop **bukan** cacat — 
 Aturan: `max-width: min(100%, 88ch)` pada `.online-article-body` (batas yang sama dengan pembaca Alkitab dan baris Iman), dan grid artikel ≥1000 px memakai `minmax(220px, 22rem) minmax(0, 88ch)` dengan `justify-content: center` supaya kolom teks berhenti di ukuran baca dan sisa lebar dibagi rata, bukan ditarik ke kiri.
 
 Kontrak: `apps/web/e2e/article-measure.spec.ts` (1440 dan 2560) mengukur 88ch dengan span probe di dalam halaman, menuntut lebar badan ≤ batas itu +1 px, ≤92 karakter per baris, dan **satu** tepi kanan untuk tanggal, judul, catatan, badan, dan aksi (kolom gambar dikecualikan).
+
+### Suara & Literatur: kolom artikel berhenti di 88ch (putaran 104)
+
+| Aspek                                       | Sebelum                    | Sesudah                                |
+| ------------------------------------------- | -------------------------- | -------------------------------------- |
+| Lebar badan artikel @1440                   | 811 px (~88 karakter)      | 704 px (88ch)                          |
+| Lebar badan artikel @2560                   | 1613 px (~176 karakter)    | 704 px, kartu di tengah                |
+| Kolom gambar @1440/2560                     | 1075 px (mengikuti fraksi) | 352 px (batas `22rem`)                 |
+| Tepi kanan tanggal/judul/catatan/badan/aksi | 811 vs 803 (8 px selisih)  | satu tepi 704 px                       |
+| Kontrak                                     | tidak ada                  | `apps/web/e2e/article-measure.spec.ts` |
+
+Batas 88ch sama dengan pembaca Alkitab dan baris Iman. Kolom gambar butuh batas atas tetap (`minmax(220px, 22rem)`), bukan fraksi: dengan `0.7fr` gambar tumbuh 1075 px di 2560 dan menyisakan teks 385 px di 1024. `justify-content: center` wajib, kalau tidak teks menempel ke x1371 saat kartu selebar halaman.
+
+Teks panjang tanpa spasi (URL audio di artikel Sauh) memakai `overflow-wrap: anywhere`, bukan `break-word`: hanya `anywhere` yang ikut mengecilkan lebar min-content sehingga track `minmax(0, 88ch)` bisa menyusut (run 43628116451).
