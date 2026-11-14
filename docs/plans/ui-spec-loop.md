@@ -573,3 +573,16 @@ Katalog kidung adalah permukaan terakhir yang namanya hanya ada untuk pembaca la
 Kontrak: `apps/web/e2e/page-titles.spec.ts` ("the hymn catalogue opens on the same title as its siblings") membandingkan ukuran, bobot, baris, dan tepi kiri judul katalog dengan `/literatur`, lalu menuntut jarak ≥16 px ke `.kidung-index-toolbar`.
 
 Kolom "Jarak ke toolbar" di atas berlaku untuk kedua bagian Kidung: halaman antrean ("Antrean MIDI") ikut mendapat `.page-intro` sendiri, karena tanpa judul baris tab-nya duduk 10–94 px lebih tinggi daripada katalog dan berpindah bagian membuat baris itu melompat. Halaman antrean adalah grid dengan `row-gap: 10px`, jadi judulnya hanya butuh `margin-bottom: 8px` (8 + 10 = 18) — dan selektornya harus `.page.hymn-page.kidung-tool-page > .page-intro`, karena `.page.hymn-page > .page-intro` (3 kelas) mengalahkan versi 2 kelas.
+
+### Shell: setiap kontrol yang dicapai keyboard menampilkan cincin fokus (putaran 108)
+
+Axe tidak mengaudit cincin fokus, dan stylesheet bisa kehilangannya tanpa ada tes yang gagal: aturan `.kidung-row-menu > summary:focus-visible` pernah terkirim tanpa titik di depan, yang membatalkan **seluruh daftar selektor** sehingga dua menu kehilangan cincinnya sekaligus (putaran 101). Kontrak baru berjalan dengan Tab sungguhan, bukan `element.focus()`, karena cincin hanya muncul untuk `:focus-visible`.
+
+| Butir           | Aturan                                                                                           |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| Permukaan       | `/kidung`, `/lainnya`, `/bible?book=kejadian&chapter=1`                                          |
+| Tema            | light dan dark                                                                                   |
+| Langkah         | 12 Tab per permukaan, jeda 140 ms (cincin memudar masuk)                                         |
+| Cincin sah      | `outline-width > 0` dengan `outline-style` bukan `none`, atau `box-shadow` yang tidak transparan |
+| Cincin di induk | dihitung sah — kolom pencarian melukis fokusnya di pembungkus                                    |
+| Kegagalan       | daftar kontrol tanpa cincin harus kosong                                                         |
