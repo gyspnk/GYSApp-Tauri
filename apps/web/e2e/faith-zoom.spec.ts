@@ -154,11 +154,15 @@ for (const width of [320, 1440]) {
         .first()
         .boundingBox();
       const rowBox = await page.locator(".faith-row").first().boundingBox();
-      // The rows and the search field share one edge: the page on a phone, the
-      // reader's 88ch measure on a desktop (faith-measure.spec.ts owns the cap).
-      expect(searchBox!.width).toBeCloseTo(rowBox!.width, 1);
-      expect(rowBox!.width).toBeLessThanOrEqual(bounds!.width + 0.5);
-      if (width > 767) expect(rowBox!.width).toBeLessThan(bounds!.width - 1);
+      const rowsBox = await page.locator(".faith-rows").first().boundingBox();
+      // The search field and the row list share one edge: the page on a phone,
+      // the reader's measure on a desktop (faith-measure.spec.ts owns the cap).
+      // Above 900 px the list itself splits into two columns, so a single row
+      // is half the list — compare the field with the list, not with one row.
+      expect(searchBox!.width).toBeCloseTo(rowsBox!.width, 1);
+      expect(rowsBox!.width).toBeLessThanOrEqual(bounds!.width + 0.5);
+      if (width > 767) expect(rowsBox!.width).toBeLessThan(bounds!.width - 1);
+      expect(rowBox!.width).toBeLessThanOrEqual(rowsBox!.width + 0.5);
       // One tap per row: the row itself is the button and the PDF lives in
       // the sheet it opens.
       const row = page.locator(".faith-row").first();
