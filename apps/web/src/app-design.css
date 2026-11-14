@@ -98,7 +98,9 @@
   font-family: inherit;
 }
 .date-line {
-  font-size: 0.625rem;
+  /* 0.75rem is the shell's micro-text floor; 0.625rem rendered 10 px at 1440,
+     below every other eyebrow in the app. */
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }

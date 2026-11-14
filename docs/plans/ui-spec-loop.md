@@ -530,3 +530,13 @@ Kontrak: `apps/web/e2e/article-measure.spec.ts` (1440 dan 2560) mengukur 88ch de
 Batas 88ch sama dengan pembaca Alkitab dan baris Iman. Kolom gambar butuh batas atas tetap (`minmax(220px, 22rem)`), bukan fraksi: dengan `0.7fr` gambar tumbuh 1075 px di 2560 dan menyisakan teks 385 px di 1024. `justify-content: center` wajib, kalau tidak teks menempel ke x1371 saat kartu selebar halaman.
 
 Teks panjang tanpa spasi (URL audio di artikel Sauh) memakai `overflow-wrap: anywhere`, bukan `break-word`: hanya `anywhere` yang ikut mengecilkan lebar min-content sehingga track `minmax(0, 88ch)` bisa menyusut (run 43628116451).
+
+### Shell: label mikro tidak turun di bawah 12 px (putaran 105)
+
+| Aspek              | Sebelum   | Sesudah                           |
+| ------------------ | --------- | --------------------------------- |
+| `.date-line` @1440 | 10 px     | 12 px                             |
+| `.date-line` @390  | 11,25 px  | 13,5 px                           |
+| Kontrak            | tidak ada | `apps/web/e2e/micro-text.spec.ts` |
+
+`apps/web/src/app-design.css` menimpa ukuran dasar 0,75rem dari `apps/web/src/styles/01-foundations-and-layout.css` dengan 0,625rem, jadi label terkecil di shell (eyebrow di atas judul) jatuh ke 10 px di desktop — di bawah lantai 12 px yang dipakai seluruh aplikasi untuk teks mikro. Label Alkitab tetap 10 px karena berada di dalam heading `sr-only` dan tidak pernah dicat.
