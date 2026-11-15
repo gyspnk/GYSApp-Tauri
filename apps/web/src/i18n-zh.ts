@@ -11,6 +11,7 @@ export const zhMessages: Record<string, string> = {
   "catalog.searchPlaceholder": "见证标题或内容关键词…",
   "catalog.resultCount": "找到 {count} 篇读物",
   "catalog.reset": "清除筛选",
+  "catalog.resetEmpty": "显示全部",
   "more.collectionLiterature": "阅读与 PDF",
   "more.collectionSuara": "信仰见证",
   "more.collectionSauh": "每日灵修",

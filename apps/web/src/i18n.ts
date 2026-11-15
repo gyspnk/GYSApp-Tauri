@@ -28,6 +28,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     "catalog.searchPlaceholder": "Judul atau kata dalam kesaksian…",
     "catalog.resultCount": "{count} bacaan ditemukan",
     "catalog.reset": "Hapus filter",
+    "catalog.resetEmpty": "Tampilkan semua",
     "more.collectionLiterature": "Bacaan & PDF",
     "more.collectionSuara": "Kesaksian iman",
     "more.collectionSauh": "Renungan harian",

@@ -398,7 +398,7 @@ export function SuaraPage({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => setQuery("")}
               >
-                {translate(locale, "catalog.reset")}
+                {translate(locale, "catalog.resetEmpty")}
               </button>
             </div>
           )}

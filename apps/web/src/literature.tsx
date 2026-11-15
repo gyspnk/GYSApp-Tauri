@@ -610,7 +610,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
               setCategory("all");
             }}
           >
-            {translate(locale, "catalog.reset")}
+            {translate(locale, "catalog.resetEmpty")}
           </button>
         </div>
       )}

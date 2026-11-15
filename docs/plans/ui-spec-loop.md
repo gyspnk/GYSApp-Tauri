@@ -756,4 +756,6 @@ Kontrak: `apps/web/src/error-actions.test.ts` menuntut judul + tombol muat ulang
 | Iman, pencarian tanpa hasil      | sudah punya "Hapus pencarian" | tidak berubah, tetapi `.secondary-button` naik 40 → 44 px                    |
 | `.secondary-button`              | `min-height: 40px`            | `var(--control-hit, 44px)` — tombol kartu galat/kosong adalah sasaran jempol |
 
+Kunci `catalog.resetEmpty` ("Tampilkan semua" / "Show everything" / "显示全部") sengaja berbeda dari `catalog.reset` di toolbar: dua tombol bernama sama dalam satu halaman membuat `getByRole` ambigu, dan `apps/web/e2e/catalog-discovery.spec.ts` sudah memakai nama toolbar itu.
+
 Kontrak: `apps/web/e2e/empty-states.spec.ts` mengisi "zzzqqq" pada keempat katalog, menuntut kartu kosong terlihat, tombolnya ≥43,5 px, lalu mengklik tombol itu dan menuntut kartu hilang serta kolom pencarian kosong.

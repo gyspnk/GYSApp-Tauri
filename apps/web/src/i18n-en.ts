@@ -12,6 +12,7 @@ export const enMessages: Record<string, string> = {
   "catalog.searchPlaceholder": "Title or words in a testimony…",
   "catalog.resultCount": "{count} readings found",
   "catalog.reset": "Clear filters",
+  "catalog.resetEmpty": "Show everything",
   "more.collectionLiterature": "Reading & PDF",
   "more.collectionSuara": "Testimonies of faith",
   "more.collectionSauh": "Daily devotion",
