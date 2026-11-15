@@ -155,3 +155,48 @@ test("an option value is never mistaken for a run id", () => {
     timeoutMs: 45 * 60_000,
   });
 });
+
+test("a red run explains itself in the same call when asked", async () => {
+  assert.deepEqual(parseArguments(["--last", "--explain"]), {
+    runId: "",
+    last: true,
+    explain: true,
+  });
+  const lines = [];
+  const explained = [];
+  const code = await watchRun({
+    runId: "43718486372",
+    intervalMs: 1,
+    timeoutMs: 5_000,
+    read: (suffix) =>
+      suffix === ""
+        ? {
+            code: 0,
+            out: JSON.stringify({
+              status: "completed",
+              conclusion: "failure",
+              html_url: "https://example.test/run",
+              created_at: "2026-11-15T00:00:00Z",
+              updated_at: "2026-11-15T00:01:00Z",
+            }),
+          }
+        : {
+            code: 0,
+            out: JSON.stringify([
+              { name: "e2e-shard (2)", conclusion: "failure" },
+            ]),
+          },
+    print: (line) => lines.push(line),
+    explain: (id) => {
+      explained.push(id);
+      return "  ✗ failed: literature toolbar";
+    },
+  });
+  assert.equal(code, 1);
+  assert.deepEqual(explained, ["43718486372"]);
+  assert.ok(lines.includes("  ✗ failed: literature toolbar"));
+  // The hint would repeat what the explain block already printed.
+  assert.ok(
+    !lines.some((line) => line.includes("next: pnpm verify --explain")),
+  );
+});

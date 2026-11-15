@@ -44,7 +44,7 @@ export function failingJobs(json) {
     .map((job) => String(job.name ?? "?"));
 }
 
-export function verdict(run, jobs) {
+export function verdict(run, jobs, { explained = false } = {}) {
   const lines = [];
   const seconds =
     Number.isFinite(run.createdAt) && Number.isFinite(run.updatedAt)
@@ -57,7 +57,7 @@ export function verdict(run, jobs) {
   );
   const failed = failingJobs(jobs);
   for (const job of failed) lines.push(`✗ ${job}`);
-  if (failed.length)
+  if (failed.length && !explained)
     lines.push(`  next: pnpm verify --explain ${run.id ?? ""}`);
   return { ok: run.conclusion === "success", lines, failed };
 }
@@ -80,6 +80,8 @@ export async function watchRun({
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   now = () => Date.now(),
   print = (line) => console.log(line),
+  // A red run used to cost a second command for its bundle and test names.
+  explain,
 } = {}) {
   const deadline = now() + timeoutMs;
   for (;;) {
@@ -92,8 +94,12 @@ export async function watchRun({
     if (run.status === "completed") {
       const jobsReply = read("/jobs?per_page=100");
       const jobs = jobsReply.code === 0 ? jobsReply.out : "[]";
-      const { ok, lines } = verdict(run, jobs);
+      const { ok, lines } = verdict(run, jobs, { explained: Boolean(explain) });
       for (const line of lines) print(line);
+      if (!ok && explain) {
+        const detail = explain(runId);
+        if (detail) print(detail);
+      }
       return ok ? 0 : 1;
     }
     if (now() >= deadline) {
@@ -120,11 +126,13 @@ export function parseArguments(args) {
       (arg, index) => /^\d+$/.test(arg) && !flagged.has(args[index - 1] ?? ""),
     ) ?? "";
   const last = args.includes("--last");
+  const explain = args.includes("--explain");
   const interval = value("--interval");
   const timeout = value("--timeout");
   return {
     runId,
     ...(last ? { last: true } : {}),
+    ...(explain ? { explain: true } : {}),
     ...(Number.isFinite(interval) && interval > 0
       ? { intervalMs: interval * 1000 }
       : {}),
@@ -150,6 +158,20 @@ export function latestRunId(read = (args) => gh(args)) {
   }
 }
 
+/**
+ * The bundle and the first error line for a red run, in the same call: the
+ * explain path already downloads `error-context.md` and names the test.
+ */
+export function explainRun(runId, run = spawnSync) {
+  const result = run(
+    process.execPath,
+    ["scripts/remote-verify.mjs", "--explain", runId],
+    { encoding: "utf8" },
+  );
+  const text = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
+  return text;
+}
+
 const invokedDirectly =
   process.argv[1] && process.argv[1].endsWith("watch-run.mjs");
 if (invokedDirectly) {
@@ -157,9 +179,12 @@ if (invokedDirectly) {
   const runId = options.runId || (options.last ? latestRunId() : "");
   if (!runId) {
     console.error(
-      "usage: pnpm run:watch <runId>|--last [--interval 20] [--timeout 45]",
+      "usage: pnpm run:watch <runId>|--last [--interval 20] [--timeout 45] [--explain]",
     );
     process.exit(1);
   }
-  process.exit(await watchRun({ ...options, runId }));
+  const explain = options.explain ? (id) => explainRun(id) : undefined;
+  process.exit(
+    await watchRun({ ...options, runId, ...(explain ? { explain } : {}) }),
+  );
 }
