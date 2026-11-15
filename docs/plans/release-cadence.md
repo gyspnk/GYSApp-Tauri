@@ -77,6 +77,7 @@ sejak rilis terakhir sudah mencapai `intervalTurns` (25) ia mendispatch
 
 | Putaran | Tag                         | Run           | APK (byte) | Commit     | Catatan                               |
 | ------- | --------------------------- | ------------- | ---------- | ---------- | ------------------------------------- |
+| 376     | `v0.1.0-preview.20261115.1` | `43733736255` | 36 124 611 | `b8a22ca5` | putaran 376, signing debug            |
 | 351     | `v0.1.0-preview.20261114.1` | `43644849597` | 36 125 219 | `20e025cf` | putaran 351, signing debug            |
 | 326     | `v0.1.0-preview.20261113.2` | `43510184892` | 36 124 027 | `2df101b9` | putaran 326, signing debug            |
 | 301     | `v0.1.0-preview.20261113.1` | `43378804158` | 36 124 083 | `a0cb499e` | putaran 301, signing debug            |
