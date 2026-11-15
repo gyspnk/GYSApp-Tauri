@@ -767,7 +767,7 @@
 .literature-cover .img-fallback-placeholder > small {
   max-width: 100%;
   color: var(--muted);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   opacity: 1;
   overflow: hidden;
   text-overflow: ellipsis;

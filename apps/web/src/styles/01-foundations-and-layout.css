@@ -338,7 +338,17 @@ a:focus-visible {
   font-size: 0.8125rem;
 }
 .global-search-status.is-error {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
   color: var(--danger);
+}
+.global-search-status.is-error strong {
+  color: var(--ink);
+  font-size: 0.875rem;
+}
+.global-search-status.is-error .quiet-button {
+  margin-top: 2px;
 }
 .global-search-results {
   display: grid;

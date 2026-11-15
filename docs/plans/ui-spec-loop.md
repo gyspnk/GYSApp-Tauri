@@ -734,3 +734,14 @@ Kontrak `apps/web/e2e/kidung-queue-header.spec.ts` menambah tes: kartu kosong be
 | Pemilih lagu landscape, lagu ke-81+                     | daftar `overflow: visible`, gulir di badan → pemuat baris tak pernah jalan | daftar yang menggulir, 80 → 160 baris                                  |
 
 Kontrak: `apps/web/src/error-tone.test.ts` menolak hex literal dan menuntut token pada `.error-panel`; `apps/web/src/loading-reserve.test.ts` menjaga cadangan 680 px dan tidak membiarkan lembar lain mengecilkannya; `apps/web/e2e/kidung-reader-picker.spec.ts` menggulir daftar sampai ujung dan menuntut lebih dari 80 baris.
+
+### Galat: setiap kartu menawarkan tindakan yang disebutnya (putaran 121)
+
+| Permukaan                            | Sebelum                                            | Sesudah                                     |
+| ------------------------------------ | -------------------------------------------------- | ------------------------------------------- |
+| Pencarian global saat indeks gagal   | satu baris teks "muat ulang aplikasi" tanpa tombol | judul singkat + tombol "Muat ulang"         |
+| Kartu "PDF edisi ini belum tersedia" | judul + paragraf, tanpa jalan keluar               | tombol "Coba lagi" yang memuat ulang sumber |
+| Panel muat beranda                   | `min-height: 0` → bilah ±100 px, konten 190 px     | cadangan `min(190px, 40dvh)`                |
+| Label kategori di sampul placeholder | 0,625rem (10 px)                                   | 0,75rem                                     |
+
+Kontrak: `apps/web/src/error-actions.test.ts` menuntut judul + tombol muat ulang pada galat pencarian dan tombol coba lagi pada kartu PDF; `apps/web/e2e/micro-text.spec.ts` menjaga lantai 12 px.

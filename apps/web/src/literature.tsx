@@ -1280,6 +1280,15 @@ export function LiteratureDetailPage({ locale }: { locale: Locale }) {
         <div className="error-panel literature-reader-error" role="alert">
           <strong>{translate(locale, "literature.pdfUnavailableTitle")}</strong>
           <span>{translate(locale, "literature.pdfUnavailableBody")}</span>
+          {/* The card used to end in a sentence, so the only way out was the
+              back button in the shell. Retrying is the action it names. */}
+          <button
+            className="quiet-button"
+            type="button"
+            onClick={() => setSourceAttempt((attempt) => attempt + 1)}
+          >
+            {translate(locale, "pdf.retry")}
+          </button>
         </div>
       )}
       <section className="literature-reading-panel">

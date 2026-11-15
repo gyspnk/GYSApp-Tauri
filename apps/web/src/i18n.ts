@@ -792,7 +792,9 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "search.loading": "Menyiapkan indeks lokal…",
     "search.hint":
       "Ketik minimal 2 karakter untuk mencari di seluruh aplikasi.",
+    "search.errorTitle": "Pencarian belum bisa dipakai",
     "search.error": "Indeks belum tersedia. Coba muat ulang aplikasi.",
+    "search.reload": "Muat ulang",
     "search.empty": "Tidak ada hasil untuk “{query}”.",
     "search.resultCount": "{count} hasil ditemukan untuk “{query}”.",
     "search.results": "Hasil pencarian",

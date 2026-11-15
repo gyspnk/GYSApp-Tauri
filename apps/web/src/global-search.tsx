@@ -513,15 +513,23 @@ export function GlobalSearch({
           </p>
         )}
         {status === "error" && (
-          <p
+          <div
             id="global-search-error"
             className="global-search-status is-error"
             role="alert"
             aria-live="assertive"
             aria-atomic="true"
           >
-            {translate(locale, "search.error")}
-          </p>
+            <strong>{translate(locale, "search.errorTitle")}</strong>
+            <span>{translate(locale, "search.error")}</span>
+            <button
+              className="quiet-button"
+              type="button"
+              onClick={() => window.location.reload()}
+            >
+              {translate(locale, "search.reload")}
+            </button>
+          </div>
         )}
         {mergedResults.length > 0 && (
           <ul

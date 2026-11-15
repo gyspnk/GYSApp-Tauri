@@ -3164,11 +3164,14 @@ body:has(.hymn-detail-page.is-text-viewer)
 .pdf-reader .pdf-loading {
   justify-content: center;
 }
+/* The home shelf reserves its own height while loading, so the progress bar
+   must not collapse the section to a 100 px strip and then push the page down
+   when the cards land. */
 .loading-panel {
   animation: none;
   display: grid;
   place-items: center;
-  min-height: 0;
+  min-height: min(190px, 40dvh);
   padding: 12px 0;
   border: 0;
   background: transparent;
