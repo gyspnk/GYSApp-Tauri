@@ -6407,9 +6407,11 @@ body:has(.hymn-detail-page.is-text-viewer)
   font-size: 1.5rem;
   line-height: 1.25;
 }
+/* The heading takes focus on mount so a screen reader announces the greeting.
+   It is not tabbable (tabIndex -1), so a focus ring there would be the first
+   thing a new reader sees without giving any keyboard user a target. */
 .welcome-card h1:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 4px;
+  outline: none;
 }
 .welcome-body {
   margin: 0;
