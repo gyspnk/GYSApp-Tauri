@@ -311,8 +311,10 @@
   text-transform: uppercase;
 }
 .reader-preferences button:not(.text-button) {
-  min-width: 42px;
-  min-height: 40px;
+  /* A-/A+ and the line-spacing pair are thumb targets in a panel a reader
+     opens on a phone; 42x40 was under the shell's hit floor. */
+  min-width: var(--control-hit, 44px);
+  min-height: var(--control-hit, 44px);
   padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
