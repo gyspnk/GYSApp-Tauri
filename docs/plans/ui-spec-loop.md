@@ -812,3 +812,14 @@ Kontrak: `apps/web/e2e/skip-link.spec.ts` — Tab pertama mendarat di `.skip-lin
 | Pembaca memilih EN dari pemilih bahasa | berubah ke `en` tanpa muat ulang |
 
 Kontrak: `apps/web/e2e/document-language.spec.ts` — tiga locale dari envelope, lalu satu tes yang benar-benar mengganti bahasa lewat pemilih dan menuntut atribut ikut berubah.
+
+### Shell: halaman tercetak hanya membawa teksnya (putaran 129)
+
+| Elemen                                                                                 | Saat `@media print`               |
+| -------------------------------------------------------------------------------------- | --------------------------------- |
+| `.topbar`, `.navigation-shell`, `.primary-nav`, `.skip-link`                           | `display: none`                   |
+| `.media-surface`, `.update-banner`, `.welcome-page`                                    | `display: none`                   |
+| `.main-content`, `.route-view`, `.app-frame`                                           | tanpa padding/margin, latar putih |
+| `.verse-content`, `.hymn-text-body`, `.online-article-body`, `.literature-detail-copy` | `max-width: none`, warna `#000`   |
+
+Kontrak: `apps/web/e2e/print-layout.spec.ts` — `page.emulateMedia({ media: "print" })`, chrome wajib tersembunyi, kolom baca tetap terlihat dengan warna tinta dan tanpa gutter.

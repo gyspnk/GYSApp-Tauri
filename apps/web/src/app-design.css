@@ -6878,3 +6878,37 @@ body:has(.hymn-detail-page.is-text-viewer)
     margin-inline: 0;
   }
 }
+
+/* Printing a chapter is a real use: a reader takes the text to a meeting or a
+   study group. The shell's chrome is fixed, so on paper it would repeat on
+   every page and cover the first lines of each one. */
+@media print {
+  .skip-link,
+  .topbar,
+  .navigation-shell,
+  .primary-nav,
+  .media-surface,
+  .update-banner,
+  .welcome-page {
+    display: none !important;
+  }
+  .app-frame,
+  .main-content,
+  .route-view {
+    display: block !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  .verse-content,
+  .hymn-text-body,
+  .online-article-body,
+  .literature-detail-copy {
+    max-width: none !important;
+    color: #000 !important;
+  }
+  a[href]::after {
+    content: "";
+  }
+}
