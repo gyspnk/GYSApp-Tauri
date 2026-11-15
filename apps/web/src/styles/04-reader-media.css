@@ -322,6 +322,14 @@
   color: var(--ink);
   cursor: pointer;
 }
+/* The reset control is an icon-only text button, so it kept the text line's
+   width while its neighbours grew: 18 px of target next to 44 px ones. */
+.reader-preferences .text-button {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--control-hit, 44px);
+  min-height: var(--control-hit, 44px);
+}
 .reader-preferences button:hover:not(:disabled),
 .reader-preferences button:focus-visible:not(:disabled) {
   border-color: var(--blue);

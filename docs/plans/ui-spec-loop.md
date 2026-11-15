@@ -829,6 +829,7 @@ Kontrak: `apps/web/e2e/print-layout.spec.ts` — `page.emulateMedia({ media: "pr
 | Kontrol                             | Sebelum  | Sesudah                                   |
 | ----------------------------------- | -------- | ----------------------------------------- |
 | A− / A+ / rapatkan / lebarkan baris | 42×40 px | `var(--control-hit, 44px)` di kedua sumbu |
+| Reset teks (ikon saja)              | 18×44 px | 44×44 px                                  |
 | Panel teks di 390                   | 334×96   | 334×96 (lima tombol 106×44)               |
 
 Kontrak: `apps/web/e2e/reader-preferences-touch.spec.ts` membuka tiga lapis disclosure di toolbar (`hymn-more-actions` → `hymn-reader-settings` → `reader-settings-group`), memastikan `(pointer: coarse)` aktif, lalu menuntut setiap tombol panel ≥43,5 px tanpa luapan.

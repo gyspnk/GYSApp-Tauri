@@ -53,6 +53,7 @@ test.describe("reader preferences touch targets", () => {
         return { width: box.width, height: box.height };
       }),
     );
+    // Four size/spacing buttons plus the icon-only reset.
     expect(boxes.length).toBeGreaterThanOrEqual(5);
     for (const box of boxes) {
       expect(box.height).toBeGreaterThanOrEqual(43.5);
