@@ -30,13 +30,17 @@ export async function withPage(route, options, run) {
     // A device that has never opened the app: the welcome screen only appears
     // when no shell envelope exists at all.
     fresh = false,
+    // A landscape phone is wider than 768 px but still a thumb. Without this
+    // the probe measures the fine-pointer layout and reports 32 px targets that
+    // no phone ever sees.
+    touch = viewport.width < 768,
     browser: shared,
   } = options ?? {};
   const browser = shared ?? (await chromium.launch());
   const page = await browser.newPage({
     viewport,
-    hasTouch: viewport.width < 768,
-    isMobile: viewport.width < 768,
+    hasTouch: touch,
+    isMobile: touch,
     // Playwright's own emulation, so `prefers-reduced-motion` is answered by the
     // browser rather than by a stylesheet the probe has to inject.
     ...(reducedMotion ? { reducedMotion } : {}),

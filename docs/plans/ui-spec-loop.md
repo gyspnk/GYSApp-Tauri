@@ -888,6 +888,18 @@ Laci "Menu Alkitab" berisi tombol, select, dan satu tautan prosa ke Pengaturan T
 
 Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "every row in the Bible drawer is a tap target" membuka laci di 390×844 dengan `hasTouch`, memastikan `(pointer: coarse)` benar, lalu menuntut setiap `button`, `a[href]`, `select`, dan `summary` yang terlihat ≥43,5 px. 7 lulus (12,6 s).
 
+### Shell: landscape juga jempol, bukan hanya 390 px (putaran 137)
+
+| Butir spec                   | Sebelum                              | Sesudah                                               |
+| ---------------------------- | ------------------------------------ | ----------------------------------------------------- |
+| Konteks probe                | `hasTouch` hanya bila lebar < 768 px | opsi `touch` eksplisit; 844×390 diukur sebagai jempol |
+| Target di `/kidung`          | 36×36 (mode, tab)                    | 44×44                                                 |
+| Target di `/kidung/hymn-001` | 32×32 (kembali, aksi, Partitur)      | 44×44                                                 |
+| Target di `/bible`           | nomor ayat 24×39                     | area tekan `::before` 44×44                           |
+| Kontrak                      | hanya 390 dan 820                    | +844×390 untuk empat rute pembaca                     |
+
+`apps/web/scripts/probe-harness.mjs` sekarang menerima `touch` (default: lebar < 768 px) supaya probe landscape tidak lagi mengukur tata letak pointer halus dan melaporkan target 32 px yang tidak pernah dilihat jempol. Kontrak `responsive-touch-targets.spec.ts` menambah blok 844×390 yang memastikan `(pointer: coarse)` benar dulu, melewati `details:not([open])` (panel tertutup tidak dilukis, jadi anak-anaknya masih membawa tata letak sebelum animasi masuk), melewati input `clip: rect(0,0,0,0)`, dan menghitung area tekan `::before` sebagai bagian dari target.
+
 ### Shell: logo dan tautan surel adalah target sentuh di ponsel sempit (putaran 136)
 
 | Elemen                              | Sebelum (320/360) | Sesudah    | Aturan                                                           |

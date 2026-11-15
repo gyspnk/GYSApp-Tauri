@@ -316,3 +316,75 @@ test.describe("a narrow phone keeps its shell targets", () => {
     await expectTouchTarget(mail);
   });
 });
+
+test.describe("a landscape phone keeps every reader control tappable", () => {
+  // 844x390 is wider than the 768 px breakpoint, so the shell paints its
+  // fine-pointer sizes there. A thumb still lands on it.
+  test.use({
+    hasTouch: true,
+    isMobile: true,
+    viewport: { width: 844, height: 390 },
+  });
+
+  const routes = [
+    ["/GYSApp-Tauri/kidung", ".pujian-list .pujian-item"],
+    ["/GYSApp-Tauri/kidung?section=playlist", ".kidung-index-toolbar"],
+    ["/GYSApp-Tauri/kidung/hymn-001", ".hymn-text-title h1"],
+    ["/GYSApp-Tauri/bible?book=kejadian&chapter=1", ".verse-content"],
+  ] as const;
+
+  test("no reader control is smaller than 44 px", async ({ page }) => {
+    expect(
+      await page.evaluate(() => matchMedia("(pointer: coarse)").matches),
+      "the context must report a coarse pointer for this contract to mean anything",
+    ).toBe(true);
+
+    for (const [route, ready] of routes) {
+      await page.goto(route);
+      await expect(page.locator(ready).first()).toBeVisible({
+        timeout: 30_000,
+      });
+      const small = await page.evaluate(() => {
+        const found: string[] = [];
+        const seen = new Set<string>();
+        for (const element of document.querySelectorAll(
+          "button, a[href], input, select, summary, [role=button]",
+        )) {
+          // A closed disclosure is not painted, so its children keep the
+          // layout they had before the entrance animation ran.
+          if (element.closest("details:not([open])")) continue;
+          const box = element.getBoundingClientRect();
+          if (box.width === 0 || box.height === 0) continue;
+          const style = getComputedStyle(element);
+          if (style.visibility === "hidden" || style.display === "none")
+            continue;
+          // Visually hidden inputs are labels' partners, not targets.
+          if (style.clip === "rect(0px, 0px, 0px, 0px)") continue;
+          // The verse line is a press-and-hold text surface: its height is the
+          // text's line box, and the explicit control beside it is the verse
+          // number, which owns a 44 px ::before hit area.
+          if (element.classList.contains("verse-text")) continue;
+          // A small glyph can still own a 44 px hit area through ::before.
+          const before = getComputedStyle(element, "::before");
+          const hitWidth = Math.max(
+            box.width,
+            Number.parseFloat(before.width) || 0,
+          );
+          const hitHeight = Math.max(
+            box.height,
+            Number.parseFloat(before.height) || 0,
+          );
+          if (hitWidth >= 43.5 && hitHeight >= 43.5) continue;
+          const key = `${element.tagName}.${element.className}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          found.push(
+            `${key} ${Math.round(box.width)}x${Math.round(box.height)}`,
+          );
+        }
+        return found;
+      });
+      expect(small, `controls under 44 px on ${route}`).toEqual([]);
+    }
+  });
+});
