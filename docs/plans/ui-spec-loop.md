@@ -887,3 +887,14 @@ Laci "Menu Alkitab" berisi tombol, select, dan satu tautan prosa ke Pengaturan T
 | Tutup laci                                             | 44×44   | tidak berubah |
 
 Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "every row in the Bible drawer is a tap target" membuka laci di 390×844 dengan `hasTouch`, memastikan `(pointer: coarse)` benar, lalu menuntut setiap `button`, `a[href]`, `select`, dan `summary` yang terlihat ≥43,5 px. 7 lulus (12,6 s).
+
+### Shell: logo dan tautan surel adalah target sentuh di ponsel sempit (putaran 136)
+
+| Elemen                              | Sebelum (320/360) | Sesudah    | Aturan                                                           |
+| ----------------------------------- | ----------------- | ---------- | ---------------------------------------------------------------- |
+| `a.brand.brand-mark`                | 40×44             | **44×44**  | `min-width: var(--control-hit, 44px)` di blok `max-width: 599px` |
+| `.report-card .report-email-hint a` | 132×19            | **132×44** | `inline-flex` + `min-height: var(--control-hit, 44px)`           |
+
+Logo adalah jalan pulang, dan tautan surel di kartu laporan tetap kontrol meski berada di dalam baris petunjuk. Keduanya lolos 44 px tanpa menambah gulir mendatar (320/360/390/1440: `scrollWidth - innerWidth` = 0). Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "the brand link and the report mailto are tap targets at 320".
+
+Catatan pengukuran: tombol di dalam panel yang tertutup terbaca 43,1 px karena animasi `selector-in` (`scale(0.98)`) belum pernah berjalan — panel tertutup tidak dilukis, jadi angka itu bukan target nyata. Probe harus melewati kontrol di dalam `details:not([open])`.

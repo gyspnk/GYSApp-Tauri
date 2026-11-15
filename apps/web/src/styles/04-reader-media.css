@@ -465,7 +465,9 @@
     padding-inline: 16px;
   }
   .brand-mark {
-    min-width: 0;
+    /* The logo is the way home, so it is a tap target: at 320 and 360 px the
+       link measured 40x44 because the mark alone set its width. */
+    min-width: var(--control-hit, 44px);
     width: auto;
   }
   .brand-mark img {
@@ -2110,6 +2112,9 @@ body.gys-viewer-active {
     min-width: 0;
   }
   .brand-mark {
+    /* The logo is the way home: keep a 44 px target even when the mark alone
+       is narrower than that. */
+    min-width: var(--control-hit, 44px);
     width: auto;
     flex: 0 1 auto;
   }

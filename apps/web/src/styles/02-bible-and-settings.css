@@ -1889,6 +1889,11 @@
   font-size: 0.6875rem;
 }
 .report-card .report-email-hint a {
+  /* A mailto link inside a hint is still a control: give it the tap floor
+     instead of the 19 px line box the text alone produced. */
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-hit, 44px);
   color: var(--blue);
 }
 @media (min-width: 900px) {

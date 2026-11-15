@@ -285,3 +285,34 @@ test.describe("coarse pointer on a wide screen", () => {
     }
   });
 });
+
+test.describe("a narrow phone keeps its shell targets", () => {
+  test.use({
+    hasTouch: true,
+    isMobile: true,
+    viewport: { width: 320, height: 720 },
+  });
+
+  test("the brand link and the report mailto are tap targets at 320", async ({
+    page,
+  }) => {
+    expect(
+      await page.evaluate(() => matchMedia("(pointer: coarse)").matches),
+      "the context must report a coarse pointer for this contract to mean anything",
+    ).toBe(true);
+
+    // The logo is the way home; at 320 the mark alone set the link to 40 px.
+    await page.goto("/GYSApp-Tauri/");
+    const brand = page.locator("a.brand").first();
+    await expect(brand).toBeVisible({ timeout: 30_000 });
+    await expectTouchTarget(brand);
+
+    // A mailto inside a hint line is still a control.
+    await page.goto("/GYSApp-Tauri/lainnya");
+    const mail = page
+      .locator('.report-card .report-email-hint a[href^="mailto:"]')
+      .first();
+    await expect(mail).toBeAttached({ timeout: 30_000 });
+    await expectTouchTarget(mail);
+  });
+});
