@@ -801,3 +801,14 @@ Kontrak: `apps/web/e2e/breakpoint-edges.spec.ts` — delapan rute, delapan lebar
 | Enter                          | fokus pindah ke `main#main-content` | tetap                                    |
 
 Kontrak: `apps/web/e2e/skip-link.spec.ts` — Tab pertama mendarat di `.skip-link`, kotaknya ≥43,5 px di kedua sumbu, `y >= 0` saat fokus, dan Enter memindahkan fokus ke `main#main-content`.
+
+### Shell: bahasa dokumen mengikuti pilihan pembaca (putaran 128)
+
+| Keadaan                                | `html[lang]`                     |
+| -------------------------------------- | -------------------------------- |
+| Envelope `locale: "id"`                | `id`                             |
+| Envelope `locale: "en"`                | `en`                             |
+| Envelope `locale: "zh"`                | `zh`                             |
+| Pembaca memilih EN dari pemilih bahasa | berubah ke `en` tanpa muat ulang |
+
+Kontrak: `apps/web/e2e/document-language.spec.ts` — tiga locale dari envelope, lalu satu tes yang benar-benar mengganti bahasa lewat pemilih dan menuntut atribut ikut berubah.
