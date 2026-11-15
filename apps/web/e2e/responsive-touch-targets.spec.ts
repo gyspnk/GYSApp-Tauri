@@ -388,3 +388,68 @@ test.describe("a landscape phone keeps every reader control tappable", () => {
     }
   });
 });
+
+test.describe("the Bible drawer's speech settings are thumb-sized", () => {
+  test.use({
+    hasTouch: true,
+    isMobile: true,
+    viewport: { width: 390, height: 844 },
+  });
+
+  test("engine select and rate slider reach the floor", async ({ page }) => {
+    expect(
+      await page.evaluate(() => matchMedia("(pointer: coarse)").matches),
+      "the context must report a coarse pointer for this contract to mean anything",
+    ).toBe(true);
+
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.goto("/GYSApp-Tauri/bible?book=kejadian&chapter=1");
+    await expect(page.locator(".verse-content").first()).toBeVisible({
+      timeout: 30_000,
+    });
+
+    const menu = page.getByRole("button", { name: "Menu Alkitab" });
+    await expect(menu).toBeVisible({ timeout: 30_000 });
+    await menu.click();
+    await page
+      .getByRole("button", { name: /Pengaturan Suara/ })
+      .first()
+      .click();
+
+    const card = page.locator(".drawer-speech-card").first();
+    await expect(card).toBeVisible({ timeout: 10_000 });
+
+    // The engine select and the volume slider were 34 px rows. The endpoint
+    // field only exists for the Edge engine, so it is covered by the walk below
+    // when it is present.
+    await expectTouchTarget(card.locator(".drawer-speech-select").first());
+    await expectTouchTarget(card.locator(".drawer-speech-range").first());
+
+    const small = await card.evaluate((element) => {
+      const found: string[] = [];
+      for (const control of element.querySelectorAll(
+        "button, a[href], input, select, summary, [role=button]",
+      )) {
+        const box = control.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) continue;
+        const style = getComputedStyle(control);
+        if (style.clip === "rect(0px, 0px, 0px, 0px)") continue;
+        const before = getComputedStyle(control, "::before");
+        const hitWidth = Math.max(
+          box.width,
+          Number.parseFloat(before.width) || 0,
+        );
+        const hitHeight = Math.max(
+          box.height,
+          Number.parseFloat(before.height) || 0,
+        );
+        if (hitWidth >= 43.5 && hitHeight >= 43.5) continue;
+        found.push(
+          `${control.tagName}.${control.className} ${Math.round(box.width)}x${Math.round(box.height)}`,
+        );
+      }
+      return found;
+    });
+    expect(small).toEqual([]);
+  });
+});

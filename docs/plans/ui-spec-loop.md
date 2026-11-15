@@ -888,6 +888,18 @@ Laci "Menu Alkitab" berisi tombol, select, dan satu tautan prosa ke Pengaturan T
 
 Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "every row in the Bible drawer is a tap target" membuka laci di 390×844 dengan `hasTouch`, memastikan `(pointer: coarse)` benar, lalu menuntut setiap `button`, `a[href]`, `select`, dan `summary` yang terlihat ≥43,5 px. 7 lulus (12,6 s).
 
+### Alkitab: pengaturan suara di laci memakai baris 44 px (putaran 139)
+
+| Butir spec              | Sebelum           | Sesudah                                                                                   |
+| ----------------------- | ----------------- | ----------------------------------------------------------------------------------------- |
+| Select mesin suara      | 281×34            | 281×44                                                                                    |
+| Kolom endpoint Edge     | 281×34            | 281×44                                                                                    |
+| Slider volume/kecepatan | 16 px             | pita 44 px di pointer kasar                                                               |
+| Label baris             | 0,6875rem (11 px) | 0,75rem                                                                                   |
+| Kontrak                 | tidak ada         | `responsive-touch-targets.spec.ts` › "the Bible drawer's speech settings are thumb-sized" |
+
+Laci Alkitab adalah permukaan jempol, tetapi baris pengaturan suaranya tetap 34 px setelah seluruh kontrol pembaca lain mencapai 44 px. Aturan `.drawer-speech-select, .drawer-speech-input` sekarang memakai `min-height: var(--control-hit, 44px)`, slider mendapat pita 44 px di `(pointer: coarse)`, dan labelnya naik ke lantai teks mikro.
+
 ### Kidung: jalan keluar dari antrean kosong adalah target sentuh (putaran 138)
 
 | Butir spec                        | Sebelum                   | Sesudah                                                                  |

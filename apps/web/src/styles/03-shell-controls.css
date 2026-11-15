@@ -423,12 +423,12 @@
   justify-content: space-between;
 }
 .drawer-speech-label {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 650;
   color: var(--ink);
 }
 .drawer-speech-val {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--blue);
   background: var(--surface);
@@ -440,7 +440,9 @@
 .drawer-speech-select,
 .drawer-speech-input {
   width: 100%;
-  min-height: 34px;
+  /* The drawer is a thumb surface: 34 px rows were the smallest controls in
+     the shell once every other reader control reached the 44 px floor. */
+  min-height: var(--control-hit, 44px);
   padding: 0 10px;
   border-radius: 8px;
   border: 1px solid var(--line-strong);
@@ -460,6 +462,12 @@
   accent-color: var(--blue);
   cursor: pointer;
   margin: 4px 0;
+}
+@media (pointer: coarse) {
+  .drawer-speech-range {
+    height: var(--control-hit, 44px);
+    margin-block: -12px;
+  }
 }
 
 /* Desktop narrow: compact before hamburger, then hide to hamburger earlier to avoid crop */
