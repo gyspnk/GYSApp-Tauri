@@ -37,7 +37,9 @@ test.describe("settings touch targets", () => {
     await expect(panel.locator(".chord-ui-swatch").first()).toBeVisible();
 
     const boxes = await panel
-      .locator(".chord-ui-swatch, .kidung-settings-section > .text-button")
+      .locator(
+        '.chord-ui-swatch, .kidung-settings-section > .text-button, .chord-ui-slider input[type="range"]',
+      )
       .evaluateAll((nodes) =>
         nodes.map((node) => {
           const box = node.getBoundingClientRect();

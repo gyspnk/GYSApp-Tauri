@@ -1232,6 +1232,15 @@ body:has(.home-page)::-webkit-scrollbar {
   width: 100%;
   accent-color: var(--blue);
 }
+/* A range input is a touch target too: a 16 px track asks a thumb to aim at a
+   strip. The audio panel already gives its sliders a 44 px band; the chord
+   sliders are the same control in a different panel. */
+@media (pointer: coarse) {
+  .chord-ui-slider input[type="range"] {
+    height: var(--control-hit, 44px);
+    margin-block: -12px;
+  }
+}
 .media-autonext-subtitle {
   display: block;
   margin-top: 2px;
