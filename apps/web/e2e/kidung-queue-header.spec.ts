@@ -44,3 +44,37 @@ test("the MIDI queue keeps the catalogue's toolbar size", async ({ page }) => {
   expect(nav.width).toBeLessThan(nav.fieldWidth * 0.75);
   expect(nav.width).toBeGreaterThan(0);
 });
+
+test("the empty queue shares the page's left edge", async ({ page }) => {
+  // The card used to sit centred in the column while the options row above it
+  // hugged the left edge, so the page read as two alignments.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({
+        version: 1,
+        locale: "id",
+        theme: "light",
+        onboarded: true,
+      }),
+    );
+  });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/kidung?section=playlist");
+  const empty = page.locator(".kidung-empty-state");
+  await expect(empty).toBeVisible({ timeout: 30_000 });
+  const [pageBox, emptyBox] = await Promise.all([
+    page.locator(".kidung-tool-page").boundingBox(),
+    empty.boundingBox(),
+  ]);
+  expect(Math.abs(emptyBox!.x - pageBox!.x)).toBeLessThanOrEqual(1);
+  expect(emptyBox!.width).toBeLessThanOrEqual(641);
+
+  // A phone keeps the card full width.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await expect(empty).toBeVisible({ timeout: 30_000 });
+  const phone = await empty.boundingBox();
+  expect(phone!.width).toBeGreaterThanOrEqual(360);
+});

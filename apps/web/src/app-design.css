@@ -6862,3 +6862,14 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: auto;
   min-height: 48px;
 }
+
+/* The empty queue card sat centred in the column while the options row above
+   hugged the left edge, so the page read as two alignments. It now starts on
+   the column's left edge; the dashed frame stays 640 px, because a rule drawn
+   across 1170 px for one sentence is a frame with nothing in it. */
+@media (min-width: 600px) {
+  .kidung-tool-page .kidung-empty-state {
+    width: min(100%, 640px);
+    margin-inline: 0;
+  }
+}

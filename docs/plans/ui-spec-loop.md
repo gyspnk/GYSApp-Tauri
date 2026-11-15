@@ -710,3 +710,14 @@ Cakupan bertambah tanpa perbaikan: token kontras dari putaran 101 (`--on-accent`
 | Gulir mendatar, teks 200 %, 8 rute            | 0                                                      | 0                              |
 
 Kontrak `apps/web/e2e/text-resize.spec.ts` (baru) menuntut tidak ada gulir mendatar di delapan permukaan saat akar font digandakan menjadi 32 px, dan menambah tes khusus yang membuka panel aksi kidung lalu memastikan tidak ada takarir yang `scrollHeight` melebihi kotaknya lebih dari 4 px.
+
+### Kidung: antrean kosong sejajar dengan baris opsinya (putaran 119)
+
+| Butir                        | Sebelum                      | Sesudah                                                                                |
+| ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------- |
+| Tepi kiri kartu kosong, 1440 | x 512 (tengah kolom 1170 px) | **x 247**, sama dengan toolbar dan baris opsi                                          |
+| Lebar kartu kosong           | 640 px                       | 640 px (bingkai garis putus 1170 px untuk satu kalimat terbaca sebagai bingkai kosong) |
+| Ponsel 390                   | 366 px penuh                 | 366 px penuh (tidak berubah)                                                           |
+| Jumlah tepi kiri di halaman  | 2 (toolbar 247, kartu 512)   | 1                                                                                      |
+
+Kontrak `apps/web/e2e/kidung-queue-header.spec.ts` menambah tes: kartu kosong berbagi tepi kiri dengan halaman (±1 px) dan tidak lebih lebar dari 641 px di 1440, sementara di 390 kartu tetap memenuhi lebar.
