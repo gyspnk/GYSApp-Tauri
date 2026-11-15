@@ -543,11 +543,12 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
           </section>
         )}
 
-      {status !== "ready" && (
+      {status === "loading" && (
         <>
           {/* Reserve the shelf so the sections below it do not jump when the
-              catalogue lands. It usually resolves after the first paint, so
-              this covers every pre-ready status, not only "loading". */}
+              catalogue lands. Only while the catalogue is actually loading:
+              a failed load paints its own card, and a skeleton above it made
+              the page look busy while the reader waited for it to finish. */}
           <section
             className="literature-featured is-loading"
             aria-hidden="true"

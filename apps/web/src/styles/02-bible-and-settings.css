@@ -722,8 +722,8 @@
   transition: all var(--motion-fast) var(--ease-out);
 }
 .bible-notes-item-delete:hover {
-  background: color-mix(in srgb, #b98132 14%, transparent);
-  color: #b98132;
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  color: var(--gold);
 }
 
 .verse-text {

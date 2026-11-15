@@ -1710,18 +1710,20 @@
   white-space: nowrap;
 }
 
+/* The list scrolls, not the sheet: the row loader listens on the list's own
+   scroll event, so a scrolling body left every song past the first page
+   unreachable. */
 .kidung-reader-picker-body {
   display: flex;
-  max-height: min(46dvh, 320px);
   flex-direction: column;
   gap: 8px;
   padding: 8px;
-  overflow: auto;
+  overflow: visible;
 }
 
 .kidung-reader-picker-body .kidung-rail-list {
-  max-height: none;
-  overflow: visible;
+  max-height: min(46dvh, 320px);
+  overflow-y: auto;
   border: 0;
   border-radius: 0;
   background: transparent;

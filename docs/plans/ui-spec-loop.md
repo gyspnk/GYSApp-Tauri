@@ -721,3 +721,16 @@ Kontrak `apps/web/e2e/text-resize.spec.ts` (baru) menuntut tidak ada gulir menda
 | Jumlah tepi kiri di halaman  | 2 (toolbar 247, kartu 512)   | 1                                                                                      |
 
 Kontrak `apps/web/e2e/kidung-queue-header.spec.ts` menambah tes: kartu kosong berbagi tepi kiri dengan halaman (±1 px) dan tidak lebih lebar dari 641 px di 1440, sementara di 390 kartu tetap memenuhi lebar.
+
+### Galat dan muat: warna peringatan ikut tema, kerangka tidak menutupi galat (putaran 120)
+
+| Permukaan                                               | Sebelum                                                                    | Sesudah                                                                |
+| ------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Tepi `.error-panel`, `.inline-error`, `.route-recovery` | hex `#b98132` di keempat tema                                              | `color-mix(in srgb, var(--gold) …)` — gelap `#e8c46a`, sepia `#8a6a2a` |
+| Label peringatan di pengaturan                          | teks `#b98132` dengan latar 14 %                                           | `var(--gold)` di atas `color-mix(var(--gold) 14%, transparent)`        |
+| `/literatur` saat katalog gagal                         | kerangka 4 kartu di atas kartu galat                                       | kerangka hanya saat `status === "loading"`                             |
+| Rute berhalaman saat chunk datang                       | cadangan 680 px ditimpa 180 px oleh lembar terakhir                        | cadangan 680 px dipertahankan; hanya shell pembaca yang 180 px         |
+| Tombol "Coba lagi" di `.error-panel`                    | `.quiet-button` melebar selebar kartu                                      | selebar isinya, seperti `.primary-button`                              |
+| Pemilih lagu landscape, lagu ke-81+                     | daftar `overflow: visible`, gulir di badan → pemuat baris tak pernah jalan | daftar yang menggulir, 80 → 160 baris                                  |
+
+Kontrak: `apps/web/src/error-tone.test.ts` menolak hex literal dan menuntut token pada `.error-panel`; `apps/web/src/loading-reserve.test.ts` menjaga cadangan 680 px dan tidak membiarkan lembar lain mengecilkannya; `apps/web/e2e/kidung-reader-picker.spec.ts` menggulir daftar sampai ujung dan menuntut lebih dari 80 baris.

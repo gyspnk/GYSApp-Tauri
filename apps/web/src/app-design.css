@@ -3143,7 +3143,9 @@ body:has(.hymn-detail-page.is-text-viewer)
     transform: translateX(100%);
   }
 }
-.non-reader-route-loading,
+/* The reader shell only needs room for a spinner; a page-shaped route keeps
+   the 680 px reserve from the foundations sheet so the content it replaces
+   does not appear to drop in from above. */
 .reader-route-loading {
   min-height: 180px;
   display: grid;

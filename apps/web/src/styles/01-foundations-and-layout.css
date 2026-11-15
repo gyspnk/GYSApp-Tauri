@@ -544,7 +544,7 @@ a:focus-visible {
   gap: 12px;
   min-height: min(560px, calc(100dvh - 170px));
   padding: 32px;
-  border: 1px solid color-mix(in srgb, #b98132 42%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--gold) 42%, var(--line));
   border-radius: var(--radius-lg);
   background: var(--surface);
   text-align: center;
@@ -2226,9 +2226,9 @@ blockquote {
   justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, #b98132 42%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--gold) 42%, var(--line));
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, #b98132 9%, var(--surface));
+  background: color-mix(in srgb, var(--gold) 9%, var(--surface));
   color: var(--ink);
   font-size: 0.75rem;
   animation: soft-rise var(--motion-fast) var(--ease-out);
@@ -2306,7 +2306,7 @@ textarea::placeholder {
   }
 }
 .error-panel {
-  border-color: color-mix(in srgb, #b98132 45%, var(--line));
+  border-color: color-mix(in srgb, var(--gold) 45%, var(--line));
 }
 /* A hymnal master is one PDF; when the book map has no page for this song the
    reader asks before painting hundreds of pages. */
@@ -2333,7 +2333,8 @@ textarea::placeholder {
 .error-panel strong {
   color: var(--ink);
 }
-.error-panel .primary-button {
+.error-panel .primary-button,
+.error-panel .quiet-button {
   justify-self: start;
   width: auto;
   margin-top: 4px;
