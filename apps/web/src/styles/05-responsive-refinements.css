@@ -1202,11 +1202,13 @@ body:has(.home-page)::-webkit-scrollbar {
   flex-wrap: wrap;
   gap: 6px;
 }
+/* A swatch is a control, not a decoration: 26 px was under the shell's hit
+   floor and the palette is the one place a thumb has to land precisely. */
 .chord-ui-swatch {
-  width: 26px;
-  height: 26px;
+  width: var(--control-hit, 44px);
+  height: var(--control-hit, 44px);
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
 }
 .chord-ui-swatch.is-selected {

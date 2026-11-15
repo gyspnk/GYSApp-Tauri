@@ -1479,6 +1479,13 @@ body.gys-viewer-active {
   height: 16px;
   accent-color: var(--blue);
 }
+/* The playlist link is a control in this panel, so it keeps the same hit
+   height as every other button here instead of the 17 px text line. */
+.kidung-settings-section > .text-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-hit, 44px);
+}
 .kidung-queue-options .control-select {
   min-width: 220px;
 }

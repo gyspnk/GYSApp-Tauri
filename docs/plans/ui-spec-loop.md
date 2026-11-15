@@ -759,3 +759,13 @@ Kontrak: `apps/web/src/error-actions.test.ts` menuntut judul + tombol muat ulang
 Kunci `catalog.resetEmpty` ("Tampilkan semua" / "Show everything" / "显示全部") sengaja berbeda dari `catalog.reset` di toolbar: dua tombol bernama sama dalam satu halaman membuat `getByRole` ambigu, dan `apps/web/e2e/catalog-discovery.spec.ts` sudah memakai nama toolbar itu.
 
 Kontrak: `apps/web/e2e/empty-states.spec.ts` mengisi "zzzqqq" pada keempat katalog, menuntut kartu kosong terlihat, tombolnya ≥43,5 px, lalu mengklik tombol itu dan menuntut kartu hilang serta kolom pencarian kosong.
+
+### Pengaturan: palet akor dan tautan antrean memenuhi 44 px (putaran 124)
+
+| Kontrol                                                      | Sebelum                   | Sesudah                                |
+| ------------------------------------------------------------ | ------------------------- | -------------------------------------- |
+| `.chord-ui-swatch` (tema & isi akor)                         | 26×26 px, radius 8        | `var(--control-hit, 44px)`, radius 10  |
+| `.kidung-settings-section > .text-button` ("Kelola antrean") | 17 px (tinggi baris teks) | `inline-flex`, `min-height: 44px`      |
+| Palet akor di 390                                            | 162×194                   | 162×194 (tetap, hanya swatch membesar) |
+
+Kontrak: `apps/web/e2e/settings-touch.spec.ts` membuka panel Nyanyian pada konteks `hasTouch` 390×844, memastikan `(pointer: coarse)` benar-benar aktif, lalu menuntut setiap swatch dan tautan panel ≥43,5 px di kedua sumbu tanpa luapan horizontal.
