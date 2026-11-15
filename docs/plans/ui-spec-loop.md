@@ -685,3 +685,16 @@ Kontrak: `apps/web/e2e/welcome.spec.ts` "a landscape phone shows the skip withou
 | Gulir mendatar                          | 0                                               | 0                                                      |
 
 Kontrak `apps/web/e2e/literature-toolbar.spec.ts` menambah tes di 844×390: pencarian dan urutkan satu baris, urutkan ≤52 px tinggi, combobox masih bernama "Urutkan", dan konten pertama berada di atas lipatan. Aturan CSS-nya berada di blok `@media (orientation: landscape) and (max-height: 540px)` paling akhir `apps/web/src/app-design.css`, sehingga mengalahkan susunan satu kolom di bawah 1200 px.
+
+### Kidung: partitur diaudit di empat tema (putaran 116)
+
+Chrome partitur dirombak pada putaran 86 agar memakai rangka mode teks, tetapi audit axe-nya hanya berjalan di tema terang. `apps/web/e2e/score-a11y.spec.ts` sekarang membuka Partitur di 390 untuk dark, amoled, dan sepia juga, memastikan `html[data-theme]` benar-benar berubah, lalu menjalankan enam tag axe.
+
+| Tema              | Hasil         |
+| ----------------- | ------------- |
+| light (390, 1440) | 0 pelanggaran |
+| dark              | 0 pelanggaran |
+| amoled            | 0 pelanggaran |
+| sepia             | 0 pelanggaran |
+
+Cakupan bertambah tanpa perbaikan: token kontras dari putaran 101 (`--on-accent`, `--gold`) sudah menahan chrome baru di semua shell. Tes: 5 lulus (12,9 s).

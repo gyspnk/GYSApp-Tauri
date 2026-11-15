@@ -38,18 +38,21 @@ async function openScore(page: Page) {
 test.describe("score reader accessibility", () => {
   test.use({ reducedMotion: "reduce" });
 
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
+  async function seed(page: Page, theme: string) {
+    await page.addInitScript((value) => {
       localStorage.setItem(
         "gys-shell-settings-v1",
         JSON.stringify({
           version: 1,
           locale: "id",
-          theme: "light",
+          theme: value,
           onboarded: true,
         }),
       );
-    });
+    }, theme);
+  }
+
+  test.beforeEach(async ({ page }) => {
     await page.route(/^https:\/\//, (route) => route.abort());
   });
 
@@ -60,6 +63,7 @@ test.describe("score reader accessibility", () => {
     test(`score reader is axe clean at ${width}px`, async ({ page }) => {
       test.setTimeout(120_000);
       await page.setViewportSize({ width, height });
+      await seed(page, "light");
       await openScore(page);
 
       // One name for the surface: the chrome's title, not a hidden text h1.
@@ -72,6 +76,21 @@ test.describe("score reader accessibility", () => {
         );
       expect(visibleHeadings.filter((text) => text.length > 0).length).toBe(1);
 
+      await expectNoAxeViolations(page);
+    });
+  }
+
+  // The score chrome was restyled to match the text reader, so it must hold the
+  // contrast and target floor in every shell, not only the light one.
+  for (const theme of ["dark", "amoled", "sepia"] as const) {
+    test(`score reader is axe clean in the ${theme} shell`, async ({
+      page,
+    }) => {
+      test.setTimeout(120_000);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await seed(page, theme);
+      await openScore(page);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       await expectNoAxeViolations(page);
     });
   }
