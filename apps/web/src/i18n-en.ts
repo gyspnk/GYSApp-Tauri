@@ -152,7 +152,6 @@ export const enMessages: Record<string, string> = {
   "bible.readAloud": "Read aloud",
   "bible.stopReading": "Stop",
   "bible.bookmark": "Bookmark verse",
-  "bible.reading": "Reading",
   "bible.bookPickerAria": "Drag the title to change chapter",
   "bible.pickBookChapter": "Choose book & chapter",
   "bible.version": "Version",

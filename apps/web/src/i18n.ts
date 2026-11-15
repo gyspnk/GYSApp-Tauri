@@ -168,7 +168,6 @@ export const messages: Record<Locale, Record<string, string>> = {
     "bible.readAloud": "Bacakan",
     "bible.stopReading": "Hentikan",
     "bible.bookmark": "Tandai ayat",
-    "bible.reading": "Bacaan",
     "bible.bookPickerAria": "Geser judul untuk berpindah pasal",
     "bible.pickBookChapter": "Pilih Kitab & Pasal",
     "bible.version": "Versi",

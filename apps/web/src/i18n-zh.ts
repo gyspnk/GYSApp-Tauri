@@ -144,7 +144,6 @@ export const zhMessages: Record<string, string> = {
   "bible.readAloud": "朗读",
   "bible.stopReading": "停止",
   "bible.bookmark": "收藏经文",
-  "bible.reading": "阅读",
   "bible.bookPickerAria": "拖动标题切换章节",
   "bible.pickBookChapter": "选择书卷和章节",
   "bible.version": "译本",
