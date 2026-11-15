@@ -745,3 +745,15 @@ Kontrak: `apps/web/src/error-tone.test.ts` menolak hex literal dan menuntut toke
 | Label kategori di sampul placeholder | 0,625rem (10 px)                                   | 0,75rem                                     |
 
 Kontrak: `apps/web/src/error-actions.test.ts` menuntut judul + tombol muat ulang pada galat pencarian dan tombol coba lagi pada kartu PDF; `apps/web/e2e/micro-text.spec.ts` menjaga lantai 12 px.
+
+### Daftar kosong: kartu menyediakan jalan keluarnya (putaran 123)
+
+| Permukaan                        | Sebelum                       | Sesudah                                                                      |
+| -------------------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
+| Literatur, pencarian tanpa hasil | judul + saran, tanpa tombol   | tombol "Hapus filter" (44 px) yang mengosongkan kata kunci dan kategori      |
+| Suara, pencarian tanpa hasil     | judul + saran, tanpa tombol   | tombol "Hapus filter" yang mengosongkan kata kunci                           |
+| Kidung, pencarian tanpa hasil    | sudah punya "Hapus filter"    | tidak berubah                                                                |
+| Iman, pencarian tanpa hasil      | sudah punya "Hapus pencarian" | tidak berubah, tetapi `.secondary-button` naik 40 → 44 px                    |
+| `.secondary-button`              | `min-height: 40px`            | `var(--control-hit, 44px)` — tombol kartu galat/kosong adalah sasaran jempol |
+
+Kontrak: `apps/web/e2e/empty-states.spec.ts` mengisi "zzzqqq" pada keempat katalog, menuntut kartu kosong terlihat, tombolnya ≥43,5 px, lalu mengklik tombol itu dan menuntut kartu hilang serta kolom pencarian kosong.

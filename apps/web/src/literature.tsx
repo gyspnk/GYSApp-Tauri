@@ -599,6 +599,19 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
         <div className="empty-state">
           <strong>{translate(locale, "literature.emptyTitle")}</strong>
           <span>{translate(locale, "literature.emptyBody")}</span>
+          {/* The copy tells the reader to change the keyword or the filter, so
+              the card has to offer that: a dead end with instructions is worse
+              than no instructions. */}
+          <button
+            className="quiet-button"
+            type="button"
+            onClick={() => {
+              setQuery("");
+              setCategory("all");
+            }}
+          >
+            {translate(locale, "catalog.reset")}
+          </button>
         </div>
       )}
 

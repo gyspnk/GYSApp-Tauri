@@ -45,7 +45,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  /* The shell's hit floor, not a second one: this button sits in empty states
+     and retry cards, which are exactly where a thumb is aiming. */
+  min-height: var(--control-hit, 44px);
   margin-top: 6px;
   padding: 0 16px;
   border: 1px solid var(--line-strong);

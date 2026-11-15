@@ -393,6 +393,13 @@ export function SuaraPage({ locale }: { locale: Locale }) {
             <div className="empty-state">
               <strong>{translate(locale, "suara.searchEmptyTitle")}</strong>
               <span>{translate(locale, "suara.searchEmptyBody")}</span>
+              <button
+                className="quiet-button"
+                type="button"
+                onClick={() => setQuery("")}
+              >
+                {translate(locale, "catalog.reset")}
+              </button>
             </div>
           )}
         </section>
