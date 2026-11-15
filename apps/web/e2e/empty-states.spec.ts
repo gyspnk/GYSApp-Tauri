@@ -47,3 +47,25 @@ test.describe("empty search results", () => {
     });
   }
 });
+
+test.describe("empty queue", () => {
+  test("the way out of an empty queue is a tap target", async ({ page }) => {
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.goto("/GYSApp-Tauri/kidung?section=playlist");
+    await expect(page.locator(".kidung-index-toolbar").first()).toBeVisible({
+      timeout: 30_000,
+    });
+
+    const card = page.locator(".kidung-empty-state").first();
+    await expect(card).toBeVisible({ timeout: 10_000 });
+
+    // The card ends in a link, and a link is only as tall as its text.
+    const link = card.locator("a.text-button").first();
+    await expect(link).toBeVisible();
+    const box = (await link.boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(43.5);
+
+    await link.click();
+    await expect(page).toHaveURL(/\/kidung$/);
+  });
+});

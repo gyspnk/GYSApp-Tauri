@@ -6887,6 +6887,13 @@ body:has(.hymn-detail-page.is-text-viewer)
     margin-inline: 0;
   }
 }
+/* The way out of an empty queue is a link, and a link is as tall as its text
+   (17 px). Every other empty card in the shell ends in a 44 px button. */
+.kidung-tool-page .kidung-empty-state .text-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-hit, 44px);
+}
 
 /* Printing a chapter is a real use: a reader takes the text to a meeting or a
    study group. The shell's chrome is fixed, so on paper it would repeat on

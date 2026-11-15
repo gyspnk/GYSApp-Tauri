@@ -888,6 +888,16 @@ Laci "Menu Alkitab" berisi tombol, select, dan satu tautan prosa ke Pengaturan T
 
 Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "every row in the Bible drawer is a tap target" membuka laci di 390×844 dengan `hasTouch`, memastikan `(pointer: coarse)` benar, lalu menuntut setiap `button`, `a[href]`, `select`, dan `summary` yang terlihat ≥43,5 px. 7 lulus (12,6 s).
 
+### Kidung: jalan keluar dari antrean kosong adalah target sentuh (putaran 138)
+
+| Butir spec                        | Sebelum                   | Sesudah                                                                  |
+| --------------------------------- | ------------------------- | ------------------------------------------------------------------------ |
+| Tautan "Kembali ke daftar Kidung" | 140×17 (setinggi teksnya) | 140×44                                                                   |
+| Di 390 px                         | 167×17                    | 167×44                                                                   |
+| Kontrak                           | tidak ada                 | `empty-states.spec.ts` › "the way out of an empty queue is a tap target" |
+
+Kartu kosong di katalog lain berakhir dengan tombol 44 px; antrean MIDI berakhir dengan tautan teks, dan tautan hanya setinggi barisnya. Aturan `.kidung-tool-page .kidung-empty-state .text-button` memberi `inline-flex` + `min-height: var(--control-hit, 44px)` tanpa mengubah bingkai kartunya.
+
 ### Shell: landscape juga jempol, bukan hanya 390 px (putaran 137)
 
 | Butir spec                   | Sebelum                              | Sesudah                                               |
