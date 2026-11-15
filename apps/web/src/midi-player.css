@@ -1055,6 +1055,14 @@ body:has(.hymn-detail-page.is-text-viewer)
 .hymn-music-settings .hymn-midi-volume input {
   min-width: 0;
 }
+/* A range input is a touch target too: the audio panel already gives its
+   sliders a 44 px band, and this one is the same control. */
+@media (pointer: coarse) {
+  .hymn-music-settings .hymn-midi-volume input[type="range"] {
+    height: var(--control-hit, 44px);
+    margin-block: -12px;
+  }
+}
 .hymn-music-settings .media-music-controls .control-select {
   min-width: 0;
 }

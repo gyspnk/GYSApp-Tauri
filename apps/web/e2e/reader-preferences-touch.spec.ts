@@ -47,6 +47,14 @@ test.describe("reader preferences touch targets", () => {
     const preferences = page.locator(".reader-preferences");
     await expect(preferences).toBeVisible();
 
+    // The MIDI volume slider shares this panel and is the same control as the
+    // audio panel's sliders, so it carries the same touch band.
+    const volume = page.locator('.hymn-midi-volume input[type="range"]');
+    if (await volume.count()) {
+      const box = (await volume.first().boundingBox())!;
+      expect(box.height).toBeGreaterThanOrEqual(43.5);
+    }
+
     const boxes = await preferences.locator("button").evaluateAll((nodes) =>
       nodes.map((node) => {
         const box = node.getBoundingClientRect();

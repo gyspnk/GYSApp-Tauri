@@ -842,3 +842,12 @@ Kontrak: `apps/web/e2e/reader-preferences-touch.spec.ts` membuka tiga lapis disc
 | Slider audio (panel lain)                               | sudah 44 px         | tidak berubah                                             |
 
 Kontrak: `apps/web/e2e/settings-touch.spec.ts` kini juga mengukur slider akor, bukan hanya swatch dan tautan.
+
+### Kidung: slider volume MIDI memakai pita sentuh 44 px (putaran 132)
+
+| Kontrol                                                  | Sebelum | Sesudah                                                 |
+| -------------------------------------------------------- | ------- | ------------------------------------------------------- |
+| `.hymn-midi-volume input[type="range"]` di pointer kasar | 16 px   | `var(--control-hit, 44px)` dengan `margin-block: -12px` |
+| Lebar                                                    | 222 px  | 222 px (tidak berubah)                                  |
+
+Kontrak: `apps/web/e2e/reader-preferences-touch.spec.ts` kini juga mengukur slider volume di panel yang sama, di samping lima tombol teks.
