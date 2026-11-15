@@ -55,6 +55,11 @@ a:focus-visible {
   top: 10px;
   left: 12px;
   z-index: var(--z-modal);
+  /* The first control a keyboard user meets is still a control: 41 px of
+     padding and line box was under the shell's hit floor. */
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-hit, 44px);
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   background: var(--navy);

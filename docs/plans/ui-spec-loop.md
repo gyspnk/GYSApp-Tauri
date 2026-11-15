@@ -790,3 +790,14 @@ Kontrak: `apps/web/e2e/shell-a11y.spec.ts` › "the settings panels are axe clea
 | 1199 / 1200 | 8 rute | idem                                           |
 
 Kontrak: `apps/web/e2e/breakpoint-edges.spec.ts` — delapan rute, delapan lebar tepi, `scrollWidth - innerWidth <= 1` dan konten pertama mulai di atas lipatan.
+
+### Shell: tautan lewati memenuhi 44 px dan tetap jadi perhentian pertama (putaran 127)
+
+| Ukuran                         | Sebelum                             | Sesudah                                  |
+| ------------------------------ | ----------------------------------- | ---------------------------------------- |
+| Tinggi `.skip-link` saat fokus | 41 px                               | 44 px (`min-height: var(--control-hit)`) |
+| Lebar                          | 174 px (390) / 157 px (1440)        | tidak berubah                            |
+| Perhentian Tab pertama         | `.skip-link`                        | tetap `.skip-link`                       |
+| Enter                          | fokus pindah ke `main#main-content` | tetap                                    |
+
+Kontrak: `apps/web/e2e/skip-link.spec.ts` — Tab pertama mendarat di `.skip-link`, kotaknya ≥43,5 px di kedua sumbu, `y >= 0` saat fokus, dan Enter memindahkan fokus ke `main#main-content`.
