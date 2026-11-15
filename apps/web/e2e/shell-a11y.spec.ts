@@ -619,6 +619,53 @@ test("the appearance panel is axe clean in the dark, amoled, and sepia shells", 
   }
 });
 
+/** The panels a reader opens to change the reader itself: the hymn player and
+ *  chord palette, the audio settings, and the offline library. They are the
+ *  only settings surfaces with their own controls, and none of them had ever
+ *  been audited — the appearance panel was the sole exception. */
+const SETTINGS_PANELS = [
+  { name: "hymns", ready: ".chord-ui-swatch" },
+  { name: "audio", ready: ".audio-setting-row" },
+  { name: "offline", ready: ".distributed-asset-copy" },
+] as const;
+
+test("the settings panels are axe clean in every shell", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+
+  for (const theme of ["light", ...APPEARANCE_THEMES]) {
+    await test.step(theme, async () => {
+      await page.addInitScript((value: string) => {
+        localStorage.setItem(
+          "gys-shell-settings-v1",
+          JSON.stringify({
+            version: 1,
+            locale: "id",
+            theme: value,
+            onboarded: true,
+          }),
+        );
+      }, theme);
+      await page.goto("/GYSApp-Tauri/lainnya");
+      await expect(page.locator(".more-page")).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+
+      for (const panel of SETTINGS_PANELS) {
+        await page.evaluate((name: string) => {
+          const row = document.querySelector(`[data-setting="${name}"]`);
+          if (row instanceof HTMLDetailsElement) row.open = true;
+        }, panel.name);
+        const section = page.locator(`[data-setting="${panel.name}"]`);
+        await expect(section.locator(panel.ready).first()).toBeVisible({
+          timeout: 20_000,
+        });
+        await expectNoAxeViolations(page);
+      }
+    });
+  }
+});
+
 test("the collection chip's aria-controls resolves to its listbox", async ({
   page,
 }) => {

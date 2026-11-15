@@ -769,3 +769,13 @@ Kontrak: `apps/web/e2e/empty-states.spec.ts` mengisi "zzzqqq" pada keempat katal
 | Palet akor di 390                                            | 162×194                   | 162×194 (tetap, hanya swatch membesar) |
 
 Kontrak: `apps/web/e2e/settings-touch.spec.ts` membuka panel Nyanyian pada konteks `hasTouch` 390×844, memastikan `(pointer: coarse)` benar-benar aktif, lalu menuntut setiap swatch dan tautan panel ≥43,5 px di kedua sumbu tanpa luapan horizontal.
+
+### Pengaturan: panel Nyanyian, Audio, dan Offline diaudit di empat tema (putaran 125)
+
+| Panel                              | Kontrol yang diperiksa                 | Hasil         |
+| ---------------------------------- | -------------------------------------- | ------------- |
+| Nyanyian (`data-setting="hymns"`)  | palet akor, sakelar, tautan antrean    | 0 pelanggaran |
+| Audio (`data-setting="audio"`)     | select, tombol pratinjau, slider       | 0 pelanggaran |
+| Offline (`data-setting="offline"`) | kartu aset terdistribusi, tombol unduh | 0 pelanggaran |
+
+Kontrak: `apps/web/e2e/shell-a11y.spec.ts` › "the settings panels are axe clean in every shell" — 390 px, tema terang + gelap + amoled + sepia, enam tag axe, tanpa `disableRules`.
