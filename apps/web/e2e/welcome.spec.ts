@@ -90,3 +90,33 @@ test("reduced motion keeps the welcome screen still", async ({ page }) => {
   );
   expect(durations.every((value) => value === "0s")).toBe(true);
 });
+
+test("a landscape phone shows the skip without scrolling", async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await openWelcome(page);
+  const metrics = await page.evaluate(() => {
+    const skip = document
+      .querySelector(".welcome-skip")
+      ?.getBoundingClientRect();
+    const google = document
+      .querySelector(".egys-google-fallback")
+      ?.getBoundingClientRect();
+    return {
+      skipBottom: skip?.bottom ?? 0,
+      skipTop: skip?.top ?? 0,
+      skipHeight: skip?.height ?? 0,
+      googleHeight: google?.height ?? 0,
+      viewport: innerHeight,
+      scroll: document.documentElement.scrollHeight - innerHeight,
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    };
+  });
+  // The way out of the first screen must be reachable without a scroll.
+  expect(metrics.skipTop).toBeGreaterThanOrEqual(0);
+  expect(metrics.skipBottom).toBeLessThanOrEqual(metrics.viewport);
+  expect(metrics.scroll).toBeLessThanOrEqual(1);
+  expect(metrics.overflow).toBeLessThanOrEqual(1);
+  expect(metrics.skipHeight).toBeGreaterThanOrEqual(44);
+  expect(metrics.googleHeight).toBeGreaterThanOrEqual(44);
+  await expect(page.locator("h1")).toHaveCount(1);
+});

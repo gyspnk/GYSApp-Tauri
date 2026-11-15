@@ -32,13 +32,15 @@ export function WelcomePage({
   return (
     <main className="welcome-page">
       <section className="welcome-card" aria-labelledby="welcome-title">
-        <p className="welcome-mark" aria-hidden="true">
-          GYS
-        </p>
-        <h1 id="welcome-title" ref={headingRef} tabIndex={-1}>
-          {translate(locale, "welcome.title")}
-        </h1>
-        <p className="welcome-body">{translate(locale, "welcome.body")}</p>
+        <div className="welcome-copy">
+          <p className="welcome-mark" aria-hidden="true">
+            GYS
+          </p>
+          <h1 id="welcome-title" ref={headingRef} tabIndex={-1}>
+            {translate(locale, "welcome.title")}
+          </h1>
+          <p className="welcome-body">{translate(locale, "welcome.body")}</p>
+        </div>
         <div className="welcome-language">
           <Select
             value={locale}

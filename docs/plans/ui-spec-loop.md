@@ -656,3 +656,20 @@ Halaman sambutan sudah punya kontrak 44 px, tetapi kontrak itu hanya mengukur to
 | Hover/fokus                       | `border-color: var(--blue)` | `box-shadow: inset 0 0 0 1px var(--blue)` |
 
 Pola yang sama sudah dipakai untuk kertas PDF (garis 1 px digambar dengan inset shadow) dan alasannya identik: border mengubah kotak yang diukur tata letak, shadow tidak. Kontrak: `apps/web/e2e/welcome.spec.ts` mengukur `.welcome-login .egys-google-control .egys-google-fallback` ≥44×44, dan `apps/web/src/egys-google-frame.test.ts` menolak `border` selebar piksel pada `.egys-provider`.
+
+### Sambutan: landscape memuat tombol lewati tanpa menggulir (putaran 114)
+
+Di 844×390 kartu sambutan setinggi 429 px sementara pandangan hanya 390, sehingga "Lewati, mulai membaca" — satu-satunya jalan keluar tanpa akun — berada di bawah lipatan. Di 740×360 jaraknya 93 px lebih jauh lagi.
+
+| Butir                      | Sebelum                       | Sesudah                                        |
+| -------------------------- | ----------------------------- | ---------------------------------------------- |
+| Tinggi kartu 844×390       | 429 px                        | **244 px**                                     |
+| Posisi bawah tombol lewati | 424 px (di luar 390)          | **298 px**                                     |
+| Kartu 740×360              | 477 px, lewati tidak terlihat | 244 px, lewati terlihat                        |
+| Tata letak                 | satu kolom                    | dua kolom: identitas di kiri, kendali di kanan |
+| Sasaran tekan              | 44 px                         | 44 px (Google dan lewati)                      |
+| Gulir dokumen              | 87 px                         | 0                                              |
+
+.Kartu hanya berubah di `max-height: 540px` dan `orientation: landscape`; di 390×844 dan 1440×900 tinggi kartu tetap 444 dan 410 px. Salinan pembuka dibungkus `.welcome-copy` agar bisa dipindah ke kolom kiri, dan setiap kendali mendapat sel sendiri supaya penempatan otomatis tidak menyelipkan tombol ke dalam kolom teks.
+
+Kontrak: `apps/web/e2e/welcome.spec.ts` "a landscape phone shows the skip without scrolling" mengukur bahwa tombol lewati sepenuhnya di dalam pandangan, dokumen tidak menggulir, tidak ada luapan mendatar, dan kedua sasaran tekan ≥44 px.
