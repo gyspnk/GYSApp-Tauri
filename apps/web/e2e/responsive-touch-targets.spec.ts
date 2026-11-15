@@ -205,8 +205,10 @@ test.describe("coarse pointers get the full 44 px target", () => {
     // The PDF and notes buttons are the only way into those documents on a
     // phone; they used to collapse to 32 px.
     await page.goto("/GYSApp-Tauri/iman");
+    // The title is screen-reader-only since the owner dropped the hero header;
+    // the region keeps the name, so readiness is read from the rows.
     await expect(
-      page.getByRole("heading", { name: "Dasar Kepercayaan", exact: true }),
+      page.getByRole("region", { name: "Dasar Kepercayaan" }),
     ).toBeVisible();
     await expectTouchTarget(page.locator(".faith-row").first());
 

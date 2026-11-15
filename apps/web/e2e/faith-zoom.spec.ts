@@ -143,11 +143,13 @@ for (const width of [320, 1440]) {
       await expect(page.locator(".faith-hint, .connection-status")).toHaveCount(
         0,
       );
-      // The page now shows its title like Literatur/Suara; it used to be
-      // screen-reader-only, which left the route without a visible identity.
+      // The owner asked for no hero header here, so the title stays for screen
+      // readers only and the search field opens the page.
       const heading = page.locator(".faith-page h1");
-      await expect(heading).toBeVisible();
-      await expect(heading).toHaveCSS("white-space", "normal");
+      await expect(heading).toHaveCount(1);
+      const headingBox = await heading.boundingBox();
+      expect(headingBox!.height).toBeLessThanOrEqual(1);
+      await expect(page.locator(".page-intro")).toHaveCount(0);
       const bounds = await page.locator(".faith-page").boundingBox();
       const searchBox = await page
         .locator(".faith-search-bar")

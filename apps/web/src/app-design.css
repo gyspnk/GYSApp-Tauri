@@ -87,18 +87,6 @@
   letter-spacing: -0.035em;
 }
 
-/* The catalogue now opens on its own title; the toolbar below it had no top
-   margin, so the heading sat 3 px above the segmented control at 1440. */
-.page.hymn-page > .page-intro {
-  margin-bottom: 18px;
-}
-
-/* The queue page is a grid with a 10 px row gap, so its heading needs only the
-   remaining 8 px to leave the same 18 px the catalogue uses — otherwise the tab
-   row jumps by 10 px when the reader switches between the two sections. */
-.page.hymn-page.kidung-tool-page > .page-intro {
-  margin-bottom: 8px;
-}
 .page-intro h1 {
   margin-bottom: 0;
 }
@@ -692,10 +680,10 @@
 }
 /* The Iman field is the same control as the two reading catalogs' search
    field: one height, one border, one input size. It used to be 54 px tall with
-   its own shadow and a 32 px input, and it sat flush against the title while
-   Literatur and Suara left 18 px. */
+   its own shadow and a 32 px input. The 18 px top margin existed to clear the
+   hero title; the owner dropped that title, so the field now opens the page. */
 .faith-page .faith-stack {
-  margin-top: 18px;
+  margin-top: 0;
 }
 .faith-page .faith-search-bar {
   margin-bottom: 4px;
@@ -4340,13 +4328,6 @@ body:has(.hymn-detail-page.is-text-viewer)
   background: var(--surface-soft);
   margin: 0 0 16px;
 }
-/* Kidung and Iman open straight into their content: the destination is
-   already named by the sidebar and the tabs, so the pages keep only a
-   screen-reader heading. */
-.faith-intro {
-  align-items: center;
-  padding-bottom: 10px;
-}
 /* Two destinations, two equal fields: the indicator then travels the same
    distance whichever tab is active, so the pair reads as one control. */
 @media (min-width: 1101px) {
@@ -6505,8 +6486,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .kidung-tool-page {
   gap: 10px;
 }
-.kidung-tool-page > .kidung-index-toolbar,
-.kidung-tool-page > .page-intro {
+.kidung-tool-page > .kidung-index-toolbar {
   grid-column: 1 / -1;
 }
 

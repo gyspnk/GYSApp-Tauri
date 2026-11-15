@@ -378,12 +378,11 @@ export function FaithPage({ locale }: { locale: Locale }) {
       ref={pageRef}
       inert={notePopupOpen ? true : undefined}
     >
-      <section className="page-intro faith-intro">
-        {/* The title is painted, like Literatur and Suara: a screen-reader-only
-            heading left this route as the only destination that opens without
-            a visible name. */}
-        <h1>{group?.title ?? translate(locale, "nav.iman")}</h1>
-      </section>
+      {/* No hero header: the owner asked for the creed to open straight into
+          its search field and rows, so the title stays for screen readers. */}
+      <h1 className="sr-only">
+        {group?.title ?? translate(locale, "nav.iman")}
+      </h1>
       {!pack && (
         <div className="loading-panel" role="status">
           <LoadingProgress label={translate(locale, "faith.loading")} />

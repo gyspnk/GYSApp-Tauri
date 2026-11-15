@@ -156,12 +156,9 @@ export function HymnPlaylistPage({
 
   return (
     <div className="page hymn-page kidung-tool-page">
-      {/* The queue shares the catalogue's header rhythm — title, then toolbar —
-          so switching tabs keeps the tab row where it was. Hiding the heading
-          here while the catalogue paints one moved the row 94 px. */}
-      <section className="page-intro">
-        <h1>{translate(locale, "kidung.playlist")}</h1>
-      </section>
+      {/* No hero header, like the catalogue: the tab row is the page's first
+          painted element, so switching tabs never moves it. */}
+      <h1 className="sr-only">{translate(locale, "kidung.playlist")}</h1>
       <div className="kidung-index-toolbar">
         <div className="kidung-controls-field">
           <KidungLocalNav active="playlist" locale={locale} />

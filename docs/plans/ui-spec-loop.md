@@ -617,3 +617,16 @@ Teks yang hanya untuk pembaca layar (`.sr-only`) tidak dihitung: ia tidak pernah
 | Lebar            | 390 dan 1440                                                                    | dua tes                                          |
 
 Hasil: **0** animasi berjalan di ketujuh rute pada kedua lebar. Sebelumnya tidak ada kontrak yang memeriksa ini; setiap tes reduced-motion hanya memeriksa elemen yang sudah dikenal, sehingga entrance baru tanpa penjaga akan lolos.
+
+### Kidung & Iman: tanpa hero, dan bar Alkitab langsung berbentuk tombol (putaran 111)
+
+Pemilik meminta dua hal: judul paling atas di Kidung dan Dasar Kepercayaan dibuang, dan bar Alkitab tidak lagi melukis teks sebelum tombolnya muncul.
+
+| Permukaan                  | Sebelum                                                           | Sesudah                                                         |
+| -------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
+| `/kidung`                  | `.page-intro` 51 px (390) / 76 px (1440), toolbar mulai y143/y168 | `h1.sr-only`, toolbar mulai **y74** di kedua lebar              |
+| `/kidung?section=playlist` | intro yang sama, tab row y148/177                                 | `h1.sr-only`, tab row **y74**                                   |
+| `/iman`                    | intro 51/56 px, `.faith-stack` mulai y143/y148                    | `h1.sr-only`, kolom pencarian **y74** (gap 0 dari tepi halaman) |
+| Bar Alkitab, frame pertama | teks "Bacaan" lalu "Bacaan / Alkitab"                             | tombol picker, select, cari, dan menu dalam keadaan `disabled`  |
+
+Kontrak: `apps/web/e2e/page-titles.spec.ts` ("headerless destinations start on their first control") menuntut tepat satu `h1` yang tidak terlukis (≤1 px), tidak ada `.page-intro`, dan kontrol pertama ≤24 px dari tepi atas halaman. `apps/web/e2e/bible-header-first-paint.spec.ts` merekam setiap frame lewat `requestAnimationFrame` dan menolak frame yang memuat teks "Bacaan"/"Alkitab" atau tidak punya tombol.

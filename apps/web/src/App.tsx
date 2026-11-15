@@ -366,8 +366,58 @@ function Header({
     return (
       <Suspense
         fallback={
-          <header className="topbar is-reader-context" role="status">
-            {translate(locale, "bible.reading")}
+          /* The chunk is still loading, so the bar shows the same control
+             shapes disabled instead of a line of text that the buttons then
+             replace — the owner saw that text flash on every cold open. */
+          <header className="topbar is-reader-context">
+            <div className="reader-context-bar">
+              <div className="reader-context-left">
+                <button
+                  className="reader-context-book-picker quick-nav-handle"
+                  type="button"
+                  disabled
+                  aria-hidden="true"
+                  tabIndex={-1}
+                >
+                  <Icon name="book" size={16} />
+                  <span className="picker-chevron">
+                    <Icon name="chevronDown" size={12} />
+                  </span>
+                </button>
+                <div className="reader-version-select-wrap">
+                  <span
+                    className="reader-context-select-placeholder"
+                    aria-hidden="true"
+                  />
+                </div>
+              </div>
+              <div className="reader-context-actions">
+                <button
+                  className="reader-context-button"
+                  type="button"
+                  disabled
+                  aria-hidden="true"
+                  tabIndex={-1}
+                >
+                  <Icon name="search" size={16} />
+                </button>
+                <span className="reader-hamburger-wrapper">
+                  <button
+                    className="reader-context-button reader-hamburger-btn"
+                    type="button"
+                    disabled
+                    aria-hidden="true"
+                    tabIndex={-1}
+                  >
+                    <span className="hamburger-icon" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  </button>
+                </span>
+              </div>
+            </div>
           </header>
         }
       >

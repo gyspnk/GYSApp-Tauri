@@ -237,12 +237,10 @@ export function HymnCatalog({
   };
   return (
     <div className="page hymn-page">
-      {/* The catalogue used to hide its name from sighted readers: every other
-          destination (Literatur, Suara, Iman, settings) opens on a painted
-          title, so this route looked like it had none. */}
-      <section className="page-intro">
-        <h1>{translate(locale, "page.kidungTitle")}</h1>
-      </section>
+      {/* The owner asked for no hero header here: the destination is already
+          named by the sidebar and the tab row, so the title stays for screen
+          readers only and the toolbar opens the page. */}
+      <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
       <div
         className={`kidung-index-toolbar${filtersCollapsed ? " is-collapsed" : ""}`}
       >

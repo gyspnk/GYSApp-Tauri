@@ -1,12 +1,21 @@
 import { expect, test } from "@playwright/test";
 
-// The three catalogue destinations share one header treatment. Iman used to
-// render its heading screen-reader-only, so the route opened with no visible
-// name while Literatur and Suara showed one at the same spot.
+// Literatur and Suara open on a painted title. Iman and Kidung do not: the
+// owner asked for no hero header there, so those routes keep one heading for
+// screen readers and start straight on their first control.
 const pages = [
   { path: "/literatur", title: "Literatur", field: ".search-field" },
   { path: "/suara", title: "Suara Sejati", field: ".search-field" },
-  { path: "/iman", title: "Dasar Kepercayaan", field: ".faith-search-bar" },
+];
+
+const headerless = [
+  { path: "/iman", title: "Dasar Kepercayaan", first: ".faith-search-bar" },
+  { path: "/kidung", title: "Kidung", first: ".kidung-index-toolbar" },
+  {
+    path: "/kidung?section=playlist",
+    title: "Antrean MIDI",
+    first: ".kidung-index-toolbar",
+  },
 ];
 
 for (const viewport of [
@@ -193,53 +202,51 @@ for (const viewport of [
   });
 }
 
-// The hymn catalogue was the last destination whose name existed only for
-// screen readers: every sibling opened on a painted title, so /kidung looked
-// like a page without a name (and the toolbar started 3 px under nothing).
-test("the hymn catalogue opens on the same title as its siblings", async ({
-  page,
-}) => {
-  await page.route(/^https:\/\//, (route) => route.abort());
-  const read = async (path: string) => {
-    await page.goto(`/GYSApp-Tauri${path}`, { waitUntil: "load" });
-    const heading = page.locator(".page-intro h1").first();
-    await expect(heading).toBeVisible();
-    const box = await heading.boundingBox();
-    const style = await heading.evaluate((node) => {
-      const computed = getComputedStyle(node);
-      return {
-        size: computed.fontSize,
-        weight: computed.fontWeight,
-        left: Math.round(node.getBoundingClientRect().left),
-        top: Math.round(node.getBoundingClientRect().top),
-      };
-    });
-    const gap = await page.evaluate(() => {
-      const intro = document
-        .querySelector(".page-intro")
-        ?.getBoundingClientRect();
-      const toolbar = document.querySelector(".kidung-index-toolbar");
-      if (!intro || !toolbar) return null;
-      return Math.round(toolbar.getBoundingClientRect().top - intro.bottom);
-    });
-    return { text: await heading.textContent(), box, gap, ...style };
-  };
-
-  for (const viewport of [
-    { width: 390, height: 844 },
-    { width: 1440, height: 900 },
-  ]) {
+// A route without a hero header still needs a name for assistive tech, and its
+// first control must sit where the title used to be — otherwise removing the
+// block would only have moved the gap, not the page.
+for (const viewport of [
+  { width: 390, height: 844 },
+  { width: 1440, height: 900 },
+]) {
+  test(`headerless destinations start on their first control at ${viewport.width}`, async ({
+    page,
+  }) => {
+    await page.route(/^https:\/\//, (route) => route.abort());
     await page.setViewportSize(viewport);
-    const hymn = await read("/kidung");
-    const literature = await read("/literatur");
-    expect(hymn.text).toBe("Kidung");
-    expect(hymn.size, "catalogue title size").toBe(literature.size);
-    expect(hymn.weight, "catalogue title weight").toBe(literature.weight);
-    expect(hymn.top, "catalogue title row").toBe(literature.top);
-    expect(hymn.left, "catalogue title edge").toBe(literature.left);
 
-    // The catalogue's own toolbar must not sit flush under the heading.
-    expect(hymn.gap, "toolbar gap under the title").not.toBeNull();
-    expect(hymn.gap!, "toolbar gap under the title").toBeGreaterThanOrEqual(16);
-  }
-});
+    for (const entry of headerless) {
+      await page.goto(`/GYSApp-Tauri${entry.path}`, { waitUntil: "load" });
+      const headings = page.locator("h1");
+      await expect(headings).toHaveCount(1);
+      const heading = headings.first();
+      await expect(heading).toHaveText(entry.title);
+      // Screen-reader-only: present in the tree, never painted.
+      const box = await heading.boundingBox();
+      expect(box, `${entry.path} heading is not painted`).not.toBeNull();
+      expect(box!.width, `${entry.path} heading width`).toBeLessThanOrEqual(1);
+      expect(box!.height, `${entry.path} heading height`).toBeLessThanOrEqual(
+        1,
+      );
+      await expect(page.locator(".page-intro")).toHaveCount(0);
+
+      const first = page.locator(entry.first).first();
+      await expect(first).toBeVisible();
+      const firstBox = await first.boundingBox();
+      expect(firstBox, `${entry.path} first control`).not.toBeNull();
+      // Measured against the page's own top edge, not the viewport: the shell
+      // adds its own offset above every route. A leftover title block would
+      // push the first control down by its full height (51-76 px).
+      const pageTop = await page
+        .locator(
+          entry.path.startsWith("/kidung") ? ".hymn-page" : ".faith-page",
+        )
+        .first()
+        .evaluate((node) => node.getBoundingClientRect().top);
+      expect(
+        firstBox!.y - pageTop,
+        `${entry.path} first control opens the page`,
+      ).toBeLessThan(24);
+    }
+  });
+}

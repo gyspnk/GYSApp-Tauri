@@ -206,14 +206,30 @@ export function BibleHeader({
               </div>
             </>
           ) : (
-            <div className="reader-context-title">
-              <span>
-                {isBibleRoute
-                  ? translate(locale, "bible.reading")
-                  : "Kidung Rohani"}
-              </span>
-              <strong>{isBibleRoute ? "Alkitab" : "Kidung"}</strong>
-            </div>
+            /* The bar paints its controls on the first frame, before the pack
+               has published a book: the owner saw "Bacaan / Alkitab" text
+               appear and then get replaced by the buttons. The same shapes
+               render disabled instead, so nothing moves when the data lands. */
+            <>
+              <button
+                className="reader-context-book-picker quick-nav-handle"
+                type="button"
+                disabled
+                aria-hidden="true"
+                tabIndex={-1}
+              >
+                <Icon name="book" size={16} />
+                <span className="picker-chevron">
+                  <Icon name="chevronDown" size={12} />
+                </span>
+              </button>
+              <div className="reader-version-select-wrap">
+                <span
+                  className="reader-context-select-placeholder"
+                  aria-hidden="true"
+                />
+              </div>
+            </>
           )}
         </div>
 
@@ -669,17 +685,9 @@ export function BibleHeader({
                 <button
                   className="reader-context-button"
                   type="button"
-                  disabled={isBibleRoute && !bibleHeader?.active}
-                  onClick={
-                    isBibleRoute && bibleHeader?.active
-                      ? () => bibleHeader.onOpenPicker()
-                      : onFocusPageSearch
-                  }
-                  aria-label={
-                    isBibleRoute
-                      ? translate(locale, "bible.pickerSearchTitle")
-                      : "Buka pencarian lagu"
-                  }
+                  disabled
+                  aria-hidden="true"
+                  tabIndex={-1}
                 >
                   <Icon name="search" size={16} />
                 </button>
@@ -693,6 +701,23 @@ export function BibleHeader({
               >
                 <Icon name="music" size={16} />
               </button>
+              {isBibleRoute ? (
+                <span className="reader-hamburger-wrapper">
+                  <button
+                    className="reader-context-button reader-hamburger-btn"
+                    type="button"
+                    disabled
+                    aria-hidden="true"
+                    tabIndex={-1}
+                  >
+                    <span className="hamburger-icon" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  </button>
+                </span>
+              ) : null}
             </>
           )}
         </div>
