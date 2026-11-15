@@ -155,7 +155,10 @@ test("the three sign-in rows share one shape", async ({ page }) => {
         width: Math.round(box.width),
         height: Math.round(box.height),
         radius: style.borderRadius,
-        border: style.borderTopWidth,
+        // The hairline may be a border or an inset shadow: the Google row paints
+        // it with a shadow so its inner press target keeps the full 44 px.
+        hairline:
+          parseFloat(style.borderTopWidth) > 0 || /inset/.test(style.boxShadow),
       };
     }),
   );
@@ -163,7 +166,7 @@ test("the three sign-in rows share one shape", async ({ page }) => {
     expect(box.width).toBe(boxes[0]!.width);
     expect(Math.abs(box.height - boxes[0]!.height)).toBeLessThanOrEqual(1);
     expect(box.height).toBeGreaterThanOrEqual(44);
-    expect(box.border).toBe("1px");
+    expect(box.hairline, "every row paints one hairline").toBe(true);
   }
   expect(boxes[1]!.radius).toBe(boxes[2]!.radius);
 });

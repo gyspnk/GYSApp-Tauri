@@ -189,17 +189,20 @@ test("zoom animates words to their new rows, settles chord alignment, and respec
         .every((a) => a.effect!.getTiming().duration === 340),
     ),
   ).toBe(true);
-  await sheet.evaluate((el) =>
-    el.getAnimations({ subtree: true }).forEach((a) => a.finish()),
-  );
+  // A late resize can start a fresh reflow, so each poll finishes whatever is
+  // running and reports how many it saw: the sheet is settled once a round sees
+  // none. A single finish() left twelve animations behind on a loaded shard.
   await expect
-    .poll(() =>
-      sheet.evaluate(
-        (el) =>
-          el
+    .poll(
+      () =>
+        sheet.evaluate((el) => {
+          const running = el
             .getAnimations({ subtree: true })
-            .filter((a) => a.id === "gys-lyrics-reflow").length,
-      ),
+            .filter((a) => a.id === "gys-lyrics-reflow");
+          running.forEach((a) => a.finish());
+          return running.length;
+        }),
+      { timeout: 15_000 },
     )
     .toBe(0);
   await page.emulateMedia({ reducedMotion: "reduce" });
