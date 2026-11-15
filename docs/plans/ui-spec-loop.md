@@ -779,3 +779,14 @@ Kontrak: `apps/web/e2e/settings-touch.spec.ts` membuka panel Nyanyian pada konte
 | Offline (`data-setting="offline"`) | kartu aset terdistribusi, tombol unduh | 0 pelanggaran |
 
 Kontrak: `apps/web/e2e/shell-a11y.spec.ts` › "the settings panels are axe clean in every shell" — 390 px, tema terang + gelap + amoled + sepia, enam tag axe, tanpa `disableRules`.
+
+### Shell: tepi breakpoint diukur, bukan hanya angka bulat (putaran 126)
+
+| Lebar       | Rute   | Hasil                                          |
+| ----------- | ------ | ---------------------------------------------- |
+| 599 / 600   | 8 rute | tanpa luapan, konten pertama di dalam viewport |
+| 719 / 720   | 8 rute | idem                                           |
+| 899 / 900   | 8 rute | idem                                           |
+| 1199 / 1200 | 8 rute | idem                                           |
+
+Kontrak: `apps/web/e2e/breakpoint-edges.spec.ts` — delapan rute, delapan lebar tepi, `scrollWidth - innerWidth <= 1` dan konten pertama mulai di atas lipatan.
