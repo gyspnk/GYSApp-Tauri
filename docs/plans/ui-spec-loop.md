@@ -698,3 +698,15 @@ Chrome partitur dirombak pada putaran 86 agar memakai rangka mode teks, tetapi a
 | sepia             | 0 pelanggaran |
 
 Cakupan bertambah tanpa perbaikan: token kontras dari putaran 101 (`--on-accent`, `--gold`) sudah menahan chrome baru di semua shell. Tes: 5 lulus (12,9 s).
+
+### Kidung: takarir aksi tidak terpotong saat teks 200 % (putaran 117)
+
+| Butir                                         | Sebelum                                                | Sesudah                        |
+| --------------------------------------------- | ------------------------------------------------------ | ------------------------------ |
+| Takarir "Favorit" pada panel aksi, teks 200 % | 59 px kolom, 66 px teks → terpotong `overflow: hidden` | Membungkus dua baris, utuh     |
+| Tinggi tombol aksi di panel, teks 200 %       | 48 px (tetap)                                          | 79 px (`height: auto`)         |
+| Tinggi panel, teks 200 %                      | 119 px                                                 | 150 px                         |
+| Tampilan pada ukuran normal                   | 48 px / 119 px                                         | 48 px / 119 px (tidak berubah) |
+| Gulir mendatar, teks 200 %, 8 rute            | 0                                                      | 0                              |
+
+Kontrak `apps/web/e2e/text-resize.spec.ts` (baru) menuntut tidak ada gulir mendatar di delapan permukaan saat akar font digandakan menjadi 32 px, dan menambah tes khusus yang membuka panel aksi kidung lalu memastikan tidak ada takarir yang `scrollHeight` melebihi kotaknya lebih dari 4 px.

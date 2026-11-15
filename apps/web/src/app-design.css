@@ -6843,3 +6843,22 @@ body:has(.hymn-detail-page.is-text-viewer)
     margin: 0;
   }
 }
+
+/* The more-actions panel is five equal columns, so at 200 % text the caption
+   "Favorit" needed 66 px in a 59 px column and was clipped. The caption wraps
+   instead: the row grows, and no word is cut off. */
+.hymn-detail-page.is-text-viewer .hymn-more-actions-panel .hymn-action-caption {
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+  text-align: center;
+}
+/* The button pinned its height, so a two-line caption painted outside it. */
+.hymn-detail-page.is-text-viewer .hymn-more-actions-panel .hymn-action {
+  height: auto;
+  min-height: 48px;
+}
