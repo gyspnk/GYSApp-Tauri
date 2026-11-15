@@ -106,7 +106,7 @@
   min-height: var(--midi-control);
   width: 100%;
   padding: 6px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
   background: var(--surface-soft);
   color: var(--ink);
@@ -159,7 +159,7 @@
   min-width: var(--midi-control, 40px);
   height: var(--midi-control, 40px);
   padding: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--ink);
@@ -948,7 +948,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   height: var(--tempo-target);
   min-height: var(--tempo-target);
   padding: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
   background: var(--surface-soft);
   color: var(--ink);
@@ -962,7 +962,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   font-size: 0.75rem;
   height: var(--tempo-target);
   padding: 0 6px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
   background: var(--surface-soft);
 }

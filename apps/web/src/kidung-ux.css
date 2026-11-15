@@ -317,7 +317,7 @@
   min-height: 44px;
   place-items: center;
   padding: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface);
   color: var(--muted);
@@ -683,7 +683,7 @@
   height: 44px;
   min-height: 44px;
   place-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--muted);
@@ -1050,7 +1050,7 @@
   width: 100%;
   min-height: 48px;
   padding: 10px 14px 10px 44px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   box-shadow: none;
@@ -1491,7 +1491,7 @@
   font-variant-numeric: tabular-nums;
 }
 .hymn-more-actions-panel .reader-preferences > .text-button {
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);
@@ -1663,7 +1663,7 @@
    disclosure above the text and closes itself once a song is picked. */
 .kidung-reader-picker {
   margin: 0 0 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
 }

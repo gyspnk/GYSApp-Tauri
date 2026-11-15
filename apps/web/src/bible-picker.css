@@ -81,7 +81,7 @@
   justify-content: space-between;
   gap: 4px;
   padding: 8px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface-soft);
   color: var(--ink);

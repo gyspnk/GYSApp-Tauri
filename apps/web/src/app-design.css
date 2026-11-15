@@ -227,7 +227,7 @@
   justify-content: center;
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--blue);
@@ -693,7 +693,7 @@
   min-height: 48px;
   gap: 12px;
   padding-inline: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   box-shadow: none;
 }
@@ -1091,7 +1091,9 @@
   /* The three collection shortcuts looked like bare text on the full-width
      row; give each one the same card surface as the rest of the settings. */
   padding: 8px 12px;
-  border: 1px solid var(--line);
+  /* A shortcut card is a control: its edge has to clear the 3:1 non-text
+     minimum, which a hairline does not. */
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
 }
@@ -1328,7 +1330,9 @@
   min-width: 0;
   min-height: 48px;
   padding-inline: 14px;
-  border: 1px solid var(--line);
+  /* The field's own fill is a hair lighter than the page, so its edge is the
+     only thing that identifies it: a control border, not a hairline. */
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   letter-spacing: normal;
@@ -1457,7 +1461,7 @@
 .reader-preview-note {
   padding: var(--space-4);
   margin-block: var(--space-6);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
   background: var(--blue-soft);
   color: var(--ink);
@@ -1882,7 +1886,7 @@
   gap: 8px;
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   color: var(--ink);
@@ -2711,7 +2715,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .egys-inline-login input {
   width: 100%;
   min-height: 44px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   padding: 8px 12px;
   background: var(--surface);
@@ -2786,7 +2790,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   display: grid;
   gap: 4px;
   padding: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 12px 32px #163f6124;
@@ -2906,7 +2910,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   max-height: 60dvh;
   overflow: auto;
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: 0 12px 40px #163f6126;
@@ -4194,7 +4198,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   flex-wrap: wrap;
   gap: 6px;
   padding: 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-lift);
@@ -4202,7 +4206,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .article-resume-options button {
   min-height: 36px;
   padding: 6px 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   font-size: 0.75rem;
   color: var(--ink);
@@ -4419,7 +4423,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   align-items: center;
   gap: 4px;
   padding: 4px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface-soft);
 }
@@ -4672,7 +4676,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   right: 0;
   width: 200px;
   padding: 6px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 8px 24px #163f6126;
@@ -4960,7 +4964,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   overscroll-behavior: contain;
   padding: 12px;
   gap: 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 8px 24px color-mix(in srgb, var(--navy) 14%, transparent);
@@ -5726,7 +5730,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .hymn-more-actions-panel .hymn-scope-pill-btn {
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--ink);
@@ -5842,7 +5846,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   .hymn-scope-pill-btn {
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--ink);
@@ -6102,7 +6106,7 @@ body:has(.hymn-detail-page.is-text-viewer)
   flex: 0 0 auto;
   min-height: 44px;
   padding-inline: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
@@ -6325,7 +6329,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 }
 
 .confirm-dialog-cancel {
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink);
 }
@@ -6487,7 +6491,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .welcome-skip {
   min-height: 44px;
   padding: 0 18px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
@@ -6519,7 +6523,7 @@ body:has(.hymn-detail-page.is-text-viewer)
 .kidung-tool-page .kidung-controls-field {
   justify-content: space-between;
   padding: 4px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
 }

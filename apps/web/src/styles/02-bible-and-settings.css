@@ -626,7 +626,7 @@
   min-height: 36px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface-soft);
   color: var(--ink);
@@ -1069,7 +1069,7 @@
   min-height: 38px;
   width: 100%;
   padding: 0 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-soft);
   color: var(--ink);
@@ -1173,7 +1173,7 @@
 .transpose-control button {
   width: 30px;
   height: 30px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-soft);
   cursor: pointer;
@@ -1271,7 +1271,7 @@
 .faith-note textarea {
   resize: vertical;
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-soft);
   color: var(--ink);
@@ -1289,7 +1289,7 @@
   flex-shrink: 0;
   min-height: 44px;
   padding: 8px 14px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 24px;
   background: var(--surface);
   color: var(--ink);
@@ -1873,7 +1873,7 @@
   width: 100%;
   resize: vertical;
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-soft);
   color: var(--ink);
@@ -2044,7 +2044,7 @@
   min-height: 26px;
   min-width: 0;
   padding: 0 4px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 6px;
   background: var(--surface-soft);
   color: var(--ink);
@@ -2062,7 +2062,7 @@
   place-items: center;
   width: 24px;
   height: 24px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 6px;
   background: var(--surface-soft);
   color: var(--ink);
@@ -2222,7 +2222,7 @@
   align-items: center;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface);
   color: var(--ink);
@@ -2830,7 +2830,7 @@
   min-height: 36px;
   margin-top: 4px;
   padding: 6px 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
@@ -2853,7 +2853,7 @@
   min-width: 160px;
   max-width: 60%;
   padding: 6px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);

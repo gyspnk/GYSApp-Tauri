@@ -82,7 +82,7 @@
   width: 44px;
   min-width: 44px;
   height: 44px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
@@ -173,7 +173,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-soft);
   color: var(--muted);
@@ -239,7 +239,7 @@
   gap: 2px;
   min-height: 44px;
   padding: 6px 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
@@ -305,7 +305,7 @@
   width: 100%;
   min-height: 52px;
   padding: 8px 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface-soft);
   color: var(--ink);
@@ -443,7 +443,7 @@
   min-height: 34px;
   padding: 0 10px;
   border-radius: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink);
   font: inherit;
@@ -592,7 +592,7 @@
   min-height: 44px;
   height: 44px;
   padding: 0;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
@@ -803,7 +803,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);

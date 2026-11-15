@@ -22,7 +22,7 @@
   padding: 0 !important;
   display: inline-grid !important;
   place-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--muted);

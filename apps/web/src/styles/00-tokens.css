@@ -60,7 +60,10 @@
   /* Secondary ink remains readable on the default blue/white surfaces. */
   --muted: #586b7d;
   --line: #dce5ee;
-  --line-strong: #bdcedd;
+  /* Control borders, not hairlines: a button or a field edge has to clear the
+     3:1 non-text minimum against both the surface and the canvas, and
+     #bdcedd only reached 1,61:1 on white. */
+  --line-strong: #6b849b;
   --blue: #00719c;
   /* One focus ring for every control: the solid blue clears 3:1 on every
      surface, unlike the translucent variants it replaces. */
@@ -195,7 +198,7 @@
   --ink: #2b1c0c;
   --muted: #4c3926;
   --line: #bbab96;
-  --line-strong: #96836b;
+  --line-strong: #7a6847;
   --blue: #0b5c80;
   --on-accent: #ffffff;
   --success: #24562a;

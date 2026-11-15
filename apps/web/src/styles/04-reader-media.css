@@ -103,7 +103,7 @@
   gap: 10px;
   margin-top: 4px;
   padding: 16px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow);
@@ -119,7 +119,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-md);
   background: var(--surface-soft);
   transition:
@@ -140,7 +140,7 @@
   display: grid;
   gap: 12px;
   padding: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow);
@@ -222,7 +222,7 @@
   display: inline-flex;
   gap: 4px;
   padding: 4px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--surface-soft);
 }
@@ -316,7 +316,7 @@
   min-width: var(--control-hit, 44px);
   min-height: var(--control-hit, 44px);
   padding: 0 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface);
   color: var(--ink);
@@ -359,7 +359,7 @@
 .transpose-control button {
   width: 40px;
   min-height: 40px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface);
   cursor: pointer;
@@ -759,7 +759,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--muted);
   font-size: 0.875rem;
@@ -1025,7 +1025,7 @@ body.gys-viewer-active {
   gap: 2px;
   padding: 6px;
   min-width: 160px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-lift);
@@ -1091,7 +1091,7 @@ body.gys-viewer-active {
   min-width: 44px;
   min-height: 44px;
   padding: 0 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
@@ -1383,7 +1383,7 @@ body.gys-viewer-active {
   background: var(--surface-soft);
   padding: 4px;
   border-radius: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -1474,7 +1474,7 @@ body.gys-viewer-active {
   padding: 16px 20px;
   border-radius: 12px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   box-shadow: var(--shadow-xs);
 }
 .kidung-settings-switch {
@@ -1515,7 +1515,7 @@ body.gys-viewer-active {
   padding: 0;
   border-radius: 12px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   overflow: hidden;
   box-shadow: var(--shadow-xs);
 }
@@ -1599,7 +1599,7 @@ body.gys-viewer-active {
   padding: 20px;
   border-radius: 12px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   box-shadow: var(--shadow-xs);
 }
 .kidung-saved-playlists h2 {
@@ -1656,7 +1656,7 @@ body.gys-viewer-active {
   padding: 22px;
   border-radius: 16px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   box-shadow: var(--shadow-xs);
 }
 .kidung-settings-section h2 {
@@ -1852,7 +1852,7 @@ body.gys-viewer-active {
 .media-speech-rate-control select {
   height: 26px;
   padding: 0 6px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 6px;
   background: var(--surface);
   color: var(--ink);

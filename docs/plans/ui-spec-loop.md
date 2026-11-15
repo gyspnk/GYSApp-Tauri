@@ -860,3 +860,18 @@ Kontrak: `apps/web/e2e/reader-preferences-touch.spec.ts` kini juga mengukur slid
 | `/literatur`, `/suara`                                                                        | `Lainnya` (keduanya dibuka dari sana) |
 
 Kontrak: `apps/web/e2e/nav-current.spec.ts` — sembilan rute, tepat satu `a[aria-current="page"]` di `.primary-nav`, dan namanya cocok dengan tujuan rute.
+
+### Shell: tepi kontrol memenuhi 3:1 di keempat tema (putaran 134)
+
+`--line-strong` dipakai untuk tepi kontrol, bukan garis hias. Nilainya dulu `#bdcedd` di tema terang — **1,61:1** di atas putih — dan `#96836b` di sepia, 2,87:1 di atas kanvas. WCAG 1.4.11 menuntut batas kontrol mencapai 3:1, jadi tombol dan kolom isian terbaca seperti teks dengan noda di sekelilingnya.
+
+| Tema   | Sebelum          | Sesudah   | Terukur (surface / soft / canvas) |
+| ------ | ---------------- | --------- | --------------------------------- |
+| Terang | `#bdcedd` 1,61:1 | `#6b849b` | 3,89 / 3,39 / 3,59                |
+| Gelap  | `#8497a3`        | `#8497a3` | 5,56 / 4,83 / 6,12                |
+| Amoled | `#777777`        | `#777777` | 4,42 / 4,11 / 4,69                |
+| Sepia  | `#96836b` 2,87:1 | `#7a6847` | 4,80 / 3,93 / 4,24                |
+
+71 aturan kontrol berpindah dari `var(--line)` ke `var(--line-strong)`; garis hias (pemisah baris, bingkai kartu, kerangka) tetap memakai `var(--line)`. Kontrol yang terisi dikecualikan: batasnya digambar oleh isian, bukan tepi.
+
+Kontrak: `apps/web/e2e/control-borders.spec.ts` mengukur setiap kontrol bertepi di delapan rute × empat tema dan menuntut rasio ≥3:1 terhadap latarnya sendiri. 4 lulus (25,8 s).
