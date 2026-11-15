@@ -2019,14 +2019,6 @@
   gap: 8px;
   min-width: 0;
 }
-.media-queue-controls .text-button {
-  min-height: 26px;
-  padding: 4px 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.625rem;
-}
 .media-progress input,
 .media-adjustments input {
   width: 100%;
