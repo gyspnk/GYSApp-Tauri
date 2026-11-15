@@ -80,3 +80,49 @@ test("the literature toolbar stacks on a phone", async ({ page }) => {
   );
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test("a landscape phone sees the shelf, not only the tool stack", async ({
+  page,
+}) => {
+  // 390 px of height: search, chips and the sort with its painted label used to
+  // fill y 74-437, so the page showed no book at all. The sort now shares the
+  // search's row and keeps only its accessible name.
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-shell-settings-v1",
+      JSON.stringify({
+        version: 1,
+        locale: "id",
+        theme: "light",
+        onboarded: true,
+      }),
+    );
+  });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.goto("/GYSApp-Tauri/literatur");
+
+  const search = page.locator(".literature-toolbar > .search-field");
+  const sort = page.locator(".literature-toolbar > .control-select");
+  await expect(search).toBeVisible({ timeout: 30_000 });
+  const searchBox = (await search.boundingBox())!;
+  const sortBox = (await sort.boundingBox())!;
+  expect(Math.abs(sortBox.y - searchBox.y)).toBeLessThanOrEqual(1);
+  expect(sortBox.x).toBeGreaterThanOrEqual(searchBox.x + searchBox.width - 1);
+  expect(sortBox.height).toBeLessThanOrEqual(52);
+
+  // The sort keeps its accessible name even though its painted label is gone.
+  await expect(page.getByRole("combobox", { name: "Urutkan" })).toBeVisible();
+
+  // Some content reached the fold: the featured shelf or the catalogue itself.
+  const shelfTop = await page
+    .locator(".literature-featured, .literature-shelf")
+    .first()
+    .evaluate((node) => node.getBoundingClientRect().top);
+  expect(shelfTop).toBeLessThan(390);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - innerWidth,
+    ),
+  ).toBeLessThanOrEqual(1);
+});

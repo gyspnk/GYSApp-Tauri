@@ -673,3 +673,15 @@ Di 844×390 kartu sambutan setinggi 429 px sementara pandangan hanya 390, sehing
 .Kartu hanya berubah di `max-height: 540px` dan `orientation: landscape`; di 390×844 dan 1440×900 tinggi kartu tetap 444 dan 410 px. Salinan pembuka dibungkus `.welcome-copy` agar bisa dipindah ke kolom kiri, dan setiap kendali mendapat sel sendiri supaya penempatan otomatis tidak menyelipkan tombol ke dalam kolom teks.
 
 Kontrak: `apps/web/e2e/welcome.spec.ts` "a landscape phone shows the skip without scrolling" mengukur bahwa tombol lewati sepenuhnya di dalam pandangan, dokumen tidak menggulir, tidak ada luapan mendatar, dan kedua sasaran tekan ≥44 px.
+
+### Literatur: ponsel mendatar memuat bacaan di lipatan (putaran 115)
+
+| Butir                                   | Sebelum                                         | Sesudah                                                |
+| --------------------------------------- | ----------------------------------------------- | ------------------------------------------------------ |
+| Tinggi tumpukan alat (390 px pandangan) | 183 px (cari 48 + chip 44 + urutkan 71 + celah) | 102 px (cari & urutkan satu baris 48 + chip 44)        |
+| Baris "Urutkan"                         | label tercetak, kontrol di baris sendiri        | label hanya nama aksesibel, kontrol di kanan pencarian |
+| Atas konten pertama                     | y 388 (di bawah lipatan)                        | y 290                                                  |
+| Sasaran tekan urutkan                   | 48 px                                           | 48 px (tidak berubah)                                  |
+| Gulir mendatar                          | 0                                               | 0                                                      |
+
+Kontrak `apps/web/e2e/literature-toolbar.spec.ts` menambah tes di 844×390: pencarian dan urutkan satu baris, urutkan ≤52 px tinggi, combobox masih bernama "Urutkan", dan konten pertama berada di atas lipatan. Aturan CSS-nya berada di blok `@media (orientation: landscape) and (max-height: 540px)` paling akhir `apps/web/src/app-design.css`, sehingga mengalahkan susunan satu kolom di bawah 1200 px.

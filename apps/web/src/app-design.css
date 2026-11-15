@@ -6814,3 +6814,32 @@ body:has(.hymn-detail-page.is-text-viewer)
 .more-page .report-card .report-email-hint {
   font-size: 0.75rem;
 }
+
+/* A landscape phone has ~390 px of height, and the Literature tool stack alone
+   (search, chips, and the sort with its painted label) reached y 437: the shelf
+   opened entirely below the fold, so the page showed no book at all. The sort
+   moves beside the search and keeps only its accessible name, which buys back
+   the 98 px the stacked control and its label cost. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .literature-page .literature-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(140px, 180px);
+    margin-block: 10px 4px;
+  }
+  .literature-toolbar > .search-field {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .literature-toolbar > .control-select {
+    grid-column: 2;
+    grid-row: 1;
+    max-width: none;
+  }
+  .literature-page .literature-toolbar .control-select-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    margin: 0;
+  }
+}
