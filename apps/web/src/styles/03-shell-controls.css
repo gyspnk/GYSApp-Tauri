@@ -38,9 +38,27 @@
   flex: 1 1 auto;
 }
 
-/* The bar paints its controls before the pack publishes a book, so the
-   version select needs a stand-in with the same footprint: the real trigger
-   measures 44 px on a phone and 61 px on a desktop. */
+/* The bar paints its controls before the pack publishes a book, so the picker
+   and the version select need stand-ins with the same footprint: the real
+   picker is 120 px wide on a phone and 126 px on a desktop, the version
+   trigger 44 px and 61 px. */
+.reader-context-picker-placeholder {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 120px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
+}
+@media (min-width: 720px) {
+  .reader-context-picker-placeholder {
+    width: 126px;
+  }
+}
 .reader-context-select-placeholder {
   display: block;
   width: 44px;

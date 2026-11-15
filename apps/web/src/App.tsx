@@ -372,18 +372,13 @@ function Header({
           <header className="topbar is-reader-context">
             <div className="reader-context-bar">
               <div className="reader-context-left">
-                <button
-                  className="reader-context-book-picker quick-nav-handle"
-                  type="button"
-                  disabled
+                <span
+                  className="reader-context-picker-placeholder"
                   aria-hidden="true"
-                  tabIndex={-1}
                 >
                   <Icon name="book" size={16} />
-                  <span className="picker-chevron">
-                    <Icon name="chevronDown" size={12} />
-                  </span>
-                </button>
+                  <Icon name="chevronDown" size={12} />
+                </span>
                 <div className="reader-version-select-wrap">
                   <span
                     className="reader-context-select-placeholder"
