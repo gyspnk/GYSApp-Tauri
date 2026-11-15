@@ -22,29 +22,31 @@ yang benar-benar berbeda permukaan.
 
 ## Register (per 11 November 2026)
 
-| Nama                         | Agen                                   | Dipakai ulang untuk                                      |
-| ---------------------------- | -------------------------------------- | -------------------------------------------------------- |
-| `Alkitab — scroll restore`   | `48513d30-9e38-4b53-b58e-39e04701e480` | riwayat gulir, popstate, fokus judul setelah navigasi    |
-| `Brain — spesifikasi panel`  | `734c27a2-e3cb-4279-b827-b49c87c4821f` | spesifikasi panel otak, token tema, tata letak SVG       |
-| `CSS — pemangkasan selektor` | `e0e92439-bd76-4b5f-828b-fc6695014e31` | sisa selektor mati, grup selektor yang belum dipangkas   |
-| `Release — pipeline APK`     | `20eda717-7f21-4e37-b0fe-13c2da56bf07` | audit jalur rilis, cadence, changelog, aset APK          |
-| `Harness — API sesi klien`   | `226d91ca-6c33-4e78-a92f-f042dbdc3e05` | bentuk data `sessions`, `binding().eventSource`          |
-| `TTS — kontrak fallback`     | `161a5a4e-c462-49fc-bcde-4085060cb912` | Edge TTS, ucapan "Allah", fallback suara sistem          |
-| `Kidung — dropdown koleksi`  | `1e32ac40-26d2-4da6-a6b0-d32a904fb82e` | kontrol koleksi, rel pembaca, chunk pembaca              |
-| `Iman — baris satu ketuk`    | `cf07588a-a2b5-456d-bd56-9197084ac89c` | permukaan Dasar Kepercayaan, sheet catatan, PDF          |
-| `E2E — migrasi spec`         | `da2a5298-3c19-4f5d-87a5-348062413549` | spek yang mengikuti perubahan markup                     |
-| `E2E — flake transisi`       | `ab089fbb-7468-4a19-af20-35f3dc774444` | flake waktu, `page.clock`, preload 180 ms                |
-| `Lainnya — panel landscape`  | `98bbf30e-1dd3-4327-a3ac-6b145f4daebe` | pengaturan landscape, panel terbuka, tabel dua kolom     |
-| `Release — nama aset APK`    | `900ad3e3-1149-4ec0-af52-3d4aa4b7bd72` | `release-asset-name.mjs`, workflow Android, versi native |
-| `Brain — fase workflow`      | `119137b6-38ce-46e5-832c-196ec190a26a` | panel otak: badge workflow, hitungan agen, locale plugin |
-| `Home — cadangan CLS`        | `aa7fe12e-e1e9-490e-b4c0-1f8568d1b774` | blok yang menyusut 650 ms di beranda, cadangan tinggi    |
-| `Media — balapan nexttrack`  | `cf7d882b-efd5-4327-a24e-06dac3e6c3af` | aksi media ganda, shard sibuk, `media-dock.spec.ts`      |
-| `A11y — rute tersisa`        | `50b0904c-e247-4b68-891e-278b7ca89b8d` | axe enam tag untuk beranda, Alkitab, Suara, Lainnya      |
-| `Docs — ekor ledger`         | `0d67ec2e-e69d-4ec2-8d8a-c7669bdb6b40` | ledger panjang `2026-10-30`, catatan putaran, gaya entri |
-| `Perf — audit bundel web`    | `81c15612-7a1c-452e-90c7-4e374af989a1` | ukuran chunk, jalur muat awal, peluang penghematan       |
-| `Kidung — audit token CSS`   | `f3c00fd0-010e-4e33-a783-47ff6de5ede4` | `kidung-*.css`: warna literal, target <44 px, duplikat   |
-| `Alkitab — audit token CSS`  | `d213000a-76ed-47fd-8218-551bfd427264` | `styles/01-03` + Alkitab: warna literal, target <44 px   |
-| `Shell — audit token CSS`    | `3542ca7d-1c10-43b7-a965-5843bb5f1296` | `app-design.css`, `reading-surfaces.css`, `ui-hardening` |
+| Nama                             | Agen                                   | Dipakai ulang untuk                                                |
+| -------------------------------- | -------------------------------------- | ------------------------------------------------------------------ |
+| `Alkitab — scroll restore`       | `48513d30-9e38-4b53-b58e-39e04701e480` | riwayat gulir, popstate, fokus judul setelah navigasi              |
+| `Brain — spesifikasi panel`      | `734c27a2-e3cb-4279-b827-b49c87c4821f` | spesifikasi panel otak, token tema, tata letak SVG                 |
+| `CSS — pemangkasan selektor`     | `e0e92439-bd76-4b5f-828b-fc6695014e31` | sisa selektor mati, grup selektor yang belum dipangkas             |
+| `Release — pipeline APK`         | `20eda717-7f21-4e37-b0fe-13c2da56bf07` | audit jalur rilis, cadence, changelog, aset APK                    |
+| `Harness — API sesi klien`       | `226d91ca-6c33-4e78-a92f-f042dbdc3e05` | bentuk data `sessions`, `binding().eventSource`                    |
+| `TTS — kontrak fallback`         | `161a5a4e-c462-49fc-bcde-4085060cb912` | Edge TTS, ucapan "Allah", fallback suara sistem                    |
+| `Kidung — dropdown koleksi`      | `1e32ac40-26d2-4da6-a6b0-d32a904fb82e` | kontrol koleksi, rel pembaca, chunk pembaca                        |
+| `Iman — baris satu ketuk`        | `cf07588a-a2b5-456d-bd56-9197084ac89c` | permukaan Dasar Kepercayaan, sheet catatan, PDF                    |
+| `E2E — migrasi spec`             | `da2a5298-3c19-4f5d-87a5-348062413549` | spek yang mengikuti perubahan markup                               |
+| `E2E — flake transisi`           | `ab089fbb-7468-4a19-af20-35f3dc774444` | flake waktu, `page.clock`, preload 180 ms                          |
+| `Lainnya — panel landscape`      | `98bbf30e-1dd3-4327-a3ac-6b145f4daebe` | pengaturan landscape, panel terbuka, tabel dua kolom               |
+| `Release — nama aset APK`        | `900ad3e3-1149-4ec0-af52-3d4aa4b7bd72` | `release-asset-name.mjs`, workflow Android, versi native           |
+| `Brain — fase workflow`          | `119137b6-38ce-46e5-832c-196ec190a26a` | panel otak: badge workflow, hitungan agen, locale plugin           |
+| `Home — cadangan CLS`            | `aa7fe12e-e1e9-490e-b4c0-1f8568d1b774` | blok yang menyusut 650 ms di beranda, cadangan tinggi              |
+| `Media — balapan nexttrack`      | `cf7d882b-efd5-4327-a24e-06dac3e6c3af` | aksi media ganda, shard sibuk, `media-dock.spec.ts`                |
+| `A11y — rute tersisa`            | `50b0904c-e247-4b68-891e-278b7ca89b8d` | axe enam tag untuk beranda, Alkitab, Suara, Lainnya                |
+| `Docs — ekor ledger`             | `0d67ec2e-e69d-4ec2-8d8a-c7669bdb6b40` | ledger panjang `2026-10-30`, catatan putaran, gaya entri           |
+| `Perf — audit bundel web`        | `81c15612-7a1c-452e-90c7-4e374af989a1` | ukuran chunk, jalur muat awal, peluang penghematan                 |
+| `Kidung — audit token CSS`       | `f3c00fd0-010e-4e33-a783-47ff6de5ede4` | `kidung-*.css`: warna literal, target <44 px, duplikat             |
+| `Alkitab — audit token CSS`      | `d213000a-76ed-47fd-8218-551bfd427264` | `styles/01-03` + Alkitab: warna literal, target <44 px             |
+| `Shell — audit token CSS`        | `3542ca7d-1c10-43b7-a965-5843bb5f1296` | `app-design.css`, `reading-surfaces.css`, `ui-hardening`           |
+| `Shell — audit galat dan muat`   | `8613ae3e-3216-4e6a-8e04-73b7d2fef55d` | kartu galat, kerangka pemuatan, cadangan tinggi rute               |
+| `Kidung — audit antrean dan rel` | `75f8551f-5fd9-449a-9360-2f5594766e5a` | `kidung-ux.css`, `kidung-responsive.css`, `kidung-reader-rail.tsx` |
 
 Panel otak di GB Tools menampilkan `displayTitle` tiap sesi dan menyalin id ke
 clipboard saat simpul diklik, jadi id untuk `send_message` diambil langsung dari
