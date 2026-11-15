@@ -4,6 +4,7 @@ import {
   buildCommand,
   changedFiles,
   isFresh,
+  newestSource,
   playwrightArgs,
   runSummary,
 } from "./e2e-one.mjs";
@@ -65,4 +66,31 @@ test("runSummary names the contract and the seconds", () => {
     "e2e:one: 2 contracts in 5.0s",
   );
   assert.equal(runSummary(["--changed"], 2_000), "e2e:one: suite in 2.0s");
+});
+
+test("a contract edit does not count as a bundle input", () => {
+  // apps/web holds both the sources the bundler reads and the specs it never
+  // sees. Adopting a screenshot used to mark the tree stale and cost a rebuild.
+  const tree = {
+    "apps/web": [
+      { name: "src", dir: true },
+      { name: "e2e", dir: true },
+      { name: "package.json", dir: false },
+    ],
+    "apps/web/src": [{ name: "a.ts", dir: false }],
+    "apps/web/e2e": [{ name: "visual.spec.ts-snapshots", dir: true }],
+    "apps/web/e2e/visual.spec.ts-snapshots": [{ name: "a.png", dir: false }],
+  };
+  const times = {
+    "apps/web/src/a.ts": 100,
+    "apps/web/package.json": 100,
+    "apps/web/e2e/visual.spec.ts-snapshots/a.png": 900,
+  };
+  const read = (dir) =>
+    tree[dir].map((entry) => ({
+      name: entry.name,
+      isDirectory: () => entry.dir,
+    }));
+  const stat = (path) => ({ mtimeMs: times[path] });
+  assert.equal(newestSource("apps/web", read, stat), 100);
 });

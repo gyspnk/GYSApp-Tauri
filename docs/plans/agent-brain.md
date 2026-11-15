@@ -259,3 +259,7 @@ Menonton run hosted sekarang satu perintah: `pnpm run:watch <runId>` (`scripts/w
 ## Baseline adoption is a decision, not a copy
 
 `pnpm baselines:adopt --run <id>` prints every changed screenshot with the number of pixels that moved and the box they moved in, then copies only what you select: `--min-diff 1000` drops encoder noise, `--only kidung-390x844` names files. A run that changes three screenshots on purpose no longer drags six noise files into the commit.
+
+## A local contract run rebuilds only for bundle inputs
+
+`pnpm e2e:one <spec>` skips the rebuild when `apps/web/dist/index.html` is not older than the newest file the bundler reads. The walk used to include `apps/web/e2e/`, so adopting one baseline PNG marked the tree stale and every later run paid a ~6 s build for a bundle nothing had touched. `e2e` is excluded from the freshness scan now: a spec or a snapshot edit costs the spec run and nothing else — measured 8.4 s → 2.3 s for the same contract. `scripts/e2e-one.test.mjs` pins the rule with a fake tree whose snapshot is newer than every source.

@@ -67,6 +67,9 @@ const SKIP_DIRS = new Set([
   "test-results",
   "playwright-report",
   ".turbo",
+  // Contracts and their snapshots are not bundle inputs: adopting a baseline
+  // used to make every later run rebuild a bundle that had not changed.
+  "e2e",
 ]);
 
 /** Newest modification time under `dir`, ignoring build output and caches. */
