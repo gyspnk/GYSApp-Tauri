@@ -68,6 +68,13 @@ test("the sign-in offer never doubles its label and stays optional", async ({
       .map((node) => node.textContent?.trim()),
   );
   expect(visibleLabels).toEqual(["Google"]);
+  // The press target is the pill inside the provider frame, not the frame
+  // itself: a 1 px border used to shrink 44 px of control to a 42 px button.
+  const press = await page
+    .locator(".welcome-login .egys-google-control .egys-google-fallback")
+    .boundingBox();
+  expect(press?.height ?? 0).toBeGreaterThanOrEqual(44);
+  expect(press?.width ?? 0).toBeGreaterThanOrEqual(44);
   await expect(
     page.getByRole("button", { name: "Lewati, mulai membaca" }),
   ).toBeVisible();

@@ -1429,7 +1429,11 @@
   gap: 8px;
   min-height: 44px;
   padding: 10px 12px;
-  border: 1px solid var(--line);
+  /* A border would shrink the padding box, and the Google control's press
+     target is an inset child: 44 px of control became a 42 px button. The
+     hairline is painted with an inset shadow so the box stays 44 px. */
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--line);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--ink);
@@ -1477,7 +1481,7 @@
 }
 .egys-provider:hover,
 .egys-provider:focus-visible {
-  border-color: var(--blue);
+  box-shadow: inset 0 0 0 1px var(--blue);
   background: var(--blue-soft);
 }
 

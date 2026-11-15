@@ -33,4 +33,14 @@ describe("Google control frame", () => {
     const host = rule(".egys-google-control .egys-google-button");
     expect(host).toMatch(/overflow:\s*hidden/);
   });
+
+  it("keeps the provider box at its full hit height", () => {
+    // The press target is the absolutely positioned pill inside the frame, so
+    // `inset: 0` resolves against the padding box. A 1 px border therefore
+    // turned 44 px of control into a 42 px button; the hairline is a shadow.
+    const provider = rule(".egys-provider");
+    expect(provider).not.toMatch(/(?:^|[\s;{])border:[^;]*\d+px/);
+    expect(provider).toMatch(/box-shadow:\s*inset 0 0 0 1px var\(--line\)/);
+    expect(provider).toMatch(/min-height:\s*44px/);
+  });
 });

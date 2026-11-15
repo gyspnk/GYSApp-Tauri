@@ -642,3 +642,17 @@ Kontrak: `apps/web/e2e/page-titles.spec.ts` ("headerless destinations start on t
 | Hasil                    | —                                             | 0 pelanggaran pada percobaan pertama |
 
 Kontrak: `apps/web/e2e/shell-a11y.spec.ts` ("reading surfaces stay axe clean in every shell theme", "the desktop shell stays axe clean in the dark and amoled themes").
+
+### Sambutan: tombol Google memenuhi 44 px (putaran 114)
+
+Halaman sambutan sudah punya kontrak 44 px, tetapi kontrak itu hanya mengukur tombol lewati. Tombol Google di dalam `welcome-login` memakai bingkai `.egys-provider` yang dulu menulis `border: 1px solid var(--line)`; karena tombol yang bisa ditekan adalah anak ber-`position: absolute; inset: 0`, bingkai 44 px itu menyisakan **42 px** untuk sasaran tekan. Angka 42 px lolos dari mata dan dari kontrak selama berbulan-bulan.
+
+| Butir                             | Sebelum                     | Sesudah                                   |
+| --------------------------------- | --------------------------- | ----------------------------------------- |
+| Tinggi bingkai `.egys-provider`   | 44 px (border 1 px)         | 44 px (hairline lewat inset shadow)       |
+| Tinggi tombol Google yang ditekan | 42 px                       | **44 px**                                 |
+| Lebar tombol Google 390 / 1440    | 282 / 400                   | 284 / 402                                 |
+| Garis tepi                        | `border`                    | `box-shadow: inset 0 0 0 1px`             |
+| Hover/fokus                       | `border-color: var(--blue)` | `box-shadow: inset 0 0 0 1px var(--blue)` |
+
+Pola yang sama sudah dipakai untuk kertas PDF (garis 1 px digambar dengan inset shadow) dan alasannya identik: border mengubah kotak yang diukur tata letak, shadow tidak. Kontrak: `apps/web/e2e/welcome.spec.ts` mengukur `.welcome-login .egys-google-control .egys-google-fallback` ≥44×44, dan `apps/web/src/egys-google-frame.test.ts` menolak `border` selebar piksel pada `.egys-provider`.

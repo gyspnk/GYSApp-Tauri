@@ -27,6 +27,9 @@ export async function withPage(route, options, run) {
     waitFor,
     settle = 1200,
     reducedMotion,
+    // A device that has never opened the app: the welcome screen only appears
+    // when no shell envelope exists at all.
+    fresh = false,
     browser: shared,
   } = options ?? {};
   const browser = shared ?? (await chromium.launch());
@@ -40,7 +43,9 @@ export async function withPage(route, options, run) {
   });
   try {
     await page.addInitScript(
-      ({ theme: shellTheme, locale: shellLocale }) => {
+      ({ theme: shellTheme, locale: shellLocale, fresh: blank }) => {
+        localStorage.clear();
+        if (blank) return;
         localStorage.setItem(
           "gys-shell-settings-v1",
           JSON.stringify({
@@ -51,7 +56,7 @@ export async function withPage(route, options, run) {
           }),
         );
       },
-      { theme, locale },
+      { theme, locale, fresh },
     );
     if (offline) await page.route(BRAVE, (request) => request.abort());
     await page.goto(`${ORIGIN}${route}`, { waitUntil: "load" });
