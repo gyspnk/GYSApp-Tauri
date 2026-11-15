@@ -851,3 +851,12 @@ Kontrak: `apps/web/e2e/settings-touch.spec.ts` kini juga mengukur slider akor, b
 | Lebar                                                    | 222 px  | 222 px (tidak berubah)                                  |
 
 Kontrak: `apps/web/e2e/reader-preferences-touch.spec.ts` kini juga mengukur slider volume di panel yang sama, di samping lima tombol teks.
+
+### Shell: navigasi bawah menandai tepat satu tujuan (putaran 133)
+
+| Rute                                                                                          | `aria-current="page"`                 |
+| --------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `/`, `/bible`, `/kidung`, `/kidung/hymn-001`, `/kidung?section=playlist`, `/iman`, `/lainnya` | tujuan masing-masing                  |
+| `/literatur`, `/suara`                                                                        | `Lainnya` (keduanya dibuka dari sana) |
+
+Kontrak: `apps/web/e2e/nav-current.spec.ts` — sembilan rute, tepat satu `a[aria-current="page"]` di `.primary-nav`, dan namanya cocok dengan tujuan rute.
