@@ -666,6 +666,9 @@ const THEME_ROUTES = [
   },
   { name: "kidung", path: "/kidung/hymn-001", ready: ".hymn-text-title h1" },
   { name: "katalog", path: "/kidung", ready: ".pujian-list .pujian-item" },
+  { name: "literatur", path: "/literatur", ready: ".page-intro h1" },
+  { name: "suara", path: "/suara", ready: ".page-intro h1" },
+  { name: "iman", path: "/iman", ready: ".faith-rows" },
   {
     name: "pengaturan",
     path: "/lainnya?section=appearance",
@@ -732,7 +735,14 @@ test("the desktop shell stays axe clean in the dark and amoled themes", async ({
       );
     }, theme);
 
-    for (const route of [THEME_ROUTES[0], THEME_ROUTES[2]]) {
+    // Beranda, the reader, and the two catalogue destinations that gained a
+    // painted title: the wide shell is where their cards and rails differ most.
+    for (const route of [
+      THEME_ROUTES[0],
+      THEME_ROUTES[2],
+      THEME_ROUTES[5],
+      THEME_ROUTES[7],
+    ]) {
       await test.step(`${route.name} in ${theme} at 1440`, async () => {
         await page.goto(`/GYSApp-Tauri${route.path}`);
         await expect(page.locator(route.ready).first()).toBeVisible({

@@ -630,3 +630,15 @@ Pemilik meminta dua hal: judul paling atas di Kidung dan Dasar Kepercayaan dibua
 | Bar Alkitab, frame pertama | teks "Bacaan" lalu "Bacaan / Alkitab"                             | tombol picker, select, cari, dan menu dalam keadaan `disabled`  |
 
 Kontrak: `apps/web/e2e/page-titles.spec.ts` ("headerless destinations start on their first control") menuntut tepat satu `h1` yang tidak terlukis (≤1 px), tidak ada `.page-intro`, dan kontrol pertama ≤24 px dari tepi atas halaman. `apps/web/e2e/bible-header-first-paint.spec.ts` merekam setiap frame lewat `requestAnimationFrame` dan menolak frame yang memuat teks "Bacaan"/"Alkitab" atau tidak punya tombol.
+
+### Shell: audit tema menyentuh setiap permukaan yang berubah (putaran 112)
+
+| Butir                    | Sebelum                                       | Sesudah                              |
+| ------------------------ | --------------------------------------------- | ------------------------------------ |
+| Rute matriks tema (390)  | beranda, Alkitab, kidung, katalog, pengaturan | + Literatur, Suara, Iman             |
+| Rute matriks tema (1440) | beranda, kidung                               | + Literatur, Suara                   |
+| Tema                     | dark, sepia, amoled                           | sama                                 |
+| Tag axe                  | enam tag, tanpa `disableRules`                | sama                                 |
+| Hasil                    | —                                             | 0 pelanggaran pada percobaan pertama |
+
+Kontrak: `apps/web/e2e/shell-a11y.spec.ts` ("reading surfaces stay axe clean in every shell theme", "the desktop shell stays axe clean in the dark and amoled themes").

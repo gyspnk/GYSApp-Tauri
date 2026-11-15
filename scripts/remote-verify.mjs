@@ -20,6 +20,7 @@ import { fileURLToPath } from "node:url";
 import {
   classifyChanges,
   discoverErrorContexts,
+  summarizeErrorContexts,
   formatFailure,
   summarizeFailure,
 } from "./test-loop-core.mjs";
@@ -222,8 +223,17 @@ function downloadFailureArtifacts(runId) {
   console.log(
     `  ↓ artifacts in ${path.relative(rootDir, into)} (${saved.length})`,
   );
-  for (const file of context.slice(0, 3))
-    console.log(`    ${path.relative(rootDir, file)}`);
+  // Name the failing test and its first error line: the file path alone still
+  // meant opening the bundle, which is the step this command exists to remove.
+  // A retried test leaves one bundle per attempt, so list each name once.
+  const seen = new Set();
+  for (const row of summarizeErrorContexts(context)) {
+    if (seen.has(row.name)) continue;
+    seen.add(row.name);
+    if (seen.size > 4) break;
+    console.log(`    ${row.name}`);
+    console.log(`      ${row.error}`);
+  }
 }
 
 function waitFor(runId) {

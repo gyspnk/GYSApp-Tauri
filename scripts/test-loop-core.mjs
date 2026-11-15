@@ -1,5 +1,5 @@
 /** Pure classification for the inner loop; kept separate so it can be tested. */
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const isDocs = (file) =>
@@ -106,6 +106,35 @@ export { isBuildConfig, isDocs };
  * writes one per failing test, nested a directory or two deep, and an expired
  * artifact leaves nothing — both cases must stay quiet.
  */
+/**
+ * The one line a failure bundle exists to give you: which test failed and what
+ * it said. Playwright writes `# Test info` with `- Name:` and `# Error details`
+ * with a fenced block; reading them here saves opening every file by hand.
+ */
+export function summarizeErrorContexts(files, read = readFileSync) {
+  const rows = [];
+  for (const file of files) {
+    let text;
+    try {
+      text = String(read(file, "utf8"));
+    } catch {
+      continue;
+    }
+    const name = /^- Name: (.+)$/m.exec(text)?.[1]?.trim();
+    const error = /# Error details\s+```[a-z]*\n([\s\S]*?)```/.exec(text)?.[1];
+    const first = error
+      ?.split("\n")
+      .map((line) => line.trim())
+      .find((line) => line && !line.startsWith("at "));
+    rows.push({
+      file,
+      name: name ?? path.basename(path.dirname(file)),
+      error: first ?? "no error block",
+    });
+  }
+  return rows;
+}
+
 export function discoverErrorContexts(directory, { depth = 3 } = {}) {
   const found = [];
   let entries;

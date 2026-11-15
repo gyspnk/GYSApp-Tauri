@@ -6,6 +6,7 @@ import path from "node:path";
 import {
   classifyChanges,
   discoverErrorContexts,
+  summarizeErrorContexts,
   formatFailure,
   summarizeFailure,
 } from "./test-loop-core.mjs";
@@ -171,4 +172,36 @@ test("finds the error context a failure artifact ships", () => {
     path.join(nested, "error-context.md"),
   ]);
   assert.deepEqual(discoverErrorContexts(path.join(root, "missing")), []);
+});
+
+test("a failure bundle is summarized by test name and first error line", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "gys-context-"));
+  const dir = path.join(root, "shard-2", "spec-fails");
+  mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, "error-context.md");
+  writeFileSync(
+    file,
+    [
+      "# Instructions",
+      "",
+      "# Test info",
+      "",
+      "- Name: kidung.spec.ts >> the queue keeps its header",
+      "- Location: e2e/kidung.spec.ts:42:1",
+      "",
+      "# Error details",
+      "",
+      "```",
+      "Error: expect(locator).toBeVisible() failed",
+      "  at /repo/apps/web/e2e/kidung.spec.ts:44:5",
+      "```",
+      "",
+    ].join("\n"),
+  );
+  const rows = summarizeErrorContexts([file]);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].name, "kidung.spec.ts >> the queue keeps its header");
+  assert.equal(rows[0].error, "Error: expect(locator).toBeVisible() failed");
+  // A bundle that cannot be read must not break the diagnosis.
+  assert.deepEqual(summarizeErrorContexts([path.join(root, "gone.md")]), []);
 });
