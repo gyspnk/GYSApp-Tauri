@@ -875,3 +875,15 @@ Kontrak: `apps/web/e2e/nav-current.spec.ts` — sembilan rute, tepat satu `a[ari
 71 aturan kontrol berpindah dari `var(--line)` ke `var(--line-strong)`; garis hias (pemisah baris, bingkai kartu, kerangka) tetap memakai `var(--line)`. Kontrol yang terisi dikecualikan: batasnya digambar oleh isian, bukan tepi.
 
 Kontrak: `apps/web/e2e/control-borders.spec.ts` mengukur setiap kontrol bertepi di delapan rute × empat tema dan menuntut rasio ≥3:1 terhadap latarnya sendiri. 4 lulus (25,8 s).
+
+### Alkitab: setiap baris laci menu adalah target sentuh (putaran 135)
+
+Laci "Menu Alkitab" berisi tombol, select, dan satu tautan prosa ke Pengaturan Tampilan. Tautan itu satu-satunya baris yang tinggal **245×21 px** di bawah pointer kasar, karena ia masih mengalir sebagai teks di dalam paragraf.
+
+| Baris                                                  | Sebelum | Sesudah       |
+| ------------------------------------------------------ | ------- | ------------- |
+| Tautan "Tema diatur di Pengaturan Tampilan →"          | 245×21  | 245×44        |
+| Tombol laci (Catatan, Belah, Player, Pengaturan Suara) | 311×54  | tidak berubah |
+| Tutup laci                                             | 44×44   | tidak berubah |
+
+Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "every row in the Bible drawer is a tap target" membuka laci di 390×844 dengan `hasTouch`, memastikan `(pointer: coarse)` benar, lalu menuntut setiap `button`, `a[href]`, `select`, dan `summary` yang terlihat ≥43,5 px. 7 lulus (12,6 s).

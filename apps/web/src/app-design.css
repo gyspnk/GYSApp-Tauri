@@ -5513,6 +5513,11 @@ body:has(.hymn-detail-page.is-text-viewer)
   line-height: 1.35;
 }
 .drawer-speech-link a {
+  /* A drawer row is a tap target, not a word inside a sentence: the link used
+     to be 245x21 px, so a thumb had to aim at a line of text. */
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-hit, 44px);
   color: var(--blue);
   font-weight: 600;
   text-decoration: underline;

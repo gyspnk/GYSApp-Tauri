@@ -259,4 +259,29 @@ test.describe("coarse pointer on a wide screen", () => {
       if (await close.count()) await expectTouchTarget(close);
     }
   });
+
+  test("every row in the Bible drawer is a tap target", async ({ page }) => {
+    expect(
+      await page.evaluate(() => matchMedia("(pointer: coarse)").matches),
+      "the context must report a coarse pointer for this contract to mean anything",
+    ).toBe(true);
+
+    await page.goto("/GYSApp-Tauri/bible?book=kejadian&chapter=1");
+    const menu = page.getByRole("button", { name: "Menu Alkitab" });
+    await expect(menu).toBeVisible({ timeout: 30_000 });
+    await menu.click();
+    const drawer = page.locator(".reader-hamburger-drawer");
+    await expect(drawer).toBeVisible();
+
+    // The drawer mixes buttons, selects and one prose link; all of them are
+    // rows a thumb lands on, so all of them owe the 44 px floor.
+    const rows = drawer.locator("button, a[href], select, summary");
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(4);
+    for (let index = 0; index < count; index += 1) {
+      const row = rows.nth(index);
+      if (!(await row.isVisible())) continue;
+      await expectTouchTarget(row);
+    }
+  });
 });
