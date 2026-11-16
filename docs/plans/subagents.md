@@ -76,6 +76,14 @@ dapat dipakai ulang. Ini bukan alasan membuang sesi lama atau mengarang koneksi.
 
 Semua tugas lanjutan pada anak sesi orchestrator ini memakai `DeepSeek V4.1 Flash (latest) (CC)` melalui provider `commandcode`, model `deepseek/deepseek-v4.1-flash`. Plugin Host lokal `@local/gys-session-policy` menerapkan route pada request anak dan cucu, termasuk sesi lama yang dipakai ulang; main dan root lain tidak diubah. Request verifier setelah aktivasi sudah membuktikan route tersebut. Sesi MAIN tetap `session-c96f4351-b076-4c33-9a7c-9f28f29bc799` dengan `chatgpt/gpt-6.1-sol`.
 
+Putaran goal 3 / #104 memakai ulang Harness untuk audit/perbaikan geometri
+`kiss-bridge/client.js` dan tes Brain; verifier tetap read-only untuk jalur pemuatan
+serta pemeriksaan independen. MAIN menulis spec dan dokumen. Dua peran saja karena
+scope mandiri terbatas dan memori tersedia sekitar 1.912 MiB; tidak membuat dua
+penulis pada client plugin yang sama. WIP Money Worker dan stack 11 commit lama
+pada repo plugin tidak termasuk batch. Goal runtime revisi 3 sudah mencatat MAIN
+default dan backlog estetika; bukan lagi menunggu edit goal.
+
 Panel otak di GB Tools menampilkan `displayTitle` tiap sesi dan menyalin id ke
 clipboard saat simpul diklik, jadi id untuk `send_message` diambil langsung dari
 panel — bukan dari ingatan.

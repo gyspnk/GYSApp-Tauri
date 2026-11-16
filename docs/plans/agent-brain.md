@@ -32,10 +32,18 @@ Jangan memindahkan MAIN atau mengganti modelnya tanpa permintaan eksplisit pemil
   Plugin `@local/gys-session-policy` terikat root MAIN ini; root lain tidak diubah.
   Aturan ini bukan perubahan model default global seluruh profil.
 
-Pencatatan goal runtime masih **menunggu**: upaya edit dari putaran otomatis ditolak
-`this goal operation requires a direct human turn on a top-level agent`. Jangan
-mengklaim goal sudah diperbarui sampai `update_goal` berhasil pada giliran manusia
-langsung; aturan dokumentasi ini tetap mencatat keputusan pemilik.
+Goal runtime **revisi 3** sudah diperbarui pada giliran manusia langsung, 16 November
+2026: MAIN default, route CC descendant, dan perbaikan estetika GB Tools/Agent Brain
+sudah tertulis di objective. Penolakan pada putaran otomatis sebelumnya adalah
+riwayat, bukan status pending yang masih berlaku. Backlog UI dilacak di #104.
+
+Untuk #104, mulai dari cacat yang dapat dibuktikan: kartu node 156 unit bertabrakan
+ketika 14 anak ditempatkan dengan sela pusat 44 unit. Builder tunggal memegang
+client plugin dan tes model; MAIN menulis spec/dokumen; verifier read-only. Client
+Slots/Theme belum punya halaman terhubung, sehingga perubahan warna dan klaim
+visual final ditunda. Jangan mengarang token atau menilai UI dari tes headless.
+Perubahan Money Worker yang sudah ada di working tree plugin harus tetap utuh dan
+tidak boleh ikut commit batch ini.
 
 ## Prinsip
 

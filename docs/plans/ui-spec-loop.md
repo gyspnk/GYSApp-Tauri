@@ -981,3 +981,25 @@ Tes fork bukan bukti kelanjutan chat lama; aktivasi menunggu jalur aman yang
 mempertahankan gate atau maintenance berizin dengan rollback.
 
 Galat pasangan tool saat pemulihan sesi diatribusikan jujur: pasangan asli di transcript utuh, penyebab di jalur wire belum terbukti, dan HTTP 413 pada request CommandCode adalah masalah terpisah; pemulihan masih terbuka. Audit HEAD sebelumnya memakai full run 43800676388 (browser/perf) dan push run 43800675190 (unit). Contrast putaran 143 sudah diimplementasikan pada HEAD 79cf2315 dan tercakup lima kontrak di `prefers-contrast.spec.ts`.
+
+## Goal putaran 3 — fondasi tata letak GB Tools / Agent Brain (#104)
+
+Goal runtime revisi 3 sudah memuat MAIN default dan estetika GB Tools/Brain. Audit
+kode plugin terpasang menemukan 14 anak diletakkan pada satu baris lebar 660 unit:
+jarak pusat 44 unit, tetapi kartu selebar 156 unit. Ini membuktikan tabrakan geometri,
+bukan hasil inspeksi visual. Client Slots/Theme tidak punya halaman terhubung pada
+putaran ini. Warna/token baru dan penilaian estetika final menunggu akses UI aktual.
+Perubahan Money Worker yang sudah ada di working tree plugin tidak dimiliki batch ini.
+
+Spec delapan butir sebelum implementasi:
+
+1. Node akar/anak yang terlihat tidak saling bertumpuk pada batas 4 akar/14 anak; panjang label dan ruang metadata tetap diperhitungkan.
+2. Susun beberapa baris dengan sela tetap, bukan memampatkan kartu ke satu baris. Batas peta menghitung seluruh baris dan metadata.
+3. Viewport peta dapat digulir pada panel sempit tanpa mengecilkan teks/node menjadi tidak terbaca. Kontrol filter/reset tetap di luar bidang gulir.
+4. Pertahankan id, pilihan, status nyata, jumlah sesi, dan koneksi yang dapat dibuktikan; jangan menghubungkan orphan ke akar yang tidak berkaitan.
+5. Kontrol utama Brain dan kartu node memiliki sasaran minimal 44 px pada skala awal; label, fokus keyboard, dan reduced-motion tidak dikurangi.
+6. Detail terpilih membungkus judul/path panjang dan toolbar boleh wrap; tidak memperkenalkan warna literal atau token tema tebakan.
+7. Tidak ada polling/layout engine/dependensi baru; gunakan model murni dan viewport bawaan. Tes geometri mencakup maksimum node, batas peta, dan kejujuran hubungan.
+8. Verifier terpisah memeriksa regresi model/syntax dan diff hanya milik batch. Tes headless tidak disebut bukti visual, dan UI terpasang tidak disebut sudah berubah sebelum jalur pemuatan/reload aktual diverifikasi.
+
+Status: spec dicatat sebelum kode; implementasi, pengujian, dan verifikasi visual masih menunggu. Redesign warna dan keseluruhan GB Tools tetap backlog #104; kontrak browser tetap #12.
