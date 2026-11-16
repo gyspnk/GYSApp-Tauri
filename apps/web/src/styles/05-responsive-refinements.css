@@ -1779,6 +1779,17 @@ body:has(.home-page)::-webkit-scrollbar {
     min-width: 44px;
     min-height: 44px;
   }
+  /* The verse toolbar is the one surface a thumb reaches while reading, and on
+     a landscape phone it kept 36 px buttons and a 32 px close. */
+  .selected-verse-actions .quiet-button,
+  .selected-verse-close,
+  .selected-verse-highlights .highlight-custom {
+    min-height: var(--control-hit, 44px);
+  }
+  .selected-verse-close,
+  .selected-verse-highlights .highlight-custom {
+    min-width: var(--control-hit, 44px);
+  }
 }
 
 .search-trigger:hover,

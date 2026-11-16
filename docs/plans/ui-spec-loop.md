@@ -888,6 +888,17 @@ Laci "Menu Alkitab" berisi tombol, select, dan satu tautan prosa ke Pengaturan T
 
 Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "every row in the Bible drawer is a tap target" membuka laci di 390×844 dengan `hasTouch`, memastikan `(pointer: coarse)` benar, lalu menuntut setiap `button`, `a[href]`, `select`, dan `summary` yang terlihat ≥43,5 px. 7 lulus (12,6 s).
 
+### Alkitab: bilah ayat terpilih memakai target 44 px (putaran 141)
+
+| Butir spec                                     | Sebelum (844×390) | Sesudah                                                                 |
+| ---------------------------------------------- | ----------------- | ----------------------------------------------------------------------- |
+| Tombol aksi (Salin, Bagikan, Bacakan, Catatan) | 48–102×36         | tinggi 44                                                               |
+| Tombol tutup                                   | 32×32             | 44×44                                                                   |
+| Pemilih warna khusus                           | 36×36             | 44×44                                                                   |
+| Kontrak                                        | tidak ada         | `responsive-touch-targets.spec.ts` › "the verse toolbar is thumb-sized" |
+
+Bilah yang muncul saat ayat ditekan lama adalah satu-satunya permukaan yang dijangkau jempol sambil membaca, dan di ponsel landscape tombolnya masih 36 px dengan tutup 32 px. Aturan `(pointer: coarse)` di `apps/web/src/styles/05-responsive-refinements.css` menaikkan `.selected-verse-actions .quiet-button`, `.selected-verse-close`, dan `.selected-verse-highlights .highlight-custom` ke `var(--control-hit, 44px)`; input warna 42 px di dalam label 44 px, jadi labelnya yang menjadi target.
+
 ### Shell: dok media memakai baris 44 px di pointer kasar (putaran 140)
 
 | Butir spec           | Sebelum   | Sesudah                                                              |

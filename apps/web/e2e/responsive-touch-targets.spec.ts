@@ -512,3 +512,53 @@ test.describe("the media dock is thumb-sized", () => {
     expect(small).toEqual([]);
   });
 });
+
+test.describe("the verse toolbar is thumb-sized", () => {
+  test.use({
+    hasTouch: true,
+    isMobile: true,
+    viewport: { width: 844, height: 390 },
+  });
+
+  test("press-and-hold actions reach the floor in landscape", async ({
+    page,
+  }) => {
+    expect(
+      await page.evaluate(() => matchMedia("(pointer: coarse)").matches),
+      "the context must report a coarse pointer for this contract to mean anything",
+    ).toBe(true);
+
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.goto("/GYSApp-Tauri/bible?book=kejadian&chapter=1");
+    await expect(page.locator(".verse-content").first()).toBeVisible({
+      timeout: 30_000,
+    });
+
+    // Press-and-hold is the adaptive way into multi-select.
+    const verse = page.locator(".verse-text").first();
+    const box = (await verse.boundingBox())!;
+    await page.mouse.move(box.x + 40, box.y + 10);
+    await page.mouse.down();
+    const toolbar = page.locator(".selected-verse-toolbar");
+    await expect(toolbar).toBeVisible({ timeout: 10_000 });
+
+    // The colour input is 42 px inside a 44 px label; the label is the target.
+    const small = await toolbar.evaluate((element) => {
+      const found: string[] = [];
+      for (const control of element.querySelectorAll(
+        "button, a[href], input, select, [role=button]",
+      )) {
+        if (control.matches('input[type="color"]')) continue;
+        const rect = control.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) continue;
+        if (rect.width >= 43.5 && rect.height >= 43.5) continue;
+        found.push(
+          `${control.tagName}.${control.className} ${Math.round(rect.width)}x${Math.round(rect.height)}`,
+        );
+      }
+      return found;
+    });
+    await page.mouse.up();
+    expect(small).toEqual([]);
+  });
+});
