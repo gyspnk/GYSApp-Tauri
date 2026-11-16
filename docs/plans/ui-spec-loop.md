@@ -973,4 +973,11 @@ Implementasi batch ini selesai; `pnpm check:fast` lulus (25 tes skrip, 23 tes we
 
 Bukti hosted batch ini sekarang ada pada HEAD `3f721824`. Push run `43821078698` (job unit `133144140958`) menjalankan 1.135 tes: 885 Vitest, 3 policy, 217 skrip, 30 skrip web. Job selektif `133144141015` menjalankan 101/101 tes pada delapan spec — termasuk Google dan Kidung, serta fallback core tier yang mempertahankan spec eksplisit (#102). Full dispatch `43821357448` memberi shard `133145244115`, `133145244117`, `133145244124`, `133145244134`, perf `133145244160`, dan gate `133148985842`; job unit-nya skipped, jadi angka unit di atas hanya milik push run, bukan dispatch. Artefak yang tersedia: build `14204956487`, preview shard 1 `14205356172` (empat gambar appearance), dan preview shard 2 `14204128935` (26 gambar Kidung). Status Google tidak punya screenshot, jadi ia hanya dibuktikan assertion — bukan mata. Katalog Kidung ponsel dan pengaturan tampilan tablet gelap dibaca langsung: tidak ada klip yang jelas; audit awal verifier memeriksa 8 dari 30 gambar; baseline tidak diperbarui.
 
+Tindak lanjut harness pada putaran goal 2 (#103), tanpa perubahan UI: verifikasi
+ulang fork pemulihan 13/13 lulus, tetapi manager live HMR menolak instalasi dengan
+`already-installed` dan `changed:false`. Fork tidak aktif; tidak ada remove gate,
+rotasi proxy, atau perubahan baseline. Satu proxy lama 0.1.215 tetap berjalan.
+Tes fork bukan bukti kelanjutan chat lama; aktivasi menunggu jalur aman yang
+mempertahankan gate atau maintenance berizin dengan rollback.
+
 Galat pasangan tool saat pemulihan sesi diatribusikan jujur: pasangan asli di transcript utuh, penyebab di jalur wire belum terbukti, dan HTTP 413 pada request CommandCode adalah masalah terpisah; pemulihan masih terbuka. Audit HEAD sebelumnya memakai full run 43800676388 (browser/perf) dan push run 43800675190 (unit). Contrast putaran 143 sudah diimplementasikan pada HEAD 79cf2315 dan tercakup lima kontrak di `prefers-contrast.spec.ts`.

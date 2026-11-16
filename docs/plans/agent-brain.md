@@ -312,4 +312,22 @@ Fallback core tier tidak boleh menghilangkan kontrak yang sengaja diubah: union 
 
 Bukti batch 402 pada working tree HEAD `3f721824`: `node --test scripts/test-e2e-selective-core.test.mjs` 14/14 dan `node --test scripts/test-e2e-selective-ui.test.mjs` 6/6 lulus; tesnya membuktikan welcome/Kidung ada di argumen, smoke tidak dobel, fallback tanpa spec tetap tepat tujuh spec, dan `--retries=0` tidak hilang. Hosted, job selektif `133144141015` menjalankan 101/101 tes pada delapan spec termasuk Kidung dan Google. Atribusi tetap dipisah: job unit ada di push run `43821078698` (`133144140958`, 1.135 tes), bukan di full dispatch `43821357448` yang melewati unit.
 
+## Pemulihan konteks: preflight tidak sama dengan aktivasi (#103)
+
+Pada putaran goal 2, dua sesi reuse memeriksa fork pemulihan dan jalur aktivasi;
+MAIN mencatat issue dan memeriksa runtime. Paralel dibatasi dua karena memori
+tersedia sekitar 1.562 MiB dengan swap terpakai 7.379 MiB, bukan membuat empat
+pekerjaan semu. Tes fokus 13/13, syntax, dan import lulus; itu belum membuktikan
+provider wire atau kelanjutan chat lama.
+
+Manager pada profil live HMR menolak paket yang sudah terpasang dengan
+`already-installed` sebelum pnpm berjalan (`changed:false`, `application:failed`).
+Jangan mengubah saran remove→install menjadi izin mematikan gate. Fork tetap belum
+terpasang; proxy tunggal PID 136 tetap versi 0.1.215 dengan fingerprint
+`d8b5e8b188cf348899e3d5c3221796003622c4071e855b5f51a40314def57661`.
+Tidak ada rotasi, perubahan riwayat, atau proxy kedua. Tunggu jalur atomic replace
+resmi atau prosedur maintenance berizin dengan rollback; jangan ulangi install
+identik. Pemeriksaan proses harus menerima nama Node `node-MainThread`, bukan
+hanya `node`, agar hasil nol palsu tidak dianggap bukti proxy mati.
+
 Orchestrator sesi ini tetap `chatgpt/gpt-6.1-sol`; semua anak/cucu memakai `commandcode/deepseek/deepseek-v4.1-flash` atas pilihan pengguna. Buktikan model dari request runtime, bukan dari label brief. Policy bawaan hanya tersampling pada sesi baru; plugin Host lokal `@local/gys-session-policy` memakai `agent/request` untuk descendant root yang ditentukan dan tidak menyentuh main/root lain. Verifier sudah menjalankan request pada route CC yang diminta.
