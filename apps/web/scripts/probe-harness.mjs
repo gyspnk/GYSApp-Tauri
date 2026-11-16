@@ -27,6 +27,10 @@ export async function withPage(route, options, run) {
     waitFor,
     settle = 1200,
     reducedMotion,
+    // The OS-level "increase contrast" switch. Playwright answers
+    // `prefers-contrast` from this, so a probe can see the same tokens a
+    // reader with that setting sees.
+    contrast,
     // A device that has never opened the app: the welcome screen only appears
     // when no shell envelope exists at all.
     fresh = false,
@@ -44,6 +48,7 @@ export async function withPage(route, options, run) {
     // Playwright's own emulation, so `prefers-reduced-motion` is answered by the
     // browser rather than by a stylesheet the probe has to inject.
     ...(reducedMotion ? { reducedMotion } : {}),
+    ...(contrast ? { contrast } : {}),
   });
   try {
     await page.addInitScript(

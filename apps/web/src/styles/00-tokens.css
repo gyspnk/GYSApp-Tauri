@@ -238,3 +238,41 @@
     --shadow-float: 0 8px 26px rgba(0, 0, 0, 0.55);
   }
 }
+
+/* When the OS asks for more contrast, the palette tightens one step per theme.
+   Only the tokens that carry a boundary or a label move: the hue stays, the
+   ratio grows, and nothing that already clears its floor gets weaker. Muted
+   labels go from 4,5:1 to roughly 7:1 and control edges from 3:1 to 4,5:1.
+   This block sits after every theme block on purpose — `data-theme` rules tie
+   on specificity, so the last one wins. The `system` shell keeps following the
+   OS light/dark preference; only its contrast steps up. */
+@media (prefers-contrast: more) {
+  :root {
+    --muted: #3d5163;
+    --line: #b6c6d5;
+    --line-strong: #4a6a86;
+  }
+  :root[data-theme="dark"] {
+    --muted: #e2e0d6;
+    --line: #77899a;
+    --line-strong: #a3b6c2;
+  }
+  :root[data-theme="amoled"] {
+    --muted: #ddd3c3;
+    --line: #6e6e6e;
+    --line-strong: #9a9a9a;
+  }
+  :root[data-theme="sepia"] {
+    --muted: #39280f;
+    --line: #a08d74;
+    --line-strong: #5f4f32;
+  }
+}
+
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    --muted: #e2e0d6;
+    --line: #77899a;
+    --line-strong: #a3b6c2;
+  }
+}
