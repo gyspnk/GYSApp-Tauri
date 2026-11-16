@@ -888,6 +888,18 @@ Laci "Menu Alkitab" berisi tombol, select, dan satu tautan prosa ke Pengaturan T
 
 Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "every row in the Bible drawer is a tap target" membuka laci di 390×844 dengan `hasTouch`, memastikan `(pointer: coarse)` benar, lalu menuntut setiap `button`, `a[href]`, `select`, dan `summary` yang terlihat ≥43,5 px. 7 lulus (12,6 s).
 
+### Shell: dok media memakai baris 44 px di pointer kasar (putaran 140)
+
+| Butir spec           | Sebelum   | Sesudah                                                              |
+| -------------------- | --------- | -------------------------------------------------------------------- |
+| Tautan sumber di dok | 292×24    | 292×44                                                               |
+| Slider progres       | 16 px     | pita 44 px                                                           |
+| Select kecepatan     | 61×26     | 61×44                                                                |
+| Tinggi dok           | 262 px    | 300 px                                                               |
+| Kontrak              | tidak ada | `responsive-touch-targets.spec.ts` › "the media dock is thumb-sized" |
+
+Dok media adalah satu-satunya permukaan yang dijangkau jempol saat membaca, dan barisnya masih seukuran teks. Aturan `@media (pointer: coarse)` di `apps/web/src/styles/05-responsive-refinements.css` menaikkan tautan sumber, slider progres, dan select kecepatan ke `var(--control-hit, 44px)`; dok tumbuh 38 px dan tidak ada overflow di 390 maupun 320.
+
 ### Alkitab: pengaturan suara di laci memakai baris 44 px (putaran 139)
 
 | Butir spec              | Sebelum           | Sesudah                                                                                   |

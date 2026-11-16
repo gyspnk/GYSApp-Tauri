@@ -2516,3 +2516,22 @@ body:has(.home-page)::-webkit-scrollbar {
     animation: none;
   }
 }
+
+/* The media dock is the one surface a thumb reaches while reading, and its
+   rows were still text-sized: the source link 24 px, the progress slider a
+   16 px track, the speed select 26 px. */
+@media (pointer: coarse) {
+  .media-surface .media-context-link {
+    display: flex;
+    align-items: center;
+    min-height: var(--control-hit, 44px);
+  }
+  .media-surface .media-progress input,
+  .media-surface .media-adjustments input[type="range"] {
+    height: var(--control-hit, 44px);
+    margin-block: -12px;
+  }
+  .media-surface .media-adjustments select {
+    min-height: var(--control-hit, 44px);
+  }
+}

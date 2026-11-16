@@ -453,3 +453,62 @@ test.describe("the Bible drawer's speech settings are thumb-sized", () => {
     expect(small).toEqual([]);
   });
 });
+
+test.describe("the media dock is thumb-sized", () => {
+  test.use({
+    hasTouch: true,
+    isMobile: true,
+    viewport: { width: 390, height: 844 },
+  });
+
+  test("source link, progress and speed reach the floor", async ({ page }) => {
+    expect(
+      await page.evaluate(() => matchMedia("(pointer: coarse)").matches),
+      "the context must report a coarse pointer for this contract to mean anything",
+    ).toBe(true);
+
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.goto("/GYSApp-Tauri/bible?book=kejadian&chapter=1");
+    await expect(page.locator(".verse-content").first()).toBeVisible({
+      timeout: 30_000,
+    });
+
+    await page.getByRole("button", { name: "Menu Alkitab" }).click();
+    await page
+      .getByRole("button", { name: /Player Alkitab Suara/ })
+      .first()
+      .click();
+    await page.getByRole("button", { name: "Perbesar pemutar" }).click();
+
+    const dock = page.locator(".media-surface").first();
+    await expect(dock).toBeVisible({ timeout: 10_000 });
+
+    // The dock is the one surface a thumb reaches while reading.
+    const small = await dock.evaluate((element) => {
+      const found: string[] = [];
+      for (const control of element.querySelectorAll(
+        "button, a[href], input, select, [role=button]",
+      )) {
+        const box = control.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) continue;
+        const style = getComputedStyle(control);
+        if (style.clip === "rect(0px, 0px, 0px, 0px)") continue;
+        const before = getComputedStyle(control, "::before");
+        const hitWidth = Math.max(
+          box.width,
+          Number.parseFloat(before.width) || 0,
+        );
+        const hitHeight = Math.max(
+          box.height,
+          Number.parseFloat(before.height) || 0,
+        );
+        if (hitWidth >= 43.5 && hitHeight >= 43.5) continue;
+        found.push(
+          `${control.tagName}.${control.className} ${Math.round(box.width)}x${Math.round(box.height)}`,
+        );
+      }
+      return found;
+    });
+    expect(small).toEqual([]);
+  });
+});
