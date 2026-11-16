@@ -70,6 +70,24 @@ Putaran 4 memakai ulang Harness sebagai penulis checker/tes, MAIN sebagai penuli
 dokumen, dan verifier read-only untuk audit publikasi plugin serta review guard.
 Dua scope mandiri cukup untuk batch ini; tidak ada dua penulis pada berkas sama.
 
+## Preview terverifikasi tanpa build lokal (#107)
+
+Pada putaran 6, Harness mengaudit/download arsip dan verifier mengaudit rollout
+secara read-only; MAIN mengintegrasikan dist serta menulis dokumen. Hanya dua
+scope mandiri, tanpa penulis ganda atau tool permanen baru. Reuse artefak mensyaratkan
+repo/run/SHA, digest dan input runtime cocok; semua delta Git tetap diperiksa,
+meski key cache CI lebih konservatif karena mencakup seluruh `scripts/`.
+HTTP 200 bukan freshness: cocokkan index, manifest integrity dan aset yang benar-benar
+disajikan. Jangan menghapus site data, mengubah baseline, atau menyebut build SHA
+artefak sebagai HEAD baru. Pisahkan browser test hosted, byte HTTP lokal, dan UI
+aktual dengan service-worker cache milik pengguna. Review independen mencegah
+rename lintas filesystem: `/tmp` adalah tmpfs; staging/backup dipindahkan ke
+`.verify/preview-round6` pada filesystem repo, guard `st_dev` tetap dipertahankan.
+Unduh arsip sebagai stream pada job terkelola agar timeout/buffer sementara tidak
+membuang seluruh progres; percobaan sebelumnya gagal sebelum 32 MB selesai.
+Request round 6 tetap membuktikan MAIN `chatgpt/gpt-6.1-sol` dan kedua sesi reuse
+`commandcode/deepseek/deepseek-v4.1-flash` (13:15–13:16 UTC).
+
 ## Prinsip
 
 1. Satu putaran = satu batch perubahan yang bisa dibuktikan. MAIN menetapkan

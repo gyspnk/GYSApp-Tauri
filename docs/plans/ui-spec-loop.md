@@ -982,6 +982,38 @@ mempertahankan gate atau maintenance berizin dengan rollback.
 
 Galat pasangan tool saat pemulihan sesi diatribusikan jujur: pasangan asli di transcript utuh, penyebab di jalur wire belum terbukti, dan HTTP 413 pada request CommandCode adalah masalah terpisah; pemulihan masih terbuka. Audit HEAD sebelumnya memakai full run 43800676388 (browser/perf) dan push run 43800675190 (unit). Contrast putaran 143 sudah diimplementasikan pada HEAD 79cf2315 dan tercakup lima kontrak di `prefers-contrast.spec.ts`.
 
+## Goal putaran 6 — preview memakai artefak terverifikasi (#107)
+
+Tidak mendesain ulang UI atau menambah baseline. Preview 4173 menjawab 200 tetapi
+`dist/index.html` bertanggal 04:11 UTC, sebelum feedback Google pada 06:41 UTC.
+Perbaikan harness batch ini adalah menyamakan preview dengan build hosted yang
+sudah diuji, bukan menambah skrip atau menjalankan build lokal berat.
+
+Pagar sebelum sinkronisasi:
+
+1. Cocokkan repo/run/SHA, expiry, ukuran dan SHA-256 arsip dengan metadata GitHub.
+2. Buktikan seluruh delta dari build hanya dokumen/perkakas yang tidak dipanggil build; jangan menyebut artefak lama sebagai build HEAD.
+3. Tolak path absolut, traversal, symlink, duplikat dan ukuran ekstraksi berlebih; staging terpisah, hanya web dist yang dipindah.
+4. Jaga salinan dist lama untuk rollback; periksa path absolut sebelum rename dan jangan menyentuh storage browser, WIP, BFF atau proses dev.
+5. Verifikasi index, build ID/cache worker, manifest integrity serta byte dan content-type aset lewat server preview yang sudah ada. HTTP 200 saja bukan bukti.
+6. Pisahkan provenance/build/browser tests hosted dari byte HTTP lokal. Halaman terbuka dan service-worker cache lokal belum diuji secara visual.
+
+Selesai tanpa build lokal/server baru/baseline baru. Sumber artefak 14204956487
+adalah `3f721824` pada full CI 43821357448, bukan HEAD baru; seluruh delta runtime
+kosong. Digest GitHub cocok:
+`d49b3f3d6da71ca61ac12e329eee73976e6dd4777a681397d322ceeb1d2aef3d`.
+Arsip nyata berisi 1.427 entri / 46.543.326 byte terbuka, termasuk 1.210 berkas web;
+path/root/duplicate/symlink/CRC/ukuran serta 94 integrity aset manifest lulus.
+Build ID preview `41cf6579f6c7c713` → `39d8f3b841d53e91`. Server 4173 yang sama
+menyajikan 105 path yang cocok byte/type (94 aset manifest + 11 index/public/route),
+4.604.168 byte; bukan HTTP seluruh 1.210 berkas. Index SHA-256:
+`1d9777b2be75c3154cf9eb8b72a552f97bfadd829e5252152e108c7f20c9c54a`.
+Backup `.verify/preview-round6/previous-dist` dipertahankan. Staging/backup wajib
+satu filesystem dengan dist; `/tmp` di mesin ini tmpfs, bukan filesystem repo.
+Dua download auditor gagal/timeout; stream terkelola MAIN selesai 32.074.545 byte
+dalam 791,6 detik. Ini menghindari build lokal berat, bukan klaim lebih cepat secara
+wall-clock. Cache/SW browser pengguna, OAuth live dan penilaian visual belum diuji.
+
 ## Goal putaran 5 — biaya launcher jalur cepat (#106)
 
 Tidak mengubah UI atau baseline. Audit tiga pasangan child-process pada lima
