@@ -48,9 +48,11 @@ afterEach(() => {
 function installSdk() {
   const sdk = {
     initialize: vi.fn(),
-    renderButton: vi.fn(() => {
-      rendered = [{} as Element];
-    }),
+    renderButton: vi.fn(
+      (_element: HTMLElement, _options: { click_listener: () => void }) => {
+        rendered = [{} as Element];
+      },
+    ),
     cancel: vi.fn(),
   };
   window.google = { accounts: { id: sdk } };
@@ -139,6 +141,33 @@ it("an old provider callback cannot sign in after the inline control is disposed
   callback({ credential: "stale" });
   expect(complete).toHaveBeenCalledOnce();
 });
+
+it.each(["dispose", "abort"])(
+  "reports every GIS press but ignores old controls after %s",
+  async (stop) => {
+    const sdk = installSdk();
+    const onPress = vi.fn();
+    const complete = vi.fn();
+    const controller = new AbortController();
+    const { renderEgysGoogleButton } = await import("./egys-google.js");
+    const dispose = await renderEgysGoogleButton(
+      host as unknown as HTMLElement,
+      complete,
+      undefined,
+      { onPress, signal: controller.signal },
+    );
+    const press = sdk.renderButton.mock.calls[0]![1].click_listener;
+    press();
+    press();
+    expect(onPress).toHaveBeenCalledTimes(2);
+    expect(complete).not.toHaveBeenCalled();
+    if (stop === "abort") controller.abort();
+    else dispose();
+    press();
+    expect(onPress).toHaveBeenCalledTimes(2);
+    dispose();
+  },
+);
 
 it("guides every origin whose registration it cannot confirm", async () => {
   const {

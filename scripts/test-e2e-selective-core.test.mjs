@@ -210,6 +210,57 @@ test("a numbered stylesheet keeps the cross-screen sweeps", () => {
   assert.doesNotMatch(plan.description, /unclassified shared/);
 });
 
+test("explicitly changed specs survive the unclassified core fallback", () => {
+  const plan = resolveSelectiveTestArgs(
+    [
+      "apps/web/src/startup-order.ts",
+      "apps/web/e2e/welcome.spec.ts",
+      "apps/web/e2e/kidung-catalogue-entrance.spec.ts",
+      "apps/web/e2e/smoke.spec.ts",
+    ],
+    ["--retries=0"],
+  );
+  assert.match(plan.description, /Core browser tier/);
+  // Core tier first, edited specs appended once (smoke is already core).
+  assert.deepEqual(plan.args, [
+    "e2e/smoke.spec.ts",
+    "e2e/settings-data-integrity.spec.ts",
+    "e2e/more-section-deeplink.spec.ts",
+    "e2e/more-device-data.spec.ts",
+    "e2e/account-menu.spec.ts",
+    "e2e/egys-v1.spec.ts",
+    "e2e/route-announcement.spec.ts",
+    "e2e/welcome.spec.ts",
+    "e2e/kidung-catalogue-entrance.spec.ts",
+    "--retries=0",
+  ]);
+});
+
+test("the unclassified fallback stays bounded without an edited spec", () => {
+  const plan = resolveSelectiveTestArgs(["apps/web/src/startup-order.ts"], []);
+  assert.match(plan.description, /Core browser tier/);
+  assert.equal(
+    plan.args.filter((arg) => arg.endsWith(".spec.ts")).length,
+    7,
+    plan.args.join(" "),
+  );
+  assert.ok(!plan.args.includes("e2e/accessibility.spec.ts"));
+});
+
+test("a reported path cannot smuggle a spec outside e2e into the fallback", () => {
+  const plan = resolveSelectiveTestArgs(
+    [
+      "apps/web/src/startup-order.ts",
+      "apps/web/e2e/../src/welcome.spec.ts",
+      "apps/web/e2e/fixtures.ts",
+    ],
+    [],
+  );
+  assert.ok(!plan.args.some((arg) => arg.includes("..")), plan.args.join(" "));
+  assert.ok(!plan.args.includes("e2e/fixtures.ts"));
+  assert.ok(!plan.args.includes("e2e/welcome.spec.ts"));
+});
+
 test("recovery cards keep their own contracts on literature and kidung edits", () => {
   const literature = resolveSelectiveTestArgs(
     ["apps/web/src/literature.tsx"],

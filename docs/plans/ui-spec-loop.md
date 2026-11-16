@@ -955,3 +955,18 @@ Kartu kosong di katalog lain berakhir dengan tombol 44 px; antrean MIDI berakhir
 Logo adalah jalan pulang, dan tautan surel di kartu laporan tetap kontrol meski berada di dalam baris petunjuk. Keduanya lolos 44 px tanpa menambah gulir mendatar (320/360/390/1440: `scrollWidth - innerWidth` = 0). Kontrak: `apps/web/e2e/responsive-touch-targets.spec.ts` › "the brand link and the report mailto are tap targets at 320".
 
 Catatan pengukuran: tombol di dalam panel yang tertutup terbaca 43,1 px karena animasi `selector-in` (`scale(0.98)`) belum pernah berjalan — panel tertutup tidak dilukis, jadi angka itu bukan target nyata. Probe harus melewati kontrol di dalam `details:not([open])`.
+
+### Putaran 144 / batch 402: tekan Google nyata dan gelombang Kidung
+
+Spesifikasi sebelum implementasi UI (Refs #99, #100, #101; tindak lanjut harness #102):
+
+1. Kontrol GIS yang sudah tergambar memberi pesan terlihat segera pada setiap tekan pointer atau keyboard lewat API resmi `click_listener`, bukan tangkapan klik induk iframe.
+2. Pesan id/en/zh menjelaskan menunggu Google dan cara mencoba lagi bila jendela tidak muncul; tidak mengklaim popup pasti diblokir atau login berhasil.
+3. Pesan memakai semantik status, berada di alur dokumen di luar bingkai kontrol, tidak menutupi sasaran 44 px dan tidak menambah h1.
+4. Welcome dan menu akun memakai komponen bersama; empat tema mengikuti token teks yang sudah ada, tanpa warna literal dan tanpa animasi baru.
+5. Callback kredensial menghapus pesan sebelum pertukaran token; unmount/retry/locale baru tidak boleh menerima notifikasi dari kontrol lama.
+6. Kontrak browser menekan kontrol GIS no-op yang benar-benar tergambar, bukan memanggil handler komponen langsung; pengujian mencakup pointer dan keyboard serta status terlihat.
+7. Kontrak Kidung mengukur nama animasi saat gelombang pertama pada baris layar penuh dan memastikan reduced-motion mematikan animasi pada saat itu, bukan setelah 900 ms. Batching awal sudah diperbaiki; data tambahan terlambat tidak diubah tanpa bukti.
+8. Harness `check:fast` gagal nonzero bila penemuan Git gagal; repo bersih tetap lolos. Fallback selektif tetap menyertakan spec yang berubah eksplisit (#102), bukan membuangnya ketika sumber bersama memicu core tier. Regresi CLI tidak menjalankan suite/build lokal berat.
+
+Implementasi batch ini selesai; `pnpm check:fast` lulus (25 tes skrip, 23 tes web, typecheck, format, dokumen). Kontrak credential menunggu status benar-benar terlihat sebelum mengirim callback, agar assertion penghapusan pesan tidak lulus semu akibat batching React. Perubahan Kidung hanya memperkuat regresi untuk perbaikan produksi yang sudah ada, bukan mengklaim perbaikan CSS baru. Bukti browser/perf hosted batch ini **menunggu**. Audit HEAD sebelumnya memakai full run 43800676388 (browser/perf) dan push run 43800675190 (unit), bukan menganggap full dispatch menjalankan unit. Contrast putaran 143 sudah diimplementasikan pada HEAD 79cf2315 dan tercakup lima kontrak di `prefers-contrast.spec.ts`.

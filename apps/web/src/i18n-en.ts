@@ -947,6 +947,8 @@ export const enFeatureMessages: Record<string, string> = {
   "more.loginFailed": "e-GYS sign-in was not successful. Try again.",
   "more.googleButtonFailed":
     "The Google button could not be loaded. Check your connection and try again.",
+  "more.googleWaiting":
+    "Waiting for Google. If the sign-in window does not appear, allow popups for this site and press the Google button again.",
   "more.densityTitle": "Density",
   "more.density.comfortable": "Comfortable",
   "more.density.standard": "Standard",

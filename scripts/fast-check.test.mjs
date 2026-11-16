@@ -1,6 +1,64 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { devNull, tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { collectChecks, ownerOf } from "./fast-check.mjs";
+
+test("CLI fails closed when Git discovery fails", async (t) => {
+  const cwd = mkdtempSync(join(tmpdir(), "gys-fast-check-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const env = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
+  );
+  env.GIT_CONFIG_NOSYSTEM = "1";
+  env.GIT_CONFIG_GLOBAL = devNull;
+  const cli = fileURLToPath(new URL("./fast-check.mjs", import.meta.url));
+  const run = () =>
+    spawnSync(process.execPath, [cli], { cwd, env, encoding: "utf8" });
+  const git = (...args) =>
+    execFileSync("git", args, { cwd, env, stdio: "pipe" });
+  const assertFailure = (result) => {
+    assert.ifError(result.error);
+    assert.equal(result.status, 1);
+    assert.match(
+      result.stderr,
+      /Cannot discover changed files against origin\/main/,
+    );
+    assert.doesNotMatch(result.stdout, /Nothing changed|Local check clean/);
+  };
+
+  await t.test("non-repository", () => {
+    assertFailure(run());
+  });
+
+  git("init", "--initial-branch=main");
+  git(
+    "-c",
+    "user.name=Fixture",
+    "-c",
+    "user.email=fixture@example.invalid",
+    "commit",
+    "--allow-empty",
+    "--no-gpg-sign",
+    "-m",
+    "fixture",
+  );
+  await t.test("missing origin/main", () => {
+    assertFailure(run());
+  });
+
+  git("update-ref", "refs/remotes/origin/main", "HEAD");
+  await t.test("clean repository", () => {
+    const result = run();
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, "Nothing changed against origin/main.\n");
+    assert.equal(result.stderr, "");
+  });
+});
 
 test("picks formatting, typecheck and the covering unit file", () => {
   const files = [

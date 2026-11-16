@@ -914,6 +914,8 @@ export const zhFeatureMessages: Record<string, string> = {
     "未检测到 Google 登录。请完成 Google 账户选择后重试。",
   "more.loginFailed": "e-GYS 登录未成功。请重试。",
   "more.googleButtonFailed": "无法加载 Google 按钮。请检查网络后重试。",
+  "more.googleWaiting":
+    "正在等待 Google。如果登录窗口未出现，请允许此网站弹出窗口，然后再次按下 Google 按钮。",
   "more.densityTitle": "密度",
   "more.density.comfortable": "舒适",
   "more.density.standard": "标准",

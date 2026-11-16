@@ -96,23 +96,19 @@ function baseName(file) {
 }
 
 function changedSince(since) {
-  try {
-    const out = execFileSync(
-      "git",
-      ["diff", "--name-only", "--diff-filter=ACMR", since],
-      { encoding: "utf8" },
-    );
-    // A brand-new file is not in that diff yet, and skipping it would mean the
-    // check stays green on code that has never been compiled.
-    const untracked = execFileSync(
-      "git",
-      ["ls-files", "--others", "--exclude-standard"],
-      { encoding: "utf8" },
-    );
-    return [...out.split("\n"), ...untracked.split("\n")].filter(Boolean);
-  } catch {
-    return [];
-  }
+  const out = execFileSync(
+    "git",
+    ["diff", "--name-only", "--diff-filter=ACMR", since],
+    { encoding: "utf8" },
+  );
+  // A brand-new file is not in that diff yet, and skipping it would mean the
+  // check stays green on code that has never been compiled.
+  const untracked = execFileSync(
+    "git",
+    ["ls-files", "--others", "--exclude-standard"],
+    { encoding: "utf8" },
+  );
+  return [...out.split("\n"), ...untracked.split("\n")].filter(Boolean);
 }
 
 function run(label, command, args) {
@@ -128,7 +124,16 @@ function run(label, command, args) {
 }
 
 export function main(argv = process.argv.slice(2)) {
-  const files = argv.length ? argv : changedSince("origin/main");
+  let files;
+  try {
+    files = argv.length ? argv : changedSince("origin/main");
+  } catch {
+    process.stderr.write(
+      "Cannot discover changed files against origin/main. Local check failed.\n",
+    );
+    process.exitCode = 1;
+    return;
+  }
   const { formatted, docs, sources, tests, typechecks } = collectChecks(files);
   if (!formatted.length && !docs && !sources.length && !tests.length) {
     process.stdout.write("Nothing changed against origin/main.\n");

@@ -37,14 +37,19 @@ test("Google signs in from the inline provider row without an application dialog
     route.fulfill({
       contentType: "application/javascript",
       body: `window.google = { accounts: { id: {
-      initialize(options) { this.callback = options.callback; },
-      renderButton(host) {
+      initialize(options) {
+        this.callback = options.callback;
+        window.addEventListener('test-google-credential', () => this.callback({ credential: 'gis-credential' }), { once: true });
+      },
+      renderButton(host, options) {
         const button = document.createElement("button");
         button.type = "button";
         button.textContent = "Sign in with Google";
         button.style.width = "200px";
         button.style.height = "44px";
-        button.addEventListener("click", () => this.callback({ credential: "gis-credential" }));
+        button.addEventListener("click", () => {
+          options.click_listener?.();
+        });
         host.replaceChildren(button);
       }, cancel() {}
     } } };`,
@@ -59,10 +64,11 @@ test("Google signs in from the inline provider row without an application dialog
       },
     }),
   );
-  await page.route("**/api/v1/auth/egys/google", (route) => {
+  await page.route("**/api/v1/auth/egys/google", async (route) => {
     expect(route.request().postDataJSON()).toEqual({
       credential: "gis-credential",
     });
+    await expect(page.locator(".egys-google-press-status")).toHaveCount(0);
     loggedIn = true;
     return route.fulfill({ json: { ok: true } });
   });
@@ -71,6 +77,10 @@ test("Google signs in from the inline provider row without an application dialog
   const google = account.getByRole("button", { name: "Sign in with Google" });
   await expect(google).toBeVisible();
   await google.click();
+  await expect(page.locator(".egys-google-press-status")).toBeVisible();
+  await page.evaluate(() =>
+    window.dispatchEvent(new Event("test-google-credential")),
+  );
   await expect(
     account.getByRole("heading", { name: "Jemaat Google", exact: true }),
   ).toBeVisible();
@@ -982,6 +992,106 @@ test("Lainnya renders unified settings and account panels cleanly", async ({
     page.getByRole("heading", { name: "Paket lokal" }),
   ).toBeVisible();
 });
+
+for (const [surface, locale, theme, message] of [
+  ["welcome", "id", "light", "Menunggu Google."],
+  ["account", "en", "dark", "Waiting for Google."],
+  ["menu", "zh", "sepia", "正在等待 Google。"],
+  ["welcome", "zh", "amoled", "正在等待 Google。"],
+] as const) {
+  test(`painted Google no-op presses respond on ${surface} (${locale}, ${theme})`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(
+      ({ locale, theme, onboarded }) => {
+        localStorage.setItem(
+          "gys-shell-settings-v1",
+          JSON.stringify({
+            version: 1,
+            locale,
+            theme,
+            onboarded,
+          }),
+        );
+      },
+      { locale, theme, onboarded: surface !== "welcome" },
+    );
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.route("**/api/v1/account/profile**", (route) =>
+      route.fulfill({ json: { profile: null } }),
+    );
+    await page.route("https://accounts.google.com/gsi/client*", (route) =>
+      route.fulfill({
+        contentType: "application/javascript",
+        body: `window.google = { accounts: { id: {
+          initialize() {}, cancel() {}, renderButton(host, options) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = "Sign in with Google";
+            button.style.width = "100%";
+            button.style.height = "44px";
+            button.addEventListener("click", () => options.click_listener?.());
+            host.replaceChildren(button);
+          }
+        } } };`,
+      }),
+    );
+    await page.goto(
+      surface === "account"
+        ? "/GYSApp-Tauri/lainnya?section=account"
+        : "/GYSApp-Tauri/",
+    );
+    if (surface === "menu") await page.locator(".account-button").click();
+    const container = page.locator(
+      surface === "welcome"
+        ? ".welcome-login"
+        : surface === "account"
+          ? '[data-setting="account"]'
+          : ".account-menu-login",
+    );
+    const button = container.getByRole("button", {
+      name: "Sign in with Google",
+    });
+    const status = container.locator(".egys-google-press-status");
+    await expect(button).toBeVisible();
+    await expect(status).toHaveCount(0);
+    await button.click();
+    await expect(status).toBeVisible();
+    await expect(status).toContainText(message);
+    await expect(status).toHaveAttribute("role", "status");
+    // A second real activation must give a new status, not reuse a dead attempt.
+    const firstStatus = await status.elementHandle();
+    await button.focus();
+    await page.keyboard.press("Enter");
+    await expect
+      .poll(() => firstStatus!.evaluate((node) => node.isConnected))
+      .toBe(false);
+    await expect(status).toBeVisible();
+    await page.keyboard.press("Space");
+    await expect(status).toBeVisible();
+    expect(
+      await status.evaluate((node) => node.closest(".egys-google-control")),
+    ).toBeNull();
+    const row = await container.locator(".egys-google-control").boundingBox();
+    const feedback = await status.boundingBox();
+    expect(feedback!.y).toBeGreaterThanOrEqual(row!.y + row!.height);
+    if (surface === "account") {
+      const providers = await container
+        .locator(".egys-provider")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => Math.round(node.getBoundingClientRect().top)),
+        );
+      expect(providers).toHaveLength(3);
+      expect(new Set(providers).size).toBe(1);
+    }
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await page.reload();
+    if (surface === "menu") await page.locator(".account-button").click();
+    await expect(button).toBeVisible();
+    await expect(status).toHaveCount(0);
+  });
+}
 
 test("Google retries a failed SDK within the same provider row", async ({
   page,

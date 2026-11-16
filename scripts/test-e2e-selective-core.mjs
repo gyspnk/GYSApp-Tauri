@@ -64,6 +64,15 @@ export function collectChangedFiles({
   return [...files];
 }
 
+// A changed Playwright spec, as the argument the runner takes. A ".." segment
+// is refused so a reported path cannot select a file outside e2e/.
+function changedSpecPath(file) {
+  if (!file.startsWith("apps/web/e2e/") || !file.endsWith(".spec.ts"))
+    return undefined;
+  const spec = file.replace("apps/web/", "");
+  return spec.split("/").includes("..") ? undefined : spec;
+}
+
 /** The always-cheap tier: shell, settings, deep links and e-GYS login. */
 const CORE_SPECS = [
   "e2e/smoke.spec.ts",
@@ -122,23 +131,31 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       file,
     );
   });
-  if (unknownShared.length)
+  if (unknownShared.length) {
     // Bounded fallback: an unclassified shared change could touch anything, so
     // run the same core tier used locally instead of the whole 824-test suite.
     // The full suite still runs on main pushes and on a `full-ci` label.
+    // The tier replaces the feature routing, not the explicit asks: dropping
+    // changed specs turned "update welcome/Kidung" into "run smoke", so edited
+    // specs are unioned in. Unknown shared files still fan out to nothing else.
+    const editedSpecs = changedFiles
+      .map(changedSpecPath)
+      .filter((spec) => spec !== undefined);
     return {
       description: `Core browser tier for unclassified shared changes: ${unknownShared.join(", ")}`,
-      args: [...CORE_SPECS, ...userArgs],
+      args: [...new Set([...CORE_SPECS, ...editedSpecs]), ...userArgs],
       changedFiles,
     };
+  }
 
   const specFiles = new Set();
   const grepPatterns = new Set();
   let runSmokeAll = false;
 
   for (const file of changedFiles) {
-    if (file.startsWith("apps/web/e2e/") && file.endsWith(".spec.ts")) {
-      specFiles.add(file.replace("apps/web/", ""));
+    const changedSpec = changedSpecPath(file);
+    if (changedSpec) {
+      specFiles.add(changedSpec);
       continue;
     }
 
@@ -343,11 +360,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
   // A spec that was edited must always run, even when the change carries no
   // layout files: pruning it turned "update this test" into "run smoke".
   const editedSpecs = new Set(
-    changedFiles
-      .filter(
-        (file) => file.startsWith("apps/web/e2e/") && file.endsWith(".spec.ts"),
-      )
-      .map((file) => file.replace("apps/web/", "")),
+    changedFiles.map(changedSpecPath).filter((spec) => spec !== undefined),
   );
   for (const spec of generalSweeps) {
     if (editedSpecs.has(spec)) continue;

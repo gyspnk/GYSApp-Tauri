@@ -17,6 +17,13 @@ type WaveRecord = {
   viewport: number;
   onScreen: number;
   maxDelayMs: number;
+  animationNames: string[];
+  onScreenAnimationNames: string[];
+  onScreenOpaque: boolean;
+  // A name alone also matches a zero-length or paused animation, so the first
+  // frame proves the wave actually runs: `animation: none` reports 0s.
+  firstWaveMoving: boolean;
+  onScreenMoving: boolean;
 };
 
 declare global {
@@ -33,25 +40,46 @@ const recordWave = () => {
     viewport: window.innerHeight,
     onScreen: 0,
     maxDelayMs: 0,
+    animationNames: [],
+    onScreenAnimationNames: [],
+    onScreenOpaque: false,
+    firstWaveMoving: false,
+    onScreenMoving: false,
   };
   window.__catalogueWave = record;
   const sample = () => {
     if (record.sampled) return;
     const list = document.querySelector(".pujian-list.is-staggering");
     if (!list) return;
-    const rows = [...document.querySelectorAll<HTMLElement>(".pujian-item")];
+    const rows = [...list.querySelectorAll<HTMLElement>(".pujian-item")];
+    if (!rows.length) return;
     record.sampled = true;
     record.rows = rows.length;
     record.height = list.clientHeight;
-    const delays = rows.map(
-      (row) =>
-        (Number.parseFloat(getComputedStyle(row).animationDelay) || 0) * 1000,
+    const styles = rows.map((row) => getComputedStyle(row));
+    const delays = styles.map(
+      (style) => (Number.parseFloat(style.animationDelay) || 0) * 1000,
     );
     record.maxDelayMs = Math.round(Math.max(0, ...delays));
-    record.onScreen = rows.filter((row) => {
+    record.animationNames = styles.map((style) => style.animationName);
+    const isMoving = (style: CSSStyleDeclaration) =>
+      (Number.parseFloat(style.animationDuration) || 0) > 0 &&
+      style.animationPlayState === "running";
+    record.firstWaveMoving = styles.slice(0, 60).every(isMoving);
+    const onScreenStyles = rows.flatMap((row, index) => {
+      const style = styles[index];
+      if (!style) return [];
       const rect = row.getBoundingClientRect();
-      return rect.bottom > 0 && rect.top < window.innerHeight;
-    }).length;
+      return rect.bottom > 0 && rect.top < window.innerHeight ? [style] : [];
+    });
+    record.onScreen = onScreenStyles.length;
+    record.onScreenAnimationNames = onScreenStyles.map(
+      (style) => style.animationName,
+    );
+    record.onScreenOpaque = onScreenStyles.every(
+      (style) => style.opacity === "1",
+    );
+    record.onScreenMoving = onScreenStyles.every(isMoving);
   };
   // `document.documentElement` does not exist yet inside an init script, so
   // watch the document node itself; a subtree observer there still sees every
@@ -65,39 +93,68 @@ const recordWave = () => {
 };
 
 test.describe("kidung catalogue entrance", () => {
-  test.use({ viewport: { width: 1440, height: 900 } });
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    for (const reducedMotion of ["no-preference", "reduce"] as const) {
+      test(`first wave covers the screen with motion ${reducedMotion} at ${viewport.width}px`, async ({
+        page,
+      }) => {
+        await page.setViewportSize(viewport);
+        await page.emulateMedia({ reducedMotion });
+        await page.addInitScript(recordWave);
+        await page.goto("/GYSApp-Tauri/");
+        await page.getByRole("link", { name: "Kidung" }).first().click();
 
-  test("the card is a screen tall before the wave starts", async ({ page }) => {
-    await page.addInitScript(recordWave);
-    await page.goto("/GYSApp-Tauri/");
-    await page.getByRole("link", { name: "Kidung" }).first().click();
+        await expect
+          .poll(
+            async () =>
+              (await page.evaluate(() => window.__catalogueWave))?.sampled,
+            { timeout: 10_000 },
+          )
+          .toBe(true);
+        const wave = await page.evaluate(() => window.__catalogueWave);
+        expect(wave).toBeTruthy();
+        if (!wave) return;
 
-    await expect
-      .poll(
-        async () =>
-          (await page.evaluate(() => window.__catalogueWave))?.sampled,
-        { timeout: 10_000 },
-      )
-      .toBe(true);
-    const wave = await page.evaluate(() => window.__catalogueWave);
-    expect(wave).toBeTruthy();
-    if (!wave) return;
+        // Sampled while the real class is active, not after its 760 ms timer.
+        expect(wave.height).toBeGreaterThanOrEqual(wave.viewport * 0.7);
+        expect(wave.onScreen).toBeGreaterThanOrEqual(
+          viewport.width === 1440 ? 20 : 8,
+        );
+        expect(wave.maxDelayMs).toBeLessThanOrEqual(250);
+        if (reducedMotion === "reduce") {
+          expect(wave.animationNames).toEqual(Array(wave.rows).fill("none"));
+          expect(wave.onScreenOpaque).toBe(true);
+          // Counter-check: the probe above must go false when nothing moves.
+          expect(wave.firstWaveMoving).toBe(false);
+        } else {
+          expect(wave.animationNames).toEqual(
+            Array.from({ length: wave.rows }, (_, index) =>
+              index < 60 ? "catalogue-row-in" : "none",
+            ),
+          );
+          expect(wave.onScreenAnimationNames).toEqual(
+            Array(wave.onScreen).fill("catalogue-row-in"),
+          );
+          // The first frame is captured during the delay, so opacity is still
+          // transient here; only the running animation is asserted.
+          expect(wave.firstWaveMoving).toBe(true);
+          expect(wave.onScreenMoving).toBe(true);
+        }
 
-    // The card must already hold a screenful of rows when the wave begins, or
-    // the lower half of the screen arrives later in a boom of its own.
-    expect(wave.height).toBeGreaterThanOrEqual(wave.viewport * 0.7);
-    expect(wave.onScreen).toBeGreaterThanOrEqual(20);
-    expect(wave.maxDelayMs).toBeLessThanOrEqual(250);
-
-    // The wave ends on its own and leaves nothing animating.
-    await expect(page.locator(".pujian-list.is-staggering")).toHaveCount(0);
-    const settled = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>(".pujian-item")].every(
-        (row) => getComputedStyle(row).opacity === "1",
-      ),
-    );
-    expect(settled).toBe(true);
-  });
+        // The wave ends on its own and leaves nothing animating.
+        await expect(page.locator(".pujian-list.is-staggering")).toHaveCount(0);
+        const settled = await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>(".pujian-item")].every(
+            (row) => getComputedStyle(row).opacity === "1",
+          ),
+        );
+        expect(settled).toBe(true);
+      });
+    }
+  }
 
   test("the tail of the list stays still", () => {
     // The off-screen tail never scrolls in on its own, so the rule is checked

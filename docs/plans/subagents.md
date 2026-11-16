@@ -48,6 +48,21 @@ yang benar-benar berbeda permukaan.
 | `Shell — audit galat dan muat`   | `8613ae3e-3216-4e6a-8e04-73b7d2fef55d` | kartu galat, kerangka pemuatan, cadangan tinggi rute               |
 | `Kidung — audit antrean dan rel` | `75f8551f-5fd9-449a-9360-2f5594766e5a` | `kidung-ux.css`, `kidung-responsive.css`, `kidung-reader-rail.tsx` |
 
+## Batch 402 / sesi saat ini (16 November 2026)
+
+Sesi register lama tetap disimpan sebagai riwayat. Percobaan `send_message` ke sesi
+Kidung lama ditolak karena milik parent lain; hanya sesi anak parent saat ini yang
+dapat dipakai ulang. Ini bukan alasan membuang sesi lama atau mengarang koneksi.
+
+| Nama                                 | Agen                                   | Dipakai ulang untuk                                             |
+| ------------------------------------ | -------------------------------------- | --------------------------------------------------------------- |
+| `Google — perbaiki respons login`    | `be2c76e6-5c3f-4de1-9b50-1679f32fcbf5` | komponen GIS bersama, feedback tekan, i18n, kontrak autentikasi |
+| `Kidung — kuatkan kontrak gelombang` | `7e2e7b78-567a-4873-9a29-36327ed96744` | sampling first-frame animasi katalog dan reduced-motion         |
+| `Harness — audit loop cepat`         | `fd41474a-93ba-4e2c-834f-f4d3d4ece04c` | penemuan Git fail-closed dan regresi CLI check:fast             |
+| `Verifier — audit bukti goal`        | `a0db5df4-c4d4-453b-a60c-b325bbcb4748` | review independen, cakupan job dan bukti hosted                 |
+
+Semua tugas lanjutan pada anak sesi orchestrator ini memakai `DeepSeek V4.1 Flash (latest) (CC)` melalui provider `commandcode`, model `deepseek/deepseek-v4.1-flash`. Plugin Host lokal `@local/gys-session-policy` menerapkan route pada request anak dan cucu, termasuk sesi lama yang dipakai ulang; main dan root lain tidak diubah. Request verifier setelah aktivasi sudah membuktikan route tersebut. Sesi MAIN tetap `session-c96f4351-b076-4c33-9a7c-9f28f29bc799` dengan `chatgpt/gpt-6.1-sol`.
+
 Panel otak di GB Tools menampilkan `displayTitle` tiap sesi dan menyalin id ke
 clipboard saat simpul diklik, jadi id untuk `send_message` diambil langsung dari
 panel — bukan dari ingatan.

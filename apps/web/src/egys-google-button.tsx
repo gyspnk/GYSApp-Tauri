@@ -26,6 +26,7 @@ export function EgysGoogleButton({
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [attempt, retry] = useState(0);
+  const [presses, setPresses] = useState(0);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
@@ -41,10 +42,20 @@ export function EgysGoogleButton({
     control.addEventListener(GOOGLE_UNAVAILABLE_EVENT, unavailable);
     let cleanup: (() => void) | undefined;
     setStatus("loading");
-    void renderEgysGoogleButton(control, onCredential, undefined, {
-      locale,
-      signal: controller.signal,
-    })
+    setPresses(0);
+    void renderEgysGoogleButton(
+      control,
+      (credential) => {
+        setPresses(0);
+        return onCredential(credential);
+      },
+      undefined,
+      {
+        locale,
+        signal: controller.signal,
+        onPress: () => setPresses((value) => value + 1),
+      },
+    )
       .then((dispose) => {
         if (controller.signal.aborted) dispose();
         else {
@@ -68,47 +79,54 @@ export function EgysGoogleButton({
   }, [status, onStatus]);
   const label = translate(locale, "more.googleLogin");
   return (
-    <div
-      className="egys-provider egys-provider-google egys-google-control"
-      aria-busy={status === "loading"}
-    >
-      {/* The shared face only paints while Google has nothing to show; once its
-          control exists it takes the whole frame and keeps its own name. */}
-      <span className="egys-google-face" aria-hidden="true">
-        <GoogleMark />
-        <span>Google</span>
-      </span>
+    <>
       <div
-        ref={host}
-        className="egys-google-button"
-        inert={status !== "ready"}
-      />
-      {status !== "ready" && (
-        // Never inert: a press while the script is still loading restarts the
-        // attempt instead of doing nothing at all.
-        <button
-          type="button"
-          className="egys-google-fallback"
-          aria-label={label}
-          aria-busy={status === "loading"}
-          title={
-            status === "error"
-              ? translate(locale, "more.googleButtonFailed")
-              : label
-          }
-          onClick={() => retry((value) => value + 1)}
-        >
+        className="egys-provider egys-provider-google egys-google-control"
+        aria-busy={status === "loading"}
+      >
+        {/* The shared face only paints while Google has nothing to show; once its
+          control exists it takes the whole frame and keeps its own name. */}
+        <span className="egys-google-face" aria-hidden="true">
           <GoogleMark />
           <span>Google</span>
-        </button>
-      )}
-      {status === "error" && !onStatus && (
-        // The account card renders the same sentence itself, visibly; a second
-        // alert there would only duplicate it.
-        <span className="sr-only" role="alert">
-          {translate(locale, "more.googleButtonFailed")}
         </span>
+        <div
+          ref={host}
+          className="egys-google-button"
+          inert={status !== "ready"}
+        />
+        {status !== "ready" && (
+          // Never inert: a press while the script is still loading restarts the
+          // attempt instead of doing nothing at all.
+          <button
+            type="button"
+            className="egys-google-fallback"
+            aria-label={label}
+            aria-busy={status === "loading"}
+            title={
+              status === "error"
+                ? translate(locale, "more.googleButtonFailed")
+                : label
+            }
+            onClick={() => retry((value) => value + 1)}
+          >
+            <GoogleMark />
+            <span>Google</span>
+          </button>
+        )}
+        {status === "error" && !onStatus && (
+          // The account card renders the same sentence itself, visibly; a second
+          // alert there would only duplicate it.
+          <span className="sr-only" role="alert">
+            {translate(locale, "more.googleButtonFailed")}
+          </span>
+        )}
+      </div>
+      {presses > 0 && (
+        <p key={presses} role="status" className="egys-google-press-status">
+          {translate(locale, "more.googleWaiting")}
+        </p>
       )}
-    </div>
+    </>
   );
 }

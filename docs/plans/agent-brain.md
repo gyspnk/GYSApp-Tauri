@@ -269,3 +269,13 @@ Menonton run hosted sekarang satu perintah: `pnpm run:watch <runId>` (`scripts/w
 `pnpm css:dead` answers "which class has no markup". `pnpm modules:dead` answers the twin question: "which module has no importer". They must both answer zero, and both run in the `verify` job, because a component replaced by a newer surface leaves its stylesheet names behind and keeps the CSS scan quiet.
 
 The scan knows the three ways this app loads a module — static `import … from "…"`, dynamic `import("…")`, and `new Worker(new URL("…", import.meta.url))` — and it resolves `./x.js` to `x.ts`/`x.tsx` beside it. Entry points (`src/main.tsx`), test files and anything outside `src/` are never reported.
+
+## Batch 402: discovery failure is not an empty queue
+
+Audit empat agen menemukan `check:fast` menelan galat Git dan mengubahnya menjadi daftar kosong (#100). Regresi CLI harus memisahkan tiga keadaan: repo bersih, base ref hilang, dan cwd bukan repo. Dua yang terakhir wajib nonzero; jangan menampilkan verdict “Nothing changed” atau “clean” bila input pemeriksaan tidak bisa ditemukan. Fixture Git berada di direktori sementara terisolasi, bukan commit pada repo aplikasi.
+
+Reuse hanya sah untuk anak parent yang dapat diakses. Setelah tool menolak sesi lama dengan `belongs to another parent session`, catat batas itu dan daftarkan sesi penggantinya di `subagents.md`; jangan mengulang panggilan gagal atau mengarang garis koneksi panel. Batch ini memisahkan penulis Google, kontrak Kidung, harness Git, dan verifier read-only; dokumen dimiliki otak. Builder tidak commit/push dan tes browser/build tetap hosted. Bukti full dispatch tidak mencakup unit bila job unit skipped: sebut push run dan dispatch run secara terpisah.
+
+Fallback core tier tidak boleh menghilangkan kontrak yang sengaja diubah: union `CORE_SPECS` dengan spec eksplisit yang valid, dedupe, lalu saring berkas yang sudah dihapus (#102). Tes mixed source+spec harus membuktikan kontrak Kidung/welcome benar-benar ada dalam argumen, tanpa memperluas ke seluruh sweep.
+
+Orchestrator sesi ini tetap `chatgpt/gpt-6.1-sol`; semua anak/cucu memakai `commandcode/deepseek/deepseek-v4.1-flash` atas pilihan pengguna. Buktikan model dari request runtime, bukan dari label brief. Policy bawaan hanya tersampling pada sesi baru; plugin Host lokal `@local/gys-session-policy` memakai `agent/request` untuk descendant root yang ditentukan dan tidak menyentuh main/root lain. Verifier sudah menjalankan request pada route CC yang diminta.

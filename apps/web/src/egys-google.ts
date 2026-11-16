@@ -33,6 +33,7 @@ type GoogleIdentity = {
           shape: "rectangular";
           width: number;
           locale: string;
+          click_listener: () => void;
         },
       ): void;
       cancel(): void;
@@ -127,7 +128,15 @@ export async function renderEgysGoogleButton(
   onCredential: (credential: string) => void | Promise<void>,
   clientId = import.meta.env.VITE_EGYS_GOOGLE_CLIENT_ID?.trim() ||
     EGYS_GOOGLE_CLIENT_ID,
-  { locale = "id", signal }: { locale?: string; signal?: AbortSignal } = {},
+  {
+    locale = "id",
+    signal,
+    onPress,
+  }: {
+    locale?: string;
+    signal?: AbortSignal;
+    onPress?: () => void;
+  } = {},
 ): Promise<() => void> {
   await loadGoogleIdentityScript(locale);
   if (signal?.aborted) return () => {};
@@ -161,6 +170,9 @@ export async function renderEgysGoogleButton(
       shape: "rectangular",
       width,
       locale: locale === "zh" ? "zh_CN" : locale,
+      click_listener: () => {
+        if (active && !signal?.aborted) onPress?.();
+      },
     });
     // Google answers an unknown origin or client by rendering nothing and
     // logging only in its own console. Report that instead of leaving an empty

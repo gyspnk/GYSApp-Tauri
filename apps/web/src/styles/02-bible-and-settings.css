@@ -1624,6 +1624,15 @@
     padding-inline: 6px;
   }
 }
+.egys-google-press-status {
+  grid-column: 1 / -1;
+  order: 1;
+  width: 100%;
+  margin: 8px 0 0;
+  color: var(--ink);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
 .egys-google-error {
   color: var(--danger);
   font-size: 0.75rem;
