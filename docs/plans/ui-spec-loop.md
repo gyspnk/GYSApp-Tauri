@@ -993,8 +993,11 @@ angka putaran, prompt hilang/kosong, serta arsip yang tetap dibolehkan. Guard in
 struktural/fragmen terbatas, bukan pemeriksaan semantik seluruh instruksi.
 Review independen tidak menemukan blocker tersisa. MAIN check:fast lulus dengan
 10 tes skrip, format, dokumen, dan diff-check; sampel format 29.317 ms, unit
-4.216 ms, dokumen 101 ms, bukan klaim target historis 2–3 detik. Bukti hosted
-batch ini masih menunggu. Status UI #104 dan pemulihan #103
+4.216 ms, dokumen 101 ms, bukan klaim target historis 2–3 detik. Source `3ccbf38984` lulus hosted CI 43868317564: unit 133302602041 mencakup 223
+tes skrip (10 kontrak dokumen), selective 133302602195 menjalankan 41/41 smoke;
+verify/gate sukses. Pages 43868317694 sukses. Full shards/native/perf dilewati,
+build cold-cache unit berjalan, tanpa artifact visual selective atau bukti UI
+Brain. #105 ditutup; hasil ini bukan penyelesaian #104/#103. Status UI #104 dan pemulihan #103
 tidak berubah menjadi selesai karena pekerjaan dokumen ini.
 
 ## Goal putaran 3 — fondasi tata letak GB Tools / Agent Brain (#104)
