@@ -71,6 +71,14 @@ call site dan ukur tinggi paragraf: `toBeVisible()` dapat lulus pada elemen 1 px
 yang sengaja terklip. Builder tunggal mengubah shared button dan kontrak browser;
 verifier terpisah memeriksa posisi di luar bingkai provider, duplikasi alert,
 ukuran tombol dan keterbacaan. MAIN memegang spec/dokumen dan bukti hosted.
+Push 43946477770 membuktikan 1.143 unit dan 101 selective; full 43946512083
+membuktikan shard/perf, bukan unit dispatch yang skipped. Empat PNG selective
+artifact 14264763821 dibuat setelah assertion dan diperiksa MAIN + verifier.
+Reporter tidak mencetak nama tiap tes: cocokkan jumlah koleksi dengan jumlah lulus,
+lalu gunakan PNG sesudah assertion untuk empat kasus; jangan mengarang log nama tes.
+`fullyParallel:true` memungkinkan satu spec terbagi ke beberapa shard, jadi inventaris
+artifact harus diperiksa, bukan menebak seluruh gambarnya berada di satu shard.
+Audit berikutnya memisahkan #110/#111 (Welcome sukses/native) dari #108 yang selesai.
 
 ## Handoff aktif versus arsip (#105)
 

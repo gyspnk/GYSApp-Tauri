@@ -1106,8 +1106,19 @@ empat kombinasi Welcome/menu akun yang mencakup empat tema dan tiga bahasa
 posisi di bawah retry, viewport 390×844, dan satu alert pada More. Empat screenshot
 akan ditulis ke artifact `ui-preview` saat browser hosted berjalan. Builder menjalankan 11/11 tes
 unit fokus dan typecheck; koleksi Playwright membaca 36 tes, bukan mengeksekusi
-browser. MAIN `check:fast` lulus (format 1.387 ms, typecheck 1.549 ms, dokumen
-147 ms). Review independen tidak menemukan blocker; markup lama memang gagal
-pada assertion tinggi dan posisi di luar bingkai. Bukti browser/artifact hosted
-masih menunggu; tidak ada klaim OAuth live atau preview dist sudah memuat
-perubahan source ini.
+browser. MAIN `check:fast` terakhir lulus (format 1.253 ms, typecheck 1.406 ms,
+dokumen 190 ms). Review independen tidak menemukan blocker; markup lama memang
+gagal pada assertion tinggi dan posisi di luar bingkai.
+
+Source `68e9346404` lulus push CI **43946477770**: unit **133577511584**
+(1.143 tes), selective **133577512102** (101/101 tes, tujuh spec; jumlah sama
+dengan koleksi lokal). Empat PNG artifact **14264763821** ditulis setelah seluruh
+assertion kasus gagal-SDK lulus; MAIN dan verifier memeriksa keempatnya, pesan
+terbaca tanpa clipping/overlap pada sampel. More tanpa duplikasi dibuktikan oleh
+kasus kelima dalam jumlah tes, bukan screenshot More. Tidak ada baseline diadopsi.
+Full **43946512083** lulus empat shard, perf **133577971297** dan gate
+**133583799303**; unit dispatch skipped, jadi bukti unit berasal dari push.
+Pages **43946477846** sukses. Artifact build **14264623606** tersedia tetapi
+belum disinkronkan ke preview lokal. #108 selesai untuk visibilitas kegagalan SDK,
+bukan OAuth live. Audit lanjutan mencatat #110 (login sukses belum menyelesaikan
+Welcome) dan #111 (Welcome native belum memakai overlay); keduanya belum diubah.
