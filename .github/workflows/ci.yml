@@ -178,6 +178,8 @@ jobs:
       - run: pnpm verify:docs
       # A renamed class must not leave its rules behind.
       - run: pnpm css:dead --check
+      # Nor may a replaced component leave its module behind.
+      - run: pnpm modules:dead --check
       - name: Check formatting with actionable diffs
         run: |
           if ! pnpm format:check; then

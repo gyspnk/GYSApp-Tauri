@@ -135,62 +135,6 @@
     align-items: stretch;
   }
 }
-/* MIDI dock panel inside hymn settings / viewer. */
-.hymn-midi-controls-panel {
-  display: grid;
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  animation: menu-popup-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.hymn-midi-dock-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.hymn-midi-dock-row > label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--muted);
-}
-.hymn-midi-dock-row select,
-.hymn-midi-dock-row input[type="number"] {
-  min-height: 34px;
-  padding: 4px 8px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm, 8px);
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.75rem;
-}
-.hymn-midi-dock-play {
-  display: inline-grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 50%;
-  background: var(--accent-fill);
-  color: var(--on-accent);
-  cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    filter 0.15s ease;
-}
-.hymn-midi-dock-play:hover:not(:disabled) {
-  transform: scale(1.05);
-  filter: brightness(1.08);
-}
-.hymn-midi-dock-play:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 /* Chord editor floating toolbar in the PDF overlay. */
 .chord-editor-toolbar {
   position: absolute;
@@ -987,14 +931,6 @@ body.gys-viewer-active {
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
-/* gyschordweb midi-panel: inline player dock inside the viewer */
-.hymn-midi-dock {
-  grid-column: 1 / -1;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-soft);
-}
 /* The chord toggle is a secondary viewer action: keep it off the main
    five-slot chrome row (Lirik/prev/title/next/MIDI) and place it on its own
    right-aligned row so the title never gets squeezed by a 6th track. */
@@ -1063,27 +999,6 @@ body.gys-viewer-active {
 }
 .pdf-transpose-reset {
   font-size: 0.6875rem;
-}
-.hymn-midi-dock-row + .hymn-midi-dock-row {
-  margin-top: 8px;
-}
-.hymn-midi-dock-row label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-}
-.hymn-midi-dock-play {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--blue) 42%, var(--line));
-  background: var(--blue-soft);
-  color: var(--blue);
 }
 .viewer-chrome-button {
   display: inline-flex;

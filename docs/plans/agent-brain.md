@@ -263,3 +263,9 @@ Menonton run hosted sekarang satu perintah: `pnpm run:watch <runId>` (`scripts/w
 ## A local contract run rebuilds only for bundle inputs
 
 `pnpm e2e:one <spec>` skips the rebuild when `apps/web/dist/index.html` is not older than the newest file the bundler reads. The walk used to include `apps/web/e2e/`, so adopting one baseline PNG marked the tree stale and every later run paid a ~6 s build for a bundle nothing had touched. `e2e` is excluded from the freshness scan now: a spec or a snapshot edit costs the spec run and nothing else — measured 8.4 s → 2.3 s for the same contract. `scripts/e2e-one.test.mjs` pins the rule with a fake tree whose snapshot is newer than every source.
+
+## A module nothing imports is dead weight
+
+`pnpm css:dead` answers "which class has no markup". `pnpm modules:dead` answers the twin question: "which module has no importer". They must both answer zero, and both run in the `verify` job, because a component replaced by a newer surface leaves its stylesheet names behind and keeps the CSS scan quiet.
+
+The scan knows the three ways this app loads a module — static `import … from "…"`, dynamic `import("…")`, and `new Worker(new URL("…", import.meta.url))` — and it resolves `./x.js` to `x.ts`/`x.tsx` beside it. Entry points (`src/main.tsx`), test files and anything outside `src/` are never reported.
