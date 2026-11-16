@@ -6,10 +6,41 @@ kontrak masuk/keluar, dan cara hasilnya diperiksa. Diagram plugin harness yang
 menampilkan koneksi antar komponen menyusul di `docs/plans/agent-brain-viz.md`
 setelah spesifikasinya selesai.
 
+## Default utama: MAIN di chat ini
+
+Keputusan pemilik, 16 November 2026: sesi
+`session-c96f4351-b076-4c33-9a7c-9f28f29bc799` adalah **satu-satunya MAIN
+orchestrator default** untuk pekerjaan lanjutan goal ini. Chat _Nonstop Development
+Part 2_ hanya menjadi riwayat dan target pemulihan, bukan pusat koordinasi paralel.
+Jangan memindahkan MAIN atau mengganti modelnya tanpa permintaan eksplisit pemilik.
+
+- MAIN tetap `chatgpt/gpt-6.1-sol`: memilih prioritas, membagi lingkup, mengambil
+  keputusan, mengintegrasikan hasil, commit/push, serta mencatat bukti dan status goal.
+- Semua explorer, executor/builder, harness, dan verifier anak/cucu memakai
+  `DeepSeek V4.1 Flash (latest) (CC)` melalui
+  `commandcode/deepseek/deepseek-v4.1-flash`, termasuk sesi yang dipakai ulang.
+  Buktikan route dari request runtime; label brief bukan bukti model.
+- Alur baku: issue terbuka + handoff → batch terukur → spec UI sebelum kode →
+  scope penulis terpisah + reuse register → delegasi paralel sambil MAIN bekerja →
+  verifier independen → pemeriksaan cepat lokal → commit/push oleh MAIN → bukti
+  hosted → dokumentasi/issue → batch berikutnya. Builder tidak commit/push;
+  verifier read-only. Jangan membuat delegasi semu untuk tugas sederhana.
+- Default empat subagent untuk batch yang punya pekerjaan mandiri; maksimum enam
+  hanya bila scope terpisah dan sumber daya terukur cukup. MAIN tidak menunggu
+  pekerjaan saling bergantung dengan menambah agen.
+- Saat sesi dipulihkan, baca bagian ini dan `subagents.md` sebelum delegasi.
+  Plugin `@local/gys-session-policy` terikat root MAIN ini; root lain tidak diubah.
+  Aturan ini bukan perubahan model default global seluruh profil.
+
+Pencatatan goal runtime masih **menunggu**: upaya edit dari putaran otomatis ditolak
+`this goal operation requires a direct human turn on a top-level agent`. Jangan
+mengklaim goal sudah diperbarui sampai `update_goal` berhasil pada giliran manusia
+langsung; aturan dokumentasi ini tetap mencatat keputusan pemilik.
+
 ## Prinsip
 
-1. Satu putaran = satu perubahan yang bisa dibuktikan. Delegasi tidak menambah
-   cakupan, hanya memindahkan kerja yang bisa dipisah.
+1. Satu putaran = satu batch perubahan yang bisa dibuktikan. MAIN menetapkan
+   cakupan; delegasi memindahkan pekerjaan mandiri, bukan memperluasnya diam-diam.
 2. Setiap subagent menerima **lingkup berkas** dan **batas tindakan**. Builder tidak
    pernah push; verifier tidak pernah mengubah kode.
 3. Koordinasi lewat hasil, bukan lewat percakapan panjang: subagent mengembalikan
@@ -33,10 +64,11 @@ langsung menurunkan `builder`.
 
 ## Protokol satu putaran
 
-1. **Pilih**: otak membaca antrean (`docs/plans/ui-spec-loop.md`, sisa pekerjaan di
-   handoff) dan memilih satu butir.
-2. **Bagi**: bila butir punya bagian yang mandiri (riset penyebab, pemangkasan
-   mekanis, audit), otak menjalankan 1–3 subagent paralel dengan lingkup terpisah.
+1. **Pilih**: MAIN membaca issue terbuka, `docs/plans/ui-spec-loop.md`, dan sisa
+   handoff; pilih batch prioritas dengan hasil dan batas verifikasi yang jelas.
+2. **Bagi**: baca register dan pakai ulang anak yang bisa diakses. Default empat
+   subagent paralel dengan scope penulis terpisah; maksimum enam bila mesin ringan.
+   Bila pekerjaan tidak mandiri, MAIN mengerjakannya tanpa delegasi semu.
 3. **Kerjakan**: otak mengerjakan bagian yang butuh keputusan (desain, kontrak tes)
    sambil subagent berjalan. Tidak menunggu di foreground.
 4. **Gabung**: hasil subagent diperiksa otak; yang lolos di-commit oleh otak dengan
@@ -277,5 +309,7 @@ Audit empat agen menemukan `check:fast` menelan galat Git dan mengubahnya menjad
 Reuse hanya sah untuk anak parent yang dapat diakses. Setelah tool menolak sesi lama dengan `belongs to another parent session`, catat batas itu dan daftarkan sesi penggantinya di `subagents.md`; jangan mengulang panggilan gagal atau mengarang garis koneksi panel. Batch ini memisahkan penulis Google, kontrak Kidung, harness Git, dan verifier read-only; dokumen dimiliki otak. Builder tidak commit/push dan tes browser/build tetap hosted. Bukti full dispatch tidak mencakup unit bila job unit skipped: sebut push run dan dispatch run secara terpisah.
 
 Fallback core tier tidak boleh menghilangkan kontrak yang sengaja diubah: union `CORE_SPECS` dengan spec eksplisit yang valid, dedupe, lalu saring berkas yang sudah dihapus (#102). Tes mixed source+spec harus membuktikan kontrak Kidung/welcome benar-benar ada dalam argumen, tanpa memperluas ke seluruh sweep.
+
+Bukti batch 402 pada working tree HEAD `3f721824`: `node --test scripts/test-e2e-selective-core.test.mjs` 14/14 dan `node --test scripts/test-e2e-selective-ui.test.mjs` 6/6 lulus; tesnya membuktikan welcome/Kidung ada di argumen, smoke tidak dobel, fallback tanpa spec tetap tepat tujuh spec, dan `--retries=0` tidak hilang. Hosted, job selektif `133144141015` menjalankan 101/101 tes pada delapan spec termasuk Kidung dan Google. Atribusi tetap dipisah: job unit ada di push run `43821078698` (`133144140958`, 1.135 tes), bukan di full dispatch `43821357448` yang melewati unit.
 
 Orchestrator sesi ini tetap `chatgpt/gpt-6.1-sol`; semua anak/cucu memakai `commandcode/deepseek/deepseek-v4.1-flash` atas pilihan pengguna. Buktikan model dari request runtime, bukan dari label brief. Policy bawaan hanya tersampling pada sesi baru; plugin Host lokal `@local/gys-session-policy` memakai `agent/request` untuk descendant root yang ditentukan dan tidak menyentuh main/root lain. Verifier sudah menjalankan request pada route CC yang diminta.

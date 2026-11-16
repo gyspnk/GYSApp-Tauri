@@ -6,6 +6,19 @@ Kalau tujuan atau konteksnya sama, sesi yang sudah ada dilanjutkan dengan
 pengukuran yang tidak perlu dibangun ulang. Membuat sesi baru hanya untuk pekerjaan
 yang benar-benar berbeda permukaan.
 
+## MAIN default untuk pekerjaan lanjutan
+
+Keputusan pemilik, 16 November 2026: root
+`session-c96f4351-b076-4c33-9a7c-9f28f29bc799` tetap MAIN orchestrator tunggal
+untuk goal ini, dengan `chatgpt/gpt-6.1-sol`. Semua explorer/executor/builder,
+harness, dan verifier turunannya memakai
+`commandcode/deepseek/deepseek-v4.1-flash` — `DeepSeek V4.1 Flash (latest) (CC)`.
+Chat _Nonstop Development Part 2_ bukan orchestrator aplikasi paralel.
+
+Mulai delegasi dari aturan default di `agent-brain.md`, lalu register ini. MAIN
+memegang keputusan dan commit/push; builder tidak commit/push, verifier read-only.
+Sesi baru atau reuse tidak boleh diam-diam memindahkan MAIN atau mengganti route.
+
 ## Aturan
 
 1. **Cek register dulu.** Sebelum memanggil `subagent`, cari baris dengan tujuan yang
