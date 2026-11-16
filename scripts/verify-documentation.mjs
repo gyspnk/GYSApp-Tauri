@@ -38,6 +38,65 @@ function utcDay(value) {
     : Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
 
+const HANDOFF = "docs/plans/HANDOFF-2026-11-10.md";
+const HANDOFF_REFS = [
+  "pnpm check:fast",
+  "docs/plans/ui-spec-loop.md",
+  ".github/release-cadence.json",
+  "docs/plans/agent-brain.md",
+  "docs/plans/subagents.md",
+];
+
+// Bounded guard for exact legacy fragments. Required refs are structural,
+// not a semantic guarantee; other bad phrasing can still pass.
+const OBSOLETE_HANDOFF = [
+  [/Semua proses[\s\S]{0,240}?WAJIB di GitHub Actions/i, "all-hosted mandate"],
+  [/Semua pemeriksaan\s+WAJIB di GitHub Actions/i, "all-hosted mandate"],
+  [
+    /Desain baru[\s\S]{0,180}?lewat run OpenDesign|atau lewat run OpenDesign/i,
+    "OpenDesign invitation",
+  ],
+];
+
+function verifyHandoffPrompt(text, failures) {
+  const heading = /^##\s+9\.\s+Prompt handoff[^\n]*$/m.exec(text);
+  if (!heading) {
+    failures.push(`${HANDOFF}: section 9 prompt handoff is missing`);
+    return;
+  }
+  const rest = text.slice(heading.index + heading[0].length);
+  const next = rest.search(/^##\s/m);
+  const section = next === -1 ? rest : rest.slice(0, next);
+  const fence = /^```text[ \t]*\r?\n([\s\S]*?)^```[ \t]*$/m.exec(section);
+  if (!fence) {
+    failures.push(`${HANDOFF}: section 9 is missing a fenced text prompt`);
+    return;
+  }
+  const prompt = fence[1];
+  if (!prompt.trim()) {
+    failures.push(`${HANDOFF}: active prompt is empty`);
+    return;
+  }
+  for (const reference of HANDOFF_REFS) {
+    if (!prompt.includes(reference)) {
+      failures.push(`${HANDOFF}: active prompt is missing "${reference}"`);
+    }
+  }
+  if (/opendesign-ui-loop/i.test(prompt)) {
+    failures.push(
+      `${HANDOFF}: active prompt still references obsolete opendesign-ui-loop`,
+    );
+  }
+  for (const [pattern, label] of OBSOLETE_HANDOFF) {
+    if (pattern.test(prompt)) {
+      failures.push(`${HANDOFF}: active prompt contains obsolete ${label}`);
+    }
+  }
+  if (/\bputaran\s+(?:ke[\s-]*)?\d+\b|\bturn\s*(?:=\s*)?\d+\b/i.test(prompt)) {
+    failures.push(`${HANDOFF}: active prompt contains a fixed release turn`);
+  }
+}
+
 function verifyCadence(map, today, failures) {
   const reviewed = map.match(
     /^- Last maintenance skill review: (\d{4}-\d{2}-\d{2})$/m,
@@ -102,6 +161,13 @@ export async function verifyDocumentation(
       if (!text.includes(fragment))
         failures.push(`${relative}: missing "${fragment}"`);
     }
+  }
+
+  try {
+    const handoff = await readFile(resolve(root, HANDOFF), "utf8");
+    verifyHandoffPrompt(handoff, failures);
+  } catch {
+    failures.push(`${HANDOFF}: file is missing`);
   }
 
   try {

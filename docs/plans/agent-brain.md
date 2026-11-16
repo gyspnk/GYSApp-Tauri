@@ -61,6 +61,15 @@ tidak boleh ikut commit batch ini.
   Commit/CI dokumen aplikasi tidak membuktikan kode plugin diuji hosted. #104
   tetap terbuka untuk tema dan estetika pada Client yang benar-benar terhubung.
 
+## Handoff aktif versus arsip (#105)
+
+Prompt copy/paste §9 handoff harus menunjuk kebijakan dan cadence yang berlaku,
+bukan menyalin status commit, angka rilis, atau hasil CI historis. Checker memeriksa
+blok prompt aktif; arsip di luar blok bukan instruksi baru dan tidak dilarang.
+Putaran 4 memakai ulang Harness sebagai penulis checker/tes, MAIN sebagai penulis
+dokumen, dan verifier read-only untuk audit publikasi plugin serta review guard.
+Dua scope mandiri cukup untuk batch ini; tidak ada dua penulis pada berkas sama.
+
 ## Prinsip
 
 1. Satu putaran = satu batch perubahan yang bisa dibuktikan. MAIN menetapkan

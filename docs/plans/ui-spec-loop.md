@@ -982,6 +982,21 @@ mempertahankan gate atau maintenance berizin dengan rollback.
 
 Galat pasangan tool saat pemulihan sesi diatribusikan jujur: pasangan asli di transcript utuh, penyebab di jalur wire belum terbukti, dan HTTP 413 pada request CommandCode adalah masalah terpisah; pemulihan masih terbuka. Audit HEAD sebelumnya memakai full run 43800676388 (browser/perf) dan push run 43800675190 (unit). Contrast putaran 143 sudah diimplementasikan pada HEAD 79cf2315 dan tercakup lima kontrak di `prefers-contrast.spec.ts`.
 
+## Goal putaran 4 — guard handoff aktif (#105)
+
+Tidak mengubah UI, tema, atau baseline. Pemeriksaan sumber menemukan prompt aktif
+§9 handoff menghidupkan kembali kebijakan arsip yang dibatalkan: larangan check
+lokal cepat, run OpenDesign baru, serta angka rilis statis. MAIN mengganti hanya
+prompt aktif dengan referensi berjalan. Harness menambahkan guard fokus pada
+checker dokumentasi yang sudah ada; arsip luar prompt tetap sah. Builder menjalankan 10/10 tes fokus, termasuk fragmen all-hosted/run OpenDesign,
+angka putaran, prompt hilang/kosong, serta arsip yang tetap dibolehkan. Guard ini
+struktural/fragmen terbatas, bukan pemeriksaan semantik seluruh instruksi.
+Review independen tidak menemukan blocker tersisa. MAIN check:fast lulus dengan
+10 tes skrip, format, dokumen, dan diff-check; sampel format 29.317 ms, unit
+4.216 ms, dokumen 101 ms, bukan klaim target historis 2–3 detik. Bukti hosted
+batch ini masih menunggu. Status UI #104 dan pemulihan #103
+tidak berubah menjadi selesai karena pekerjaan dokumen ini.
+
 ## Goal putaran 3 — fondasi tata letak GB Tools / Agent Brain (#104)
 
 Goal runtime revisi 3 sudah memuat MAIN default dan estetika GB Tools/Brain. Audit
