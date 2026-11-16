@@ -997,7 +997,13 @@ resolusi gagal yang tetap menjalankan unit terkait. Pesan resolver memuat alasan
 asli tanpa stack. Sepuluh kontrak import CLI juga lulus. Windows belum diuji.
 MAIN check:fast lulus: format 1.469 ms, 13 tes skrip 1.932 ms, dokumen 129 ms,
 serta diff-check bersih. Ini sampel integrasi dengan berkas batch berjalan, bukan
-pasangan A/B untuk klaim 38%. Bukti hosted masih menunggu. Retry Client Slots pada
+pasangan A/B untuk klaim 38%. Source `b961dc869d` lulus CI 43871987159: unit
+133315360641 mencakup 225 tes skrip termasuk fixture baru, selective
+133315360877 menjalankan 41/41 smoke (58,6 detik); verify/gate dan Pages
+43871983789 sukses. Full shards/native/perf dilewati; tanpa artifact visual
+selective atau bukti UI Brain. Fixture memakai argumen path bergaya Git yang
+sama di setiap OS, tetapi Windows belum dijalankan. #106 tetap terbuka untuk
+lonjakan 19–29 detik yang belum direproduksi. Retry Client Slots pada
 putaran ini tetap gagal karena tidak ada halaman Harness terhubung; tidak ada
 klaim UI #104 sudah terlihat.
 

@@ -134,7 +134,7 @@ test("CLI reports unresolved Prettier and still runs the related unit file", asy
   delete env.NODE_TEST_CONTEXT;
   const result = spawnSync(
     process.execPath,
-    [join(cwd, "fast-check.mjs"), join("scripts", "probe.mjs")],
+    [join(cwd, "fast-check.mjs"), "scripts/probe.mjs"],
     { cwd, env, encoding: "utf8" },
   );
   assert.ifError(result.error);

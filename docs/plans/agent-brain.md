@@ -355,6 +355,9 @@ Bukti batch 402 pada working tree HEAD `3f721824`: `node --test scripts/test-e2e
 - Dependency CLI terpasang boleh dipanggil lewat Node saat ini dan export resmi,
   tanpa path store tetap atau daemon baru. Tetap uji config/ignore, PATH tanpa
   package-manager launcher, exit gagal, dan mode check yang tidak menulis berkas.
+  Fixture argumen memakai path bergaya Git (`scripts/probe.mjs`), bukan
+  `path.join` yang mengubah separator di Windows; path filesystem tetap memakai
+  helper platform. Ini bukan bukti Windows sudah dijalankan.
 - Dua peran reuse cukup untuk scope ini dengan memori tersedia sekitar 1.792 MiB;
   tidak membuat empat tugas semu. Builder hanya memegang fast-check dan tesnya,
   MAIN dokumen, verifier read-only. Hosted tetap gerbang regresi; angka device
