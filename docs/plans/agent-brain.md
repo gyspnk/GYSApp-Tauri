@@ -45,6 +45,22 @@ visual final ditunda. Jangan mengarang token atau menilai UI dari tes headless.
 Perubahan Money Worker yang sudah ada di working tree plugin harus tetap utuh dan
 tidak boleh ikut commit batch ini.
 
+## Pelajaran layout dan verifikasi panel (#104)
+
+- Uji batas kartu/metadata pada maksimum node; jumlah render yang benar tidak
+  mencegah tabrakan. Fixture 4 akar + 14 anak awalnya memiliki 39 pasangan overlap
+  dan dua kartu keluar peta; grid tiga kolom menurunkannya ke nol tanpa mengecilkan
+  teks. Tinggi intrinsik 878 unit perlu viewport gulir, bukan pemampatan vertikal.
+- Pada viewport gulir, wheel biasa tidak boleh dicegat sebagai zoom. Gunakan
+  Ctrl/Meta+wheel; tombol panah memindah fokus/scroll ke node, bukan hanya selection.
+  Label reset tidak boleh menyatakan Fit bila hanya kembali ke skala 1:1.
+- Pisahkan tes model/render (25), stub registrasi (dua tambahan, total 27), pemeriksaan
+  source/patch, dan browser nyata. Kelulusan headless tidak membuktikan UI termuat,
+  kontras, reduced-motion, perilaku trackpad, atau fokus SVG saat zoom/pan.
+- Publish source plugin hanya setelah WIP dan stack repo terkait terisolasi.
+  Commit/CI dokumen aplikasi tidak membuktikan kode plugin diuji hosted. #104
+  tetap terbuka untuk tema dan estetika pada Client yang benar-benar terhubung.
+
 ## Prinsip
 
 1. Satu putaran = satu batch perubahan yang bisa dibuktikan. MAIN menetapkan
