@@ -1,7 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { devNull, tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -58,6 +65,84 @@ test("CLI fails closed when Git discovery fails", async (t) => {
     assert.equal(result.stdout, "Nothing changed against origin/main.\n");
     assert.equal(result.stderr, "");
   });
+});
+
+test("CLI formats with the exported Prettier bin without pnpm", async (t) => {
+  const cwd = mkdtempSync(join(tmpdir(), "gys-fast-check-format-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const data = join(cwd, "data.json");
+  const ignored = join(cwd, "ignored.json");
+  writeFileSync(join(cwd, ".prettierrc.json"), '{"printWidth":20}\n');
+  writeFileSync(data, '{\n  "items": [\n    "alpha",\n    "beta"\n  ]\n}\n');
+  writeFileSync(ignored, '{"ignored":true}\n');
+  writeFileSync(join(cwd, ".prettierignore"), "ignored.json\n");
+
+  const cli = fileURLToPath(new URL("./fast-check.mjs", import.meta.url));
+  const run = (file = "data.json") =>
+    spawnSync(process.execPath, [cli, file], {
+      cwd,
+      env: { ...process.env, PATH: "" },
+      encoding: "utf8",
+    });
+
+  const cleanBefore = readFileSync(data, "utf8");
+  const clean = run();
+  assert.ifError(clean.error);
+  assert.equal(clean.status, 0, clean.stderr);
+  assert.match(clean.stdout, /All matched files use Prettier code style/);
+  assert.equal(readFileSync(data, "utf8"), cleanBefore);
+
+  writeFileSync(data, '{"items":["alpha","beta"]}\n');
+  const dirtyBefore = readFileSync(data, "utf8");
+  const dirty = run();
+  assert.ifError(dirty.error);
+  assert.equal(dirty.status, 1);
+  assert.match(dirty.stderr, /Code style issues/);
+  assert.equal(readFileSync(data, "utf8"), dirtyBefore);
+
+  const ignoredBefore = readFileSync(ignored, "utf8");
+  const skipped = run("ignored.json");
+  assert.ifError(skipped.error);
+  assert.equal(skipped.status, 0, skipped.stderr);
+  assert.match(skipped.stdout, /All matched files use Prettier code style/);
+  assert.equal(readFileSync(ignored, "utf8"), ignoredBefore);
+});
+
+test("CLI reports unresolved Prettier and still runs the related unit file", async (t) => {
+  const cwd = mkdtempSync(join(tmpdir(), "gys-fast-check-missing-prettier-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  copyFileSync(
+    fileURLToPath(new URL("./fast-check.mjs", import.meta.url)),
+    join(cwd, "fast-check.mjs"),
+  );
+  mkdirSync(join(cwd, "node_modules", "prettier"), { recursive: true });
+  writeFileSync(
+    join(cwd, "node_modules", "prettier", "package.json"),
+    '{"name":"prettier","version":"0.0.0","exports":{}}\n',
+  );
+  mkdirSync(join(cwd, "scripts"), { recursive: true });
+  writeFileSync(
+    join(cwd, "scripts", "probe.mjs"),
+    "export const probe = true;\n",
+  );
+  writeFileSync(
+    join(cwd, "scripts", "probe.test.mjs"),
+    'import { test } from "node:test";\ntest("probe marker", () => console.log("PROBE_MARKER_RAN"));\n',
+  );
+
+  const env = { ...process.env };
+  delete env.NODE_TEST_CONTEXT;
+  const result = spawnSync(
+    process.execPath,
+    [join(cwd, "fast-check.mjs"), join("scripts", "probe.mjs")],
+    { cwd, env, encoding: "utf8" },
+  );
+  assert.ifError(result.error);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Cannot resolve the Prettier CLI/);
+  assert.match(result.stderr, /Package subpath/);
+  assert.match(result.stdout, /PROBE_MARKER_RAN/);
+  assert.match(result.stdout, /Local check failed\./);
 });
 
 test("picks formatting, typecheck and the covering unit file", () => {

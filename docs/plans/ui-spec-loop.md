@@ -982,6 +982,25 @@ mempertahankan gate atau maintenance berizin dengan rollback.
 
 Galat pasangan tool saat pemulihan sesi diatribusikan jujur: pasangan asli di transcript utuh, penyebab di jalur wire belum terbukti, dan HTTP 413 pada request CommandCode adalah masalah terpisah; pemulihan masih terbuka. Audit HEAD sebelumnya memakai full run 43800676388 (browser/perf) dan push run 43800675190 (unit). Contrast putaran 143 sudah diimplementasikan pada HEAD 79cf2315 dan tercakup lima kontrak di `prefers-contrast.spec.ts`.
 
+## Goal putaran 5 — biaya launcher jalur cepat (#106)
+
+Tidak mengubah UI atau baseline. Audit tiga pasangan child-process pada lima
+berkas yang sama: median `pnpm exec prettier --check` 1.500,0 ms versus CLI
+Prettier melalui Node 932,9 ms; hemat 567 ms (38%) pada mesin ini. Sampel 29 detik
+putaran 4 tidak terulang, jadi akar lonjakan itu belum dinyatakan selesai.
+Perubahan terbatas pada pemanggilan formatter di `scripts/fast-check.mjs`:
+public export dependency terpasang, Node saat ini, argumen/cwd/cakupan sama,
+resolusi gagal tetap exit nonzero dan pemeriksaan lain tetap berjalan.
+Builder dan verifier independen menjalankan 13/13 tes fokus: fixture tanpa pnpm
+di PATH, config lokal, ignore, exit sukses/gagal, byte berkas tidak diubah, serta
+resolusi gagal yang tetap menjalankan unit terkait. Pesan resolver memuat alasan
+asli tanpa stack. Sepuluh kontrak import CLI juga lulus. Windows belum diuji.
+MAIN check:fast lulus: format 1.469 ms, 13 tes skrip 1.932 ms, dokumen 129 ms,
+serta diff-check bersih. Ini sampel integrasi dengan berkas batch berjalan, bukan
+pasangan A/B untuk klaim 38%. Bukti hosted masih menunggu. Retry Client Slots pada
+putaran ini tetap gagal karena tidak ada halaman Harness terhubung; tidak ada
+klaim UI #104 sudah terlihat.
+
 ## Goal putaran 4 — guard handoff aktif (#105)
 
 Tidak mengubah UI, tema, atau baseline. Pemeriksaan sumber menemukan prompt aktif

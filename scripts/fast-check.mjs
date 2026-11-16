@@ -15,7 +15,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const FORMATTED = /\.(?:[cm]?[jt]sx?|json|css|scss|html|md|ya?ml)$/;
 const SOURCE = /\.(?:[cm]?[jt]sx?)$/;
@@ -139,8 +139,19 @@ export function main(argv = process.argv.slice(2)) {
     process.stdout.write("Nothing changed against origin/main.\n");
     return;
   }
-  if (formatted.length)
-    run("format", "pnpm", ["exec", "prettier", "--check", ...formatted]);
+  if (formatted.length) {
+    try {
+      const prettier = fileURLToPath(
+        import.meta.resolve("prettier/bin/prettier.cjs"),
+      );
+      run("format", process.execPath, [prettier, "--check", ...formatted]);
+    } catch (error) {
+      process.stderr.write(
+        `Cannot resolve the Prettier CLI: ${error.message}\n`,
+      );
+      process.exitCode = 1;
+    }
+  }
   for (const workspace of typechecks)
     run(`typecheck (${workspace})`, "pnpm", [
       "--filter",

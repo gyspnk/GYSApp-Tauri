@@ -345,6 +345,21 @@ Fallback core tier tidak boleh menghilangkan kontrak yang sengaja diubah: union 
 
 Bukti batch 402 pada working tree HEAD `3f721824`: `node --test scripts/test-e2e-selective-core.test.mjs` 14/14 dan `node --test scripts/test-e2e-selective-ui.test.mjs` 6/6 lulus; tesnya membuktikan welcome/Kidung ada di argumen, smoke tidak dobel, fallback tanpa spec tetap tepat tujuh spec, dan `--retries=0` tidak hilang. Hosted, job selektif `133144141015` menjalankan 101/101 tes pada delapan spec termasuk Kidung dan Google. Atribusi tetap dipisah: job unit ada di push run `43821078698` (`133144140958`, 1.135 tes), bukan di full dispatch `43821357448` yang melewati unit.
 
+## Ukur biaya harness sebelum mengubahnya (#106)
+
+- Satu sesi mengukur pasangan sebelum/sesudah, bukan dua benchmark bersamaan.
+  Verifier mengaudit semantik dan regresi secara terpisah; MAIN memilih perubahan.
+- Scope berkas/cwd/env harus sama dan minimum tiga pasangan; pisahkan launcher
+  (`--version`) dari formatting. Sampel lokal putaran 5 memberi median 1.500,0 →
+  932,9 ms untuk lima berkas. Ini hemat 567 ms, bukan bukti akar lonjakan 29 detik.
+- Dependency CLI terpasang boleh dipanggil lewat Node saat ini dan export resmi,
+  tanpa path store tetap atau daemon baru. Tetap uji config/ignore, PATH tanpa
+  package-manager launcher, exit gagal, dan mode check yang tidak menulis berkas.
+- Dua peran reuse cukup untuk scope ini dengan memori tersedia sekitar 1.792 MiB;
+  tidak membuat empat tugas semu. Builder hanya memegang fast-check dan tesnya,
+  MAIN dokumen, verifier read-only. Hosted tetap gerbang regresi; angka device
+  tidak diganti oleh timing runner yang berbeda.
+
 ## Pemulihan konteks: preflight tidak sama dengan aktivasi (#103)
 
 Pada putaran goal 2, dua sesi reuse memeriksa fork pemulihan dan jalur aktivasi;
