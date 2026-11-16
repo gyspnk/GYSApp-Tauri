@@ -39,9 +39,11 @@ riwayat, bukan status pending yang masih berlaku. Backlog UI dilacak di #104.
 
 Untuk #104, mulai dari cacat yang dapat dibuktikan: kartu node 156 unit bertabrakan
 ketika 14 anak ditempatkan dengan sela pusat 44 unit. Builder tunggal memegang
-client plugin dan tes model; MAIN menulis spec/dokumen; verifier read-only. Client
-Slots/Theme belum punya halaman terhubung, sehingga perubahan warna dan klaim
-visual final ditunda. Jangan mengarang token atau menilai UI dari tes headless.
+client plugin dan tes model; MAIN menulis spec/dokumen; verifier read-only. Pada
+putaran 3–6 Client Slots/Theme belum terhubung. Inspeksi putaran 7 berhasil:
+`shell.overlay` memuat `kiss-bridge.dock` aktif/order 300, dan Theme menyediakan
+14 token resmi `--dsw-*`. Ini membuka audit tema, bukan bukti piksel atau revision
+layout terbaru termuat. Jangan mengarang token atau menilai UI dari tes headless.
 Perubahan Money Worker yang sudah ada di working tree plugin harus tetap utuh dan
 tidak boleh ikut commit batch ini.
 
@@ -60,6 +62,15 @@ tidak boleh ikut commit batch ini.
 - Publish source plugin hanya setelah WIP dan stack repo terkait terisolasi.
   Commit/CI dokumen aplikasi tidak membuktikan kode plugin diuji hosted. #104
   tetap terbuka untuk tema dan estetika pada Client yang benar-benar terhubung.
+
+## Alert yang terbaca, bukan sekadar ada (#108)
+
+Audit reuse Google menemukan alert Welcome/menu akun hanya `sr-only`, sedangkan
+kontrak lama memeriksa alert More yang memakai callback berbeda. Periksa semua
+call site dan ukur tinggi paragraf: `toBeVisible()` dapat lulus pada elemen 1 px
+yang sengaja terklip. Builder tunggal mengubah shared button dan kontrak browser;
+verifier terpisah memeriksa posisi di luar bingkai provider, duplikasi alert,
+ukuran tombol dan keterbacaan. MAIN memegang spec/dokumen dan bukti hosted.
 
 ## Handoff aktif versus arsip (#105)
 
@@ -95,7 +106,12 @@ Request round 6 tetap membuktikan MAIN `chatgpt/gpt-6.1-sol` dan kedua sesi reus
 2. Setiap subagent menerima **lingkup berkas** dan **batas tindakan**. Builder tidak
    pernah push; verifier tidak pernah mengubah kode.
 3. Koordinasi lewat hasil, bukan lewat percakapan panjang: subagent mengembalikan
-   ringkasan ≤ 25 baris dengan bukti (perintah + keluaran kunci).
+   ringkasan ≤ 25 baris dengan bukti (perintah + keluaran kunci). Audit terarah
+   menetapkan berkas/pertanyaan dan anggaran awal ≤10 panggilan baca; laporkan
+   hasil parsial sebelum memperluas pencarian. Perbedaan dependency efek bukan
+   otomatis bug: baca intent, pisahkan cabang sumber yang bisa dicapai dari dampak
+   pengguna yang sudah direproduksi. Audit Kidung #109 dihentikan pada gap kontrak,
+   bukan diubah menjadi lifecycle fix spekulatif.
 4. Yang gagal dihapus, bukan dipertahankan. Peran yang tiga putaran berturut-turut
    tidak menghasilkan apa pun dicabut dari alur.
 

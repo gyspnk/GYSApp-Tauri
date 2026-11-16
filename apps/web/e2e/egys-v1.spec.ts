@@ -1093,6 +1093,100 @@ for (const [surface, locale, theme, message] of [
   });
 }
 
+for (const [surface, locale, theme, failure] of [
+  [
+    "welcome",
+    "id",
+    "light",
+    "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
+  ],
+  [
+    "menu",
+    "en",
+    "dark",
+    "The Google button could not be loaded. Check your connection and try again.",
+  ],
+  ["welcome", "zh", "sepia", "无法加载 Google 按钮。请检查网络后重试。"],
+  [
+    "menu",
+    "id",
+    "amoled",
+    "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
+  ],
+] as const) {
+  test(`a failed Google SDK is readable on ${surface} (${locale}, ${theme})`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(
+      ({ locale, theme, onboarded }) => {
+        localStorage.setItem(
+          "gys-shell-settings-v1",
+          JSON.stringify({ version: 1, locale, theme, onboarded }),
+        );
+      },
+      { locale, theme, onboarded: surface !== "welcome" },
+    );
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.route("**/api/v1/account/profile**", (route) =>
+      route.fulfill({ json: { profile: null } }),
+    );
+    await page.route("https://accounts.google.com/gsi/client*", (route) =>
+      route.abort(),
+    );
+    await page.goto("/GYSApp-Tauri/");
+    if (surface === "menu") await page.locator(".account-button").click();
+    const container = page.locator(
+      surface === "welcome" ? ".welcome-login" : ".account-menu-login",
+    );
+    const retry = container.locator(".egys-google-fallback");
+    const alert = container.getByRole("alert");
+    await expect(retry).toBeVisible();
+    await expect(alert).toBeVisible();
+    await expect(alert).toHaveText(failure);
+    // A clipped `.sr-only` alert is 1 px tall; a readable sentence is not.
+    const sentence = await alert.boundingBox();
+    expect(sentence!.height).toBeGreaterThanOrEqual(12);
+    expect(
+      await alert.evaluate((node) => node.closest(".egys-google-control")),
+    ).toBeNull();
+    const target = await retry.boundingBox();
+    expect(target!.height).toBeGreaterThanOrEqual(44);
+    expect(sentence!.y).toBeGreaterThanOrEqual(target!.y + target!.height);
+    // The waiting sentence must not contradict the failure.
+    await expect(container.getByRole("status")).toHaveCount(0);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(alert).toBeInViewport();
+    await page.screenshot({
+      path: `test-results/ui-preview/google-failure/${surface}-${locale}-${theme}-390x844.png`,
+    });
+  });
+}
+
+test("the account card keeps one visible Google failure sentence", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.route("**/api/v1/account/profile**", (route) =>
+    route.fulfill({ json: { profile: null } }),
+  );
+  await page.route("https://accounts.google.com/gsi/client*", (route) =>
+    route.abort(),
+  );
+  await page.goto("/GYSApp-Tauri/lainnya?section=account");
+  const card = page.locator('[data-setting="account"]');
+  const alert = card.getByRole("alert");
+  await expect(alert).toHaveCount(1);
+  await expect(alert).toHaveText(
+    "Tombol Google belum dapat dimuat. Periksa koneksi lalu coba lagi.",
+  );
+  expect(
+    await alert.evaluate((node) => node.closest(".egys-google-control")),
+  ).toBeNull();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
 test("Google retries a failed SDK within the same provider row", async ({
   page,
 }) => {

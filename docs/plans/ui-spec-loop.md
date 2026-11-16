@@ -1082,3 +1082,32 @@ Implementasi sumber sudah dibuat pada plugin workspace, belum dipublikasikan ata
 Review independen menemukan wheel biasa terperangkap sebagai zoom, label Fit yang tidak benar, dan pilihan keyboard di luar viewport. Follow-up sumber membiarkan wheel biasa menggulir, memakai Ctrl/Meta+wheel untuk zoom, mengganti label en/id menjadi Reset/Atur ulang, dan memindahkan fokus serta menggulir ke node saat tombol panah dipakai. Tidak menambahkan efek/timer atau token warna. Tes builder model/render: 25/25 lulus. Verifier akhir menjalankan model/render/bundle-load: 27/27 lulus; syntax, whitespace, dan reverse-apply patch lulus; tidak ada blocker tersisa dalam review statis/headless. Tes bundle-load adalah stub registrasi, bukan halaman nyata. Wheel/trackpad, fokus SVG di bawah zoom/pan, ukuran aktual, wrapping, live-poll saat navigasi, kontras, dan reduced-motion belum diuji di browser.
 
 Patch terisolasi `/tmp/gb-brain-layout.patch` memiliki SHA-256 `990a32cfcaa1c7f2b5995124a1c98842e831d8e46fbfeede766bef96f5fd8d9d`. Ia mengecualikan WIP Money Worker. Source plugin masih berada di working tree `master` yang sudah 11 commit di depan remote; batch ini tidak mem-push stack tersebut dan tidak mengklaim kode plugin mendapat bukti CI aplikasi. Commit spec `9794a914` memperoleh CI dokumen `43862882791` (verify `133283912752`, gate `133284047171`; unit/browser/build/perf skipped) dan Pages `43862882630`. Redesign warna dan keseluruhan GB Tools tetap backlog #104; kontrak browser tetap #12.
+
+## Goal putaran 7 — kegagalan Google terbaca tanpa hover (#108)
+
+Audit lanjutan membuktikan alert shared button hanya `sr-only` saat `onStatus`
+tidak diberikan. Welcome dan menu akun memakai jalur tersebut; More sudah punya
+alert sendiri. Retry tetap bekerja, tetapi alasan kegagalan tidak terbaca di layar
+sentuh. Kontrak sebelumnya hanya menguji alert More dan ukuran tombol Welcome.
+
+Spec enam butir sebelum implementasi:
+
+1. Saat SDK gagal/tidak menggambar, Welcome dan menu akun menampilkan kalimat kegagalan id/en/zh yang sudah ada, tanpa mengandalkan tooltip atau pembaca layar.
+2. Alert berada di luar bingkai provider yang terklip, memakai kelas status/error yang sudah ada; tidak menambah warna literal, dependensi, timer, dialog atau `h1`.
+3. Tombol fallback tetap dapat ditekan untuk retry dan berukuran minimal 44 px; skip Welcome tetap tersedia.
+4. More yang menyediakan `onStatus` tetap mempunyai satu alert, bukan dua salinan kalimat yang sama.
+5. Kontrak browser membuktikan paragraf benar-benar berukuran terbaca (bukan hanya `.toBeVisible()` pada elemen 1 px), tidak berada dalam bingkai provider, dan tidak tumpang tindih dengan tombol. Sampel empat tema dan tiga bahasa mengikuti kontrak yang ada.
+6. Pertahankan feedback kontrol Google yang sudah terlukis, clear credential, reduced-motion dan alur retry. Assertion mock SDK bukan bukti OAuth provider live.
+
+Implementasi dua berkas selesai: alert sibling di luar bingkai, tanpa CSS baru,
+serta guard agar waiting tidak tampil bersama error. Lima kontrak baru mencakup
+empat kombinasi Welcome/menu akun yang mencakup empat tema dan tiga bahasa
+(bukan seluruh produk kombinasi), tinggi paragraf ≥12 px, tombol ≥44 px,
+posisi di bawah retry, viewport 390×844, dan satu alert pada More. Empat screenshot
+akan ditulis ke artifact `ui-preview` saat browser hosted berjalan. Builder menjalankan 11/11 tes
+unit fokus dan typecheck; koleksi Playwright membaca 36 tes, bukan mengeksekusi
+browser. MAIN `check:fast` lulus (format 1.387 ms, typecheck 1.549 ms, dokumen
+147 ms). Review independen tidak menemukan blocker; markup lama memang gagal
+pada assertion tinggi dan posisi di luar bingkai. Bukti browser/artifact hosted
+masih menunggu; tidak ada klaim OAuth live atau preview dist sudah memuat
+perubahan source ini.

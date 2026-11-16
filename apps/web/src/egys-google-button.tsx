@@ -114,15 +114,16 @@ export function EgysGoogleButton({
             <span>Google</span>
           </button>
         )}
-        {status === "error" && !onStatus && (
-          // The account card renders the same sentence itself, visibly; a second
-          // alert there would only duplicate it.
-          <span className="sr-only" role="alert">
-            {translate(locale, "more.googleButtonFailed")}
-          </span>
-        )}
       </div>
-      {presses > 0 && (
+      {status === "error" && !onStatus && (
+        // The account card renders the same sentence itself, visibly; a second
+        // alert there would only duplicate it. Everywhere else the failure must
+        // be readable: a title tooltip is invisible to a touch reader.
+        <p className="egys-google-press-status egys-google-error" role="alert">
+          {translate(locale, "more.googleButtonFailed")}
+        </p>
+      )}
+      {presses > 0 && status !== "error" && (
         <p key={presses} role="status" className="egys-google-press-status">
           {translate(locale, "more.googleWaiting")}
         </p>
