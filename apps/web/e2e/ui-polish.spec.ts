@@ -395,3 +395,138 @@ test("home literature covers stand at 2:3 with the title underneath", async ({
     .boundingBox())!;
   expect(second.x).toBeLessThan(390);
 });
+
+test("expressive motion animates Home, Kidung and Faith interactions under no-preference and stills under reduce", async ({
+  page,
+}) => {
+  await page.route(/^https:\/\//, (route) => route.abort());
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.locator(".home-portal").first()).toBeVisible();
+  const homeActive = await page.evaluate(() => {
+    const portal = document.querySelector(".home-portal")!;
+    const portalIcon = document.querySelector(".home-portal svg")!;
+    const verse = document.querySelector(".verse-panel")!;
+    return {
+      portalAnim: getComputedStyle(portal).animationName,
+      portalAnimDur: Number.parseFloat(
+        getComputedStyle(portal).animationDuration,
+      ),
+      verseAnim: getComputedStyle(verse).animationName,
+      verseShadow: getComputedStyle(verse).boxShadow,
+      portalIconTrans: Number.parseFloat(
+        getComputedStyle(portalIcon).transitionDuration,
+      ),
+    };
+  });
+  expect(homeActive.portalAnim).toBe("home-surface-in");
+  expect(homeActive.portalAnimDur).toBeGreaterThan(0);
+  expect(homeActive.verseAnim).toBe("home-surface-in");
+  expect(homeActive.verseShadow).toBe("none");
+  expect(homeActive.portalIconTrans).toBeGreaterThan(0);
+
+  await page.goto("/GYSApp-Tauri/iman");
+  await expect(
+    page.locator(".faith-row > .faith-number").first(),
+  ).toBeVisible();
+  const faithTrans = await page
+    .locator(".faith-row > .faith-number")
+    .first()
+    .evaluate((node) =>
+      Number.parseFloat(getComputedStyle(node).transitionDuration),
+    );
+  expect(faithTrans).toBeGreaterThan(0);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/GYSApp-Tauri/");
+  await expect(page.locator(".home-portal").first()).toBeVisible();
+  const homeReduced = await page.evaluate(() => {
+    const portal = document.querySelector(".home-portal")!;
+    const portalIcon = document.querySelector(".home-portal svg")!;
+    const verse = document.querySelector(".verse-panel")!;
+    return {
+      portalAnim: getComputedStyle(portal).animationName,
+      verseAnim: getComputedStyle(verse).animationName,
+      portalIconTrans: getComputedStyle(portalIcon).transitionDuration,
+    };
+  });
+  expect(homeReduced).toEqual({
+    portalAnim: "none",
+    verseAnim: "none",
+    portalIconTrans: "0s",
+  });
+
+  await page.goto("/GYSApp-Tauri/iman");
+  await expect(
+    page.locator(".faith-row > .faith-number").first(),
+  ).toBeVisible();
+  expect(
+    await page
+      .locator(".faith-row > .faith-number")
+      .first()
+      .evaluate((node) => getComputedStyle(node).transitionDuration),
+  ).toBe("0s");
+});
+
+test("comfortable density enlarges touch targets and reading line-height for older adults without overflow", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "gys-ui-preferences-v1",
+      JSON.stringify({ version: 1, density: "comfortable", font: "auto" }),
+    );
+  });
+  await page.route(/^https:\/\//, (route) => route.abort());
+
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/GYSApp-Tauri/");
+    await expect(page.locator("html")).toHaveAttribute(
+      "data-ui-density",
+      "comfortable",
+    );
+    const portalBox = (await page
+      .locator(".home-portal")
+      .first()
+      .boundingBox())!;
+    expect(portalBox.height).toBeGreaterThanOrEqual(50);
+    const navBox = (await page.locator(".nav-item").first().boundingBox())!;
+    expect(navBox.height).toBeGreaterThanOrEqual(50);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+
+    await page.goto("/GYSApp-Tauri/iman");
+    const faithBox = (await page.locator(".faith-row").first().boundingBox())!;
+    expect(faithBox.height).toBeGreaterThanOrEqual(50);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+
+    await page.goto("/GYSApp-Tauri/bible");
+    await expect(page.locator(".verse-content").first()).toBeVisible();
+    const ratio = await page
+      .locator(".verse-content")
+      .first()
+      .evaluate((node) => {
+        const style = getComputedStyle(node);
+        return (
+          Number.parseFloat(style.lineHeight) /
+          Number.parseFloat(style.fontSize)
+        );
+      });
+    expect(ratio).toBeGreaterThanOrEqual(1.7);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+  }
+});

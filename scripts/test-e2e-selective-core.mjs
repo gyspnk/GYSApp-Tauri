@@ -247,6 +247,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     if (isKidungPresentation) {
       specFiles.add("e2e/kidung-usability.spec.ts");
       specFiles.add("e2e/kidung-loading.spec.ts");
+      specFiles.add("e2e/kidung-catalogue-entrance.spec.ts");
       specFiles.add("e2e/reader-data-loading.spec.ts");
       specFiles.add("e2e/kidung-style-behavior.spec.ts");
       specFiles.add("e2e/kidung-offline.spec.ts");

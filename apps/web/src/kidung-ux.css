@@ -206,6 +206,24 @@
   pointer-events: none;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .hymn-page .pujian-nomor {
+    transition:
+      transform var(--motion-fast) var(--ease-out),
+      color var(--motion-fast) var(--ease-out);
+  }
+  .hymn-page .pujian-item:hover .pujian-nomor,
+  .hymn-page .pujian-item:focus-within .pujian-nomor {
+    transform: translateX(2px) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hymn-page .pujian-nomor {
+    transition: none !important;
+  }
+}
+
 .hymn-page .add-to-playlist-btn {
   grid-column: 2;
   grid-row: 1;

@@ -21,6 +21,7 @@ import {
   parseCatalog,
   parseHymnMetadata,
 } from "./kidung-shared.js";
+import { readStoredCollection } from "./kidung-collection-store.js";
 import { canonicalHymnId, splitHymnFallback } from "./kidung-ids.js";
 import { KidungReaderRail } from "./kidung-reader-rail.js";
 
@@ -51,6 +52,13 @@ export function preloadKidungView(path: string): Promise<unknown> {
 // collections still refresh in the background and on asset-change events.
 const catalogCache = new Map<() => Promise<HymnMetadata[]>, HymnMetadata[]>();
 
+function hasSavedBookIn(
+  items: readonly HymnMetadata[],
+  savedBook: string,
+): boolean {
+  return !savedBook || items.some((item) => item.book === savedBook);
+}
+
 function useHymnData<T extends HymnMetadata>(
   loadMusicLock: boolean,
   loadCore: () => Promise<T[]>,
@@ -61,7 +69,9 @@ function useHymnData<T extends HymnMetadata>(
       (loadCore === loadCoreHymnMetadata
         ? getCachedCoreHymnMetadata()
         : undefined)) as T[] | undefined;
-    return cached ? { status: "ready", items: cached } : { status: "loading" };
+    return cached && hasSavedBookIn(cached, readStoredCollection())
+      ? { status: "ready", items: cached }
+      : { status: "loading" };
   });
   const [musicLock, setMusicLock] = useState<UpstreamMusicLock>();
   const [reload, setReload] = useState(0);
@@ -75,7 +85,8 @@ function useHymnData<T extends HymnMetadata>(
           if (
             !controller.signal.aborted &&
             current === generation &&
-            !catalogCache.has(loadCore)
+            !catalogCache.has(loadCore) &&
+            hasSavedBookIn(core, readStoredCollection())
           )
             setCatalog({ status: "ready", items: core });
           return core;

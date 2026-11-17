@@ -6577,6 +6577,87 @@ body:has(.hymn-detail-page.is-text-viewer)
     transform: translateY(4px);
   }
 }
+@keyframes home-surface-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .home-page .home-portal,
+  .home-page .verse-panel,
+  .home-page .continue-panel,
+  .home-page .home-suara-section,
+  .home-page .home-literature-section {
+    animation: home-surface-in var(--motion-entrance)
+      var(--motion-ease-entrance) backwards;
+  }
+  .home-page .home-portal:nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .home-page .home-portal:nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .home-page .verse-panel {
+    animation-delay: 40ms;
+  }
+  .home-page .continue-panel {
+    animation-delay: 80ms;
+  }
+  .home-page .home-suara-section {
+    animation-delay: 120ms;
+  }
+  .home-page .home-literature-section {
+    animation-delay: 160ms;
+  }
+  .home-page .home-portal svg {
+    transition:
+      transform var(--motion-normal) var(--ease-out),
+      border-color var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-out);
+  }
+  .home-page .home-portal:hover svg,
+  .home-page .home-portal:focus-visible svg {
+    transform: translateY(-2px) scale(1.06);
+  }
+  .home-page .continue-item .item-icon,
+  .home-page .continue-item > svg:last-child {
+    transition: transform var(--motion-normal) var(--ease-out);
+  }
+  .home-page .continue-item:hover .item-icon,
+  .home-page .continue-item:focus-visible .item-icon {
+    transform: scale(1.05);
+  }
+  .home-page .continue-item:hover > svg:last-child,
+  .home-page .continue-item:focus-visible > svg:last-child {
+    transform: translateX(4px);
+  }
+  .home-page .suara-library-item .suara-thumb-img {
+    transition: transform var(--motion-slow) var(--ease-out);
+  }
+  .home-page .suara-library-item:hover .suara-thumb-img,
+  .home-page .suara-library-item:focus-visible .suara-thumb-img {
+    transform: scale(1.03);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-page .home-portal,
+  .home-page .verse-panel,
+  .home-page .continue-panel,
+  .home-page .home-suara-section,
+  .home-page .home-literature-section,
+  .home-page .home-portal svg,
+  .home-page .continue-item .item-icon,
+  .home-page .continue-item > svg:last-child,
+  .home-page .suara-library-item .suara-thumb-img {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 
 /* Landscape settings: one setting per row. The short window cannot show two
    readable columns beside an open panel, so the list is a single column and an

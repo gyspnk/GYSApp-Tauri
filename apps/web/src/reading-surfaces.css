@@ -197,6 +197,32 @@
   justify-self: center;
 }
 
+.faith-row:hover > .faith-number,
+.faith-row:focus-visible > .faith-number {
+  color: var(--blue);
+  background: var(--blue-soft);
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .faith-row > .faith-number {
+    transition:
+      transform var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-out),
+      color var(--motion-fast) var(--ease-out);
+  }
+  .faith-row:hover > .faith-number,
+  .faith-row:focus-visible > .faith-number {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faith-row > .faith-number {
+    transition: none !important;
+  }
+}
+
 /* Note and reading progress are status, not controls: they stay inside the
    row button so the row keeps one tap target. */
 .faith-row-status {

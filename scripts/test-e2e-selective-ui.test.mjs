@@ -49,6 +49,7 @@ test("extracted Kidung sections retain loading and playlist parity coverage", ()
     const plan = resolveSelectiveTestArgs([`apps/web/src/${file}`], []);
     for (const spec of [
       "e2e/kidung-loading.spec.ts",
+      "e2e/kidung-catalogue-entrance.spec.ts",
       "e2e/kidung-offline.spec.ts",
       "e2e/kidung-usability.spec.ts",
       "e2e/playlist-parity.spec.ts",

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
@@ -29,6 +30,7 @@ type WaveRecord = {
 declare global {
   interface Window {
     __catalogueWave?: WaveRecord;
+    __firstRenderedTitles?: string[];
   }
 }
 
@@ -167,5 +169,124 @@ test.describe("kidung catalogue entrance", () => {
     expect(rule).toContain("min(");
     expect(rule).toContain("240ms");
     expect(rule).toContain(".pujian-item:nth-child(n + 61)");
+  });
+
+  test("cold load with a saved installed collection waits for delayed metadata and animates the saved book once", async ({
+    page,
+  }) => {
+    const master = readFileSync(
+      new URL("./fixtures/two-page.pdf", import.meta.url),
+    );
+    const metadata = Buffer.from(
+      JSON.stringify([
+        {
+          number: "001",
+          title: "Mapped Hymn",
+          verses: ["Mapped hymn verse"],
+          pdfFile: "pdf/hymne/001.pdf",
+          page: 2,
+          pages: 1,
+        },
+        {
+          number: "002",
+          title: "Unmapped Hymn",
+          verses: ["Unmapped hymn verse"],
+          pdfFile: "pdf/hymne/002.pdf",
+        },
+      ]),
+    );
+    const sha256 = (bytes: Uint8Array) =>
+      createHash("sha256").update(bytes).digest("hex");
+
+    await page.route(/^https:\/\//, (route) => route.abort());
+    await page.goto("/GYSApp-Tauri/lainnya");
+    await page.evaluate(
+      async ({ pdf, index, record }) => {
+        const bytes = (base64: string) =>
+          Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+        const cache = await caches.open(record.cacheName);
+        await cache.put(record.cacheKey, new Response(bytes(pdf)));
+        await cache.put(record.metadataCacheKey!, new Response(bytes(index)));
+        localStorage.setItem(
+          "gys-distributed-assets-v1",
+          JSON.stringify({ [record.code]: record }),
+        );
+        localStorage.setItem("gys-kidung-collection-v1", "english");
+      },
+      {
+        pdf: master.toString("base64"),
+        index: metadata.toString("base64"),
+        record: {
+          code: "HYMNE",
+          kind: "hymnal",
+          version: "test-1",
+          releaseTag: "test",
+          installFileName: "hymne.gyspkg",
+          packageSizeBytes: master.byteLength,
+          packageChecksumSha256: sha256(master),
+          cacheName: "gys-distributed-v1-test",
+          cacheKey: "https://gysapp.local/distributed-assets/HYMNE/master",
+          payloadBytes: master.byteLength,
+          payloadChecksumSha256: sha256(master),
+          installedAt: "2026-11-13T00:00:00.000Z",
+          metadataCacheKey:
+            "https://gysapp.local/distributed-assets/HYMNE/index",
+          metadataBytes: metadata.byteLength,
+          metadataChecksumSha256: sha256(metadata),
+        },
+      },
+    );
+
+    await page.addInitScript(() => {
+      const originalMatch = Cache.prototype.match;
+      Cache.prototype.match = async function (request, options) {
+        const url = typeof request === "string" ? request : request.url;
+        if (url === "https://gysapp.local/distributed-assets/HYMNE/index") {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+        }
+        return originalMatch.call(this, request, options);
+      };
+      new MutationObserver(() => {
+        if (window.__firstRenderedTitles) return;
+        const labels = [
+          ...document.querySelectorAll<HTMLElement>(
+            ".pujian-item .pujian-title-label",
+          ),
+        ]
+          .map((node) => node.textContent?.trim() ?? "")
+          .filter(Boolean);
+        if (labels.length > 0) window.__firstRenderedTitles = labels;
+      }).observe(document, { subtree: true, childList: true });
+    });
+    await page.addInitScript(recordWave);
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    await page.goto("/GYSApp-Tauri/kidung");
+    await expect
+      .poll(
+        async () =>
+          (await page.evaluate(() => window.__catalogueWave))?.sampled,
+        { timeout: 15_000 },
+      )
+      .toBe(true);
+
+    const result = await page.evaluate(() => ({
+      wave: window.__catalogueWave,
+      firstTitles: window.__firstRenderedTitles ?? [],
+    }));
+    expect(result.firstTitles).toEqual(["Mapped Hymn", "Unmapped Hymn"]);
+    expect(result.wave?.firstWaveMoving).toBe(true);
+    expect(result.wave?.animationNames).toEqual([
+      "catalogue-row-in",
+      "catalogue-row-in",
+    ]);
+    await expect(page.locator(".kidung-collection-select")).toContainText(
+      "English",
+    );
+    await expect(page.locator(".pujian-title-label")).toHaveText([
+      "Mapped Hymn",
+      "Unmapped Hymn",
+    ]);
   });
 });

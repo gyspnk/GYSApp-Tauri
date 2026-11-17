@@ -65,3 +65,29 @@
     font-size: 118.75%;
   }
 }
+
+:root[data-ui-density="comfortable"]
+  :is(
+    .home-portal,
+    .continue-item,
+    .faith-row,
+    .more-setting-row,
+    .welcome-skip,
+    .egys-provider,
+    .quiet-button,
+    .primary-button,
+    .nav-item
+  ) {
+  min-height: var(--control-hit, 50px);
+}
+
+:root[data-ui-density="comfortable"]
+  :is(
+    .verse-content,
+    .hymn-text-body,
+    .online-article-body,
+    .literature-detail-copy,
+    .faith-selection
+  ) {
+  line-height: 1.75;
+}
