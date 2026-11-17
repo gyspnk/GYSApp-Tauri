@@ -223,9 +223,9 @@ test("a documentation change pulls the documentation gate into the fast check", 
 });
 
 test("normalizes Windows separators so sibling web tests stay owned by @gys/web", () => {
-  const checks = collectChecks(["apps\\web\\src\\App.tsx"]);
+  const checks = collectChecks(["apps\\web\\src\\egys-google.ts"]);
   assert.deepEqual(checks.typechecks, ["@gys/web"]);
-  assert.ok(checks.tests.length >= 1);
+  assert.deepEqual(checks.tests, ["apps/web/src/egys-google.test.ts"]);
   for (const file of checks.tests) {
     assert.ok(!file.includes("\\"), file);
     assert.equal(ownerOf(file), "@gys/web");
