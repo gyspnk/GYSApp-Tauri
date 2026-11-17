@@ -6643,6 +6643,53 @@ body:has(.hymn-detail-page.is-text-viewer)
   .home-page .suara-library-item:focus-visible .suara-thumb-img {
     transform: scale(1.03);
   }
+  .nav-item svg {
+    transition: transform var(--motion-normal) var(--ease-out);
+  }
+  .nav-item:hover svg,
+  .nav-item:focus-visible svg {
+    transform: translateY(-2px) scale(1.06);
+  }
+  .more-setting-row .more-setting-icon {
+    transition:
+      transform var(--motion-normal) var(--ease-out),
+      border-color var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-out);
+  }
+  .more-setting-row:hover .more-setting-icon,
+  .more-setting-row:focus-visible .more-setting-icon {
+    transform: scale(1.06);
+  }
+  .accent-palette-item {
+    transition:
+      transform var(--motion-fast) var(--ease-out),
+      border-color var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-out);
+  }
+  .accent-palette-item:hover,
+  .accent-palette-item:focus-visible {
+    transform: translateY(-1px);
+  }
+  .hamburger-item:hover:not(:disabled) .hamburger-item-icon,
+  .hamburger-item:focus-visible:not(:disabled) .hamburger-item-icon {
+    transform: scale(1.06);
+    border-color: var(--blue);
+    background: var(--blue-soft);
+  }
+  .persistent-media .media-control,
+  .persistent-media .media-minimize {
+    transition:
+      background-color var(--motion-fast) var(--ease-out),
+      border-color var(--motion-fast) var(--ease-out),
+      color var(--motion-fast) var(--ease-out),
+      transform var(--motion-fast) var(--ease-out);
+  }
+  .persistent-media .media-control:hover:not(:disabled),
+  .persistent-media .media-control:focus-visible:not(:disabled),
+  .persistent-media .media-minimize:hover:not(:disabled),
+  .persistent-media .media-minimize:focus-visible:not(:disabled) {
+    transform: translateY(-1px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-page .home-portal,
@@ -6653,7 +6700,13 @@ body:has(.hymn-detail-page.is-text-viewer)
   .home-page .home-portal svg,
   .home-page .continue-item .item-icon,
   .home-page .continue-item > svg:last-child,
-  .home-page .suara-library-item .suara-thumb-img {
+  .home-page .suara-library-item .suara-thumb-img,
+  .nav-item svg,
+  .more-setting-row .more-setting-icon,
+  .accent-palette-item,
+  .hamburger-item-icon,
+  .persistent-media .media-control,
+  .persistent-media .media-minimize {
     animation: none !important;
     transition: none !important;
   }

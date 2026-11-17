@@ -408,6 +408,7 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
   const homeActive = await page.evaluate(() => {
     const portal = document.querySelector(".home-portal")!;
     const portalIcon = document.querySelector(".home-portal svg")!;
+    const navIcon = document.querySelector(".nav-item svg")!;
     const verse = document.querySelector(".verse-panel")!;
     return {
       portalAnim: getComputedStyle(portal).animationName,
@@ -419,6 +420,9 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
       portalIconTrans: Number.parseFloat(
         getComputedStyle(portalIcon).transitionDuration,
       ),
+      navIconTrans: Number.parseFloat(
+        getComputedStyle(navIcon).transitionDuration,
+      ),
     };
   });
   expect(homeActive.portalAnim).toBe("home-surface-in");
@@ -426,6 +430,7 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
   expect(homeActive.verseAnim).toBe("home-surface-in");
   expect(homeActive.verseShadow).toBe("none");
   expect(homeActive.portalIconTrans).toBeGreaterThan(0);
+  expect(homeActive.navIconTrans).toBeGreaterThan(0);
 
   await page.goto("/GYSApp-Tauri/iman");
   await expect(
@@ -445,17 +450,20 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
   const homeReduced = await page.evaluate(() => {
     const portal = document.querySelector(".home-portal")!;
     const portalIcon = document.querySelector(".home-portal svg")!;
+    const navIcon = document.querySelector(".nav-item svg")!;
     const verse = document.querySelector(".verse-panel")!;
     return {
       portalAnim: getComputedStyle(portal).animationName,
       verseAnim: getComputedStyle(verse).animationName,
       portalIconTrans: getComputedStyle(portalIcon).transitionDuration,
+      navIconTrans: getComputedStyle(navIcon).transitionDuration,
     };
   });
   expect(homeReduced).toEqual({
     portalAnim: "none",
     verseAnim: "none",
     portalIconTrans: "0s",
+    navIconTrans: "0s",
   });
 
   await page.goto("/GYSApp-Tauri/iman");
@@ -523,6 +531,49 @@ test("comfortable density enlarges touch targets and reading line-height for old
         );
       });
     expect(ratio).toBeGreaterThanOrEqual(1.7);
+    const versePaddingTop = await page
+      .locator(".verse-row")
+      .first()
+      .evaluate((node) => Number.parseFloat(getComputedStyle(node).paddingTop));
+    expect(versePaddingTop).toBeGreaterThanOrEqual(16);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+
+    await page.goto("/GYSApp-Tauri/kidung");
+    await expect(page.locator(".add-to-playlist-btn").first()).toBeVisible();
+    const playlistBtnBox = (await page
+      .locator(".add-to-playlist-btn")
+      .first()
+      .boundingBox())!;
+    expect(playlistBtnBox.height).toBeGreaterThanOrEqual(50);
+    expect(playlistBtnBox.width).toBeGreaterThanOrEqual(50);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+
+    await page.goto("/GYSApp-Tauri/lainnya");
+    await expect(page.locator(".more-setting-row").first()).toBeVisible();
+    const settingRowBox = (await page
+      .locator(".more-setting-row")
+      .first()
+      .boundingBox())!;
+    expect(settingRowBox.height).toBeGreaterThanOrEqual(50);
+    await page.locator('[data-setting="appearance"] > summary').click();
+    const accentItem = page.locator(".accent-palette-item").first();
+    await expect(accentItem).toBeVisible();
+    expect((await accentItem.boundingBox())!.height).toBeGreaterThanOrEqual(50);
+    const appearanceTrigger = page
+      .locator(".appearance-setting-select .control-select-trigger")
+      .first();
+    await expect(appearanceTrigger).toBeVisible();
+    expect(
+      (await appearanceTrigger.boundingBox())!.height,
+    ).toBeGreaterThanOrEqual(50);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,

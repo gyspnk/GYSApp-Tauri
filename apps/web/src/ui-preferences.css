@@ -72,6 +72,12 @@
     .continue-item,
     .faith-row,
     .more-setting-row,
+    .accent-palette-item,
+    .appearance-setting-select .control-select-trigger,
+    .typography-step-btn,
+    .add-to-playlist-btn,
+    .persistent-media .media-control,
+    .persistent-media .media-minimize,
     .welcome-skip,
     .egys-provider,
     .quiet-button,
@@ -83,11 +89,26 @@
 
 :root[data-ui-density="comfortable"]
   :is(
+    .add-to-playlist-btn,
+    .persistent-media .media-control,
+    .persistent-media .media-minimize
+  ) {
+  min-width: var(--control-hit, 50px);
+}
+
+:root[data-ui-density="comfortable"]
+  :is(
     .verse-content,
     .hymn-text-body,
+    .lyrics-sheet,
     .online-article-body,
     .literature-detail-copy,
     .faith-selection
   ) {
   line-height: 1.75;
+}
+
+:root[data-ui-density="comfortable"] .verse-row {
+  gap: 16px;
+  padding: 16px 18px;
 }
