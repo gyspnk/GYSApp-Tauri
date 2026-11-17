@@ -66,7 +66,11 @@ import { installHeadphoneDisconnectGuard } from "./headphone-guard.js";
 import { useScreenWakeLock } from "./wake-lock.js";
 import { installDailyReminder } from "./daily-reminder.js";
 import { getShellSettingsStorage } from "./settings.js";
-import { getEgysProfile, signInEgysWithGoogle } from "./egys.js";
+import {
+  getEgysProfile,
+  saveEgysProfile,
+  signInEgysWithGoogle,
+} from "./egys.js";
 import {
   readShellSettings,
   writeShellSettings,
@@ -199,7 +203,9 @@ function useAppSettings() {
       .then(() => setSettings((current) => ({ ...current })));
   }, []);
   const finishWelcome = useCallback(() => {
-    setSettings((current) => ({ ...current, onboarded: true }));
+    setSettings((current) =>
+      current.onboarded ? current : { ...current, onboarded: true },
+    );
   }, []);
   const setTheme = useCallback((theme: Theme) => {
     // Freeze dropdown focus scroll before the lazy transition import can wait.
@@ -959,10 +965,17 @@ function RoutedApp() {
   useEffect(() => installHeadphoneDisconnectGuard(), []);
   // The welcome screen signs in through the same e-GYS call as the account
   // card; a failure leaves the screen open so the reader can still skip.
-  const completeWelcomeLogin = useCallback(async (credential: string) => {
-    await signInEgysWithGoogle(credential);
-    await getEgysProfile();
-  }, []);
+  const completeWelcomeLogin = useCallback(
+    async (credential: string) => {
+      await signInEgysWithGoogle(credential);
+      const profile = await getEgysProfile();
+      if (!profile)
+        throw new Error(translate(locale, "more.profileReadFailed"));
+      saveEgysProfile(profile);
+      settings.finishWelcome();
+    },
+    [locale, settings.finishWelcome],
+  );
   if (!settings.onboarded) {
     return (
       <WelcomePage

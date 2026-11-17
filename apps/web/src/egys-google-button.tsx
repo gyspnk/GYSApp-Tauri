@@ -19,12 +19,16 @@ export function EgysGoogleButton({
   locale,
   onCredential,
   onStatus,
+  onPress,
 }: {
   locale: Locale;
   onCredential: (credential: string) => void | Promise<void>;
   onStatus?: ((status: "ready" | "error") => void) | undefined;
+  onPress?: (() => void) | undefined;
 }) {
   const host = useRef<HTMLDivElement>(null);
+  const onPressRef = useRef(onPress);
+  onPressRef.current = onPress;
   const [attempt, retry] = useState(0);
   const [presses, setPresses] = useState(0);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -53,7 +57,10 @@ export function EgysGoogleButton({
       {
         locale,
         signal: controller.signal,
-        onPress: () => setPresses((value) => value + 1),
+        onPress: () => {
+          onPressRef.current?.();
+          setPresses((value) => value + 1);
+        },
       },
     )
       .then((dispose) => {
@@ -108,7 +115,10 @@ export function EgysGoogleButton({
                 ? translate(locale, "more.googleButtonFailed")
                 : label
             }
-            onClick={() => retry((value) => value + 1)}
+            onClick={() => {
+              onPressRef.current?.();
+              retry((value) => value + 1);
+            }}
           >
             <GoogleMark />
             <span>Google</span>

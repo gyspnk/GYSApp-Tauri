@@ -40,7 +40,10 @@ if (!targets.length) {
   process.exit(0);
 }
 
-const result = spawnSync("pnpm", ["exec", "prettier", "--check", ...targets], {
+const prettier = fileURLToPath(
+  import.meta.resolve("prettier/bin/prettier.cjs"),
+);
+const result = spawnSync(process.execPath, [prettier, "--check", ...targets], {
   cwd: rootDir,
   stdio: "inherit",
 });

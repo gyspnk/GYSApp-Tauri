@@ -108,6 +108,10 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     };
   }
 
+  const touchesWelcome = changedFiles.some((file) =>
+    /(?:^|\/)(?:App|welcome)\.tsx$/.test(file),
+  );
+
   const unknownShared = changedFiles.filter((file) => {
     if (/\.test\.[cm]?[jt]sx?$/.test(file)) return false;
     // A Playwright config changes how the suite runs, not what the app renders.
@@ -127,7 +131,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     if (/^apps\/web\/src\/(?:styles\/[^/]+|[^/]+)\.css$/.test(file))
       return false;
     if (!file.startsWith("apps/web/src/")) return false;
-    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|online-content|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|faith|reading-zoom|app-design\.css|App\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
+    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|online-content|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|faith|reading-zoom|app-design\.css|App\.tsx|welcome\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
       file,
     );
   });
@@ -141,9 +145,13 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     const editedSpecs = changedFiles
       .map(changedSpecPath)
       .filter((spec) => spec !== undefined);
+    const welcomeSpecs = touchesWelcome ? ["e2e/welcome.spec.ts"] : [];
     return {
       description: `Core browser tier for unclassified shared changes: ${unknownShared.join(", ")}`,
-      args: [...new Set([...CORE_SPECS, ...editedSpecs]), ...userArgs],
+      args: [
+        ...new Set([...CORE_SPECS, ...welcomeSpecs, ...editedSpecs]),
+        ...userArgs,
+      ],
       changedFiles,
     };
   }
@@ -157,6 +165,11 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     if (changedSpec) {
       specFiles.add(changedSpec);
       continue;
+    }
+
+    if (/(?:^|\/)(?:App|welcome)\.tsx$/.test(file)) {
+      specFiles.add("e2e/welcome.spec.ts");
+      runSmokeAll = true;
     }
 
     if (/apps\/web\/src\/(?:faith\.tsx|reading-zoom\.ts)$/.test(file)) {

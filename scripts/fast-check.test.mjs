@@ -9,7 +9,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { devNull, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { collectChecks, ownerOf } from "./fast-check.mjs";
@@ -17,11 +17,13 @@ import { collectChecks, ownerOf } from "./fast-check.mjs";
 test("CLI fails closed when Git discovery fails", async (t) => {
   const cwd = mkdtempSync(join(tmpdir(), "gys-fast-check-"));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const emptyGitConfig = join(cwd, ".empty-gitconfig");
+  writeFileSync(emptyGitConfig, "");
   const env = Object.fromEntries(
     Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
   );
   env.GIT_CONFIG_NOSYSTEM = "1";
-  env.GIT_CONFIG_GLOBAL = devNull;
+  env.GIT_CONFIG_GLOBAL = emptyGitConfig;
   const cli = fileURLToPath(new URL("./fast-check.mjs", import.meta.url));
   const run = () =>
     spawnSync(process.execPath, [cli], { cwd, env, encoding: "utf8" });
@@ -218,4 +220,14 @@ test("a documentation change pulls the documentation gate into the fast check", 
   const checks = collectChecks(["docs/plans/ui-spec-loop.md"]);
   assert.equal(checks.docs, true);
   assert.equal(collectChecks(["apps/web/src/app.ts"]).docs, false);
+});
+
+test("normalizes Windows separators so sibling web tests stay owned by @gys/web", () => {
+  const checks = collectChecks(["apps\\web\\src\\App.tsx"]);
+  assert.deepEqual(checks.typechecks, ["@gys/web"]);
+  assert.ok(checks.tests.length >= 1);
+  for (const file of checks.tests) {
+    assert.ok(!file.includes("\\"), file);
+    assert.equal(ownerOf(file), "@gys/web");
+  }
 });

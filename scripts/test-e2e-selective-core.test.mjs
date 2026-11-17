@@ -279,3 +279,43 @@ test("recovery cards keep their own contracts on literature and kidung edits", (
   );
   assert.ok(suara.args.includes("e2e/suara-recovery.spec.ts"));
 });
+
+test("App and Welcome source edits keep onboarding contracts in both selector paths", () => {
+  const welcomeOnly = resolveSelectiveTestArgs(
+    ["apps/web/src/welcome.tsx"],
+    [],
+  );
+  assert.deepEqual(welcomeOnly.args, ["e2e/welcome.spec.ts"]);
+  assert.doesNotMatch(welcomeOnly.description, /Core browser tier/);
+  assert.ok(!welcomeOnly.args.includes("-g"));
+
+  const appOnly = resolveSelectiveTestArgs(["apps/web/src/App.tsx"], []);
+  assert.ok(appOnly.args.includes("e2e/welcome.spec.ts"));
+  assert.ok(appOnly.args.includes("e2e/smoke.spec.ts"));
+
+  const combined = resolveSelectiveTestArgs(
+    ["apps/web/src/App.tsx", "apps/web/src/welcome.tsx"],
+    [],
+  );
+  assert.ok(combined.args.includes("e2e/welcome.spec.ts"));
+
+  for (const source of ["apps/web/src/welcome.tsx", "apps/web/src/App.tsx"]) {
+    const mixed = resolveSelectiveTestArgs(
+      ["apps/web/src/startup-order.ts", source],
+      ["--retries=0"],
+    );
+    assert.match(mixed.description, /Core browser tier/);
+    assert.ok(mixed.args.includes("e2e/welcome.spec.ts"), source);
+    assert.deepEqual(mixed.args, [
+      "e2e/smoke.spec.ts",
+      "e2e/settings-data-integrity.spec.ts",
+      "e2e/more-section-deeplink.spec.ts",
+      "e2e/more-device-data.spec.ts",
+      "e2e/account-menu.spec.ts",
+      "e2e/egys-v1.spec.ts",
+      "e2e/route-announcement.spec.ts",
+      "e2e/welcome.spec.ts",
+      "--retries=0",
+    ]);
+  }
+});

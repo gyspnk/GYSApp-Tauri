@@ -14,7 +14,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { posix } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const FORMATTED = /\.(?:[cm]?[jt]sx?|json|css|scss|html|md|ya?ml)$/;
@@ -29,9 +29,9 @@ export function ownerOf(file) {
 }
 
 export function collectChecks(files) {
-  const changed = [...new Set(files)].filter(
-    (file) => file && existsSync(file),
-  );
+  const changed = [
+    ...new Set(files.filter(Boolean).map((file) => file.replace(/\\/g, "/"))),
+  ].filter((file) => existsSync(file));
   const formatted = changed.filter((file) => FORMATTED.test(file));
   const sources = changed.filter(
     (file) => SOURCE.test(file) && !/\.test\.[cm]?[jt]sx?$/.test(file),
@@ -39,7 +39,10 @@ export function collectChecks(files) {
   const tests = changed.filter((file) => /\.test\.[cm]?[jt]sx?$/.test(file));
   for (const source of sources) {
     const stub = source.replace(SOURCE, ".test.ts");
-    const sibling = join(dirname(source), `${baseName(source)}.test.ts`);
+    const sibling = posix.join(
+      posix.dirname(source),
+      `${baseName(source)}.test.ts`,
+    );
     for (const candidate of [stub, sibling]) {
       if (candidate !== source && existsSync(candidate)) tests.push(candidate);
     }
@@ -111,16 +114,25 @@ function changedSince(since) {
   return [...out.split("\n"), ...untracked.split("\n")].filter(Boolean);
 }
 
-function run(label, command, args) {
+function run(label, command, args, options = {}) {
   const started = Date.now();
   process.stdout.write(`\n▸ ${label}\n`);
   try {
-    execFileSync(command, args, { stdio: "inherit" });
+    execFileSync(command, args, { stdio: "inherit", ...options });
     process.stdout.write(`  ok (${Date.now() - started} ms)\n`);
   } catch {
     process.stdout.write(`  failed (${Date.now() - started} ms)\n`);
     process.exitCode = 1;
   }
+}
+
+function runPnpm(label, args) {
+  const cli = process.env.npm_execpath;
+  if (cli && /[/\\]pnpm\.(?:cjs|mjs|js)$/i.test(cli)) {
+    run(label, process.execPath, [cli, ...args]);
+    return;
+  }
+  run(label, "pnpm", args, { shell: process.platform === "win32" });
 }
 
 export function main(argv = process.argv.slice(2)) {
@@ -153,7 +165,7 @@ export function main(argv = process.argv.slice(2)) {
     }
   }
   for (const workspace of typechecks)
-    run(`typecheck (${workspace})`, "pnpm", [
+    runPnpm(`typecheck (${workspace})`, [
       "--filter",
       workspace,
       "exec",
@@ -171,14 +183,14 @@ export function main(argv = process.argv.slice(2)) {
   if (docs) run("docs", "node", ["scripts/verify-documentation.mjs"]);
   for (const [workspace, files] of byOwner)
     // vitest runs inside the package, so hand it package-relative paths.
-    run(`unit (${workspace})`, "pnpm", [
+    runPnpm(`unit (${workspace})`, [
       "--filter",
       workspace,
       "exec",
       "vitest",
       "run",
       ...files.map((file) =>
-        relative(files[0].split("/").slice(0, 2).join("/"), file),
+        posix.relative(files[0].split("/").slice(0, 2).join("/"), file),
       ),
     ]);
   process.stdout.write(
