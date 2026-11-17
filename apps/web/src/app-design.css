@@ -6590,11 +6590,11 @@ body:has(.hymn-detail-page.is-text-viewer)
 @keyframes surface-rise-in {
   from {
     opacity: 0;
-    transform: translate3d(0, 10px, 0) scale(0.99);
+    transform: translate3d(0, 10px, 0);
   }
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 @keyframes bible-verse-in {
@@ -6751,8 +6751,8 @@ body:has(.hymn-detail-page.is-text-viewer)
       var(--motion-ease-entrance) 40ms backwards;
   }
   .welcome-card {
-    animation: confirm-dialog-rise var(--motion-slow)
-      var(--motion-ease-entrance) backwards;
+    animation: surface-rise-in var(--motion-slow) var(--motion-ease-entrance)
+      backwards;
   }
   .welcome-copy,
   .welcome-language,

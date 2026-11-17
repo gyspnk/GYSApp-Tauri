@@ -437,18 +437,18 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
     page.locator(".faith-row > .faith-number").first(),
   ).toBeVisible();
   const faithActive = await page.evaluate(() => {
-    const intro = document.querySelector(".page > .page-intro")!;
+    const searchBar = document.querySelector(".faith-search-bar")!;
     const item = document.querySelector(".faith-rows > .faith-row-item")!;
     const num = document.querySelector(".faith-row > .faith-number")!;
     const stmt = document.querySelector(".faith-statement")!;
     return {
-      introAnim: getComputedStyle(intro).animationName,
+      searchAnim: getComputedStyle(searchBar).animationName,
       itemAnim: getComputedStyle(item).animationName,
       numTrans: Number.parseFloat(getComputedStyle(num).transitionDuration),
       stmtTrans: Number.parseFloat(getComputedStyle(stmt).transitionDuration),
     };
   });
-  expect(faithActive.introAnim).toBe("surface-rise-in");
+  expect(faithActive.searchAnim).toBe("surface-rise-in");
   expect(faithActive.itemAnim).toBe("catalogue-row-in");
   expect(faithActive.numTrans).toBeGreaterThan(0);
   expect(faithActive.stmtTrans).toBeGreaterThan(0);
@@ -471,21 +471,27 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
   expect(bibleActive.numTrans).toBeGreaterThan(0);
 
   await page.goto("/GYSApp-Tauri/literatur");
+  await expect(page.locator(".catalog-filter-status")).toContainText(/\d/);
   await expect(
-    page.locator(".literature-featured .literature-shelf-item").first(),
+    page
+      .locator(".literature-featured:not(.is-loading) .literature-shelf-item")
+      .first(),
   ).toBeVisible();
   const litActive = await page.evaluate(() => {
+    const intro = document.querySelector(".page > .page-intro")!;
     const item = document.querySelector(
-      ".literature-featured .literature-shelf-item",
+      ".literature-featured:not(.is-loading) .literature-shelf-item",
     )!;
     const cover = document.querySelector(
       ".literature-shelf-item .literature-cover",
     )!;
     return {
+      introAnim: getComputedStyle(intro).animationName,
       itemAnim: getComputedStyle(item).animationName,
       coverTrans: Number.parseFloat(getComputedStyle(cover).transitionDuration),
     };
   });
+  expect(litActive.introAnim).toBe("surface-rise-in");
   expect(litActive.itemAnim).toBe("catalogue-row-in");
   expect(litActive.coverTrans).toBeGreaterThan(0);
 
@@ -517,9 +523,8 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
   ).toBeVisible();
   expect(
     await page.evaluate(() => ({
-      introAnim: getComputedStyle(
-        document.querySelector(".page > .page-intro")!,
-      ).animationName,
+      searchAnim: getComputedStyle(document.querySelector(".faith-search-bar")!)
+        .animationName,
       itemAnim: getComputedStyle(
         document.querySelector(".faith-rows > .faith-row-item")!,
       ).animationName,
@@ -530,7 +535,7 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
         .transitionDuration,
     })),
   ).toEqual({
-    introAnim: "none",
+    searchAnim: "none",
     itemAnim: "none",
     numTrans: "0s",
     stmtTrans: "0s",
@@ -555,19 +560,28 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
   });
 
   await page.goto("/GYSApp-Tauri/literatur");
+  await expect(page.locator(".catalog-filter-status")).toContainText(/\d/);
   await expect(
-    page.locator(".literature-featured .literature-shelf-item").first(),
+    page
+      .locator(".literature-featured:not(.is-loading) .literature-shelf-item")
+      .first(),
   ).toBeVisible();
   expect(
     await page.evaluate(() => ({
+      introAnim: getComputedStyle(
+        document.querySelector(".page > .page-intro")!,
+      ).animationName,
       itemAnim: getComputedStyle(
-        document.querySelector(".literature-featured .literature-shelf-item")!,
+        document.querySelector(
+          ".literature-featured:not(.is-loading) .literature-shelf-item",
+        )!,
       ).animationName,
       coverTrans: getComputedStyle(
         document.querySelector(".literature-shelf-item .literature-cover")!,
       ).transitionDuration,
     })),
   ).toEqual({
+    introAnim: "none",
     itemAnim: "none",
     coverTrans: "0s",
   });
