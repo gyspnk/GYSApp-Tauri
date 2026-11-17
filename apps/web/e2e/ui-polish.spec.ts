@@ -436,13 +436,58 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
   await expect(
     page.locator(".faith-row > .faith-number").first(),
   ).toBeVisible();
-  const faithTrans = await page
-    .locator(".faith-row > .faith-number")
-    .first()
-    .evaluate((node) =>
-      Number.parseFloat(getComputedStyle(node).transitionDuration),
-    );
-  expect(faithTrans).toBeGreaterThan(0);
+  const faithActive = await page.evaluate(() => {
+    const intro = document.querySelector(".page > .page-intro")!;
+    const item = document.querySelector(".faith-rows > .faith-row-item")!;
+    const num = document.querySelector(".faith-row > .faith-number")!;
+    const stmt = document.querySelector(".faith-statement")!;
+    return {
+      introAnim: getComputedStyle(intro).animationName,
+      itemAnim: getComputedStyle(item).animationName,
+      numTrans: Number.parseFloat(getComputedStyle(num).transitionDuration),
+      stmtTrans: Number.parseFloat(getComputedStyle(stmt).transitionDuration),
+    };
+  });
+  expect(faithActive.introAnim).toBe("surface-rise-in");
+  expect(faithActive.itemAnim).toBe("catalogue-row-in");
+  expect(faithActive.numTrans).toBeGreaterThan(0);
+  expect(faithActive.stmtTrans).toBeGreaterThan(0);
+
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(
+    page.locator(".bible-reader .verse-list > div > .verse-row").first(),
+  ).toBeVisible();
+  const bibleActive = await page.evaluate(() => {
+    const row = document.querySelector(
+      ".bible-reader .verse-list > div > .verse-row",
+    )!;
+    const num = document.querySelector(".bible-reader .verse-number")!;
+    return {
+      rowAnim: getComputedStyle(row).animationName,
+      numTrans: Number.parseFloat(getComputedStyle(num).transitionDuration),
+    };
+  });
+  expect(bibleActive.rowAnim).toBe("bible-verse-in");
+  expect(bibleActive.numTrans).toBeGreaterThan(0);
+
+  await page.goto("/GYSApp-Tauri/literatur");
+  await expect(
+    page.locator(".literature-featured .literature-shelf-item").first(),
+  ).toBeVisible();
+  const litActive = await page.evaluate(() => {
+    const item = document.querySelector(
+      ".literature-featured .literature-shelf-item",
+    )!;
+    const cover = document.querySelector(
+      ".literature-shelf-item .literature-cover",
+    )!;
+    return {
+      itemAnim: getComputedStyle(item).animationName,
+      coverTrans: Number.parseFloat(getComputedStyle(cover).transitionDuration),
+    };
+  });
+  expect(litActive.itemAnim).toBe("catalogue-row-in");
+  expect(litActive.coverTrans).toBeGreaterThan(0);
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/GYSApp-Tauri/");
@@ -471,11 +516,61 @@ test("expressive motion animates Home, Kidung and Faith interactions under no-pr
     page.locator(".faith-row > .faith-number").first(),
   ).toBeVisible();
   expect(
-    await page
-      .locator(".faith-row > .faith-number")
-      .first()
-      .evaluate((node) => getComputedStyle(node).transitionDuration),
-  ).toBe("0s");
+    await page.evaluate(() => ({
+      introAnim: getComputedStyle(
+        document.querySelector(".page > .page-intro")!,
+      ).animationName,
+      itemAnim: getComputedStyle(
+        document.querySelector(".faith-rows > .faith-row-item")!,
+      ).animationName,
+      numTrans: getComputedStyle(
+        document.querySelector(".faith-row > .faith-number")!,
+      ).transitionDuration,
+      stmtTrans: getComputedStyle(document.querySelector(".faith-statement")!)
+        .transitionDuration,
+    })),
+  ).toEqual({
+    introAnim: "none",
+    itemAnim: "none",
+    numTrans: "0s",
+    stmtTrans: "0s",
+  });
+
+  await page.goto("/GYSApp-Tauri/bible");
+  await expect(
+    page.locator(".bible-reader .verse-list > div > .verse-row").first(),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(() => ({
+      rowAnim: getComputedStyle(
+        document.querySelector(".bible-reader .verse-list > div > .verse-row")!,
+      ).animationName,
+      numTrans: getComputedStyle(
+        document.querySelector(".bible-reader .verse-number")!,
+      ).transitionDuration,
+    })),
+  ).toEqual({
+    rowAnim: "none",
+    numTrans: "0s",
+  });
+
+  await page.goto("/GYSApp-Tauri/literatur");
+  await expect(
+    page.locator(".literature-featured .literature-shelf-item").first(),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(() => ({
+      itemAnim: getComputedStyle(
+        document.querySelector(".literature-featured .literature-shelf-item")!,
+      ).animationName,
+      coverTrans: getComputedStyle(
+        document.querySelector(".literature-shelf-item .literature-cover")!,
+      ).transitionDuration,
+    })),
+  ).toEqual({
+    itemAnim: "none",
+    coverTrans: "0s",
+  });
 });
 
 test("comfortable density enlarges touch targets and reading line-height for older adults without overflow", async ({

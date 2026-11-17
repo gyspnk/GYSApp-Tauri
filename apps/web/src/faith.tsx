@@ -1,7 +1,14 @@
 import { PdfReader as FaithPdfReader } from "./pdf-reader-loader.js";
 import { transitionReader } from "./reader-transition.js";
 import { LoadingProgress } from "./loading-progress.js";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
@@ -460,13 +467,14 @@ export function FaithPage({ locale }: { locale: Locale }) {
             role="list"
             aria-label={translate(locale, "faith.list")}
           >
-            {filtered.map((item) => {
+            {filtered.map((item, index) => {
               const isActive = item.number === active?.number;
               const note = hasNote(item.number);
               return (
                 <div
                   className="faith-row-item"
                   role="listitem"
+                  style={{ "--row-index": Math.min(index, 9) } as CSSProperties}
                   key={item.number}
                 >
                   {/* The whole row is the one action: it opens the topic sheet,

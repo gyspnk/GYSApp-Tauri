@@ -2,7 +2,13 @@ import {
   DEFAULT_HIGHLIGHT_COLORS,
   isCustomHighlightColor,
 } from "./bible-highlights.js";
-import { useMemo, useRef, type CSSProperties, type TouchEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type TouchEvent,
+} from "react";
 import type {
   BibleBook,
   BibleCrossReference,
@@ -82,6 +88,29 @@ export function ChapterPane({
     y?: number;
     long?: boolean;
   }>({ timer: undefined });
+  const mountedChapterRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const currentKey = `${book.id}:${chapter}`;
+    if (
+      mountedChapterRef.current !== undefined &&
+      mountedChapterRef.current !== currentKey &&
+      scrollRef?.current &&
+      typeof scrollRef.current.animate === "function" &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      scrollRef.current.animate(
+        [
+          { opacity: 0.35, transform: "translate3d(0, 6px, 0)" },
+          { opacity: 1, transform: "translate3d(0, 0, 0)" },
+        ],
+        {
+          duration: 220,
+          easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+        },
+      );
+    }
+    mountedChapterRef.current = currentKey;
+  }, [book.id, chapter, scrollRef]);
   const chapterPericopes = useMemo(() => {
     if (!pericopes?.length) return [];
     return pericopes.filter(
@@ -163,7 +192,7 @@ export function ChapterPane({
         onTouchMove={onTouchMove}
         onTouchCancel={onTouchCancel}
       >
-        {verses.map((verse) => {
+        {verses.map((verse, index) => {
           const selected = selectedVerseIds
             ? selectedVerseIds.includes(verse.id)
             : selectedVerseId === verse.id;
@@ -235,9 +264,12 @@ export function ChapterPane({
                 id={`bible-verse-${verse.id}`}
                 aria-current={speaking ? "true" : undefined}
                 style={
-                  isCustomHighlightColor(highlight ?? "")
+                  index < 16 || isCustomHighlightColor(highlight ?? "")
                     ? ({
-                        "--verse-highlight-color": highlight,
+                        ...(index < 16 ? { "--verse-index": index } : {}),
+                        ...(isCustomHighlightColor(highlight ?? "")
+                          ? { "--verse-highlight-color": highlight }
+                          : {}),
                       } as CSSProperties)
                     : undefined
                 }

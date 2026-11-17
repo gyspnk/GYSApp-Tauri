@@ -10,9 +10,16 @@ export function installControlMotion(): () => void {
   const animate = (element: HTMLElement, scale: string) => {
     const from = getComputedStyle(element).scale;
     running.get(element)?.cancel();
-    const animation = element.animate([{ scale: from }, { scale }], {
-      duration: scale === "1" ? 220 : 110,
-      easing: "cubic-bezier(.22, 1, .36, 1)",
+    const keyframes =
+      scale === "1"
+        ? [{ scale: from }, { scale: "1.025", offset: 0.55 }, { scale: "1" }]
+        : [{ scale: from }, { scale }];
+    const animation = element.animate(keyframes, {
+      duration: scale === "1" ? 260 : 100,
+      easing:
+        scale === "1"
+          ? "cubic-bezier(.22, 1, .36, 1)"
+          : "cubic-bezier(.2, 0, 0, 1)",
       fill: scale === "1" ? "none" : "forwards",
     });
     running.set(element, animation);
@@ -32,7 +39,7 @@ export function installControlMotion(): () => void {
     const element = control(event.target);
     if (!element) return;
     pressed.add(element);
-    animate(element, ".97");
+    animate(element, "0.96");
   };
   const release = () => {
     pressed.forEach((element) => {

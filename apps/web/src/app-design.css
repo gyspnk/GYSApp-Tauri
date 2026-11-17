@@ -6587,6 +6587,48 @@ body:has(.hymn-detail-page.is-text-viewer)
     transform: translate3d(0, 0, 0);
   }
 }
+@keyframes surface-rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@keyframes bible-verse-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes nav-icon-activate {
+  0% {
+    transform: scale(0.86);
+  }
+  60% {
+    transform: scale(1.12) translateY(-1px);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes bookmark-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  55% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 @media (prefers-reduced-motion: no-preference) {
   .home-page .home-portal,
   .home-page .verse-panel,
@@ -6690,6 +6732,195 @@ body:has(.hymn-detail-page.is-text-viewer)
   .persistent-media .media-minimize:focus-visible:not(:disabled) {
     transform: translateY(-1px);
   }
+  .page > .page-intro,
+  .hymn-page > .hymn-page-header,
+  .sauh-page .sauh-article,
+  .suara-article-card,
+  .literature-detail-hero,
+  .literature-article-reader {
+    animation: surface-rise-in var(--motion-entrance)
+      var(--motion-ease-entrance) backwards;
+  }
+  .literature-toolbar,
+  .faith-search-bar,
+  .catalog-search,
+  .kidung-queue-surface,
+  .kidung-settings-layout,
+  .more-library-hub {
+    animation: surface-rise-in var(--motion-entrance)
+      var(--motion-ease-entrance) 40ms backwards;
+  }
+  .welcome-card {
+    animation: confirm-dialog-rise var(--motion-slow)
+      var(--motion-ease-entrance) backwards;
+  }
+  .welcome-copy,
+  .welcome-language,
+  .welcome-login,
+  .welcome-skip {
+    animation: surface-rise-in var(--motion-entrance)
+      var(--motion-ease-entrance) backwards;
+  }
+  .welcome-copy {
+    animation-delay: 40ms;
+  }
+  .welcome-language {
+    animation-delay: 80ms;
+  }
+  .welcome-login {
+    animation-delay: 120ms;
+  }
+  .welcome-skip {
+    animation-delay: 160ms;
+  }
+  .faith-rows > .faith-row-item,
+  .literature-featured:not(.is-loading) .literature-shelf-item,
+  .literature-list > .literature-row:nth-child(-n + 12) {
+    animation: catalogue-row-in var(--motion-entrance)
+      var(--motion-ease-entrance) backwards;
+    animation-delay: calc(var(--row-index, 0) * var(--motion-stagger));
+  }
+  .more-library-hub .more-library-link,
+  .more-settings-list > .more-setting-section {
+    animation: catalogue-row-in var(--motion-entrance)
+      var(--motion-ease-entrance) backwards;
+  }
+  .more-library-hub .more-library-link:nth-child(2),
+  .more-settings-list > .more-setting-section:nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .more-library-hub .more-library-link:nth-child(3),
+  .more-settings-list > .more-setting-section:nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .more-settings-list > .more-setting-section:nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .more-settings-list > .more-setting-section:nth-child(5) {
+    animation-delay: 160ms;
+  }
+  .bible-reader .bible-pericope-heading {
+    animation: surface-rise-in var(--motion-normal) var(--motion-ease-entrance)
+      backwards;
+  }
+  .bible-reader .verse-list > div:nth-child(-n + 16) > .verse-row {
+    animation: bible-verse-in var(--motion-normal) var(--motion-ease-entrance)
+      backwards;
+    animation-delay: calc(var(--verse-index, 0) * 18ms);
+  }
+  .global-search-result {
+    animation: catalogue-row-in var(--motion-fast) var(--motion-ease-entrance)
+      backwards;
+    transition:
+      transform var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-out),
+      border-color var(--motion-fast) var(--ease-out);
+  }
+  .global-search-result:hover,
+  .global-search-result:focus-visible {
+    transform: translateX(4px);
+  }
+  .nav-item.is-active svg {
+    animation: nav-icon-activate var(--motion-entrance)
+      var(--motion-ease-entrance);
+  }
+  .verse-number.is-bookmarked,
+  .add-to-playlist-btn.in-playlist svg {
+    animation: bookmark-pop var(--motion-entrance) var(--motion-ease-entrance);
+  }
+  .hymn-page .pujian-title,
+  .faith-statement {
+    transition:
+      transform var(--motion-normal) var(--ease-out),
+      color var(--motion-fast) var(--ease-out);
+  }
+  .hymn-page .pujian-item:hover .pujian-title,
+  .hymn-page .pujian-item:focus-within .pujian-title,
+  .faith-row:hover .faith-statement,
+  .faith-row:focus-visible .faith-statement {
+    transform: translateX(4px);
+  }
+  .hymn-page .add-to-playlist-btn {
+    transition:
+      transform var(--motion-normal) var(--motion-ease-entrance),
+      background-color var(--motion-fast) var(--ease-out),
+      border-color var(--motion-fast) var(--ease-out),
+      color var(--motion-fast) var(--ease-out);
+  }
+  .hymn-page .add-to-playlist-btn:hover,
+  .hymn-page .add-to-playlist-btn:focus-visible {
+    transform: scale(1.08);
+  }
+  .literature-shelf-item .literature-cover,
+  .literature-row .literature-cover {
+    transition:
+      transform var(--motion-normal) var(--motion-ease-entrance),
+      box-shadow var(--motion-normal) var(--ease-out);
+  }
+  .literature-shelf-item:hover .literature-cover,
+  .literature-shelf-item:focus-visible .literature-cover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: var(--shadow-lift);
+  }
+  .literature-row:hover .literature-cover,
+  .literature-row:focus-visible .literature-cover {
+    transform: scale(1.04);
+  }
+  .bible-reader .verse-row {
+    transition:
+      background-color var(--motion-fast) var(--ease-out),
+      box-shadow var(--motion-fast) var(--ease-out);
+  }
+  .bible-reader .verse-number {
+    transition:
+      transform var(--motion-normal) var(--motion-ease-entrance),
+      background-color var(--motion-fast) var(--ease-out),
+      color var(--motion-fast) var(--ease-out);
+  }
+  .bible-reader .verse-row:hover .verse-number,
+  .bible-reader .verse-number:focus-visible {
+    transform: scale(1.1);
+    color: var(--blue);
+  }
+  .bible-chapter-step {
+    transition:
+      transform var(--motion-normal) var(--ease-out),
+      border-color var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-out),
+      color var(--motion-fast) var(--ease-out);
+  }
+  .bible-chapter-step:hover:not(:disabled),
+  .bible-chapter-step:focus-visible:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--blue);
+    background: var(--blue-soft);
+  }
+  .more-library-link {
+    transition:
+      transform var(--motion-normal) var(--motion-ease-entrance),
+      border-color var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-out),
+      box-shadow var(--motion-normal) var(--ease-out);
+  }
+  .more-library-link:hover,
+  .more-library-link:focus-visible {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
+    box-shadow: var(--shadow-lift);
+  }
+  .more-library-link svg {
+    transition: transform var(--motion-normal) var(--ease-out);
+  }
+  .more-library-link:hover svg:last-child,
+  .more-library-link:focus-visible svg:last-child {
+    transform: translateX(4px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .primary-button:hover:not(:disabled),
+  .quiet-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-page .home-portal,
@@ -6706,7 +6937,47 @@ body:has(.hymn-detail-page.is-text-viewer)
   .accent-palette-item,
   .hamburger-item-icon,
   .persistent-media .media-control,
-  .persistent-media .media-minimize {
+  .persistent-media .media-minimize,
+  .page > .page-intro,
+  .hymn-page > .hymn-page-header,
+  .sauh-page .sauh-article,
+  .suara-article-card,
+  .literature-detail-hero,
+  .literature-article-reader,
+  .literature-toolbar,
+  .faith-search-bar,
+  .catalog-search,
+  .kidung-queue-surface,
+  .kidung-settings-layout,
+  .more-library-hub,
+  .welcome-card,
+  .welcome-copy,
+  .welcome-language,
+  .welcome-login,
+  .welcome-skip,
+  .faith-rows > .faith-row-item,
+  .literature-featured .literature-shelf-item,
+  .literature-list > .literature-row,
+  .more-library-hub .more-library-link,
+  .more-settings-list > .more-setting-section,
+  .bible-reader .bible-pericope-heading,
+  .bible-reader .verse-list > div > .verse-row,
+  .global-search-result,
+  .nav-item.is-active svg,
+  .verse-number.is-bookmarked,
+  .add-to-playlist-btn.in-playlist svg,
+  .hymn-page .pujian-title,
+  .faith-statement,
+  .hymn-page .add-to-playlist-btn,
+  .literature-shelf-item .literature-cover,
+  .literature-row .literature-cover,
+  .bible-reader .verse-row,
+  .bible-reader .verse-number,
+  .bible-chapter-step,
+  .more-library-link,
+  .more-library-link svg,
+  .primary-button,
+  .quiet-button {
     animation: none !important;
     transition: none !important;
   }

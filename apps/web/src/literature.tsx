@@ -15,6 +15,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 import {
   Link,
@@ -404,6 +405,7 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
               {featured.map((item, index) => (
                 <Link
                   className="literature-shelf-item"
+                  style={{ "--row-index": Math.min(index, 7) } as CSSProperties}
                   to={literatureHref(item)}
                   onPointerEnter={() =>
                     void preloadRoute(literatureHref(item)).catch(
@@ -634,9 +636,12 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                 </span>
               </div>
               <div className="literature-list">
-                {groupItems.map((item) => (
+                {groupItems.map((item, index) => (
                   <Link
                     className="literature-row"
+                    style={
+                      { "--row-index": Math.min(index, 11) } as CSSProperties
+                    }
                     to={literatureHref(item)}
                     onPointerEnter={() =>
                       void preloadRoute(literatureHref(item)).catch(
