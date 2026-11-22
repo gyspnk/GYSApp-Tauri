@@ -415,7 +415,6 @@ export function BiblePickerModal({
       className="bible-picker-backdrop"
       data-menu-open={open}
       inert={!open}
-      aria-hidden={!open}
       role="presentation"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -461,7 +460,10 @@ export function BiblePickerModal({
             type="button"
             className="bible-picker-close"
             aria-label={translate(locale, "bible.closePicker")}
-            onClick={onClose}
+            onClick={(event) => {
+              event.currentTarget.blur();
+              onClose();
+            }}
           >
             <Icon name="cancel" size={19} />
           </button>
@@ -648,7 +650,6 @@ export function BiblePickerModal({
                 className="bible-address-menu"
                 data-menu-open={menu !== null}
                 inert={menu === null}
-                aria-hidden={menu === null}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
                     event.preventDefault();
