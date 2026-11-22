@@ -18,7 +18,7 @@ function getNonReaderRouteId(pathname: string): NonReaderRouteId {
 }
 
 function getRouteTitleKey(pathname: string): string {
-  if (pathname === "/") return "home.title";
+  if (pathname === "/") return "nav.home";
   if (pathname === "/sauh") return "home.sauh";
   if (pathname.startsWith("/suara")) return "home.testimony";
   if (pathname === "/bible") return "page.bibleTitle";

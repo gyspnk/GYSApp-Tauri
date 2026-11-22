@@ -12,7 +12,7 @@ export function LoadingProgress({
       {showLogo && (
         <div className="loading-dove-stage" aria-hidden="true">
           <svg
-            className="loading-dove-svg"
+            className="loading-dove-svg loading-progress-logo"
             viewBox="0 0 432 265"
             width="88"
             height="54"

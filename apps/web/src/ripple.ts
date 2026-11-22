@@ -1,9 +1,11 @@
 /**
  * Liquid water ripple & micro-droplet particle feedback for clickable surfaces.
  * Fire-and-forget GPU-composited animations (transform + opacity only);
- * automatically skipped when prefers-reduced-motion: reduce is active.
+ * tuned so ripples and droplets remain clearly visible on both small icon/menu
+ * buttons and larger interactive cards. Automatically skipped when
+ * prefers-reduced-motion: reduce is active.
  */
-const DROP_ANGLES_DEG = [-145, -88, -32, 24, 96, 152];
+const DROP_ANGLES_DEG = [-148, -92, -34, 22, 92, 150];
 
 export function triggerElementRipple(
   element: HTMLElement | null | undefined,
@@ -28,9 +30,10 @@ export function triggerElementRipple(
   const rect = element.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0) return;
 
+  const isCompact = Math.min(rect.width, rect.height) <= 52;
   const localX = clientX - rect.left;
   const localY = clientY - rect.top;
-  const diameter = Math.max(rect.width, rect.height, 48);
+  const diameter = Math.max(rect.width, rect.height, isCompact ? 72 : 60);
   const radius = diameter / 2;
 
   const ripple = document.createElement("span");
@@ -42,7 +45,9 @@ export function triggerElementRipple(
 
   const ring = document.createElement("span");
   ring.className = "gys-ripple-ring";
-  const ringSize = Math.min(diameter * 0.72, 120);
+  const ringSize = isCompact
+    ? Math.max(Math.min(rect.width, rect.height) * 0.9, 32)
+    : Math.min(diameter * 0.72, 124);
   ring.style.width = `${ringSize}px`;
   ring.style.height = `${ringSize}px`;
   ring.style.left = `${localX - ringSize / 2}px`;
@@ -52,21 +57,23 @@ export function triggerElementRipple(
   fragment.append(ripple, ring);
 
   const drops: HTMLSpanElement[] = [];
-  const baseRadius = Math.min(Math.max(rect.width * 0.16, 22), 46);
+  const baseRadius = isCompact
+    ? Math.min(Math.max(rect.width * 0.34, 16), 28)
+    : Math.min(Math.max(rect.width * 0.18, 24), 48);
   for (let i = 0; i < DROP_ANGLES_DEG.length; i += 1) {
     const jitter = ((i * 19) % 15) - 7;
     const rad = (((DROP_ANGLES_DEG[i] ?? 0) + jitter) * Math.PI) / 180;
     const dist = baseRadius * (0.78 + (i % 3) * 0.22);
     const drop = document.createElement("span");
     drop.className = "gys-water-drop";
-    const size = i % 2 === 0 ? 6 : 4;
+    const size = i % 2 === 0 ? 7 : 5;
     drop.style.width = `${size}px`;
     drop.style.height = `${size}px`;
     drop.style.left = `${localX - size / 2}px`;
     drop.style.top = `${localY - size / 2}px`;
     drop.style.setProperty("--drop-x", `${Math.round(Math.cos(rad) * dist)}px`);
     drop.style.setProperty("--drop-y", `${Math.round(Math.sin(rad) * dist)}px`);
-    drop.style.animationDelay = `${(i % 3) * 24}ms`;
+    drop.style.animationDelay = `${(i % 3) * 20}ms`;
     drops.push(drop);
     fragment.appendChild(drop);
   }
@@ -82,7 +89,7 @@ export function triggerElementRipple(
   };
   ripple.addEventListener("animationend", cleanup, { once: true });
   ripple.addEventListener("animationcancel", cleanup, { once: true });
-  window.setTimeout(cleanup, 900);
+  window.setTimeout(cleanup, 920);
 }
 
 export const triggerRipple = triggerElementRipple;

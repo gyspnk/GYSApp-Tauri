@@ -580,7 +580,13 @@ export function HymnPlaylistPage({
                       </small>
                     </span>
                   </button>
-                  <div className="kidung-playlist-actions">
+                  <div
+                    className="kidung-playlist-actions"
+                    role="group"
+                    aria-label={translate(locale, "kidung.songOptions", {
+                      title: item.title,
+                    })}
+                  >
                     <button
                       className="icon-button kidung-queue-row-btn"
                       type="button"

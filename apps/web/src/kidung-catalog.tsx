@@ -336,7 +336,7 @@ export function HymnCatalog({
             <div className="kidung-catalog-summary-info">
               <span className="kidung-catalog-book-pill">
                 <Icon name="musicNote" size={14} />
-                <span>{hymnCollectionLabel(activeBook)}</span>
+                <span>{activeBook ? hymnCollectionLabel(activeBook) : ""}</span>
               </span>
               <span className="kidung-catalog-count">
                 {translate(locale, "kidung.settingsSongCount", {
