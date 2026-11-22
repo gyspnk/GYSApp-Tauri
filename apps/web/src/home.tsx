@@ -83,8 +83,6 @@ export function HomePage({ locale }: { locale: Locale }) {
       }),
     [],
   );
-  // Suara Sejati & Literatur refresh incrementally: cached lists stay
-  // painted while upstream additions are merged in place.
   useEffect(
     () =>
       subscribeSuara((posts) => {
@@ -103,9 +101,6 @@ export function HomePage({ locale }: { locale: Locale }) {
       }),
     [],
   );
-  // Suara is one tap away and its snapshot is a 22 KB gzip; warming it while
-  // the reader looks at the verse keeps the first Suara visit out of the cold
-  // fetch. The helper skips data-saver and 2G links on purpose.
   useEffect(() => {
     const connection = (
       navigator as Navigator & {
@@ -126,9 +121,6 @@ export function HomePage({ locale }: { locale: Locale }) {
     };
   }, []);
   const hasActivity = Boolean(activity.bible || activity.hymn);
-  // An outdated snapshot must not trigger an endless revalidation loop
-  // (forced re-fetch -> setSauh -> effect -> fetch again): throttle at most
-  // one network re-check per minute.
   const lastForcedSauhAtRef = useRef(0);
   const refreshTodaySauh = useCallback(() => {
     const now = Date.now();
@@ -150,8 +142,6 @@ export function HomePage({ locale }: { locale: Locale }) {
       .then((items) => {
         if (signal?.aborted) return;
         const todays = selectTodaySauh(items);
-        // Same stale-safe rule as the other shelves: an empty refresh keeps the
-        // already-painted reading instead of collapsing the section.
         if (todays.length) {
           setSauh(todays);
           setSauhStatus("ready");
@@ -187,7 +177,6 @@ export function HomePage({ locale }: { locale: Locale }) {
       try {
         const items = await fetchSuara(signal);
         if (signal?.aborted) return;
-        // Keep an already-painted shelf when a refresh returns nothing.
         if (items.length) {
           setSuara(items);
           setSuaraStatus("ready");
@@ -217,8 +206,6 @@ export function HomePage({ locale }: { locale: Locale }) {
     void fetchLiteratureCatalog(signal)
       .then((items) => {
         if (signal?.aborted) return;
-        // A refresh that comes back empty must never erase the list the reader
-        // is already looking at: that collapsed the whole section mid-scroll.
         if (items.length) {
           setLiterature(items);
           setLiteratureStatus("ready");
@@ -282,12 +269,15 @@ export function HomePage({ locale }: { locale: Locale }) {
   }).format(new Date());
   return (
     <div className="page home-page">
-      <header className="home-welcome">
-        <section className="page-intro">
-          <h1 className="sr-only">{translate(locale, "home.title")}</h1>
-          {/* The date is the greeting: the old intro sentence repeated what the
-              three cards below already say, so only the day remains on screen. */}
-          <p className="home-date">{today}</p>
+      <header
+        className="home-welcome"
+        aria-label={translate(locale, "home.title")}
+      >
+        <section className="page-intro home-hero-row">
+          <div className="home-hero-copy">
+            <span className="home-date-pill">{today}</span>
+            <h1 className="home-heading">{translate(locale, "nav.home")}</h1>
+          </div>
         </section>
         <nav
           className="home-portals"
@@ -295,24 +285,30 @@ export function HomePage({ locale }: { locale: Locale }) {
         >
           {(
             [
-              ["/bible", "bible"],
-              ["/kidung", "kidung"],
-              ["/iman", "iman"],
+              ["/bible", "bible", "home.bibleVersion"],
+              ["/kidung", "kidung", "home.hymnLabel"],
+              ["/iman", "iman", "home.reading"],
             ] as const
-          ).map(([path, key]) => (
+          ).map(([path, key, subKey]) => (
             <Link className="home-portal" to={path} key={path}>
-              <Icon
-                name={
-                  key === "kidung"
-                    ? "music"
-                    : key === "iman"
-                      ? "faith"
-                      : "bible"
-                }
-                size={28}
-              />
+              <span className="home-portal-badge" aria-hidden="true">
+                <Icon
+                  name={
+                    key === "kidung"
+                      ? "music"
+                      : key === "iman"
+                        ? "faith"
+                        : "bible"
+                  }
+                  size={24}
+                />
+              </span>
               <span className="portal-copy">
                 <strong>{translate(locale, `nav.${key}`)}</strong>
+                <small>{translate(locale, subKey)}</small>
+              </span>
+              <span className="home-portal-arrow" aria-hidden="true">
+                <Icon name="chevronRight" size={16} />
               </span>
             </Link>
           ))}

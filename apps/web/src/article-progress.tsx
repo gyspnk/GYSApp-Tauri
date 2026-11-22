@@ -55,7 +55,7 @@ export function ArticleProgress({
   });
   const savedRef = useRef(saved);
   const [resume, setResume] = useState(() => saved);
-  const [choicesOpen, setChoicesOpen] = useState(Boolean(saved?.location));
+  const [choicesOpen, setChoicesOpen] = useState(false);
   const choicesRef = useRef<HTMLDivElement>(null);
   const choicesPresent = useMenuPresence(choicesOpen, choicesRef);
   const savePosition = useCallback(
@@ -83,7 +83,7 @@ export function ArticleProgress({
       top:
         ratio *
         Math.max(0, document.documentElement.scrollHeight - innerHeight),
-      behavior: "instant",
+      behavior: "smooth",
     });
     savePosition(ratio);
   };
@@ -117,7 +117,6 @@ export function ArticleProgress({
     return () => {
       window.removeEventListener("scroll", scroll);
       if (timer !== undefined) clearTimeout(timer);
-      // Flush the captured position, before the next route changes geometry.
       save();
     };
   }, [id, resourceVersion, ready, savePosition]);
@@ -130,7 +129,9 @@ export function ArticleProgress({
   return (
     <div className="article-progress-strip">
       <div className="article-progress-main">
-        <Icon name="book" size={16} />
+        <span className="article-progress-icon" aria-hidden="true">
+          <Icon name="book" size={15} />
+        </span>
         <progress
           value={percent}
           max={100}
@@ -138,7 +139,7 @@ export function ArticleProgress({
             percent,
           })}
         />
-        <output>{percent}%</output>
+        <output className="article-progress-pct">{percent}%</output>
         <button
           className="article-resume-toggle"
           type="button"
@@ -150,7 +151,7 @@ export function ArticleProgress({
             setChoicesOpen((value) => !value);
           }}
         >
-          <Icon name="bookmark" size={16} />
+          <Icon name="bookmark" size={15} />
         </button>
       </div>
       <ProgressSaveNotice id={id} locale={locale} />
@@ -160,7 +161,6 @@ export function ArticleProgress({
           className="article-resume-options"
           data-menu-open={choicesOpen}
           inert={!choicesOpen}
-          aria-hidden={!choicesOpen}
           aria-label={translate(locale, "article.positions")}
         >
           <button type="button" disabled={!ready} onClick={() => choose(last)}>

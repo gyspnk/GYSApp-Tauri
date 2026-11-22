@@ -1,14 +1,7 @@
 import type { CSSProperties } from "react";
 import { LoadingProgress } from "./loading-progress.js";
 import { Icon } from "./icons.js";
-import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
 import { prefersSmallImages } from "./network-hints.js";
@@ -114,6 +107,85 @@ function SuaraParagraphs({ text }: { text: string }) {
   );
 }
 
+function estimateReadMinutes(text: string): number {
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 190));
+}
+
+function ArticleReaderToolbar({
+  backTo,
+  backLabel,
+  fontScale,
+  onFontScaleChange,
+  readMinutes,
+  shareUrl,
+}: {
+  backTo: string;
+  backLabel: string;
+  fontScale: number;
+  onFontScaleChange: (next: number) => void;
+  readMinutes?: number;
+  shareUrl?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const copyLink = () => {
+    if (!shareUrl || typeof navigator === "undefined" || !navigator.clipboard)
+      return;
+    void navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    });
+  };
+  return (
+    <div className="reader-utility-bar">
+      <Link className="reader-back-pill" to={backTo}>
+        <Icon name="chevronLeft" size={16} />
+        <span>{backLabel}</span>
+      </Link>
+      <div className="reader-utility-controls">
+        {readMinutes !== undefined && (
+          <span className="reader-time-pill">~{readMinutes} mnt</span>
+        )}
+        <div className="reader-font-stepper" role="group" aria-label="Ukuran teks">
+          <button
+            type="button"
+            className="icon-button reader-tool-btn"
+            aria-label="Perkecil teks"
+            disabled={fontScale <= 0.85}
+            onClick={() =>
+              onFontScaleChange(Math.max(0.85, Number((fontScale - 0.1).toFixed(2))))
+            }
+          >
+            <Icon name="textDecrease" size={16} />
+          </button>
+          <button
+            type="button"
+            className="icon-button reader-tool-btn"
+            aria-label="Perbesar teks"
+            disabled={fontScale >= 1.4}
+            onClick={() =>
+              onFontScaleChange(Math.min(1.4, Number((fontScale + 0.1).toFixed(2))))
+            }
+          >
+            <Icon name="textIncrease" size={16} />
+          </button>
+        </div>
+        {shareUrl && (
+          <button
+            type="button"
+            className="icon-button reader-tool-btn"
+            aria-label="Salin tautan"
+            title="Salin tautan"
+            onClick={copyLink}
+          >
+            <Icon name={copied ? "checkCircle" : "copy"} size={16} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SourceLink({ href, label }: { href: string; label: string }) {
   return (
     <a className="quiet-button" href={href} target="_blank" rel="noreferrer">
@@ -123,6 +195,7 @@ function SourceLink({ href, label }: { href: string; label: string }) {
 }
 
 export function SauhPage({ locale }: { locale: Locale }) {
+  const [fontScale, setFontScale] = useState(1);
   const [state, setState] = useState<
     | { status: "loading" }
     | { status: "ready"; post: SauhPost }
@@ -175,17 +248,18 @@ export function SauhPage({ locale }: { locale: Locale }) {
 
   return (
     <div className="page online-content-page sauh-page" data-testid="sauh-page">
-      <div className="detail-back">
-        <Link className="text-button" to="/">
-          {translate(locale, "sauh.backHome")}
-        </Link>
-        {state.status === "ready" && (
-          <span>
-            {translate(locale, "sauh.title")} ·{" "}
-            {translate(locale, "sauh.today")}
-          </span>
-        )}
-      </div>
+      <ArticleReaderToolbar
+        backTo="/"
+        backLabel={translate(locale, "sauh.backHome")}
+        fontScale={fontScale}
+        onFontScaleChange={setFontScale}
+        readMinutes={
+          state.status === "ready"
+            ? estimateReadMinutes(`${state.post.verse ?? ""} ${state.post.body}`)
+            : undefined
+        }
+        shareUrl={state.status === "ready" ? state.post.url : undefined}
+      />
       {state.status !== "ready" && <h1>{translate(locale, "sauh.title")}</h1>}
       {state.status === "ready" && (
         <ArticleProgress
@@ -196,8 +270,9 @@ export function SauhPage({ locale }: { locale: Locale }) {
         />
       )}
       <article
-        className={`online-article-card sauh-article${state.status === "ready" ? " has-image" : ""}`}
+        className={`online-article-card editorial-reader-card sauh-article${state.status === "ready" ? " has-image" : ""}`}
         data-sauh-status={state.status}
+        style={{ "--article-font-scale": fontScale } as CSSProperties}
       >
         {state.status === "loading" && (
           <div className="sauh-inline-loading" role="status" aria-live="polite">
@@ -237,6 +312,7 @@ export function SauhPage({ locale }: { locale: Locale }) {
           <>
             <p className="date-line">
               {translate(locale, "sauh.title")} ·{" "}
+              {translate(locale, "sauh.today")} ·{" "}
               {translate(locale, "sauh.directSource")}
             </p>
             <h1>{state.post.title}</h1>
@@ -353,9 +429,6 @@ export function SuaraPage({ locale }: { locale: Locale }) {
       data-testid="suara-page"
     >
       <section className="page-intro">
-        {/* No back link: Literatur and Iman are reached the same way and open
-            straight on their title, so a breadcrumb here pushed this heading
-            48 px lower than its siblings. Beranda stays in the navigation. */}
         <h1>{translate(locale, "suara.title")}</h1>
       </section>
       {state.status === "ready" && state.posts.length > 0 && (
@@ -526,6 +599,7 @@ type SuaraState =
 
 export function SuaraDetailPage({ locale }: { locale: Locale }) {
   const { postId } = useParams();
+  const [fontScale, setFontScale] = useState(1);
   const [state, setState] = useState<SuaraState>(() => {
     const post = getCachedSuara()?.find((item) => item.id === postId);
     const article = post && getCachedArticle(post.url);
@@ -624,11 +698,18 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
       data-testid="suara-detail-page"
     >
       {state.status !== "missing" && (
-        <div className="detail-back">
-          <Link className="text-button" to="/suara">
-            {translate(locale, "suara.backCollection")}
-          </Link>
-        </div>
+        <ArticleReaderToolbar
+          backTo="/suara"
+          backLabel={translate(locale, "suara.backCollection")}
+          fontScale={fontScale}
+          onFontScaleChange={setFontScale}
+          readMinutes={
+            state.status === "ready"
+              ? estimateReadMinutes(state.body ?? state.post.excerpt)
+              : undefined
+          }
+          shareUrl={state.status === "ready" ? state.post.url : undefined}
+        />
       )}
       {state.status === "loading" && (
         <div className="loading-panel" role="status">
@@ -683,8 +764,9 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
       )}
       {state.status === "ready" && (
         <article
-          className="online-article-card suara-article-card"
+          className="online-article-card editorial-reader-card suara-article-card"
           data-preview={state.previewOnly ? "true" : undefined}
+          style={{ "--article-font-scale": fontScale } as CSSProperties}
         >
           <p className="date-line">
             {translate(locale, "suara.title")} ·{" "}
