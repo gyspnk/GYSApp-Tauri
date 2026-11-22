@@ -1486,6 +1486,62 @@ html.has-custom-scrollbar *::-webkit-scrollbar {
   contain-intrinsic-size: auto 56px;
 }
 
+/* ── Fluid Navigation UI Aesthetics & All-Device Responsiveness ── */
+html,
+body,
+.app-shell {
+  overflow-x: clip;
+}
+
+@media (min-width: 600px) {
+  .navigation-shell {
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    backdrop-filter: blur(16px) saturate(1.3);
+    background: color-mix(in srgb, var(--surface-glass) 88%, var(--canvas));
+    border-right: 1px solid var(--line);
+  }
+  .navigation-shell .nav-active-indicator {
+    display: block;
+    background: var(--blue);
+    border-color: transparent;
+    box-shadow: var(--shadow-sm);
+  }
+  .navigation-shell .nav-item.is-active {
+    background: transparent;
+    color: var(--on-accent);
+  }
+  .navigation-shell .nav-item:not(.is-active):hover {
+    background: color-mix(in srgb, var(--blue-soft) 52%, transparent);
+    color: var(--blue);
+  }
+}
+
+@media (max-width: 599px) {
+  .navigation-shell {
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    backdrop-filter: blur(18px) saturate(1.4);
+    background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+    border-top: 1px solid var(--line);
+  }
+  .navigation-shell .nav-active-indicator {
+    background: var(--blue-soft);
+    border-color: color-mix(in srgb, var(--blue) 22%, transparent);
+    border-radius: 999px;
+  }
+  .navigation-shell .nav-item.is-active svg {
+    transform: translateY(-1px) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nav-item.is-active svg {
+    transform: scale(1.08);
+  }
+  .sidebar-collapse-toggle svg {
+    transition: transform 240ms var(--ease-spring);
+  }
+}
+
 @media print {
   .gys-scrollbar-track,
   .gys-ambient-backdrop {

@@ -1,14 +1,25 @@
 import { transitionReader } from "./reader-transition.js";
 import { isRouteWarm, preloadRoute } from "./route-preload.js";
 
+const PRIMARY_ORDER = ["/", "/bible", "/kidung", "/dasar-kepercayaan", "/lainnya"];
+
 let navigationGeneration = 0;
 let navigationInFlight = false;
 let navigationInFlightOwner = 0;
+let lastDirection: -1 | 0 | 1 = 0;
 
 const animatedViews = new WeakSet<Element>();
-const PAGE_FADE_MS = 240;
+const PAGE_FADE_MS = 230;
 const PAGE_FADE_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
 const PRELOAD_BUDGET_MS = 180;
+
+function primaryIndex(path: string): number {
+  const clean = path.split(/[?#]/)[0] || "/";
+  if (clean === "/") return 0;
+  return PRIMARY_ORDER.findIndex(
+    (entry, idx) => idx > 0 && (clean === entry || clean.startsWith(`${entry}/`)),
+  );
+}
 
 function prefersReducedMotion(): boolean {
   return (
@@ -25,13 +36,14 @@ function routeViewIsLoaded(view: Element): boolean {
   return !view.querySelector(":scope > .route-loading");
 }
 
-/** Animate opacity + subtle focus settle without `transform` so fixed dialogs
- * and floating toolbars inside the route keep viewport positioning. */
+/** Animate opacity + subtle focus settle on `.route-view` (never `transform`,
+ * so fixed modals/toolbars keep viewport positioning) plus a gentle directional
+ * micro-glide on the leading page block when switching primary tabs. */
 function animateRouteView(view: HTMLElement) {
   if (prefersReducedMotion()) return;
   view.animate(
     [
-      { opacity: 0, filter: "blur(2px)" },
+      { opacity: 0, filter: "blur(1.5px)" },
       { opacity: 1, filter: "blur(0px)" },
     ],
     {
@@ -39,6 +51,23 @@ function animateRouteView(view: HTMLElement) {
       easing: PAGE_FADE_EASING,
     },
   );
+  if (lastDirection !== 0) {
+    const lead = view.querySelector<HTMLElement>(":scope > .page > :first-child");
+    if (lead) {
+      const offset = lastDirection * 12;
+      lead.animate(
+        [
+          { transform: `translate3d(${offset}px, 0, 0)`, opacity: 0.72 },
+          { transform: "translate3d(0, 0, 0)", opacity: 1 },
+        ],
+        {
+          duration: 260,
+          easing: PAGE_FADE_EASING,
+        },
+      );
+    }
+    lastDirection = 0;
+  }
 }
 
 export type RouteNavigate = (
@@ -51,6 +80,16 @@ export async function navigateSmooth(navigate: RouteNavigate, path: string) {
   navigationInFlight = true;
   const current = ++navigationGeneration;
   navigationInFlightOwner = current;
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const currentPath = location.pathname.replace(base, "") || "/";
+  const fromIdx = primaryIndex(currentPath);
+  const toIdx = primaryIndex(path);
+  lastDirection =
+    fromIdx >= 0 && toIdx >= 0 && fromIdx !== toIdx
+      ? toIdx > fromIdx
+        ? 1
+        : -1
+      : 0;
   const origin = `${location.pathname}${location.search}`;
   let timer: ReturnType<typeof setTimeout> | undefined;
   if (isRouteWarm(path)) {
