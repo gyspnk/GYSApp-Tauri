@@ -132,7 +132,8 @@ export function HymnPlaylistPage({
       return;
     }
     const targetIndex =
-      playlist.currentIndex >= 0 && playlist.currentIndex < playlist.items.length
+      playlist.currentIndex >= 0 &&
+      playlist.currentIndex < playlist.items.length
         ? playlist.currentIndex
         : 0;
     const target = playlist.items[targetIndex];
@@ -534,7 +535,10 @@ export function HymnPlaylistPage({
               const meta = catalogById.get(item.songId);
               return (
                 <li
-                  className={`${isCurrent ? "is-current" : ""}${isPlayingItem ? " is-playing" : ""}`.trim() || undefined}
+                  className={
+                    `${isCurrent ? "is-current" : ""}${isPlayingItem ? " is-playing" : ""}`.trim() ||
+                    undefined
+                  }
                   key={item.songId}
                 >
                   <button
@@ -615,30 +619,77 @@ export function HymnPlaylistPage({
                     >
                       <Icon name="chevronDown" size={16} />
                     </button>
-                    <button
-                      className="icon-button kidung-queue-row-btn"
-                      type="button"
-                      aria-label={translate(locale, "kidung.openSong")}
-                      title={translate(locale, "kidung.openSong")}
-                      onClick={() =>
-                        void navigateSmooth(navigate, `/kidung/${item.songId}`)
-                      }
-                    >
-                      <Icon name="externalLink" size={15} />
-                    </button>
-                    <button
-                      className="icon-button kidung-queue-row-btn kidung-danger-action"
-                      type="button"
-                      aria-label={translate(
-                        locale,
-                        "kidung.removeSongFromPlaylist",
-                        { title: item.title },
-                      )}
-                      title={translate(locale, "kidung.removeFromPlaylist")}
-                      onClick={() => removeMidiPlaylistItem(item.songId)}
-                    >
-                      <Icon name="cross" size={15} />
-                    </button>
+                    <details className="kidung-row-menu">
+                      <summary
+                        aria-label={translate(locale, "kidung.songOptions", {
+                          title: item.title,
+                        })}
+                        title={translate(locale, "kidung.songOptions", {
+                          title: item.title,
+                        })}
+                      >
+                        <Icon name="more" size={18} />
+                      </summary>
+                      <div className="kidung-row-menu-panel">
+                        <button
+                          className="text-button"
+                          type="button"
+                          onClick={(event) => {
+                            moveMidiPlaylistItem(index, index - 1);
+                            event.currentTarget
+                              .closest("details")
+                              ?.removeAttribute("open");
+                          }}
+                          disabled={index === 0}
+                        >
+                          {translate(locale, "kidung.moveUp", {
+                            title: item.title,
+                          })}
+                        </button>
+                        <button
+                          className="text-button"
+                          type="button"
+                          onClick={(event) => {
+                            moveMidiPlaylistItem(index, index + 1);
+                            event.currentTarget
+                              .closest("details")
+                              ?.removeAttribute("open");
+                          }}
+                          disabled={index === playlist.items.length - 1}
+                        >
+                          {translate(locale, "kidung.moveDown", {
+                            title: item.title,
+                          })}
+                        </button>
+                        <button
+                          className="text-button"
+                          type="button"
+                          onClick={(event) => {
+                            event.currentTarget
+                              .closest("details")
+                              ?.removeAttribute("open");
+                            void navigateSmooth(
+                              navigate,
+                              `/kidung/${item.songId}`,
+                            );
+                          }}
+                        >
+                          {translate(locale, "kidung.openSong")}
+                        </button>
+                        <button
+                          className="text-button kidung-danger-action"
+                          type="button"
+                          onClick={(event) => {
+                            removeMidiPlaylistItem(item.songId);
+                            event.currentTarget
+                              .closest("details")
+                              ?.removeAttribute("open");
+                          }}
+                        >
+                          {translate(locale, "kidung.removeFromPlaylist")}
+                        </button>
+                      </div>
+                    </details>
                   </div>
                 </li>
               );

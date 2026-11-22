@@ -144,7 +144,7 @@ function ArticleReaderToolbar({
     });
   };
   return (
-    <div className="reader-utility-bar">
+    <div className="detail-back reader-utility-bar">
       <Link className="reader-back-pill" to={backTo}>
         <Icon name="chevronLeft" size={16} />
         <span>{backLabel}</span>
@@ -270,7 +270,9 @@ export function SauhPage({ locale }: { locale: Locale }) {
         onFontScaleChange={setFontScale}
         readMinutes={
           state.status === "ready"
-            ? estimateReadMinutes(`${state.post.verse ?? ""} ${state.post.body}`)
+            ? estimateReadMinutes(
+                `${state.post.verse ?? ""} ${state.post.body}`,
+              )
             : undefined
         }
         shareUrl={state.status === "ready" ? state.post.url : undefined}
@@ -444,6 +446,9 @@ export function SuaraPage({ locale }: { locale: Locale }) {
       data-testid="suara-page"
     >
       <section className="page-intro">
+        {/* No back link: Literatur and Iman are reached the same way and open
+            straight on their title, so a breadcrumb here pushed this heading
+            48 px lower than its siblings. Beranda stays in the navigation. */}
         <h1>{translate(locale, "suara.title")}</h1>
       </section>
       {state.status === "ready" && state.posts.length > 0 && (

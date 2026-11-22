@@ -1,5 +1,5 @@
 {
-  "tag": "v0.1.0-preview.20261122.1",
-  "notes": "Optimasi ukuran APK Android dan performa menyeluruh tanpa mengurangi kapabilitas: profil rilis Rust `strip = true` & `panic = \"abort\"`, penyaringan resource locale Android (`id`/`in`/`en`/`zh`) serta pembersihan metadata JVM/Kotlin, minifikasi agresif JS/CSS Vite (`esbuild`), rendering 60fps `content-visibility: auto`, dan pembuatan otomatis ikon aplikasi resmi merpati Gereja Yesus Sejati langsung di GitHub Actions.\n\nPembaruan antarmuka & pengalaman: koreografi terbang natural merpati GYS saat masuk aplikasi, merpati latar pasif mengikuti warna aksen, atmosfer hover & sentuhan global, efek ripple air lebih jelas di tombol kecil, tampilan Beranda baru yang responsif, viewer editorial Suara Sejati & Sauh Bagi Jiwa dengan kontrol ukuran teks, peningkatan halaman Kidung, fitur lengkap Antrean MIDI, polesan kaca buram di halaman Iman/Pencarian Global/Media Player, serta Manajemen Aset yang lebih ringkas.",
-  "requestId": "2026-11-22-compact-apk-dove-release-1"
+  "tag": "v0.1.0-preview.20261123.1",
+  "title": "GYSApp 0.1.0 Preview (Ultra-Lean ~14-15 MB APK & GYS Dove Icon)",
+  "notes": "Pengurangan ukuran APK Android drastis (~20 MB lebih ringan, dari ~34.45 MB ke ~14-15 MB) dengan memuat 10 PDF Dasar Kepercayaan on-demand + cache offline dan memangkas duplikat tb-reader.json.gz di build native, tetap mempertahankan 100% kapabilitas Alkitab 66 kitab offline, Kidung + MIDI offline, ikon resmi burung merpati GYS otomatis di CI, serta perbaikan kontrak E2E dan formatting CI."
 }
