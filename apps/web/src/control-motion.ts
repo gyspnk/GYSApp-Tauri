@@ -86,7 +86,11 @@ export function installControlMotion(): () => void {
   };
 
   const onPointerMove = (event: PointerEvent) => {
-    if (reduced.matches || !finePointer.matches || event.pointerType !== "mouse")
+    if (
+      reduced.matches ||
+      !finePointer.matches ||
+      event.pointerType !== "mouse"
+    )
       return;
     const target =
       event.target instanceof Element

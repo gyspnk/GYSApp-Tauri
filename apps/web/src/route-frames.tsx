@@ -6,7 +6,12 @@ import { Icon } from "./icons.js";
 import { recordDiagnostic } from "./diagnostics.js";
 
 type NonReaderRouteId =
-  "home" | "sauh" | "suara" | "faith" | "literature" | "more";
+  | "home"
+  | "sauh"
+  | "suara"
+  | "faith"
+  | "literature"
+  | "more";
 
 function getNonReaderRouteId(pathname: string): NonReaderRouteId {
   if (pathname === "/sauh") return "sauh";
