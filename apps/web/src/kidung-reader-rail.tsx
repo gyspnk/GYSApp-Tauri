@@ -5,15 +5,16 @@ import { translate, type Locale } from "./i18n.js";
 import {
   hymnCollectionLabel,
   numberLabel,
+  uniqueItems,
   type CatalogState,
 } from "./kidung-shared.js";
+import { resolveCollection } from "./kidung-collection-store.js";
 import { Icon } from "./icons.js";
 import { Select } from "./select.js";
 
-// One column of the desktop reader: the book's index stays beside the text so
-// moving between songs never costs a trip back to the catalog. The catalog page
-// keeps its own richer toolbar; this rail only carries what the reader needs.
-const RAIL_PAGE = 80;
+// One column of the desktop reader: the book's full index stays beside the text
+// so moving between songs never costs a trip back to the catalog and never
+// truncates KR (or any other collection) behind incremental scroll pages.
 
 export function KidungReaderRail({
   locale,
@@ -46,9 +47,6 @@ export function KidungReaderRail({
   );
 }
 
-// Landscape phones and tablets have no room for a permanent rail, so the index
-// rides in a disclosure above the text: one tap to pick another song, closed by
-// default so the reading surface keeps every row.
 export function KidungReaderPicker({
   locale,
   state,
@@ -107,32 +105,39 @@ function RailBody({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const items = state.status === "ready" ? state.items : [];
+  const items = useMemo(
+    () => (state.status === "ready" ? uniqueItems(state.items) : []),
+    [state],
+  );
   const books = useMemo(
     () => [...new Set(items.map((item) => item.book))].sort(),
     [items],
   );
-  const active = items.find((item) => item.id === activeId);
-  const [book, setBook] = useState(() => active?.book ?? books[0] ?? "");
-  const [visible, setVisible] = useState(RAIL_PAGE);
+  const active = useMemo(
+    () => items.find((item) => item.id === activeId),
+    [items, activeId],
+  );
+  const [book, setBook] = useState(() =>
+    resolveCollection(books, active?.book ?? ""),
+  );
   const listRef = useRef<HTMLOListElement>(null);
 
   useEffect(() => {
     if (active?.book) setBook(active.book);
-  }, [active?.book]);
+    else if (!book && books.length > 0) setBook(resolveCollection(books, ""));
+  }, [active?.book, book, books]);
 
+  const activeBook = book && books.includes(book) ? book : resolveCollection(books, active?.book ?? "");
+
+  // Load every song in the active collection at once, ordered by hymn number,
+  // so opening KR lyrics mode immediately exposes the full song list.
   const bookItems = useMemo(
-    () => items.filter((item) => item.book === book),
-    [items, book],
+    () =>
+      items
+        .filter((item) => item.book === activeBook)
+        .sort((a, b) => a.number - b.number),
+    [items, activeBook],
   );
-  const activeIndex = bookItems.findIndex((item) => item.id === activeId);
-  const effectiveVisible = Math.max(
-    visible,
-    activeIndex >= 0
-      ? Math.ceil((activeIndex + 1) / RAIL_PAGE) * RAIL_PAGE
-      : RAIL_PAGE,
-  );
-  const shown = bookItems.slice(0, effectiveVisible);
 
   useEffect(() => {
     if (collapsed) return;
@@ -146,16 +151,13 @@ function RailBody({
         ? "auto"
         : "smooth",
     });
-  }, [activeId, collapsed, book]);
+  }, [activeId, collapsed, activeBook]);
 
   const collectionSelect =
     books.length > 1 ? (
       <Select
-        value={book}
-        onChange={(value) => {
-          setBook(value);
-          setVisible(RAIL_PAGE);
-        }}
+        value={activeBook}
+        onChange={setBook}
         className="kidung-collection-select"
         label={translate(locale, "kidung.collection")}
         options={books.map((value) => ({
@@ -188,21 +190,8 @@ function RailBody({
       ) : (
         collectionSelect
       )}
-      <ol
-        ref={listRef}
-        className="kidung-rail-list"
-        onScroll={(event) => {
-          const list = event.currentTarget;
-          if (list.scrollTop + list.clientHeight >= list.scrollHeight - 120)
-            setVisible((value) => {
-              const current = Math.max(value, effectiveVisible);
-              return current >= bookItems.length
-                ? current
-                : current + RAIL_PAGE;
-            });
-        }}
-      >
-        {shown.map((item) => (
+      <ol ref={listRef} className="kidung-rail-list">
+        {bookItems.map((item) => (
           <li key={item.id}>
             <button
               type="button"

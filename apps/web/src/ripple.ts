@@ -21,7 +21,7 @@ export function triggerElementRipple(
   }
   const rect = element.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0) return;
-  const diameter = Math.max(rect.width, rect.height, 44);
+  const diameter = Math.max(rect.width, rect.height, 48);
   const radius = diameter / 2;
   const ripple = document.createElement("span");
   ripple.className = "gys-ripple";
@@ -39,10 +39,4 @@ export function triggerElementRipple(
   window.setTimeout(cleanup, 900);
 }
 
-export function triggerRipple(
-  element: HTMLElement | null | undefined,
-  clientX: number,
-  clientY: number,
-): void {
-  triggerElementRipple(element, clientX, clientY);
-}
+export const triggerRipple = triggerElementRipple;

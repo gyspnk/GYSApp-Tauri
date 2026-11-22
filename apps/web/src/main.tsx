@@ -23,6 +23,14 @@ void import("./control-motion.js").then(({ installControlMotion }) => {
   const dispose = installControlMotion();
   import.meta.hot?.dispose(dispose);
 });
+void import("./custom-scrollbar.js").then(({ installCustomScrollbar }) => {
+  const dispose = installCustomScrollbar();
+  import.meta.hot?.dispose(dispose);
+});
+void import("./ambient-backdrop.js").then(({ installAmbientBackdrop }) => {
+  const dispose = installAmbientBackdrop();
+  import.meta.hot?.dispose(dispose);
+});
 installGlobalDiagnostics();
 
 if (typeof window !== "undefined") {
@@ -57,17 +65,14 @@ const restoredPath =
   (window.location.pathname === `${appBase}/index.html` ? "/" : null);
 if (restoredPath) {
   const restoredQuery = routeParams.get("q");
-  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   const path = restoredPath.startsWith("/") ? restoredPath : `/${restoredPath}`;
   window.history.replaceState(
     null,
     "",
-    `${base}${path}${restoredQuery ? `?${restoredQuery}` : ""}${window.location.hash}`,
+    `${appBase}${path}${restoredQuery ? `?${restoredQuery}` : ""}${window.location.hash}`,
   );
 }
 
-/** The shell must never appear mid-swap: keep the boot splash until the two
- * reading faces are resolved, then reveal the already-painted app. */
 const BOOT_FONT_TIMEOUT_MS = 1200;
 const CRITICAL_FONT_FACES = [
   '400 1em "GYS Reading Sans"',
@@ -98,8 +103,6 @@ async function waitForBootFonts(): Promise<void> {
 }
 
 async function boot(): Promise<void> {
-  // A stored English or Chinese locale loads its table before the shell renders;
-  // the default Indonesian table is already in the initial chunk.
   const storage = getShellSettingsStorage();
   const locale = storage ? readShellSettings(storage).locale : "id";
   await loadLocaleMessages(locale).catch(() => undefined);
@@ -109,7 +112,6 @@ async function boot(): Promise<void> {
     </StrictMode>,
   );
   void waitForBootFonts().then(() => {
-    // One frame resolves the fonts, the second settles layout before revealing.
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         releaseBootSplash();

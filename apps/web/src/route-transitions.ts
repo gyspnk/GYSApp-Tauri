@@ -2,22 +2,11 @@ import { transitionReader } from "./reader-transition.js";
 import { isRouteWarm, preloadRoute } from "./route-preload.js";
 
 let navigationGeneration = 0;
-/**
- * True while a link navigation is still resolving. A tap that lands in that
- * window supersedes the pending one and must replace its history entry, or a
- * quick double tap stacks two routes and Back walks through the abandoned one.
- */
 let navigationInFlight = false;
-/** Which navigation owns the flag. A cancelled one must not clear a newer
- * navigation's claim, and must clear its own or the next click would replace
- * the history entry it was supposed to push. */
 let navigationInFlightOwner = 0;
 
-/** One page entrance is owned by exactly one path. Snapshot transitions mark the
- * incoming view as already animated, so a later subtree change never replays a
- * second fade on the same page. */
 const animatedViews = new WeakSet<Element>();
-const PAGE_FADE_MS = 260;
+const PAGE_FADE_MS = 240;
 const PAGE_FADE_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
 const PRELOAD_BUDGET_MS = 180;
 
@@ -36,18 +25,22 @@ function routeViewIsLoaded(view: Element): boolean {
   return !view.querySelector(":scope > .route-loading");
 }
 
-/** Animate only the page's opacity: a transformed route would trap the fixed
- * dialogs and toolbars rendered inside it. */
+/** Animate opacity + subtle focus settle without `transform` so fixed dialogs
+ * and floating toolbars inside the route keep viewport positioning. */
 function animateRouteView(view: HTMLElement) {
   if (prefersReducedMotion()) return;
-  view.animate([{ opacity: 0 }, { opacity: 1 }], {
-    duration: PAGE_FADE_MS,
-    easing: PAGE_FADE_EASING,
-  });
+  view.animate(
+    [
+      { opacity: 0, filter: "blur(2px)" },
+      { opacity: 1, filter: "blur(0px)" },
+    ],
+    {
+      duration: PAGE_FADE_MS,
+      easing: PAGE_FADE_EASING,
+    },
+  );
 }
 
-/** Warm local route code before taking the incoming snapshot. Remote content
- * never holds navigation; the reader's compact loading state owns that work. */
 export type RouteNavigate = (
   path: string,
   options?: { replace?: boolean },
@@ -61,8 +54,6 @@ export async function navigateSmooth(navigate: RouteNavigate, path: string) {
   const origin = `${location.pathname}${location.search}`;
   let timer: ReturnType<typeof setTimeout> | undefined;
   if (isRouteWarm(path)) {
-    // Everything the route needs is already parsed; waiting the preload race
-    // only added up to PRELOAD_BUDGET_MS before the click did anything.
     void preloadRoute(path).catch(() => undefined);
   } else {
     await Promise.race([
@@ -74,19 +65,13 @@ export async function navigateSmooth(navigate: RouteNavigate, path: string) {
     clearTimeout(timer);
   }
   if (current !== navigationGeneration) {
-    // A history move (or a newer click) superseded this navigation. Release the
-    // claim only if nobody newer holds it, so the next click still pushes.
     if (navigationInFlightOwner === current) navigationInFlight = false;
     return;
   }
-  // A history move or another navigation already left this page.
   if (`${location.pathname}${location.search}` !== origin) {
     if (navigationInFlightOwner === current) navigationInFlight = false;
     return;
   }
-  // The incoming view fades in once it settles (MutationObserver below).
-  // Waiting for the outgoing view to fade first added 110 ms to every click
-  // while the swap itself looked the same.
   await transitionReader(
     () => {
       if (current === navigationGeneration)
@@ -102,8 +87,6 @@ export async function navigateSmooth(navigate: RouteNavigate, path: string) {
   });
 }
 
-/** Keep native link semantics while fading only the changing page. Loaded
- * after the shell so navigation effects add no initial bundle cost. */
 export function installRouteTransitions(navigate: RouteNavigate) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   const click = (event: MouseEvent) => {
@@ -141,13 +124,8 @@ export function installRouteTransitions(navigate: RouteNavigate) {
     );
   };
   document.addEventListener("click", click, true);
-  // Only a history move cancels an in-flight link navigation. Unrelated DOM
-  // mutations (data arriving, toasts, lazy images) must never swallow a click.
   const cancelPendingNavigation = () => {
     navigationGeneration++;
-    // A history move supersedes every pending click, so release the claim too:
-    // the cancelled navigation is parked on a preload race and would otherwise
-    // still own the flag when the reader clicks the next link.
     navigationInFlight = false;
     navigationInFlightOwner = 0;
   };
@@ -158,12 +136,10 @@ export function installRouteTransitions(navigate: RouteNavigate) {
   const observer = new MutationObserver(() => {
     const view = routeView();
     if (!view) return;
-    // The snapshot transition already played this entrance.
     if (document.documentElement.classList.contains("is-reader-transition")) {
       animatedViews.add(view);
       return;
     }
-    // The route skeleton stays static; only the settled page fades in.
     if (animatedViews.has(view) || !routeViewIsLoaded(view)) return;
     animatedViews.add(view);
     animateRouteView(view);

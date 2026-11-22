@@ -46,18 +46,18 @@
   background: var(--canvas);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  /* Sanctuary Editorial palette: warm vellum canvas + midnight navy ink + GYS cerulean accent.
+  /* Sanctuary Editorial palette: crisp white canvas + midnight navy ink + GYS cerulean accent.
      Every theme keeps the accent blue-dominant so the church identity holds across modes. */
-  --canvas: #f8f7f4;
+  --canvas: #ffffff;
   --surface: #ffffff;
   --surface-rgb: 255, 255, 255;
-  --surface-soft: #f0ede6;
+  --surface-soft: #f4f6f9;
   --surface-elevated: #ffffff;
-  --surface-glass: rgba(255, 255, 255, 0.84);
+  --surface-glass: rgba(255, 255, 255, 0.88);
   --ink: #142033;
   --ink-soft: #2c3e55;
   --muted: #4e5e73;
-  --line: #dcd8ce;
+  --line: #e2e7ef;
   --line-strong: #6c7a8d;
   --blue: #00668f;
   --focus: var(--blue);
@@ -139,6 +139,14 @@
   --lyrics-scale: 1;
   --media-edge-bottom: 12px;
   --safe-area-top: env(safe-area-inset-top, 0px);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(20, 32, 51, 0.22);
+  --scrollbar-thumb-hover: rgba(0, 102, 143, 0.56);
+  --scrollbar-thumb-active: var(--blue);
+  --interactive-glow: rgba(0, 102, 143, 0.14);
+  --ambient-aura-opacity: 0.055;
+  --ambient-emblem-opacity: 0.036;
+  --ambient-emblem-filter: grayscale(100%);
 }
 
 :root[data-theme="dark"] {
@@ -170,6 +178,14 @@
   --shadow-float:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     0 18px 40px -6px rgba(0, 0, 0, 0.64);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(238, 243, 250, 0.22);
+  --scrollbar-thumb-hover: rgba(120, 191, 224, 0.56);
+  --scrollbar-thumb-active: var(--blue);
+  --interactive-glow: rgba(120, 191, 224, 0.18);
+  --ambient-aura-opacity: 0.075;
+  --ambient-emblem-opacity: 0.048;
+  --ambient-emblem-filter: grayscale(100%) invert(1);
 }
 
 :root[data-theme="amoled"] {
@@ -201,6 +217,14 @@
   --shadow-float:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     0 18px 40px -6px rgba(0, 0, 0, 0.94);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(245, 247, 250, 0.24);
+  --scrollbar-thumb-hover: rgba(124, 194, 227, 0.58);
+  --scrollbar-thumb-active: var(--blue);
+  --interactive-glow: rgba(124, 194, 227, 0.2);
+  --ambient-aura-opacity: 0.065;
+  --ambient-emblem-opacity: 0.045;
+  --ambient-emblem-filter: grayscale(100%) invert(1);
 }
 
 :root[data-theme="sepia"] {
@@ -233,6 +257,14 @@
   --shadow-float:
     inset 0 1px 0 rgba(255, 250, 240, 0.75),
     0 16px 36px -6px rgba(72, 48, 28, 0.18);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(43, 29, 18, 0.24);
+  --scrollbar-thumb-hover: rgba(11, 94, 130, 0.56);
+  --scrollbar-thumb-active: var(--blue);
+  --interactive-glow: rgba(11, 94, 130, 0.16);
+  --ambient-aura-opacity: 0.05;
+  --ambient-emblem-opacity: 0.042;
+  --ambient-emblem-filter: sepia(80%) grayscale(40%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -266,6 +298,14 @@
     --shadow-float:
       inset 0 1px 0 rgba(255, 255, 255, 0.12),
       0 18px 40px -6px rgba(0, 0, 0, 0.64);
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: rgba(238, 243, 250, 0.22);
+    --scrollbar-thumb-hover: rgba(120, 191, 224, 0.56);
+    --scrollbar-thumb-active: var(--blue);
+    --interactive-glow: rgba(120, 191, 224, 0.18);
+    --ambient-aura-opacity: 0.075;
+    --ambient-emblem-opacity: 0.048;
+    --ambient-emblem-filter: grayscale(100%) invert(1);
   }
 }
 
