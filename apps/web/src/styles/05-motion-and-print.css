@@ -1143,21 +1143,157 @@
   }
 }
 
-/* Crisp separation on pure-white light mode & filled MIDI seek progress */
+/* Crisp separation on pure-white light mode */
 :root[data-theme="light"] .more-card,
 :root[data-theme="system"] .more-card {
   border: 1px solid var(--line);
 }
+
+/* ── Redesigned Frosted-Glass MIDI Player Dock ── */
+.media-surface.persistent-media:not(.is-minimized) {
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--blue) 20%, var(--line));
+  box-shadow: var(--shadow-float);
+}
+.media-surface.is-kidung-media:not(.is-minimized) {
+  padding: 10px 14px;
+  gap: 6px 10px;
+}
+.media-surface.persistent-media[data-playing="true"]:not(.is-minimized) {
+  border-color: color-mix(in srgb, var(--blue) 42%, var(--line));
+}
+.persistent-media:not(.is-minimized)
+  :is(.media-secondary-control, .media-minimize, .media-close-button) {
+  border-color: transparent;
+  background: transparent;
+  border-radius: 999px;
+  color: var(--ink-soft);
+}
+.persistent-media:not(.is-minimized)
+  :is(.media-secondary-control, .media-minimize, .media-close-button):hover:not(:disabled) {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.media-surface.persistent-media:not(.is-minimized) .media-primary-control {
+  box-shadow: var(--shadow-sm);
+}
+.media-surface.persistent-media:not(.is-minimized) .media-seek-time {
+  gap: 10px;
+}
+.media-surface.persistent-media:not(.is-minimized) .media-seek-time span {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
 .media-progress input[type="range"],
 .media-seek-time input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  margin: 0;
+  border-radius: 999px;
   background: linear-gradient(
     90deg,
     var(--blue) 0%,
     var(--blue) var(--seek-pct, 0%),
-    color-mix(in srgb, var(--line) 72%, var(--surface-soft)) var(--seek-pct, 0%),
-    color-mix(in srgb, var(--line) 72%, var(--surface-soft)) 100%
+    color-mix(in srgb, var(--line) 76%, var(--surface-soft)) var(--seek-pct, 0%),
+    color-mix(in srgb, var(--line) 76%, var(--surface-soft)) 100%
   );
+  cursor: pointer;
+}
+.media-progress input[type="range"]::-webkit-slider-thumb,
+.media-seek-time input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
   border-radius: 999px;
+  border: 2px solid var(--surface);
+  background: var(--blue);
+  box-shadow: var(--shadow-xs);
+  transition: transform 160ms var(--ease-spring);
+}
+.media-progress input[type="range"]:hover::-webkit-slider-thumb,
+.media-seek-time input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+.media-progress input[type="range"]::-moz-range-thumb,
+.media-seek-time input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+  background: var(--blue);
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── Expressive Sanctuary Light Ray, Floating Motes & Music-Reactive Ambient ── */
+.gys-ambient-ray {
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: min(72vw, 760px);
+  height: 140%;
+  background: linear-gradient(
+    135deg,
+    transparent 24%,
+    color-mix(in srgb, var(--blue) 42%, transparent) 48%,
+    color-mix(in srgb, var(--gold) 28%, transparent) 58%,
+    transparent 76%
+  );
+  opacity: calc(var(--ambient-aura-opacity) * 0.75);
+  transform: rotate(-14deg);
+  will-change: transform, opacity;
+}
+.gys-ambient-motes {
+  position: absolute;
+  inset: 0;
+}
+.gys-ambient-mote {
+  position: absolute;
+  border-radius: 999px;
+  background: var(--blue);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.gys-mote-1 { left: 18%; bottom: 12%; width: 4px; height: 4px; }
+.gys-mote-2 { left: 42%; bottom: 8%; width: 5px; height: 5px; background: var(--gold); }
+.gys-mote-3 { left: 68%; bottom: 16%; width: 4px; height: 4px; }
+.gys-mote-4 { left: 82%; bottom: 24%; width: 6px; height: 6px; background: var(--gold); }
+.gys-mote-5 { left: 28%; bottom: 22%; width: 3px; height: 3px; }
+
+@keyframes gys-ray-sway {
+  0%, 100% { transform: rotate(-14deg) translate3d(0, 0, 0); }
+  50% { transform: rotate(-11deg) translate3d(-18px, 14px, 0); }
+}
+@keyframes gys-mote-rise {
+  0% { transform: translate3d(0, 0, 0) scale(0.8); opacity: 0; }
+  20% { opacity: 0.16; }
+  80% { opacity: 0.1; }
+  100% { transform: translate3d(14px, -180px, 0) scale(1.1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gys-ambient-ray { animation: gys-ray-sway 30s ease-in-out infinite; }
+  .gys-mote-1 { animation: gys-mote-rise 22s ease-in-out infinite; }
+  .gys-mote-2 { animation: gys-mote-rise 26s ease-in-out 4s infinite; }
+  .gys-mote-3 { animation: gys-mote-rise 20s ease-in-out 8s infinite; }
+  .gys-mote-4 { animation: gys-mote-rise 28s ease-in-out 12s infinite; }
+  .gys-mote-5 { animation: gys-mote-rise 24s ease-in-out 16s infinite; }
+}
+
+body:has(.media-surface[data-playing="true"]) .gys-ambient-aura {
+  opacity: calc(var(--ambient-aura-opacity) * 1.35);
+  transition: opacity 600ms var(--ease-out);
+}
+body:has(.media-surface[data-playing="true"]) .gys-ambient-emblem {
+  opacity: calc(var(--ambient-emblem-opacity) * 1.3);
+  transition: opacity 600ms var(--ease-out);
+}
+
+html.is-tab-hidden .gys-ambient-backdrop * {
+  animation-play-state: paused !important;
 }
 
 /* All-ages reverent clarity: crisp card separation on pure white, warm devotional accent,
