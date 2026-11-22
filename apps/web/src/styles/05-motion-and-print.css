@@ -2408,3 +2408,34 @@ body,
   background: color-mix(in srgb, var(--surface-glass) 84%, transparent);
   border: 1px solid color-mix(in srgb, var(--blue) 26%, var(--line));
 }
+
+/* ── Center In-App Loading States ("Memuat bacaan" & Loading Bar) on Screen ── */
+.loading-panel,
+.route-loading,
+.suara-detail-page .loading-panel,
+.sauh-inline-loading {
+  width: 100%;
+  min-height: min(62dvh, 460px);
+  display: grid;
+  place-items: center;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  margin-inline: auto;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.loading-progress {
+  width: min(100%, 300px);
+  margin: auto;
+  display: grid;
+  place-items: center;
+  justify-items: center;
+  text-align: center;
+  gap: 12px;
+}
+.loading-progress-label {
+  justify-content: center;
+  text-align: center;
+}

@@ -39,7 +39,7 @@ html[data-theme="sepia"] {
     #ffffff;
   contain: layout style paint;
   will-change: opacity;
-  transition: opacity 580ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 540ms cubic-bezier(0.22, 1, 0.36, 1) 1020ms;
 }
 html[data-theme="dark"] .shell-startup {
   color: #78bfe0;
@@ -100,9 +100,6 @@ html[data-theme="sepia"] .shell-startup {
   width: 172px;
   height: 112px;
   will-change: transform, opacity;
-  transition:
-    transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 540ms ease;
 }
 .shell-startup-halo {
   position: absolute;
@@ -110,10 +107,7 @@ html[data-theme="sepia"] .shell-startup {
   border-radius: 999px;
   background: radial-gradient(circle, currentColor 0%, transparent 68%);
   opacity: 0.16;
-  animation: shell-halo-pulse 1.9s ease-in-out infinite;
-  transition:
-    transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 460ms ease;
+  animation: shell-halo-pulse 2s ease-in-out infinite;
 }
 .shell-startup-dove {
   position: relative;
@@ -121,23 +115,21 @@ html[data-theme="sepia"] .shell-startup {
   width: 164px;
   height: auto;
   overflow: visible;
-  animation: gys-dove-glide 1.3s ease-in-out infinite;
+  animation: gys-dove-glide 1.35s ease-in-out infinite;
 }
 .gys-wing-near {
   transform-origin: 266px 108px;
-  animation: gys-wing-near-flap 0.92s cubic-bezier(0.45, 0.05, 0.55, 0.95)
+  animation: gys-wing-near-flap 0.96s cubic-bezier(0.45, 0.05, 0.55, 0.95)
     infinite;
-  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .gys-wing-far {
   transform-origin: 338px 58px;
-  animation: gys-wing-far-flap 0.92s cubic-bezier(0.45, 0.05, 0.55, 0.95)
+  animation: gys-wing-far-flap 0.96s cubic-bezier(0.45, 0.05, 0.55, 0.95)
     infinite;
-  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .gys-arc {
   transform-origin: 120px 180px;
-  animation: gys-arc-pulse 1.3s ease-in-out infinite;
+  animation: gys-arc-pulse 1.35s ease-in-out infinite;
 }
 .gys-arc-2 {
   animation-delay: 0.14s;
@@ -146,29 +138,32 @@ html[data-theme="sepia"] .shell-startup {
   animation-delay: 0.28s;
 }
 
-/* Exit choreography: official GYS dove spreads wings and flies forward filling the screen */
+/* Natural multi-phase bird flight exit choreography (1.55s unhurried sequence) */
 html[data-boot="ready"] .shell-startup {
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 580ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 600ms;
+    opacity 540ms cubic-bezier(0.22, 1, 0.36, 1) 1020ms,
+    visibility 0s linear 1600ms;
 }
 html[data-boot="ready"] .shell-startup-dove-wrap {
-  transform: translate3d(24px, -20px, 0) scale(15.5) rotate(-5deg);
-  opacity: 0;
+  animation: gys-dove-flight-exit 1550ms cubic-bezier(0.25, 0.1, 0.25, 1)
+    forwards;
+}
+html[data-boot="ready"] .shell-startup-dove {
+  animation: none;
 }
 html[data-boot="ready"] .shell-startup-halo {
-  transform: scale(6);
-  opacity: 0;
+  animation: gys-halo-bloom-exit 1500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 html[data-boot="ready"] .shell-startup .gys-wing-near {
-  animation: none;
-  transform: rotate(22deg) scale(1.16);
+  animation: gys-wing-near-takeoff 1550ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 html[data-boot="ready"] .shell-startup .gys-wing-far {
-  animation: none;
-  transform: rotate(-18deg) scale(1.16);
+  animation: gys-wing-far-takeoff 1550ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+html[data-boot="ready"] .shell-startup .gys-arc {
+  animation: gys-arc-trail-exit 1100ms ease-out forwards;
 }
 html[data-boot="ready"] .shell-startup-track {
   transform: translate3d(0, 14px, 0) scale(0.92);
@@ -183,8 +178,8 @@ html[data-boot="ready"] .shell-startup-track {
   border-radius: 999px;
   overflow: hidden;
   transition:
-    transform 300ms ease,
-    opacity 260ms ease;
+    transform 360ms ease,
+    opacity 320ms ease;
 }
 .shell-startup-track > span {
   display: block;
@@ -241,6 +236,7 @@ html[data-theme="sepia"] .shell-startup-track > span {
   );
 }
 
+/* Hovering wingbeats */
 @keyframes gys-wing-near-flap {
   0%,
   100% {
@@ -279,6 +275,105 @@ html[data-theme="sepia"] .shell-startup-track > span {
     transform: translate3d(-4px, 3px, 0);
   }
 }
+
+/* Natural flight path: dip anticipation -> arcing climb -> banking glide -> full-screen pass */
+@keyframes gys-dove-flight-exit {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  18% {
+    transform: translate3d(-16px, 14px, 0) scale(0.92) rotate(7deg);
+    opacity: 1;
+  }
+  42% {
+    transform: translate3d(28px, -28px, 0) scale(1.42) rotate(-8deg);
+    opacity: 1;
+  }
+  64% {
+    transform: translate3d(-10px, -38px, 0) scale(2.55) rotate(-3deg);
+    opacity: 1;
+  }
+  84% {
+    transform: translate3d(16px, -20px, 0) scale(7.2) rotate(-4deg);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate3d(36px, -28px, 0) scale(18) rotate(-2deg);
+    opacity: 0;
+  }
+}
+@keyframes gys-wing-near-takeoff {
+  0% {
+    transform: rotate(8deg) scaleY(1);
+  }
+  16% {
+    transform: rotate(24deg) scaleY(1.08);
+  }
+  34% {
+    transform: rotate(-28deg) scaleY(0.76);
+  }
+  50% {
+    transform: rotate(22deg) scaleY(1.06);
+  }
+  64% {
+    transform: rotate(-18deg) scaleY(0.84);
+  }
+  82%,
+  100% {
+    transform: rotate(24deg) scale(1.16);
+  }
+}
+@keyframes gys-wing-far-takeoff {
+  0% {
+    transform: rotate(-8deg) scaleY(1);
+  }
+  16% {
+    transform: rotate(-22deg) scaleY(1.08);
+  }
+  34% {
+    transform: rotate(24deg) scaleY(0.76);
+  }
+  50% {
+    transform: rotate(-20deg) scaleY(1.06);
+  }
+  64% {
+    transform: rotate(16deg) scaleY(0.84);
+  }
+  82%,
+  100% {
+    transform: rotate(-20deg) scale(1.16);
+  }
+}
+@keyframes gys-arc-trail-exit {
+  0% {
+    opacity: 0.9;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  45% {
+    opacity: 0.72;
+    transform: translate3d(-24px, 18px, 0) scale(1.12);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-56px, 40px, 0) scale(1.24);
+  }
+}
+@keyframes gys-halo-bloom-exit {
+  0% {
+    transform: scale(1);
+    opacity: 0.16;
+  }
+  60% {
+    transform: scale(2.8);
+    opacity: 0.24;
+  }
+  100% {
+    transform: scale(8.5);
+    opacity: 0;
+  }
+}
+
 @keyframes shell-halo-pulse {
   0%,
   100% {
@@ -308,7 +403,7 @@ html[data-theme="sepia"] .shell-startup-track > span {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  transition: opacity 340ms ease;
+  transition: opacity 640ms ease 560ms;
 }
 html[data-boot="ready"] .shell-startup-motes {
   opacity: 0;

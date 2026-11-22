@@ -84,11 +84,22 @@ const CRITICAL_FONT_FACES = [
 function releaseBootSplash() {
   const root = document.documentElement;
   if (root.dataset.boot === "ready") return;
-  root.dataset.boot = "ready";
-  const splash = document.getElementById("boot-splash");
-  if (!splash) return;
-  splash.setAttribute("aria-hidden", "true");
-  window.setTimeout(() => splash.remove(), 640);
+  const reducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const trigger = () => {
+    if (root.dataset.boot === "ready") return;
+    root.dataset.boot = "ready";
+    const splash = document.getElementById("boot-splash");
+    if (!splash) return;
+    splash.setAttribute("aria-hidden", "true");
+    window.setTimeout(() => splash.remove(), reducedMotion ? 40 : 1680);
+  };
+  if (reducedMotion) {
+    trigger();
+    return;
+  }
+  window.setTimeout(trigger, 220);
 }
 
 async function waitForBootFonts(): Promise<void> {
