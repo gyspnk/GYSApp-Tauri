@@ -187,22 +187,47 @@ export function FaithPage({ locale }: { locale: Locale }) {
   const faithOpenerRef = useRef<HTMLElement | null>(null);
   const noteDialogRef = useRef<HTMLDivElement | null>(null);
   const noteOpenerRef = useRef<HTMLElement | null>(null);
+  const modalCloseTimerRef = useRef<number | undefined>(undefined);
+  const noteCloseTimerRef = useRef<number | undefined>(undefined);
+  const flashTimerRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    return () => {
+      if (modalCloseTimerRef.current !== undefined) {
+        window.clearTimeout(modalCloseTimerRef.current);
+      }
+      if (noteCloseTimerRef.current !== undefined) {
+        window.clearTimeout(noteCloseTimerRef.current);
+      }
+      if (flashTimerRef.current !== undefined) {
+        window.clearTimeout(flashTimerRef.current);
+      }
+    };
+  }, []);
 
   const closeModal = () => {
     if (isModalClosing) return;
     setIsModalClosing(true);
-    window.setTimeout(() => {
+    if (modalCloseTimerRef.current !== undefined) {
+      window.clearTimeout(modalCloseTimerRef.current);
+    }
+    modalCloseTimerRef.current = window.setTimeout(() => {
       setSelected("");
       setIsModalClosing(false);
+      modalCloseTimerRef.current = undefined;
     }, 200);
   };
 
   const closeNote = () => {
     if (isNoteClosing) return;
     setIsNoteClosing(true);
-    window.setTimeout(() => {
+    if (noteCloseTimerRef.current !== undefined) {
+      window.clearTimeout(noteCloseTimerRef.current);
+    }
+    noteCloseTimerRef.current = window.setTimeout(() => {
       setNotePopupOpen(false);
       setIsNoteClosing(false);
+      noteCloseTimerRef.current = undefined;
     }, 200);
   };
 
@@ -264,7 +289,13 @@ export function FaithPage({ locale }: { locale: Locale }) {
 
   const flash = (message: string) => {
     setNotice(message);
-    window.setTimeout(() => setNotice(""), 2400);
+    if (flashTimerRef.current !== undefined) {
+      window.clearTimeout(flashTimerRef.current);
+    }
+    flashTimerRef.current = window.setTimeout(() => {
+      setNotice("");
+      flashTimerRef.current = undefined;
+    }, 2400);
   };
   const share = async () => {
     if (!active) return;

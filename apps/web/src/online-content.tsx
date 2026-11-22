@@ -119,7 +119,76 @@ function estimateReadMinutes(text: string): number {
   return Math.max(1, Math.round(words / 190));
 }
 
+const ARTICLE_FONT_SCALE_KEY = "gys-article-font-scale";
+
+function readArticleFontScale(): number {
+  if (typeof window === "undefined") return 1;
+  try {
+    const parsed = Number(window.localStorage.getItem(ARTICLE_FONT_SCALE_KEY));
+    if (Number.isFinite(parsed) && parsed >= 0.85 && parsed <= 1.4) {
+      return Number(parsed.toFixed(2));
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return 1;
+}
+
+function writeArticleFontScale(scale: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(ARTICLE_FONT_SCALE_KEY, String(scale));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function useArticleFontScale(): [number, (next: number) => void] {
+  const [scale, setScale] = useState<number>(readArticleFontScale);
+  const update = useCallback((next: number) => {
+    const clamped = Math.min(1.4, Math.max(0.85, Number(next.toFixed(2))));
+    setScale(clamped);
+    writeArticleFontScale(clamped);
+  }, []);
+  return [scale, update];
+}
+
+function toolbarLabels(locale: Locale) {
+  if (locale === "en") {
+    return {
+      group: "Text size",
+      smaller: "Decrease text size",
+      larger: "Increase text size",
+      reset: "Reset text size",
+      copy: "Copy link",
+      copied: "Link copied",
+      minUnit: "min",
+    };
+  }
+  if (locale === "zh") {
+    return {
+      group: "字体大小",
+      smaller: "缩小字体",
+      larger: "放大字体",
+      reset: "重置字体大小",
+      copy: "复制链接",
+      copied: "已复制链接",
+      minUnit: "分钟",
+    };
+  }
+  return {
+    group: "Ukuran teks",
+    smaller: "Perkecil teks",
+    larger: "Perbesar teks",
+    reset: "Kembalikan ukuran teks normal",
+    copy: "Salin tautan",
+    copied: "Tautan disalin",
+    minUnit: "mnt",
+  };
+}
+
 function ArticleReaderToolbar({
+  locale,
   backTo,
   backLabel,
   fontScale,
@@ -127,6 +196,7 @@ function ArticleReaderToolbar({
   readMinutes,
   shareUrl,
 }: {
+  locale: Locale;
   backTo: string;
   backLabel: string;
   fontScale: number;
@@ -135,13 +205,33 @@ function ArticleReaderToolbar({
   shareUrl?: string | undefined;
 }) {
   const [copied, setCopied] = useState(false);
+  const timerRef = useRef<number | undefined>(undefined);
+  const labels = toolbarLabels(locale);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== undefined) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
   const copyLink = () => {
     if (!shareUrl || typeof navigator === "undefined" || !navigator.clipboard)
       return;
-    void navigator.clipboard.writeText(shareUrl).then(() => {
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    });
+    void navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        setCopied(true);
+        if (timerRef.current !== undefined) {
+          window.clearTimeout(timerRef.current);
+        }
+        timerRef.current = window.setTimeout(() => {
+          setCopied(false);
+          timerRef.current = undefined;
+        }, 1800);
+      })
+      .catch(() => undefined);
   };
   return (
     <div className="detail-back reader-utility-bar">
@@ -151,36 +241,42 @@ function ArticleReaderToolbar({
       </Link>
       <div className="reader-utility-controls">
         {readMinutes !== undefined && (
-          <span className="reader-time-pill">~{readMinutes} mnt</span>
+          <span className="reader-time-pill">
+            ~{readMinutes} {labels.minUnit}
+          </span>
         )}
         <div
           className="reader-font-stepper"
           role="group"
-          aria-label="Ukuran teks"
+          aria-label={labels.group}
         >
           <button
             type="button"
             className="icon-button reader-tool-btn"
-            aria-label="Perkecil teks"
+            aria-label={labels.smaller}
+            title={labels.smaller}
             disabled={fontScale <= 0.85}
-            onClick={() =>
-              onFontScaleChange(
-                Math.max(0.85, Number((fontScale - 0.1).toFixed(2))),
-              )
-            }
+            onClick={() => onFontScaleChange(fontScale - 0.1)}
           >
             <Icon name="textDecrease" size={16} />
           </button>
           <button
             type="button"
+            className="reader-font-scale-btn"
+            aria-label={labels.reset}
+            title={labels.reset}
+            disabled={fontScale === 1}
+            onClick={() => onFontScaleChange(1)}
+          >
+            {Math.round(fontScale * 100)}%
+          </button>
+          <button
+            type="button"
             className="icon-button reader-tool-btn"
-            aria-label="Perbesar teks"
+            aria-label={labels.larger}
+            title={labels.larger}
             disabled={fontScale >= 1.4}
-            onClick={() =>
-              onFontScaleChange(
-                Math.min(1.4, Number((fontScale + 0.1).toFixed(2))),
-              )
-            }
+            onClick={() => onFontScaleChange(fontScale + 0.1)}
           >
             <Icon name="textIncrease" size={16} />
           </button>
@@ -189,8 +285,8 @@ function ArticleReaderToolbar({
           <button
             type="button"
             className="icon-button reader-tool-btn"
-            aria-label="Salin tautan"
-            title="Salin tautan"
+            aria-label={copied ? labels.copied : labels.copy}
+            title={copied ? labels.copied : labels.copy}
             onClick={copyLink}
           >
             <Icon name={copied ? "checkCircle" : "copy"} size={16} />
@@ -210,7 +306,7 @@ function SourceLink({ href, label }: { href: string; label: string }) {
 }
 
 export function SauhPage({ locale }: { locale: Locale }) {
-  const [fontScale, setFontScale] = useState(1);
+  const [fontScale, setFontScale] = useArticleFontScale();
   const [state, setState] = useState<
     | { status: "loading" }
     | { status: "ready"; post: SauhPost }
@@ -264,6 +360,7 @@ export function SauhPage({ locale }: { locale: Locale }) {
   return (
     <div className="page online-content-page sauh-page" data-testid="sauh-page">
       <ArticleReaderToolbar
+        locale={locale}
         backTo="/"
         backLabel={translate(locale, "sauh.backHome")}
         fontScale={fontScale}
@@ -619,7 +716,7 @@ type SuaraState =
 
 export function SuaraDetailPage({ locale }: { locale: Locale }) {
   const { postId } = useParams();
-  const [fontScale, setFontScale] = useState(1);
+  const [fontScale, setFontScale] = useArticleFontScale();
   const [state, setState] = useState<SuaraState>(() => {
     const post = getCachedSuara()?.find((item) => item.id === postId);
     const article = post && getCachedArticle(post.url);
@@ -719,6 +816,7 @@ export function SuaraDetailPage({ locale }: { locale: Locale }) {
     >
       {state.status !== "missing" && (
         <ArticleReaderToolbar
+          locale={locale}
           backTo="/suara"
           backLabel={translate(locale, "suara.backCollection")}
           fontScale={fontScale}
