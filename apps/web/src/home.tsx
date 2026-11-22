@@ -83,6 +83,8 @@ export function HomePage({ locale }: { locale: Locale }) {
       }),
     [],
   );
+  // Suara Sejati & Literatur refresh incrementally: cached lists stay
+  // painted while upstream additions are merged in place.
   useEffect(
     () =>
       subscribeSuara((posts) => {
@@ -101,6 +103,9 @@ export function HomePage({ locale }: { locale: Locale }) {
       }),
     [],
   );
+  // Suara is one tap away and its snapshot is a 22 KB gzip; warming it while
+  // the reader looks at the verse keeps the first Suara visit out of the cold
+  // fetch. The helper skips data-saver and 2G links on purpose.
   useEffect(() => {
     const connection = (
       navigator as Navigator & {
@@ -121,6 +126,9 @@ export function HomePage({ locale }: { locale: Locale }) {
     };
   }, []);
   const hasActivity = Boolean(activity.bible || activity.hymn);
+  // An outdated snapshot must not trigger an endless revalidation loop
+  // (forced re-fetch -> setSauh -> effect -> fetch again): throttle at most
+  // one network re-check per minute.
   const lastForcedSauhAtRef = useRef(0);
   const refreshTodaySauh = useCallback(() => {
     const now = Date.now();
@@ -142,6 +150,8 @@ export function HomePage({ locale }: { locale: Locale }) {
       .then((items) => {
         if (signal?.aborted) return;
         const todays = selectTodaySauh(items);
+        // Same stale-safe rule as the other shelves: an empty refresh keeps the
+        // already-painted reading instead of collapsing the section.
         if (todays.length) {
           setSauh(todays);
           setSauhStatus("ready");
@@ -177,6 +187,7 @@ export function HomePage({ locale }: { locale: Locale }) {
       try {
         const items = await fetchSuara(signal);
         if (signal?.aborted) return;
+        // Keep an already-painted shelf when a refresh returns nothing.
         if (items.length) {
           setSuara(items);
           setSuaraStatus("ready");
@@ -206,6 +217,8 @@ export function HomePage({ locale }: { locale: Locale }) {
     void fetchLiteratureCatalog(signal)
       .then((items) => {
         if (signal?.aborted) return;
+        // A refresh that comes back empty must never erase the list the reader
+        // is already looking at: that collapsed the whole section mid-scroll.
         if (items.length) {
           setLiterature(items);
           setLiteratureStatus("ready");
@@ -275,7 +288,7 @@ export function HomePage({ locale }: { locale: Locale }) {
       >
         <section className="page-intro home-hero-row">
           <div className="home-hero-copy">
-            <span className="home-date-pill">{today}</span>
+            <span className="home-date home-date-pill">{today}</span>
             <h1 className="home-heading">{translate(locale, "nav.home")}</h1>
           </div>
         </section>
