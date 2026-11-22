@@ -11,7 +11,7 @@ import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
 } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { type HymnMetadata, type UpstreamMusicLock } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { recordDiagnostic } from "./diagnostics.js";
@@ -21,8 +21,10 @@ import { buildHymnSearchIndex, searchHymns } from "./hymn-search.js";
 import {
   addMidiPlaylistItem,
   getMidiPlaylist,
+  removeMidiPlaylistItem,
   subscribeMidiPlaylist,
 } from "./midi-playlist.js";
+import { midiPlayer } from "./midi-player.js";
 import {
   type CatalogState,
   numberLabel,
@@ -153,6 +155,11 @@ export function HymnCatalog({
     getMidiPlaylist,
     getMidiPlaylist,
   );
+  const playerState = useSyncExternalStore(
+    midiPlayer.subscribe,
+    midiPlayer.snapshot,
+    midiPlayer.snapshot,
+  );
   const queueIds = useMemo(
     () => new Set(queue.items.map((entry) => entry.songId)),
     [queue],
@@ -177,12 +184,18 @@ export function HymnCatalog({
   const onRowQueue = (
     event: ReactMouseEvent<HTMLButtonElement>,
     item: HymnMetadata,
+    inQueue: boolean,
   ) => {
     event.stopPropagation();
-    addMidiPlaylistItem({
-      songId: item.id,
-      title: item.title,
-    });
+    triggerRipple(event.currentTarget, event.clientX, event.clientY);
+    if (inQueue) {
+      removeMidiPlaylistItem(item.id);
+    } else {
+      addMidiPlaylistItem({
+        songId: item.id,
+        title: item.title,
+      });
+    }
   };
   return (
     <div className="page hymn-page">
@@ -319,6 +332,40 @@ export function HymnCatalog({
       )}
       {state.status === "ready" && (
         <section className="hymn-catalog-shell">
+          <div className="kidung-catalog-summary">
+            <div className="kidung-catalog-summary-info">
+              <span className="kidung-catalog-book-pill">
+                <Icon name="musicNote" size={14} />
+                <span>{hymnCollectionLabel(activeBook)}</span>
+              </span>
+              <span className="kidung-catalog-count">
+                {translate(locale, "kidung.settingsSongCount", {
+                  count: filtered.length,
+                })}
+              </span>
+              <span className="kidung-catalog-mode-pill">
+                {translate(
+                  locale,
+                  pdfMode ? "kidung.showScore" : "kidung.showText",
+                )}
+              </span>
+            </div>
+            {queue.items.length > 0 && (
+              <Link
+                className="kidung-catalog-queue-pill"
+                to="/kidung?section=playlist"
+                onClick={(event) => {
+                  event.preventDefault();
+                  void navigateSmooth(navigate, "/kidung?section=playlist");
+                }}
+              >
+                <Icon name="queueMusic" size={15} />
+                <span>
+                  {translate(locale, "kidung.playlist")} ({queue.items.length})
+                </span>
+              </Link>
+            )}
+          </div>
           {needsCorpus && !corpus && !corpusError && (
             <p role="status">{translate(locale, "kidung.catalogLoading")}</p>
           )}
@@ -355,10 +402,13 @@ export function HymnCatalog({
           >
             {filtered.map((item, index) => {
               const inQueue = queueIds.has(item.id);
+              const isPlaying =
+                playerState.songId === item.id &&
+                playerState.status === "playing";
               return (
                 <li
                   key={item.id}
-                  className="pujian-item"
+                  className={`pujian-item${inQueue ? " is-queued" : ""}${isPlaying ? " is-now-playing" : ""}`}
                   data-id={item.id}
                   data-nomor={String(item.number).toLowerCase()}
                   data-judul={item.title.toLowerCase()}
@@ -385,18 +435,18 @@ export function HymnCatalog({
                       className={`icon-button add-to-playlist-btn${inQueue ? " in-playlist" : ""}`}
                       data-id={item.id}
                       aria-pressed={inQueue}
-                      onClick={(event) => onRowQueue(event, item)}
+                      onClick={(event) => onRowQueue(event, item, inQueue)}
                       title={translate(
                         locale,
                         inQueue
-                          ? "kidung.queueSongExists"
+                          ? "kidung.removeFromPlaylist"
                           : "kidung.queueSongAdd",
                         { title: item.title },
                       )}
                       aria-label={translate(
                         locale,
                         inQueue
-                          ? "kidung.queueSongExists"
+                          ? "kidung.removeSongFromPlaylist"
                           : "kidung.queueSongAdd",
                         { title: item.title },
                       )}
