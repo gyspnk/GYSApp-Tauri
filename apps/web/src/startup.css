@@ -24,46 +24,54 @@ html[data-theme="sepia"] {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   pointer-events: none;
   opacity: 1;
   color: #00668f;
+  --gys-navy: #002d73;
+  --gys-teal: #007da4;
   background:
     radial-gradient(
-      620px 360px at 50% 42%,
+      620px 360px at 50% 44%,
       rgba(0, 102, 143, 0.08),
       transparent 72%
     ),
     #ffffff;
   contain: layout style paint;
   will-change: opacity;
-  transition: opacity 460ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 580ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 html[data-theme="dark"] .shell-startup {
   color: #78bfe0;
+  --gys-navy: #9ed4f0;
+  --gys-teal: #4ab6dc;
   background:
     radial-gradient(
-      620px 360px at 50% 42%,
-      rgba(120, 191, 224, 0.12),
+      620px 360px at 50% 44%,
+      rgba(120, 191, 224, 0.14),
       transparent 72%
     ),
     #0f1623;
 }
 html[data-theme="amoled"] .shell-startup {
   color: #7cc2e3;
+  --gys-navy: #a8dbf5;
+  --gys-teal: #4ec0e6;
   background:
     radial-gradient(
-      620px 360px at 50% 42%,
-      rgba(120, 191, 224, 0.1),
+      620px 360px at 50% 44%,
+      rgba(120, 191, 224, 0.12),
       transparent 72%
     ),
     #000000;
 }
 html[data-theme="sepia"] .shell-startup {
   color: #0b5e82;
+  --gys-navy: #143f58;
+  --gys-teal: #0b6c8f;
   background:
     radial-gradient(
-      620px 360px at 50% 42%,
+      620px 360px at 50% 44%,
       rgba(122, 85, 29, 0.1),
       transparent 72%
     ),
@@ -72,105 +80,111 @@ html[data-theme="sepia"] .shell-startup {
 @media (prefers-color-scheme: dark) {
   html[data-theme="system"] .shell-startup {
     color: #78bfe0;
+    --gys-navy: #9ed4f0;
+    --gys-teal: #4ab6dc;
     background:
       radial-gradient(
-        620px 360px at 50% 42%,
-        rgba(120, 191, 224, 0.12),
+        620px 360px at 50% 44%,
+        rgba(120, 191, 224, 0.14),
         transparent 72%
       ),
       #0f1623;
   }
 }
 
-/* Official Gereja Yesus Sejati Dove emblem & luminous halo */
+/* Official Vector GYS Dove emblem & luminous halo */
 .shell-startup-dove-wrap {
   position: relative;
   display: grid;
   place-items: center;
-  width: 124px;
-  height: 84px;
+  width: 172px;
+  height: 112px;
   will-change: transform, opacity;
   transition:
-    transform 480ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 420ms ease;
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 540ms ease;
 }
 .shell-startup-halo {
   position: absolute;
-  inset: -16px;
+  inset: -24px;
   border-radius: 999px;
   background: radial-gradient(circle, currentColor 0%, transparent 68%);
   opacity: 0.16;
   animation: shell-halo-pulse 1.9s ease-in-out infinite;
   transition:
-    transform 480ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 420ms ease;
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 460ms ease;
 }
 .shell-startup-dove {
   position: relative;
   display: block;
-  width: 114px;
-  height: 76px;
-  overflow: hidden;
-  transform-origin: 54% 52%;
-  animation: gys-dove-soar 1.35s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  width: 164px;
+  height: auto;
+  overflow: visible;
+  animation: gys-dove-glide 1.3s ease-in-out infinite;
 }
-.shell-startup-dove img {
-  display: block;
-  height: 100%;
-  width: auto;
-  max-width: none;
+.gys-wing-near {
+  transform-origin: 266px 108px;
+  animation: gys-wing-near-flap 0.92s cubic-bezier(0.45, 0.05, 0.55, 0.95)
+    infinite;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.gys-wing-far {
+  transform-origin: 338px 58px;
+  animation: gys-wing-far-flap 0.92s cubic-bezier(0.45, 0.05, 0.55, 0.95)
+    infinite;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.gys-arc {
+  transform-origin: 120px 180px;
+  animation: gys-arc-pulse 1.3s ease-in-out infinite;
+}
+.gys-arc-2 {
+  animation-delay: 0.14s;
+}
+.gys-arc-3 {
+  animation-delay: 0.28s;
 }
 
-/* Exit choreography: official GYS dove sweeps wide forward into the app */
+/* Exit choreography: official GYS dove spreads wings and flies forward filling the screen */
 html[data-boot="ready"] .shell-startup {
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 460ms cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 0s linear 460ms;
+    opacity 580ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 600ms;
 }
 html[data-boot="ready"] .shell-startup-dove-wrap {
-  transform: translate3d(16px, -18px, 0) scale(2.65) rotate(-4deg);
+  transform: translate3d(24px, -20px, 0) scale(15.5) rotate(-5deg);
   opacity: 0;
 }
 html[data-boot="ready"] .shell-startup-halo {
-  transform: scale(2.4);
+  transform: scale(6);
+  opacity: 0;
+}
+html[data-boot="ready"] .shell-startup .gys-wing-near {
+  animation: none;
+  transform: rotate(22deg) scale(1.16);
+}
+html[data-boot="ready"] .shell-startup .gys-wing-far {
+  animation: none;
+  transform: rotate(-18deg) scale(1.16);
+}
+html[data-boot="ready"] .shell-startup-track {
+  transform: translate3d(0, 14px, 0) scale(0.92);
   opacity: 0;
 }
 
-.shell-startup-wordmark {
-  display: block;
-  width: min(240px, 60vw);
-  height: auto;
-  animation: shell-logo-breathe 2.4s ease-in-out infinite;
-  transition:
-    transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 320ms ease;
-}
-html[data-boot="ready"] .shell-startup-wordmark,
-html[data-boot="ready"] .shell-startup-track {
-  transform: translate3d(0, 10px, 0) scale(0.96);
-  opacity: 0;
-}
-html:is([data-theme="dark"], [data-theme="amoled"]) .shell-startup img {
-  filter: brightness(1.55) contrast(1.08);
-}
-@media (prefers-color-scheme: dark) {
-  html[data-theme="system"] .shell-startup img {
-    filter: brightness(1.55) contrast(1.08);
-  }
-}
 .shell-startup-track {
   position: relative;
-  width: 196px;
-  height: 7px;
+  width: 176px;
+  height: 6px;
   background: rgba(0, 102, 143, 0.14);
-  box-shadow: inset 0 1px 2px rgba(14, 34, 64, 0.08);
   border-radius: 999px;
   overflow: hidden;
   transition:
-    transform 320ms ease,
-    opacity 280ms ease;
+    transform 300ms ease,
+    opacity 260ms ease;
 }
 .shell-startup-track > span {
   display: block;
@@ -183,7 +197,6 @@ html:is([data-theme="dark"], [data-theme="amoled"]) .shell-startup img {
     #49b4de 68%,
     rgba(0, 102, 143, 0.18) 100%
   );
-  box-shadow: 0 0 12px rgba(0, 102, 143, 0.35);
   border-radius: inherit;
   animation: shell-loading 1.45s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
@@ -214,7 +227,6 @@ html[data-theme="amoled"] .shell-startup-track > span {
     #c6ecff 72%,
     rgba(120, 191, 224, 0.18) 100%
   );
-  box-shadow: 0 0 14px rgba(120, 191, 224, 0.42);
 }
 html[data-theme="sepia"] .shell-startup-track {
   background: rgba(122, 85, 29, 0.16);
@@ -227,17 +239,44 @@ html[data-theme="sepia"] .shell-startup-track > span {
     #d4a253 75%,
     rgba(122, 85, 29, 0.18) 100%
   );
-  box-shadow: 0 0 12px rgba(141, 94, 26, 0.3);
 }
-@keyframes gys-dove-soar {
+
+@keyframes gys-wing-near-flap {
   0%,
   100% {
-    transform: perspective(420px) translate3d(0, 2px, 0) rotate(-3deg)
-      rotateX(10deg) scaleY(1.03);
+    transform: rotate(15deg) scaleY(1.04);
   }
   50% {
-    transform: perspective(420px) translate3d(0, -6px, 0) rotate(3deg)
-      rotateX(-14deg) scaleY(0.92);
+    transform: rotate(-20deg) scaleY(0.84);
+  }
+}
+@keyframes gys-wing-far-flap {
+  0%,
+  100% {
+    transform: rotate(-14deg) scaleY(1.04);
+  }
+  50% {
+    transform: rotate(18deg) scaleY(0.84);
+  }
+}
+@keyframes gys-dove-glide {
+  0%,
+  100% {
+    transform: translate3d(0, 3px, 0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translate3d(2px, -6px, 0) rotate(1.5deg);
+  }
+}
+@keyframes gys-arc-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(-4px, 3px, 0);
   }
 }
 @keyframes shell-halo-pulse {
@@ -247,19 +286,8 @@ html[data-theme="sepia"] .shell-startup-track > span {
     opacity: 0.12;
   }
   50% {
-    transform: scale(1.12);
-    opacity: 0.22;
-  }
-}
-@keyframes shell-logo-breathe {
-  0%,
-  100% {
-    opacity: 0.9;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.02);
+    transform: scale(1.14);
+    opacity: 0.24;
   }
 }
 @keyframes shell-loading {
@@ -342,7 +370,9 @@ html[data-boot="ready"] .shell-startup-motes {
   .shell-startup-dove-wrap,
   .shell-startup-halo,
   .shell-startup-dove,
-  .shell-startup-wordmark {
+  .gys-wing-near,
+  .gys-wing-far,
+  .gys-arc {
     transition: none;
     animation: none;
     transform: none;

@@ -20,6 +20,7 @@ const MAX_PERSISTED_ITEMS = 400;
 let feedCache: { expiresAt: number; items: SuaraSejatiPost[] } | undefined;
 let feedInFlight: Promise<SuaraSejatiPost[]> | undefined;
 let revalidateInFlight = false;
+let proxyCooldownUntil = 0;
 
 const SUARA_UPDATE_EVENT = "gys-suara-update";
 const TJC_IMAGE_HOSTS = [
@@ -171,9 +172,10 @@ function suaraNetworkCandidates(): string[] {
       (base.includes("127.0.0.1") || base.includes("localhost")) &&
       !base.includes(`:${window.location.port}`),
     );
-  const proxy = isCrossPortLocalhost
-    ? undefined
-    : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/suara-sejati`;
+  const proxy =
+    isCrossPortLocalhost || Date.now() < proxyCooldownUntil
+      ? undefined
+      : `${(base ?? "").replace(/\/$/, "")}/api/v1/content/suara-sejati`;
   return [proxy, API_URL].filter((value): value is string => Boolean(value));
 }
 
@@ -281,8 +283,15 @@ async function requestPage(url: string, signal?: AbortSignal) {
       cache: "default",
       signal: controller.signal,
     });
-    if (!response.ok)
+    if (!response.ok) {
+      if (
+        response.status >= 500 &&
+        url.includes("/api/v1/content/suara-sejati")
+      ) {
+        proxyCooldownUntil = Date.now() + 5 * 60_000;
+      }
       throw new Error(`Suara Sejati request failed: ${response.status}`);
+    }
     const contentType = response.headers.get("content-type");
     if (contentType?.includes("text/html"))
       throw new Error(`Expected JSON from ${url}, got HTML`);

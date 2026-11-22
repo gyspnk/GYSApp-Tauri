@@ -88,7 +88,7 @@ function releaseBootSplash() {
   const splash = document.getElementById("boot-splash");
   if (!splash) return;
   splash.setAttribute("aria-hidden", "true");
-  window.setTimeout(() => splash.remove(), 500);
+  window.setTimeout(() => splash.remove(), 640);
 }
 
 async function waitForBootFonts(): Promise<void> {

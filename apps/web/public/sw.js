@@ -126,15 +126,32 @@ async function cacheOptional() {
   );
 }
 
+async function sha256Base64(buffer) {
+  const hash = await crypto.subtle.digest("SHA-256", buffer);
+  return `sha256-${btoa(String.fromCharCode(...new Uint8Array(hash)))}`;
+}
+
 async function hasBuildIntegrity(response, expected) {
   if (!expected) return true;
-  const hash = await crypto.subtle.digest(
-    "SHA-256",
-    await response.clone().arrayBuffer(),
-  );
-  return (
-    `sha256-${btoa(String.fromCharCode(...new Uint8Array(hash)))}` === expected
-  );
+  const rawBuffer = await response.clone().arrayBuffer();
+  if ((await sha256Base64(rawBuffer)) === expected) return true;
+  const bytes = new Uint8Array(rawBuffer);
+  if (
+    bytes.length >= 2 &&
+    bytes[0] === 0x1f &&
+    bytes[1] === 0x8b &&
+    typeof DecompressionStream === "function"
+  ) {
+    try {
+      const inflated = await new Response(
+        new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip")),
+      ).arrayBuffer();
+      if ((await sha256Base64(inflated)) === expected) return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
 }
 
 async function cacheBuildAssets(cache) {
