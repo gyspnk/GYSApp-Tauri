@@ -1,7 +1,14 @@
 import type { CSSProperties } from "react";
 import { LoadingProgress } from "./loading-progress.js";
 import { Icon } from "./icons.js";
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
 import { prefersSmallImages } from "./network-hints.js";
@@ -124,8 +131,8 @@ function ArticleReaderToolbar({
   backLabel: string;
   fontScale: number;
   onFontScaleChange: (next: number) => void;
-  readMinutes?: number;
-  shareUrl?: string;
+  readMinutes?: number | undefined;
+  shareUrl?: string | undefined;
 }) {
   const [copied, setCopied] = useState(false);
   const copyLink = () => {
@@ -146,14 +153,20 @@ function ArticleReaderToolbar({
         {readMinutes !== undefined && (
           <span className="reader-time-pill">~{readMinutes} mnt</span>
         )}
-        <div className="reader-font-stepper" role="group" aria-label="Ukuran teks">
+        <div
+          className="reader-font-stepper"
+          role="group"
+          aria-label="Ukuran teks"
+        >
           <button
             type="button"
             className="icon-button reader-tool-btn"
             aria-label="Perkecil teks"
             disabled={fontScale <= 0.85}
             onClick={() =>
-              onFontScaleChange(Math.max(0.85, Number((fontScale - 0.1).toFixed(2))))
+              onFontScaleChange(
+                Math.max(0.85, Number((fontScale - 0.1).toFixed(2))),
+              )
             }
           >
             <Icon name="textDecrease" size={16} />
@@ -164,7 +177,9 @@ function ArticleReaderToolbar({
             aria-label="Perbesar teks"
             disabled={fontScale >= 1.4}
             onClick={() =>
-              onFontScaleChange(Math.min(1.4, Number((fontScale + 0.1).toFixed(2))))
+              onFontScaleChange(
+                Math.min(1.4, Number((fontScale + 0.1).toFixed(2))),
+              )
             }
           >
             <Icon name="textIncrease" size={16} />

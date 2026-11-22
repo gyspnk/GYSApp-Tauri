@@ -226,11 +226,11 @@
 /* Interactive Surface Pointer Sheen Across App */
 @media (hover: hover) and (pointer: fine) {
   :is(
-      .pujian-item,
-      .kidung-playlist-list > li,
-      .kidung-saved-playlist-row,
-      .kidung-queue-hero
-    ) {
+    .pujian-item,
+    .kidung-playlist-list > li,
+    .kidung-saved-playlist-row,
+    .kidung-queue-hero
+  ) {
     background-image: radial-gradient(
       260px circle at var(--pointer-x, -260px) var(--pointer-y, -260px),
       color-mix(in srgb, var(--blue) 9%, transparent),
@@ -689,7 +689,8 @@
   );
   box-shadow: 0 0 8px color-mix(in srgb, var(--blue) 48%, transparent);
 }
-:is(.primary-button, .nav-item.is-active, .kidung-queue-play-btn) > .gys-ripple {
+:is(.primary-button, .nav-item.is-active, .kidung-queue-play-btn)
+  > .gys-ripple {
   background: radial-gradient(
     circle,
     rgba(255, 255, 255, 0.44) 0%,
@@ -697,11 +698,18 @@
     transparent 78%
   );
 }
-:is(.primary-button, .nav-item.is-active, .kidung-queue-play-btn) > .gys-ripple-ring {
+:is(.primary-button, .nav-item.is-active, .kidung-queue-play-btn)
+  > .gys-ripple-ring {
   border-color: rgba(255, 255, 255, 0.62);
 }
-:is(.primary-button, .nav-item.is-active, .kidung-queue-play-btn) > .gys-water-drop {
-  background: radial-gradient(circle at 35% 35%, #ffffff 0%, rgba(255, 255, 255, 0.72) 74%, transparent 100%);
+:is(.primary-button, .nav-item.is-active, .kidung-queue-play-btn)
+  > .gys-water-drop {
+  background: radial-gradient(
+    circle at 35% 35%,
+    #ffffff 0%,
+    rgba(255, 255, 255, 0.72) 74%,
+    transparent 100%
+  );
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.56);
 }
 
@@ -1136,4 +1144,103 @@
   width: 88px;
   height: 54px;
   filter: none;
+}
+
+/* ── Unified Frosted-Glass Polish & 60fps Rendering Across Iman, Global Search, Media & Bible ── */
+.faith-row-item,
+.literature-row,
+.suara-library-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 84px;
+}
+.verse-panel,
+.continue-panel,
+.editorial-reader-card {
+  contain: layout style;
+}
+
+/* Iman (10 Basic Beliefs) Glass Cards & Frosted Reading Modal */
+.faith-row {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.25);
+  backdrop-filter: blur(12px) saturate(1.25);
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform 180ms var(--ease-spring),
+    border-color 180ms var(--ease-out),
+    background-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
+}
+.faith-row:hover,
+.faith-row.is-selected {
+  border-color: color-mix(in srgb, var(--blue) 36%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 36%, var(--surface));
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+.faith-number {
+  border-radius: var(--radius-control);
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 180ms var(--ease-out),
+    color 180ms var(--ease-out);
+}
+.faith-row:hover .faith-number,
+.faith-row.is-selected .faith-number {
+  background: var(--blue);
+  color: var(--on-accent);
+}
+.faith-modal-backdrop {
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+}
+.faith-modal {
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  border-radius: var(--radius-feature);
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+  backdrop-filter: blur(22px) saturate(1.45);
+  box-shadow: var(--shadow-float);
+}
+
+/* Spotlight-Style Frosted-Glass Global Search Palette */
+.search-backdrop {
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+}
+.global-search {
+  border: 1px solid color-mix(in srgb, var(--blue) 24%, var(--line));
+  border-radius: var(--radius-feature);
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+  box-shadow: var(--shadow-float);
+}
+.global-search-result {
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    transform 160ms var(--ease-spring);
+}
+.global-search-result:hover,
+.global-search-result:focus-visible {
+  border-color: color-mix(in srgb, var(--blue) 28%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 44%, var(--surface));
+  transform: translateX(2px);
+}
+
+/* Floating Translucent Persistent Media Player Surface */
+.media-surface.persistent-media {
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  background: color-mix(in srgb, var(--surface-glass) 90%, var(--surface));
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: var(--shadow-float);
 }

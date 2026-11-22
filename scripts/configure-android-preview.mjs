@@ -1,4 +1,6 @@
+import { execFileSync } from "node:child_process";
 import { copyFile, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -55,4 +57,18 @@ if (
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
   await configureAndroid();
+  if (process.env.GITHUB_ACTIONS === "true") {
+    const iconPng = resolve(tmpdir(), "gys-dove-icon.png");
+    const root = resolve(import.meta.dirname, "..");
+    execFileSync(
+      process.execPath,
+      [resolve(import.meta.dirname, "generate-dove-icon-png.mjs"), iconPng],
+      { cwd: root, stdio: "inherit" },
+    );
+    execFileSync(
+      "pnpm",
+      ["--filter", "@gys/native", "tauri", "icon", iconPng],
+      { cwd: root, stdio: "inherit" },
+    );
+  }
 }
