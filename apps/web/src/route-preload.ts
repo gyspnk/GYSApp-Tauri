@@ -1,9 +1,6 @@
 import { routeModules } from "./route-pages.js";
 type RouteId = keyof typeof routeModules;
 type PreloadOptions = {
-  /** Warm only the route's code. Data packs stay lazy until the route is
-   * actually opened or hovered, so background warming never parses a 7.6 MB
-   * Bible pack on the main thread. */
   data?: boolean;
 };
 
@@ -31,14 +28,9 @@ function loadRouteCode(id: RouteId): Promise<unknown> {
   return pending;
 }
 
-/** Data is not cached here: each loader owns its own request/validation cache
- * and must still run when a code-only warm already resolved. */
 async function loadRouteData(id: RouteId): Promise<void> {
   if (id === "faith")
     await import("./faith-payloads.js").then((m) => m.loadFaithPack());
-  // The reader paints from the per-book files, so warming the full 7,6 MB
-  // shelf on hover would spend bandwidth the click does not need. Warm the
-  // index and the first book instead; the full pack still starts after paint.
   if (id === "bible") await warmBibleFirstChapter();
   if (id === "kidung")
     await Promise.all([
@@ -51,9 +43,6 @@ async function loadRouteData(id: RouteId): Promise<void> {
     );
 }
 
-/** Routes whose code (and, when asked, data) already finished warming. A warm
- * route can navigate without the preload race, which used to cost up to
- * PRELOAD_BUDGET_MS on every click even when nothing was left to fetch. */
 const warmRoutes = new Set<string>();
 
 function warmKey(path: string, data: boolean) {
@@ -103,9 +92,6 @@ export function preloadRoute(
   });
 }
 
-/** Warm only the first Bible chapter (index + one book, ~90 KiB) instead of
- * the 7.6 MB pack: a first visit then paints chapter 1 from cache while the
- * rest of the shelf still loads lazily. */
 async function warmBibleFirstChapter(): Promise<void> {
   const [{ loadBibleBookIndex, bibleBookIndexUrl }, loader] = await Promise.all(
     [import("./bible-progressive-pack.js"), import("./bible-pack-loader.js")],
@@ -131,12 +117,17 @@ export function warmNavigation(): () => void {
     return () => {};
   }
   let cancelled = false;
-  let timer: number;
+  const timers = new Set<number>();
   let idle: number | undefined;
-  // Order is the order people actually leave the home page: the two song and
-  // reading destinations first, with the remaining sections behind them. A
-  // click that lands before its route is warm pays for the chunk cascade
-  // itself, so the first two entries matter more than the rest.
+  const schedule = (fn: () => void, ms: number) => {
+    if (cancelled) return;
+    const id = window.setTimeout(() => {
+      timers.delete(id);
+      if (!cancelled) fn();
+    }, ms);
+    timers.add(id);
+  };
+
   const paths = [
     "/kidung",
     "/bible",
@@ -152,20 +143,13 @@ export function warmNavigation(): () => void {
       if (cancelled) return;
       void preloadRoute(paths.shift()!, { data: false })
         .catch(() => undefined)
-        .finally(() => {
-          if (!cancelled) timer = window.setTimeout(next, 100);
-        });
+        .finally(() => schedule(next, 100));
     };
     if (typeof window.requestIdleCallback === "function")
       idle = window.requestIdleCallback(run, { timeout: 1000 });
-    else timer = window.setTimeout(run, 100);
+    else schedule(run, 100);
   };
-  // The first destination's payloads are what its first click actually waits
-  // for. Warm them once the current page has finished loading, so the fetch
-  // never competes with the page the reader is already looking at.
-  // The Bible pack is 7.6 MB, so it is only warmed for readers who have
-  // opened the Bible before: the first visit teaches us, and every visit after
-  // it opens instantly without making every home page pay for the pack.
+
   const visitedBible = (() => {
     try {
       return window.localStorage.getItem("gys-bible-visited") === "1";
@@ -180,38 +164,30 @@ export function warmNavigation(): () => void {
     if (!path) return;
     void preloadRoute(path, { data: true })
       .catch(() => undefined)
-      .finally(() => {
-        if (!cancelled) timer = window.setTimeout(warmPayloads, 300);
-      });
+      .finally(() => schedule(warmPayloads, 300));
   };
+
   const memory = (navigator as Navigator & { deviceMemory?: number })
     .deviceMemory;
   const payloadWarmAllowed =
     !/(^|-)2g$|(^|-)3g$/.test(connection?.effectiveType ?? "") &&
     (memory ?? 8) >= 4;
   if (payloadWarmAllowed && !visitedBible) {
-    // First visit used to open the Bible cold (measured 1 183 ms). The chapter
-    // itself is small, so it is warmed for everyone once the queue is warm.
-    timer = window.setTimeout(() => {
+    schedule(() => {
       void warmBibleFirstChapter().catch(() => undefined);
     }, 1_500);
   }
+  const onLoad = () => schedule(warmPayloads, 150);
   if (payloadWarmAllowed) {
-    if (document.readyState === "complete")
-      timer = window.setTimeout(warmPayloads, 150);
-    else
-      window.addEventListener(
-        "load",
-        () => {
-          timer = window.setTimeout(warmPayloads, 150);
-        },
-        { once: true },
-      );
+    if (document.readyState === "complete") schedule(warmPayloads, 150);
+    else window.addEventListener("load", onLoad, { once: true });
   }
-  timer = window.setTimeout(next, 200);
+  schedule(next, 200);
   return () => {
     cancelled = true;
-    clearTimeout(timer);
+    window.removeEventListener("load", onLoad);
+    timers.forEach((id) => window.clearTimeout(id));
+    timers.clear();
     if (idle !== undefined) window.cancelIdleCallback(idle);
   };
 }

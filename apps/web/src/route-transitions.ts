@@ -1,7 +1,7 @@
 import { transitionReader } from "./reader-transition.js";
 import { isRouteWarm, preloadRoute } from "./route-preload.js";
 
-const PRIMARY_ORDER = ["/", "/bible", "/kidung", "/dasar-kepercayaan", "/lainnya"];
+const PRIMARY_ORDER = ["/", "/bible", "/kidung", "/iman", "/lainnya"];
 
 let navigationGeneration = 0;
 let navigationInFlight = false;
@@ -36,9 +36,6 @@ function routeViewIsLoaded(view: Element): boolean {
   return !view.querySelector(":scope > .route-loading");
 }
 
-/** Animate opacity + subtle focus settle on `.route-view` (never `transform`,
- * so fixed modals/toolbars keep viewport positioning) plus a gentle directional
- * micro-glide on the leading page block when switching primary tabs. */
 function animateRouteView(view: HTMLElement) {
   if (prefersReducedMotion()) return;
   view.animate(
