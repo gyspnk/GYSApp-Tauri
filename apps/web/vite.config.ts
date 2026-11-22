@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
+import { readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { gunzipSync } from "node:zlib";
 import { resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
@@ -109,6 +110,26 @@ function offlineBuildAssetsPlugin(): Plugin {
           `const CACHE = "gysapp-shell-v25-${buildId}";`,
         ),
       );
+      if (isTauriBuild) {
+        // Strip ~20 MB of incompressible/duplicate assets from native Tauri
+        // builds so the Android APK stays lean (~14-15 MB instead of ~34 MB):
+        // 1) 10 static Faith PDFs (18.5 MB) are loaded on-demand & cached by faith.tsx.
+        // 2) tb-reader.json.gz (1.7 MB) is only needed by the web Service Worker.
+        const faithDir = resolve(directory, "assets/faith");
+        try {
+          const entries = await readdir(faithDir);
+          await Promise.all(
+            entries
+              .filter((name) => name.endsWith(".pdf"))
+              .map((name) => rm(resolve(faithDir, name), { force: true })),
+          );
+        } catch {
+          // faith dir absent
+        }
+        await rm(resolve(directory, "offline/bible/tb-reader.json.gz"), {
+          force: true,
+        });
+      }
     },
   };
 }

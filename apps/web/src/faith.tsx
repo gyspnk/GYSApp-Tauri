@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
+import { isTauriShell } from "./native-platform.js";
 import { installReadingZoom } from "./reading-zoom.js";
 import {
   getCachedFaithPack,
@@ -110,6 +111,9 @@ const DK_READ_MORE = new Map<string, { pdf: string; source: string }>([
 
 function faithPdfUrl(sourceUrl: string): string {
   const filename = new URL(sourceUrl).pathname.split("/").at(-1)!;
+  if (isTauriShell()) {
+    return `https://raw.githubusercontent.com/gyspnk/GYSApp-Tauri/main/apps/web/public/assets/faith/${filename}`;
+  }
   return `${import.meta.env.BASE_URL}assets/faith/${filename}`;
 }
 

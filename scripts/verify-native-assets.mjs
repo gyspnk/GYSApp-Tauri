@@ -125,13 +125,35 @@ const faithManifest = JSON.parse(
 );
 if (faithManifest.files.length !== 10)
   throw new Error("Packaged faith PDFs are missing");
+let localFaithPdfs = 0;
 for (const item of faithManifest.files) {
   if (!/^[A-Za-z-]+\.pdf$/.test(item.file))
     throw new Error("Invalid packaged faith PDF path");
-  const bytes = await readFile(resolve(dist, "assets/faith", item.file));
-  if (
-    bytes.length !== item.bytes ||
-    createHash("sha256").update(bytes).digest("hex") !== item.sha256
-  )
-    throw new Error(`Packaged faith PDF mismatch: ${item.file}`);
+  if (typeof item.bytes !== "number" || item.bytes <= 0)
+    throw new Error(`Invalid faith PDF byte size: ${item.file}`);
+  if (!/^[0-9a-f]{64}$/.test(String(item.sha256 ?? "")))
+    throw new Error(`Invalid faith PDF sha256: ${item.file}`);
+  try {
+    const bytes = await readFile(resolve(dist, "assets/faith", item.file));
+    if (
+      bytes.length !== item.bytes ||
+      createHash("sha256").update(bytes).digest("hex") !== item.sha256
+    )
+      throw new Error(`Packaged faith PDF mismatch: ${item.file}`);
+    localFaithPdfs += 1;
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "ENOENT"
+    ) {
+      // Native slim builds stream Faith PDFs on-demand to save ~18.5 MB of APK size.
+      continue;
+    }
+    throw error;
+  }
 }
+console.log(
+  `Faith manifest verified: ${faithManifest.files.length} entries (${localFaithPdfs} bundled locally, ${faithManifest.files.length - localFaithPdfs} on-demand)`,
+);
