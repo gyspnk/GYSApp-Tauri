@@ -2105,3 +2105,264 @@ body,
   color: var(--on-accent);
   box-shadow: var(--shadow-sm);
 }
+
+/* ── Clean Single-Line Surfaces (Remove Double Borders & White Inset Lines) ── */
+@media (min-width: 600px) {
+  .navigation-shell .nav-active-indicator {
+    border: 0;
+    box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--blue) 36%, transparent);
+  }
+  .navigation-shell .nav-item.is-active {
+    border: 0;
+    box-shadow: none;
+  }
+}
+@media (min-width: 960px) {
+  .navigation-shell .nav-active-indicator {
+    border-radius: 999px;
+  }
+}
+.primary-button {
+  box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--blue) 28%, transparent);
+}
+.primary-button:hover:not(:disabled) {
+  box-shadow: 0 8px 20px -4px color-mix(in srgb, var(--blue) 36%, transparent);
+}
+
+/* Flatten inner cards inside Settings disclosures so there is never a double border */
+.more-setting-section > .more-card {
+  padding: 20px;
+}
+.more-card
+  > :is(
+    .distributed-assets-card,
+    .appearance-card,
+    .account-card,
+    .backup-inline,
+    .diagnostics-card,
+    .report-card,
+    .utility-panel
+  ) {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* ── Roomier, Better-Organized Pengaturan & Manajemen Aset Layout ── */
+.appearance-setting-select .control-select-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.accent-palette-grid {
+  gap: 10px;
+}
+.accent-palette-item {
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+.accent-palette-item:is(
+    .is-active,
+    [aria-checked="true"],
+    [aria-pressed="true"]
+  ) {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px var(--interactive-glow);
+}
+
+/* Airy single-column Manajemen Aset grouped cleanly with inline horizontal actions */
+.more-page .more-setting-section[data-setting="offline"] .distributed-assets-list {
+  gap: 18px;
+}
+.more-page .more-setting-section[data-setting="offline"] .distributed-asset-group {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-soft) 62%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+}
+.distributed-asset-group-label {
+  padding: 0 4px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  margin-bottom: 4px;
+}
+.distributed-asset-row {
+  padding: 12px 8px;
+  gap: 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 48%, transparent);
+  border-radius: var(--radius-md);
+}
+.distributed-asset-row:last-child {
+  border-bottom: 0;
+}
+.distributed-asset-copy {
+  flex: 1 1 auto;
+  max-width: none;
+  gap: 4px;
+}
+.distributed-asset-actions {
+  flex: none;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.distributed-asset-actions .text-button {
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  font-weight: 600;
+}
+.distributed-asset-actions .text-button:hover {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+}
+
+/* ── Liquid Water Ripple & Water Droplet Particles on Tap/Press ── */
+.gys-ripple {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, currentColor 26%, transparent) 0%,
+    color-mix(in srgb, currentColor 12%, transparent) 46%,
+    color-mix(in srgb, currentColor 4%, transparent) 68%,
+    transparent 78%
+  );
+  animation: gys-ripple-grow 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.gys-ripple-ring {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  border: 2px solid color-mix(in srgb, currentColor 38%, transparent);
+  transform: scale(0.2);
+  opacity: 0.72;
+  will-change: transform, opacity;
+  animation: gys-ripple-ring-expand 580ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.gys-water-drop {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 35% 35%,
+    color-mix(in srgb, #ffffff 72%, currentColor) 0%,
+    color-mix(in srgb, currentColor 76%, transparent) 72%,
+    transparent 100%
+  );
+  box-shadow: 0 0 6px color-mix(in srgb, currentColor 35%, transparent);
+  transform: translate3d(0, 0, 0) scale(0.4);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: gys-water-drop-burst 560ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes gys-ripple-ring-expand {
+  0% {
+    transform: scale(0.18);
+    opacity: 0.72;
+  }
+  55% {
+    opacity: 0.32;
+  }
+  100% {
+    transform: scale(2.35);
+    opacity: 0;
+  }
+}
+@keyframes gys-water-drop-burst {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.35);
+    opacity: 0.92;
+  }
+  45% {
+    opacity: 0.76;
+  }
+  100% {
+    transform: translate3d(var(--drop-x, 24px), var(--drop-y, -24px), 0)
+      scale(0.15);
+    opacity: 0;
+  }
+}
+
+/* ── Expressive Animated Icons Across the Entire Application ── */
+@keyframes gys-icon-pop {
+  0% {
+    transform: scale(0.86) rotate(-6deg);
+  }
+  55% {
+    transform: scale(1.16) rotate(4deg);
+  }
+  100% {
+    transform: scale(1.06) rotate(0deg);
+  }
+}
+@keyframes gys-icon-note-sway {
+  0%,
+  100% {
+    transform: rotate(-5deg) translateY(0);
+  }
+  50% {
+    transform: rotate(6deg) translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nav-item.is-active svg {
+    animation: gys-icon-pop 380ms var(--ease-spring) both;
+  }
+  .nav-item:hover:not(.is-active) svg {
+    transform: translateY(-2px) scale(1.12) rotate(-4deg);
+  }
+  .search-trigger:hover svg {
+    transform: scale(1.14) rotate(-10deg);
+  }
+  .topbar-appearance-button:hover svg {
+    transform: scale(1.14) rotate(24deg);
+  }
+  .more-setting-row:hover .more-setting-icon svg {
+    transform: scale(1.14) rotate(-6deg);
+  }
+  .primary-button svg,
+  .secondary-button svg,
+  .quiet-button svg,
+  .icon-button svg,
+  .more-setting-icon svg {
+    transition: transform 240ms var(--ease-spring);
+  }
+  :is(.primary-button, .secondary-button, .quiet-button, .icon-button):hover:not(
+      :disabled
+    )
+    svg {
+    transform: translateY(-1px) scale(1.12);
+  }
+  :is(.primary-button, .secondary-button, .quiet-button, .icon-button):active:not(
+      :disabled
+    )
+    svg {
+    transform: scale(0.92);
+  }
+  body:has(.media-surface[data-playing="true"])
+    .nav-item[href*="kidung"]
+    svg {
+    animation: gys-icon-note-sway 1.6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gys-ripple-ring,
+  .gys-water-drop {
+    animation: none !important;
+    display: none !important;
+  }
+}
