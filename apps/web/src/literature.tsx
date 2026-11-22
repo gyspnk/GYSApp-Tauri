@@ -164,14 +164,26 @@ function useLiteratureCatalog() {
   };
 }
 
-function dateLabel(value: string | undefined, locale: Locale) {
-  if (!value) return translate(locale, "literature.dateArchived");
-  try {
-    return new Intl.DateTimeFormat(locale === "id" ? "id-ID" : locale, {
+const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function getDateFormatter(locale: Locale): Intl.DateTimeFormat {
+  const key = locale === "id" ? "id-ID" : locale;
+  let fmt = dateFormatters.get(key);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat(key, {
       day: "numeric",
       month: "short",
       year: "numeric",
-    }).format(new Date(value));
+    });
+    dateFormatters.set(key, fmt);
+  }
+  return fmt;
+}
+
+function dateLabel(value: string | undefined, locale: Locale) {
+  if (!value) return translate(locale, "literature.dateArchived");
+  try {
+    return getDateFormatter(locale).format(new Date(value));
   } catch {
     return translate(locale, "literature.archiveLabel");
   }
@@ -619,7 +631,17 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
 
       <div className="literature-sections">
         {grouped.map((group) => {
-          const groupItems = category === "all" ? group.items : visibleItems;
+          const previewLimit = 9;
+          const isPreviewCapped =
+            category === "all" &&
+            !deferredQuery.trim() &&
+            group.items.length > previewLimit;
+          const groupItems =
+            category === "all"
+              ? isPreviewCapped
+                ? group.items.slice(0, previewLimit)
+                : group.items
+              : visibleItems;
           return (
             <section className="literature-section" key={group.category}>
               <div className="section-title-row">
@@ -629,11 +651,22 @@ export function LiteraturePage({ locale }: { locale: Locale }) {
                   </p>
                   <h2>{categoryLabel(locale, group.category)}</h2>
                 </div>
-                <span>
-                  {translate(locale, "literature.itemCount", {
-                    count: group.items.length,
-                  })}
-                </span>
+                <div className="literature-section-meta">
+                  <span>
+                    {translate(locale, "literature.itemCount", {
+                      count: group.items.length,
+                    })}
+                  </span>
+                  {isPreviewCapped && (
+                    <button
+                      type="button"
+                      className="text-button literature-section-all"
+                      onClick={() => setCategory(group.category)}
+                    >
+                      {categoryLabel(locale, group.category)} ›
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="literature-list">
                 {groupItems.map((item, index) => (
