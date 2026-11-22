@@ -1709,21 +1709,20 @@ body,
   background: color-mix(in srgb, var(--blue-soft) 32%, var(--surface));
 }
 
-/* ── Visible Translucent GYS Dove Inline SVG & 10 Sanctuary Light Motes ── */
+/* ── Visible Translucent Official GYS Dove & 10 Sanctuary Light Motes ── */
 .gys-ambient-emblem {
-  color: var(--blue);
-  filter: none;
+  width: min(40vw, 312px);
+  height: auto;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  filter: var(--ambient-emblem-filter);
 }
-.gys-ambient-emblem svg {
-  width: 100%;
-  height: 100%;
+.gys-ambient-emblem img {
   display: block;
-}
-.ambient-dove-wing-left {
-  transform-origin: 106px 112px;
-}
-.ambient-dove-wing-right {
-  transform-origin: 114px 112px;
+  height: 100%;
+  width: auto;
+  max-width: none;
+  object-fit: unset;
 }
 .gys-ambient-mote {
   box-shadow: 0 0 8px currentColor;
@@ -1764,42 +1763,34 @@ body,
   height: 4px;
 }
 
-@keyframes ambient-wing-left {
-  0%,
-  100% {
-    transform: rotate(-4deg);
-  }
-  50% {
-    transform: rotate(5deg);
-  }
-}
-@keyframes ambient-wing-right {
-  0%,
-  100% {
-    transform: rotate(4deg);
-  }
-  50% {
-    transform: rotate(-5deg);
-  }
-}
-
-/* In-app LoadingProgress flapping dove */
+/* In-app LoadingProgress official GYS dove */
 .loading-dove-stage {
   display: grid;
   place-items: center;
-  color: var(--blue);
 }
-.loading-dove-svg {
-  overflow: visible;
+.loading-dove-img {
+  display: block;
+  width: 72px;
+  height: 48px;
+  overflow: hidden;
+  transform-origin: 54% 52%;
+}
+.loading-dove-img img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: none;
+}
+:root:is([data-theme="dark"], [data-theme="amoled"]) .loading-dove-img {
+  filter: brightness(1.55) contrast(1.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .loading-dove-img {
+    filter: brightness(1.55) contrast(1.08);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .ambient-dove-wing-left {
-    animation: ambient-wing-left 9s ease-in-out infinite;
-  }
-  .ambient-dove-wing-right {
-    animation: ambient-wing-right 9s ease-in-out infinite;
-  }
   .gys-mote-6 {
     animation: gys-mote-rise 25s ease-in-out 2s infinite;
   }
@@ -1815,7 +1806,302 @@ body,
   .gys-mote-10 {
     animation: gys-mote-rise 21s ease-in-out 18s infinite;
   }
-  .loading-dove-svg {
-    animation: shell-dove-hover 1.9s ease-in-out infinite;
+  .loading-dove-img {
+    animation: gys-dove-soar 1.35s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
   }
+}
+
+/* ── Literature Pages UI Polish & Rendering Optimization ── */
+.literature-category-chip {
+  border-color: var(--line);
+  transition:
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    transform 140ms var(--ease-spring);
+}
+.literature-category-chip:hover:not([aria-pressed="true"]) {
+  border-color: color-mix(in srgb, var(--blue) 45%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 55%, var(--surface));
+  color: var(--blue);
+}
+.literature-section-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.literature-section-all {
+  min-height: 36px;
+  padding: 4px 10px;
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+  color: var(--blue);
+}
+
+/* Fix broken pill layout on Terakhir Dilihat (.literature-recent-item) */
+.literature-recent-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 272px), 1fr));
+  gap: 12px;
+}
+.literature-recent-item {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  transition:
+    border-color 180ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    transform 180ms var(--ease-spring);
+}
+.literature-recent-item:hover {
+  border-color: color-mix(in srgb, var(--blue) 42%, var(--line));
+  box-shadow: var(--shadow-sm);
+}
+.literature-recent-link {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  min-width: 0;
+  color: var(--ink);
+}
+.literature-recent-link .literature-cover {
+  width: 48px;
+  flex: none;
+  border-radius: var(--radius-sm);
+}
+.literature-recent-link > span {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.literature-recent-link > span:last-child {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--type-title);
+}
+.literature-recent-link strong {
+  font-family: var(--font-reading);
+  font-size: var(--type-body);
+  line-height: 1.3;
+  color: var(--navy);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.literature-recent-link small {
+  font-size: var(--type-meta);
+  font-weight: 500;
+  color: var(--muted);
+}
+.literature-recent-link progress {
+  width: 100%;
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+  accent-color: var(--blue);
+  overflow: hidden;
+}
+.literature-recent-remove {
+  min-width: 40px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  font-size: var(--type-title);
+  transition:
+    background-color 160ms var(--ease-out),
+    color 160ms var(--ease-out);
+}
+.literature-recent-remove:hover {
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  color: var(--danger);
+}
+
+/* Literature shelf cards & list rows */
+.literature-shelf-item {
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  transition:
+    border-color 180ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    transform 200ms var(--ease-spring);
+}
+.literature-shelf-item:hover {
+  border-color: color-mix(in srgb, var(--blue) 35%, var(--line));
+  box-shadow: var(--shadow-sm);
+  transform: translate3d(0, -2px, 0);
+}
+.literature-shelf-item strong {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.literature-row {
+  padding: 12px;
+  border-radius: var(--radius-control);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 92px;
+}
+.literature-row:hover {
+  background: color-mix(in srgb, var(--blue-soft) 50%, var(--surface));
+}
+.literature-row .literature-arrow {
+  transition:
+    transform 180ms var(--ease-spring),
+    color 180ms var(--ease-out);
+}
+.literature-row:hover .literature-arrow {
+  color: var(--blue);
+  transform: translate3d(4px, 0, 0);
+}
+
+/* Literature Detail Hero & Reading Progress Panel */
+.literature-detail-hero {
+  align-items: start;
+  box-shadow: var(--shadow-xs);
+}
+.literature-detail-copy {
+  flex: 1 1 280px;
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  font-family: inherit;
+  font-size: var(--type-body);
+  line-height: 1.55;
+  max-width: none;
+}
+.literature-detail-copy h1 {
+  font-family: var(--font-reading);
+  line-height: 1.25;
+}
+.literature-detail-meta {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.literature-detail-meta span {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+  font-size: var(--type-meta);
+  font-weight: 600;
+}
+.literature-reading-panel {
+  display: grid;
+  gap: 14px;
+  box-shadow: var(--shadow-xs);
+}
+.literature-reading-panel progress {
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: 999px;
+  accent-color: var(--blue);
+  overflow: hidden;
+}
+.literature-reading-tools {
+  display: grid;
+  gap: 12px;
+}
+.literature-reading-tools summary {
+  cursor: pointer;
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+  color: var(--blue);
+  padding: 4px 0;
+}
+.literature-article-reader {
+  max-width: none;
+}
+
+/* Suara Kebenaran & Sauh Editorial Polish */
+.suara-library-grid .suara-library-item {
+  height: auto;
+  min-height: 280px;
+  border: 1px solid var(--line);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 290px;
+}
+.suara-library-item .suara-thumb-img {
+  transition: transform 360ms var(--ease-out);
+}
+.suara-library-item:hover .suara-thumb-img {
+  transform: scale(1.04);
+}
+.sauh-article,
+.online-article-card,
+.suara-article-card {
+  box-shadow: var(--shadow-xs);
+}
+.sauh-article blockquote {
+  margin: 0;
+  padding: 14px 16px;
+  border-left: 4px solid var(--blue);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: color-mix(in srgb, var(--blue-soft) 45%, var(--surface));
+  font-family: var(--font-reading);
+  font-style: italic;
+  color: var(--navy);
+  line-height: 1.65;
+}
+
+/* ── Upgraded First-Time Welcome Screen (Cohesive with GYS Dove Splash) ── */
+.welcome-page {
+  position: relative;
+  z-index: 1;
+  background: radial-gradient(
+    620px 360px at 50% 22%,
+    color-mix(in srgb, var(--blue) 8%, transparent),
+    transparent 72%
+  );
+}
+.welcome-card {
+  position: relative;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+}
+.welcome-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--gold) 100%);
+}
+.welcome-mark img {
+  height: 32px;
+  max-width: 220px;
+}
+.welcome-skip {
+  border-color: transparent;
+  background: var(--blue);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-xs);
+  transition:
+    background-color 180ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    transform 140ms var(--ease-spring);
+}
+.welcome-skip:hover {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--blue) 88%, var(--navy));
+  color: var(--on-accent);
+  box-shadow: var(--shadow-sm);
 }

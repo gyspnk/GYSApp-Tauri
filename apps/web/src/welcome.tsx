@@ -110,8 +110,8 @@ export function WelcomePage({
             <img
               src={`${import.meta.env.BASE_URL}assets/gys-logo.png`}
               alt="Gereja Yesus Sejati"
-              width={40}
-              height={40}
+              width={220}
+              height={28}
             />
           </p>
           <h1 id="welcome-title" ref={headingRef} tabIndex={-1}>

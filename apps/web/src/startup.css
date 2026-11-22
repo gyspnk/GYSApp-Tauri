@@ -35,6 +35,8 @@ html[data-theme="sepia"] {
       transparent 72%
     ),
     #ffffff;
+  contain: layout style paint;
+  will-change: opacity;
   transition: opacity 460ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 html[data-theme="dark"] .shell-startup {
@@ -80,20 +82,21 @@ html[data-theme="sepia"] .shell-startup {
   }
 }
 
-/* Flapping GYS Dove & luminous halo */
+/* Official Gereja Yesus Sejati Dove emblem & luminous halo */
 .shell-startup-dove-wrap {
   position: relative;
   display: grid;
   place-items: center;
-  width: 96px;
-  height: 80px;
+  width: 124px;
+  height: 84px;
+  will-change: transform, opacity;
   transition:
     transform 480ms cubic-bezier(0.16, 1, 0.3, 1),
     opacity 420ms ease;
 }
 .shell-startup-halo {
   position: absolute;
-  inset: -12px;
+  inset: -16px;
   border-radius: 999px;
   background: radial-gradient(circle, currentColor 0%, transparent 68%);
   opacity: 0.16;
@@ -104,23 +107,21 @@ html[data-theme="sepia"] .shell-startup {
 }
 .shell-startup-dove {
   position: relative;
-  width: 92px;
-  height: 74px;
-  overflow: visible;
-  animation: shell-dove-hover 1.9s ease-in-out infinite;
+  display: block;
+  width: 114px;
+  height: 76px;
+  overflow: hidden;
+  transform-origin: 54% 52%;
+  animation: gys-dove-soar 1.35s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
-.dove-wing-left {
-  transform-origin: 58px 50px;
-  animation: dove-flap-left 1.05s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.dove-wing-right {
-  transform-origin: 62px 50px;
-  animation: dove-flap-right 1.05s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+.shell-startup-dove img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: none;
 }
 
-/* Exit choreography: dove spreads wings wide forward into the application */
+/* Exit choreography: official GYS dove sweeps wide forward into the app */
 html[data-boot="ready"] .shell-startup {
   opacity: 0;
   visibility: hidden;
@@ -129,23 +130,15 @@ html[data-boot="ready"] .shell-startup {
     visibility 0s linear 460ms;
 }
 html[data-boot="ready"] .shell-startup-dove-wrap {
-  transform: translate3d(0, -14px, 0) scale(2.65);
+  transform: translate3d(16px, -18px, 0) scale(2.65) rotate(-4deg);
   opacity: 0;
 }
 html[data-boot="ready"] .shell-startup-halo {
   transform: scale(2.4);
   opacity: 0;
 }
-html[data-boot="ready"] .shell-startup .dove-wing-left {
-  animation: none;
-  transform: rotate(-28deg) scaleX(1.22);
-}
-html[data-boot="ready"] .shell-startup .dove-wing-right {
-  animation: none;
-  transform: rotate(28deg) scaleX(1.22);
-}
 
-.shell-startup img {
+.shell-startup-wordmark {
   display: block;
   width: min(240px, 60vw);
   height: auto;
@@ -154,7 +147,7 @@ html[data-boot="ready"] .shell-startup .dove-wing-right {
     transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
     opacity 320ms ease;
 }
-html[data-boot="ready"] .shell-startup img,
+html[data-boot="ready"] .shell-startup-wordmark,
 html[data-boot="ready"] .shell-startup-track {
   transform: translate3d(0, 10px, 0) scale(0.96);
   opacity: 0;
@@ -236,31 +229,15 @@ html[data-theme="sepia"] .shell-startup-track > span {
   );
   box-shadow: 0 0 12px rgba(141, 94, 26, 0.3);
 }
-@keyframes dove-flap-left {
+@keyframes gys-dove-soar {
   0%,
   100% {
-    transform: rotate(-16deg) scaleY(1);
+    transform: perspective(420px) translate3d(0, 2px, 0) rotate(-3deg)
+      rotateX(10deg) scaleY(1.03);
   }
   50% {
-    transform: rotate(18deg) scaleY(0.86);
-  }
-}
-@keyframes dove-flap-right {
-  0%,
-  100% {
-    transform: rotate(16deg) scaleY(1);
-  }
-  50% {
-    transform: rotate(-18deg) scaleY(0.86);
-  }
-}
-@keyframes shell-dove-hover {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(0, -6px, 0);
+    transform: perspective(420px) translate3d(0, -6px, 0) rotate(3deg)
+      rotateX(-14deg) scaleY(0.92);
   }
 }
 @keyframes shell-halo-pulse {
@@ -296,18 +273,77 @@ html[data-theme="sepia"] .shell-startup-track > span {
     transform: translateX(265%) scaleX(0.55);
   }
 }
+
+/* Subtle sanctuary motes on front splash screen */
+.shell-startup-motes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 340ms ease;
+}
+html[data-boot="ready"] .shell-startup-motes {
+  opacity: 0;
+}
+.shell-mote {
+  position: absolute;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: shell-mote-float 4.2s ease-in-out infinite;
+}
+.shell-mote-1 {
+  left: 34%;
+  top: 56%;
+  width: 5px;
+  height: 5px;
+  animation-delay: 0s;
+}
+.shell-mote-2 {
+  left: 64%;
+  top: 52%;
+  width: 4px;
+  height: 4px;
+  animation-delay: 1.1s;
+}
+.shell-mote-3 {
+  left: 44%;
+  top: 64%;
+  width: 3px;
+  height: 3px;
+  animation-delay: 2.2s;
+}
+.shell-mote-4 {
+  left: 58%;
+  top: 62%;
+  width: 5px;
+  height: 5px;
+  animation-delay: 0.6s;
+}
+@keyframes shell-mote-float {
+  0% {
+    transform: translate3d(0, 12px, 0) scale(0.75);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.24;
+  }
+  80% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: translate3d(8px, -48px, 0) scale(1.1);
+    opacity: 0;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .shell-startup,
   .shell-startup-dove-wrap,
   .shell-startup-halo,
-  .dove-wing-left,
-  .dove-wing-right {
+  .shell-startup-dove,
+  .shell-startup-wordmark {
     transition: none;
-    animation: none;
-    transform: none;
-  }
-  .shell-startup img,
-  .shell-startup-dove {
     animation: none;
     transform: none;
   }
@@ -316,7 +352,9 @@ html[data-theme="sepia"] .shell-startup-track > span {
     width: 100%;
     transform: none;
   }
-  .shell-startup-track::after {
+  .shell-startup-track::after,
+  .shell-startup-motes,
+  .shell-mote {
     animation: none;
     display: none;
   }
