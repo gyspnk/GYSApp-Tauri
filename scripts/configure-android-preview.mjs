@@ -24,7 +24,7 @@ export async function configureAndroid(
     // Keep Tauri's generated ProGuard rules and plugin consumer rules intact.
     // The preview signing identity is independent of the optimized Rust profile.
     additions.push(
-      `${marker}\nandroid {\n    buildTypes {\n        getByName("release") {\n            isMinifyEnabled = true\n            isShrinkResources = true\n            signingConfig = signingConfigs.getByName("debug")\n        }\n    }\n}\n`,
+      `${marker}\nandroid {\n    buildTypes {\n        getByName("release") {\n            isMinifyEnabled = true\n            isShrinkResources = true\n            ndk {\n                debugSymbolLevel = "NONE"\n            }\n            signingConfig = signingConfigs.getByName("debug")\n        }\n    }\n}\n`,
     );
   }
   const compressionMarker = "// GYSApp compact JNI packaging";

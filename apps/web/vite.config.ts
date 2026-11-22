@@ -129,6 +129,24 @@ function offlineBuildAssetsPlugin(): Plugin {
         await rm(resolve(directory, "offline/bible/tb-reader.json.gz"), {
           force: true,
         });
+        const offlineDir = resolve(directory, "offline");
+        try {
+          const offlineEntries = await readdir(offlineDir);
+          await Promise.all(
+            offlineEntries
+              .filter(
+                (name) =>
+                  name.endsWith(".json") && name !== "pack-manifest.json",
+              )
+              .map(async (name) => {
+                const filePath = resolve(offlineDir, name);
+                const parsed = JSON.parse(await readFile(filePath, "utf8"));
+                await writeFile(filePath, JSON.stringify(parsed));
+              }),
+          );
+        } catch {
+          // offline dir absent
+        }
       }
     },
   };
