@@ -1,18 +1,18 @@
 html {
-  background: #fff;
+  background: #f8f7f4;
 }
 html[data-theme="dark"] {
-  background: #101820;
+  background: #0f1623;
 }
 html[data-theme="amoled"] {
-  background: #000;
+  background: #000000;
 }
 html[data-theme="sepia"] {
-  background: #f4efe4;
+  background: #f2e7d0;
 }
 @media (prefers-color-scheme: dark) {
   html[data-theme="system"] {
-    background: #101820;
+    background: #0f1623;
   }
 }
 
@@ -30,21 +30,51 @@ html[data-theme="sepia"] {
   gap: 24px;
   pointer-events: none;
   opacity: 1;
-  background: #fff;
+  background:
+    radial-gradient(
+      620px 360px at 50% 42%,
+      rgba(0, 102, 143, 0.08),
+      transparent 72%
+    ),
+    #f8f7f4;
   transition: opacity 220ms ease;
 }
 html[data-theme="dark"] .shell-startup {
-  background: #101820;
+  background:
+    radial-gradient(
+      620px 360px at 50% 42%,
+      rgba(120, 191, 224, 0.12),
+      transparent 72%
+    ),
+    #0f1623;
 }
 html[data-theme="amoled"] .shell-startup {
-  background: #000;
+  background:
+    radial-gradient(
+      620px 360px at 50% 42%,
+      rgba(120, 191, 224, 0.1),
+      transparent 72%
+    ),
+    #000000;
 }
 html[data-theme="sepia"] .shell-startup {
-  background: #f4efe4;
+  background:
+    radial-gradient(
+      620px 360px at 50% 42%,
+      rgba(122, 85, 29, 0.1),
+      transparent 72%
+    ),
+    #f2e7d0;
 }
 @media (prefers-color-scheme: dark) {
   html[data-theme="system"] .shell-startup {
-    background: #101820;
+    background:
+      radial-gradient(
+        620px 360px at 50% 42%,
+        rgba(120, 191, 224, 0.12),
+        transparent 72%
+      ),
+      #0f1623;
   }
 }
 html[data-boot="ready"] .shell-startup {
@@ -58,36 +88,119 @@ html[data-boot="ready"] .shell-startup {
   display: block;
   width: min(240px, 60vw);
   height: auto;
+  animation: shell-logo-breathe 2.4s ease-in-out infinite;
+}
+html:is([data-theme="dark"], [data-theme="amoled"]) .shell-startup img {
+  filter: brightness(1.55) contrast(1.08);
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .shell-startup img {
+    filter: brightness(1.55) contrast(1.08);
+  }
 }
 .shell-startup-track {
-  width: 140px;
-  height: 3px;
-  background: #178dc526;
-  border-radius: 6px;
+  position: relative;
+  width: 196px;
+  height: 7px;
+  background: rgba(0, 102, 143, 0.14);
+  box-shadow: inset 0 1px 2px rgba(14, 34, 64, 0.08);
+  border-radius: 999px;
   overflow: hidden;
 }
 .shell-startup-track > span {
   display: block;
-  width: 45%;
+  width: 44%;
   height: 100%;
-  background: #078ac7;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 102, 143, 0.18) 0%,
+    #00668f 38%,
+    #49b4de 68%,
+    rgba(0, 102, 143, 0.18) 100%
+  );
+  box-shadow: 0 0 12px rgba(0, 102, 143, 0.35);
   border-radius: inherit;
-  animation: shell-loading 1.2s ease-in-out infinite;
+  animation: shell-loading 1.45s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.shell-startup-track::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 28%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  animation: shell-loading 1.95s cubic-bezier(0.65, 0, 0.35, 1) 0.45s infinite;
+}
+html[data-theme="dark"] .shell-startup-track,
+html[data-theme="amoled"] .shell-startup-track {
+  background: rgba(120, 191, 224, 0.16);
+}
+html[data-theme="dark"] .shell-startup-track > span,
+html[data-theme="amoled"] .shell-startup-track > span {
+  background: linear-gradient(
+    90deg,
+    rgba(120, 191, 224, 0.18) 0%,
+    #78bfe0 42%,
+    #c6ecff 72%,
+    rgba(120, 191, 224, 0.18) 100%
+  );
+  box-shadow: 0 0 14px rgba(120, 191, 224, 0.42);
+}
+html[data-theme="sepia"] .shell-startup-track {
+  background: rgba(122, 85, 29, 0.16);
+}
+html[data-theme="sepia"] .shell-startup-track > span {
+  background: linear-gradient(
+    90deg,
+    rgba(122, 85, 29, 0.18) 0%,
+    #8d5e1a 45%,
+    #d4a253 75%,
+    rgba(122, 85, 29, 0.18) 100%
+  );
+  box-shadow: 0 0 12px rgba(141, 94, 26, 0.3);
+}
+@keyframes shell-logo-breathe {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
 }
 @keyframes shell-loading {
-  from {
-    transform: translateX(-110%);
+  0% {
+    transform: translateX(-115%) scaleX(0.5);
   }
-  to {
-    transform: translateX(240%);
+  45% {
+    transform: translateX(70%) scaleX(1.3);
+  }
+  100% {
+    transform: translateX(265%) scaleX(0.55);
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .shell-startup {
     transition: none;
   }
+  .shell-startup img {
+    animation: none;
+    transform: none;
+  }
   .shell-startup-track > span {
     animation: none;
     width: 100%;
+    transform: none;
+  }
+  .shell-startup-track::after {
+    animation: none;
+    display: none;
   }
 }

@@ -92,65 +92,80 @@ if (hintedShell !== original)
     withRoute(hintedShell, ROUTE_ENTRIES["/"]),
   );
 
-const catalog = JSON.parse(
-  await readFile(
-    join(process.cwd(), "public/offline/hymn-catalog.json"),
-    "utf8",
-  ),
-);
-const hymnRoutes = hymnStubPaths(catalog);
-const literature = JSON.parse(
-  await readFile(join(process.cwd(), "public/offline/literature.json"), "utf8"),
-);
-const literatureRoutes = literatureStubPaths(literature);
-const suara = JSON.parse(
-  await readFile(
-    join(process.cwd(), "public/offline/suara-sejati.json"),
-    "utf8",
-  ),
-);
-const suaraRoutes = suaraStubPaths(suara);
+const fastBuild = process.env.GYS_FAST_BUILD === "1";
+const [hymnRoutes, literatureRoutes, suaraRoutes] = fastBuild
+  ? [[], [], []]
+  : await Promise.all([
+      readFile(
+        join(process.cwd(), "public/offline/hymn-catalog.json"),
+        "utf8",
+      ).then((raw) => hymnStubPaths(JSON.parse(raw))),
+      readFile(
+        join(process.cwd(), "public/offline/literature.json"),
+        "utf8",
+      ).then((raw) => literatureStubPaths(JSON.parse(raw))),
+      readFile(
+        join(process.cwd(), "public/offline/suara-sejati.json"),
+        "utf8",
+      ).then((raw) => suaraStubPaths(JSON.parse(raw))),
+    ]);
 
-for (const route of [
-  ...routes,
-  ...hymnRoutes,
-  ...literatureRoutes,
-  ...suaraRoutes,
-]) {
-  const target = join(dist, route, "index.html");
-  await mkdir(dirname(target), { recursive: true });
-  const entry =
-    ROUTE_ENTRIES[`/${route}`] ??
-    (hymnRoutes.includes(route)
-      ? "src/kidung.tsx"
-      : literatureRoutes.includes(route)
-        ? "src/literature.tsx"
-        : suaraRoutes.includes(route)
-          ? "src/online-content.tsx"
-          : undefined);
-  const dataRoute = ROUTE_DATA[`/${route}`]
-    ? `/${route}`
-    : literatureRoutes.includes(route)
-      ? "/literatur"
-      : suaraRoutes.includes(route)
-        ? "/suara"
-        : undefined;
-  const shellFor =
-    route === "sauh"
-      ? hintedShell
-      : route === "suara" || suaraRoutes.includes(route)
-        ? suaraShell
-        : preconnectShell;
-  const html = withRoute(shellFor, entry, dataRoute);
-  const withPack =
-    route === "bible" || route === "alkitab"
-      ? injectBiblePackFetch(html, base)
-      : html;
-  await writeFile(
-    target,
-    route === "kidung" || hymnRoutes.includes(route)
-      ? injectHymnMetadataPreload(withPack, base)
-      : withPack,
+// Precompute dynamic HTML shells once instead of recomputing them 997 times.
+const hymnHtml = injectHymnMetadataPreload(
+  withRoute(preconnectShell, "src/kidung.tsx"),
+  base,
+);
+const literatureHtml = withRoute(
+  preconnectShell,
+  "src/literature.tsx",
+  "/literatur",
+);
+const suaraHtml = withRoute(suaraShell, "src/online-content.tsx", "/suara");
+
+const allTasks = [
+  ...routes.map((route) => {
+    const shellFor =
+      route === "sauh"
+        ? hintedShell
+        : route === "suara"
+          ? suaraShell
+          : preconnectShell;
+    const html = withRoute(
+      shellFor,
+      ROUTE_ENTRIES[`/${route}`],
+      ROUTE_DATA[`/${route}`],
+    );
+    const withPack =
+      route === "bible" || route === "alkitab"
+        ? injectBiblePackFetch(html, base)
+        : html;
+    return [
+      route,
+      route === "kidung" ? injectHymnMetadataPreload(withPack, base) : withPack,
+    ];
+  }),
+  ...hymnRoutes.map((route) => [route, hymnHtml]),
+  ...literatureRoutes.map((route) => [route, literatureHtml]),
+  ...suaraRoutes.map((route) => [route, suaraHtml]),
+];
+
+const BATCH_SIZE = 64;
+const createdDirs = new Set();
+for (let i = 0; i < allTasks.length; i += BATCH_SIZE) {
+  const batch = allTasks.slice(i, i + BATCH_SIZE);
+  const dirsToCreate = [];
+  for (const [route] of batch) {
+    const parent = dirname(join(dist, route, "index.html"));
+    if (!createdDirs.has(parent)) {
+      createdDirs.add(parent);
+      dirsToCreate.push(mkdir(parent, { recursive: true }));
+    }
+  }
+  await Promise.all(dirsToCreate);
+  await Promise.all(
+    batch.map(([route, content]) =>
+      writeFile(join(dist, route, "index.html"), content),
+    ),
   );
 }
 

@@ -32,10 +32,28 @@ const routes = (
 ).split(",");
 const themes = (process.env.UI_AUDIT_THEMES ?? "light").split(",");
 
-const browser = await chromium.launch();
+const concurrency = Math.max(
+  1,
+  Number(process.env.UI_AUDIT_CONCURRENCY ?? "4"),
+);
+const settleMs = Number(process.env.UI_AUDIT_SETTLE_MS ?? "80");
+
+const browser = await chromium.launch({
+  args: [
+    "--disable-dev-shm-usage",
+    "--disable-background-timer-throttling",
+    "--disable-renderer-backgrounding",
+  ],
+});
+const pairs = viewports.flatMap((viewport) =>
+  themes.map((theme) => ({ viewport, theme })),
+);
 const findings = [];
-for (const viewport of viewports) {
-  for (const theme of themes) {
+let cursor = 0;
+
+async function runWorker() {
+  while (cursor < pairs.length) {
+    const { viewport, theme } = pairs[cursor++];
     const context = await browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },
       hasTouch: viewport.width < 800,
@@ -50,7 +68,22 @@ for (const viewport of viewports) {
     const page = await context.newPage();
     for (const route of routes) {
       await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
-      await page.waitForTimeout(700);
+      await page
+        .waitForFunction(
+          () =>
+            !document.querySelector(
+              ".route-loading, .non-reader-route-loading",
+            ),
+          { timeout: 5_000 },
+        )
+        .catch(() => undefined);
+      await page.evaluate(async () => {
+        await document.fonts?.ready;
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        );
+      });
+      await page.waitForTimeout(settleMs);
       const groups = await page.evaluate(() => {
         const describe = (el) => {
           const cls =
@@ -78,13 +111,21 @@ for (const viewport of viewports) {
         const selector =
           "button, a[role='button'], a[class*='button'], a[class*='trigger'], a[class*='action'], a[class*='portal'], summary, .hymn-action, .hymn-partitur-toggle, .hymn-more-actions-summary";
         const out = [];
+        const emphasized = (el) =>
+          /primary|danger|destructive|is-active|is-selected/.test(
+            typeof el.className === "string" ? el.className : "",
+          );
+        const isQuietControl = (el) =>
+          !el.hasAttribute("aria-pressed") &&
+          !el.matches(":disabled, [aria-disabled='true']") &&
+          !/swatch/.test(
+            typeof el.className === "string" ? el.className : "",
+          ) &&
+          el.dataset.variant !== "primary" &&
+          !emphasized(el);
         for (const parent of document.querySelectorAll("body *")) {
           // A row may deliberately carry one emphasized action; parity is about
           // the quiet peers that remain.
-          const emphasized = (el) =>
-            /primary|danger|destructive|is-active|is-selected/.test(
-              typeof el.className === "string" ? el.className : "",
-            );
           const kids = [...parent.children].filter(
             (el) =>
               el.matches(selector) &&
@@ -95,16 +136,7 @@ for (const viewport of viewports) {
                   checkOpacity: true,
                   checkVisibilityCSS: true,
                 })) &&
-              !el.hasAttribute("aria-pressed") &&
-              // A disabled control is deliberately greyed out, so its fill is
-              // not a peer paint defect.
-              !el.matches(":disabled, [aria-disabled='true']") &&
-              // Swatches are colour pickers: their paint IS the content.
-              !/swatch/.test(
-                typeof el.className === "string" ? el.className : "",
-              ) &&
-              el.dataset.variant !== "primary" &&
-              !emphasized(el),
+              isQuietControl(el),
           );
           if (kids.length < 3) continue;
           const paints = kids.map(paint);
@@ -139,10 +171,6 @@ for (const viewport of viewports) {
           (el) => {
             const rect = el.getBoundingClientRect();
             return (
-              // Swatches are colour pickers: their paint IS the content.
-              !/swatch/.test(
-                typeof el.className === "string" ? el.className : "",
-              ) &&
               rect.width >= 24 &&
               // A settings row spans the page; sharing its centre line with the
               // topbar controls does not make it their peer.
@@ -153,7 +181,7 @@ for (const viewport of viewports) {
                   checkOpacity: true,
                   checkVisibilityCSS: true,
                 })) &&
-              !el.matches(":disabled, [aria-disabled='true']")
+              isQuietControl(el)
             );
           },
         );
@@ -393,6 +421,11 @@ for (const viewport of viewports) {
     await context.close();
   }
 }
+await Promise.all(
+  Array.from({ length: Math.min(concurrency, pairs.length) }, () =>
+    runWorker(),
+  ),
+);
 await browser.close();
 console.log(
   JSON.stringify(

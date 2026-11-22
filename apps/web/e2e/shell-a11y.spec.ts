@@ -542,6 +542,7 @@ test("the app update banner is axe clean while the update waits", async ({
   await armAppUpdate(page);
   await page.route(/^https:\/\//, (route) => route.abort());
   await page.goto("/GYSApp-Tauri/lainnya");
+  await expect(page.locator(".more-page")).toBeVisible({ timeout: 30_000 });
 
   const banner = page.locator(".app-update-banner");
   await expect(banner).toBeVisible({ timeout: 20_000 });

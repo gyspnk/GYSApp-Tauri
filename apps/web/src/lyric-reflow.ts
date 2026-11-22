@@ -21,7 +21,11 @@ export function useLyricReflow(
     };
     const measure = () => {
       frame = 0;
-      if (root.classList.contains("is-pinching") || motion.matches) {
+      if (
+        root.classList.contains("is-pinching") ||
+        Boolean(root.closest(".is-rail-transitioning")) ||
+        motion.matches
+      ) {
         cancel();
         previous.clear();
         return;

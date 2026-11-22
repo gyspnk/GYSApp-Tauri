@@ -19,6 +19,28 @@ export default defineConfig(baseConfig, {
   workers: Number(process.env.GYS_E2E_WORKERS ?? 2),
   retries: 0,
   reporter: [["line"]],
+  grepInvert:
+    process.env.GYS_E2E_INCLUDE_NIGHTLY === "1" ? undefined : /@nightly/,
+  use: {
+    ...baseConfig.use,
+    trace: process.env.GYS_E2E_TRACE === "1" ? "retain-on-failure" : "off",
+    launchOptions: {
+      ...baseConfig.use?.launchOptions,
+      args: [
+        ...(baseConfig.use?.launchOptions?.args ?? []),
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--disable-extensions",
+        "--no-first-run",
+        "--disable-component-update",
+        "--disable-sync",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding",
+        "--mute-audio",
+      ],
+    },
+  },
   testIgnore: [
     "**/visual.spec.ts",
     "**/visual-reading.spec.ts",

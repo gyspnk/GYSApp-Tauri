@@ -258,7 +258,9 @@ function ImageContent({
           ) : (
             <strong aria-hidden="true">{fallbackMark || "GYS"}</strong>
           )}
-          {fallbackCategory && <small>{fallbackCategory}</small>}
+          {!fallbackTitle && fallbackCategory && (
+            <small>{fallbackCategory}</small>
+          )}
         </div>
       ) : (
         <img

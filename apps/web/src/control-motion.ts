@@ -1,3 +1,8 @@
+import { triggerElementRipple } from "./ripple.js";
+
+const RIPPLE_SELECTOR =
+  ".primary-button, .secondary-button, .quiet-button, .home-portal, .more-library-link, .more-setting-row, .continue-item, .nav-item, .topbar-appearance-button, .account-button, .search-trigger, .accent-palette-item, .audio-setting-preview, .kidung-rail-row, .kidung-rail-toggle, .kidung-rail-expand-btn, .viewer-chrome-button, .hymn-action, .hymn-partitur-toggle, .hymn-more-actions-summary, .pdf-music-summary, .kidung-mode-cycle, .add-to-playlist-btn";
+
 /** Delegated native motion: no per-button listeners or animation dependency. */
 export function installControlMotion(): () => void {
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
@@ -40,6 +45,9 @@ export function installControlMotion(): () => void {
     if (!element) return;
     pressed.add(element);
     animate(element, "0.96");
+    if (event instanceof PointerEvent && element.matches(RIPPLE_SELECTOR)) {
+      triggerElementRipple(element, event.clientX, event.clientY);
+    }
   };
   const release = () => {
     pressed.forEach((element) => {

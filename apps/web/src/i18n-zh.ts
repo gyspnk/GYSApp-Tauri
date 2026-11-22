@@ -457,6 +457,8 @@ export const zhFeatureMessages: Record<string, string> = {
   "kidung.collection": "合集",
   "kidung.showFilters": "显示筛选",
   "kidung.hideFilters": "隐藏筛选",
+  "kidung.collapseList": "收起诗歌列表",
+  "kidung.expandList": "显示诗歌列表",
   "kidung.searchEmptyTitle": "未找到诗歌。",
   "kidung.searchEmptyBody": "请尝试其他关键词，或清除搜索。",
   "kidung.navigation": "诗歌导航",

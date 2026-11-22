@@ -11,6 +11,7 @@ export function LoadingProgress({
     <div className="loading-progress">
       {showLogo && (
         <img
+          className="loading-progress-logo"
           src={`${import.meta.env.BASE_URL}assets/gys-logo.png`}
           alt="Gereja Yesus Sejati"
         />

@@ -10,7 +10,7 @@ test("appearance preference changes select the dedicated visual/usability contra
     [
       "apps/web/src/ui-preferences.ts",
       "apps/web/src/ui-preferences-panel.tsx",
-      "apps/web/src/calm-liturgical.css",
+      "apps/web/src/styles/02-bible-and-settings.css",
     ],
     [],
   );
@@ -25,7 +25,10 @@ test("appearance preference changes select the dedicated visual/usability contra
 });
 
 test("Kidung presentation changes select the dedicated Kidung usability contracts", () => {
-  const plan = resolveSelectiveTestArgs(["apps/web/src/kidung-ux.css"], []);
+  const plan = resolveSelectiveTestArgs(
+    ["apps/web/src/styles/04-kidung-and-media.css"],
+    [],
+  );
 
   assert.ok(plan.args.includes("e2e/kidung-usability.spec.ts"));
   // The `-linux` baselines belong to the nightly full run, not this path.
@@ -89,7 +92,10 @@ test("Faith text and gesture edits select reading contracts without unrelated me
 });
 
 test("shared composition changes retain shell, gesture and responsive coverage", () => {
-  const plan = resolveSelectiveTestArgs(["apps/web/src/app-design.css"], []);
+  const plan = resolveSelectiveTestArgs(
+    ["apps/web/src/styles/01-foundations-and-layout.css"],
+    [],
+  );
   for (const spec of [
     "smoke",
     "sidebar-collapse",

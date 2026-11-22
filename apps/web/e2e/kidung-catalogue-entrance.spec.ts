@@ -162,7 +162,13 @@ test.describe("kidung catalogue entrance", () => {
     // The off-screen tail never scrolls in on its own, so the rule is checked
     // where it lives: a saturated delay and a hard stop after sixty rows.
     const css = readFileSync(
-      path.join(import.meta.dirname, "..", "src", "app-design.css"),
+      path.join(
+        import.meta.dirname,
+        "..",
+        "src",
+        "styles",
+        "05-motion-and-print.css",
+      ),
       "utf8",
     );
     const rule = css.slice(css.indexOf(".pujian-list.is-staggering"));

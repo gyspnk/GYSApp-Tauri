@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import "./midi-player.css";
 import { translate, type Locale } from "./i18n.js";
 import { chordKeyName, transposeToKey } from "./chord-viewer.js";
 import { GM_INSTRUMENTS } from "./midi-instruments.js";

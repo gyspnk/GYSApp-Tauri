@@ -1,7 +1,9 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
+import { statSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildCommand, isFresh, newestSource } from "./e2e-one.mjs";
 import { pnpmInvocation } from "./process-result.mjs";
 
 /**
@@ -17,7 +19,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const webDir = path.join(rootDir, "apps", "web");
 
-const rawArgs = process.argv.slice(2);
+const rawArgs = process.argv.slice(2).filter((arg) => arg !== "--");
 const option = (name, fallback) => {
   const index = rawArgs.findIndex(
     (arg) => arg === name || arg.startsWith(`${name}=`),
@@ -44,22 +46,62 @@ if (!Number.isInteger(workers) || workers < 1)
 const baseUrl = process.env.GYS_E2E_BASE_URL ?? "http://127.0.0.1:4173";
 const appUrl = `${baseUrl.replace(/\/$/, "")}/GYSApp-Tauri/`;
 
-async function assertPreview() {
+async function isPreviewReachable() {
   try {
     const response = await fetch(appUrl, {
-      signal: AbortSignal.timeout(5_000),
+      signal: AbortSignal.timeout(2_000),
     });
-    if (response.ok) return;
+    return response.ok;
   } catch {
-    // Fall through to the actionable message below.
+    return false;
   }
-  console.error(
-    `No preview server at ${appUrl}. Run \`pnpm preview\` (or \`pnpm build && pnpm preview\`) first.`,
-  );
+}
+
+async function ensurePreview() {
+  if (await isPreviewReachable()) return undefined;
+  const distIndex = path.join(webDir, "dist", "index.html");
+  let fresh = false;
+  try {
+    fresh =
+      process.env.GYS_E2E_FORCE_BUILD !== "1" &&
+      isFresh(statSync(distIndex).mtimeMs, newestSource(webDir));
+  } catch {
+    fresh = false;
+  }
+  if (!fresh) {
+    console.log("Building @gys/web before starting shared preview server...");
+    const build = buildCommand(process.env);
+    execFileSync(build.command, build.args, {
+      cwd: rootDir,
+      stdio: "inherit",
+      env: build.env,
+    });
+  }
+  const preview = pnpmInvocation([
+    "--filter",
+    "@gys/web",
+    "preview",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    new URL(appUrl).port || "4173",
+    "--strictPort",
+  ]);
+  const child = spawn(preview.command, preview.args, {
+    cwd: rootDir,
+    shell: preview.shell,
+    stdio: "ignore",
+  });
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    if (await isPreviewReachable()) return child;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  child.kill("SIGTERM");
+  console.error(`Preview server at ${appUrl} did not become ready in time.`);
   process.exit(1);
 }
 
-await assertPreview();
+const ownPreview = await ensurePreview();
 const outputDir = path.join(webDir, "test-results", "shards");
 await mkdir(outputDir, { recursive: true });
 
@@ -120,9 +162,14 @@ const started = Date.now();
 console.log(
   `Running ${shards} shard(s) × ${workers} worker(s) against ${appUrl}`,
 );
-const results = await Promise.all(
-  Array.from({ length: shards }, (_, index) => runShard(index)),
-);
+let results;
+try {
+  results = await Promise.all(
+    Array.from({ length: shards }, (_, index) => runShard(index)),
+  );
+} finally {
+  ownPreview?.kill("SIGTERM");
+}
 const total = (Date.now() - started) / 1000;
 
 for (const result of results.sort((left, right) => left.index - right.index)) {

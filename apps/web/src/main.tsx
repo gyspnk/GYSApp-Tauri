@@ -11,18 +11,6 @@ import { runStorageMigrations } from "./storage.js";
 import { initializeUiPreferences } from "./ui-preferences.js";
 import { clearStaleShellCaches } from "./chunk-recovery.js";
 import "./styles.css";
-import "./ui-hardening.css";
-import "./ui-preferences.css";
-import "./kidung-ux.css";
-import "./direct-manipulation.css";
-import "./kidung-touch-targets.css";
-import "./reading-surfaces.css";
-import "./calm-liturgical.css";
-import "./persistent-media.css";
-import "./app-design.css";
-import "./kidung-responsive.css";
-import "./menu-motion.css";
-import "./midi-player.css";
 
 runStorageMigrations();
 initializeUiPreferences();

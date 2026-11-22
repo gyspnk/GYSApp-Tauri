@@ -131,7 +131,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
     if (/^apps\/web\/src\/(?:styles\/[^/]+|[^/]+)\.css$/.test(file))
       return false;
     if (!file.startsWith("apps/web/src/")) return false;
-    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|online-content|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|faith|reading-zoom|app-design\.css|App\.tsx|welcome\.tsx|styles\.css|ui-hardening|calm-liturgical|icons\.tsx|i18n)/.test(
+    return !/(?:bible|sql|pericope|cross-ref|sauh|suara|online-content|kidung|hymn|midi|chord|literatur|distributed|asset|pdf|direct-manipulation|ui-preferences|faith|reading-zoom|App\.tsx|welcome\.tsx|styles\.css|icons\.tsx|i18n)/.test(
       file,
     );
   });
@@ -276,7 +276,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
 
     if (
       file.includes("ui-preferences") ||
-      file.includes("calm-liturgical.css")
+      file.includes("02-bible-and-settings.css")
     ) {
       specFiles.add("e2e/appearance-preferences.spec.ts");
       specFiles.add("e2e/smoke.spec.ts");
@@ -305,11 +305,8 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
       // as ordinary source silently dropped the cross-screen sweeps.
       (/^apps\/web\/src\/(styles\/[^/]+\.css|[^/]+\.css)$/.test(file) &&
         !file.includes("test")) ||
-      file.includes("app-design.css") ||
       file.includes("App.tsx") ||
       file.includes("styles.css") ||
-      file.includes("ui-hardening.css") ||
-      file.includes("calm-liturgical.css") ||
       file.includes("icons.tsx") ||
       file.includes("i18n")
     ) {
@@ -366,7 +363,7 @@ export function resolveSelectiveTestArgs(changedFiles, userArgs) {
   // single-screen change); the global design files still justify the full set,
   // because they can move every screen at once.
   const globalLayout = changedFiles.some((file) =>
-    /(?:^|\/)(?:app-design\.css|App\.tsx|icons\.tsx|styles\/[^/]+\.css)$/.test(
+    /(?:^|\/)(?:App\.tsx|icons\.tsx|styles\.css|styles\/0(?:0-tokens|1-foundations-and-layout|5-motion-and-print)\.css)$/.test(
       file,
     ),
   );

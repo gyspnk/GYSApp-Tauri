@@ -9,11 +9,25 @@ import { join } from "node:path";
 const PACK = join("public", "offline", "bible", "tb-reader.json");
 const OUT = `${PACK}.gz`;
 
+const source = await stat(PACK);
+if (process.env.GYS_FORCE_BIBLE_PACK !== "1") {
+  try {
+    const existing = await stat(OUT);
+    if (existing.size > 0 && existing.mtimeMs >= source.mtimeMs) {
+      console.log(
+        `bible pack: ${(source.size / 1024 / 1024).toFixed(1)} MB -> ${(existing.size / 1024 / 1024).toFixed(2)} MB gzip (cached)`,
+      );
+      process.exit(0);
+    }
+  } catch {
+    // Regenerate when missing.
+  }
+}
+
 const bytes = await readFile(PACK);
 const compressed = gzipSync(bytes, { level: 9 });
 compressed.writeUInt32LE(0, 4); // deterministic mtime
 await writeFile(OUT, compressed);
-const source = await stat(PACK);
 const target = await stat(OUT);
 console.log(
   `bible pack: ${(source.size / 1024 / 1024).toFixed(1)} MB -> ${(target.size / 1024 / 1024).toFixed(2)} MB gzip`,

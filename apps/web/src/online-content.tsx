@@ -276,6 +276,7 @@ export function SauhPage({ locale }: { locale: Locale }) {
 export function SuaraPage({ locale }: { locale: Locale }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SuaraSort>("recent");
+  const [visibleCount, setVisibleCount] = useState(18);
   const searchRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<
     | { status: "loading" }
@@ -320,6 +321,10 @@ export function SuaraPage({ locale }: { locale: Locale }) {
         )
       : [];
   const visiblePosts = sortSuaraPosts(filteredPosts, sort);
+  const pagedPosts = visiblePosts.slice(0, visibleCount);
+  useEffect(() => {
+    setVisibleCount(18);
+  }, [normalizedQuery, sort]);
   return (
     <div
       className="page online-content-page suara-page"
@@ -428,49 +433,62 @@ export function SuaraPage({ locale }: { locale: Locale }) {
         </div>
       )}
       {state.status === "ready" && state.posts.length > 0 && (
-        <div className="suara-library-grid">
-          {visiblePosts.map((post, index) => (
-            <Link
-              className="suara-library-item"
-              key={post.id}
-              style={
-                {
-                  "--row-index": Math.min(index, 11),
-                } as CSSProperties
-              }
-              to={`/suara/${encodeURIComponent(post.id)}`}
+        <>
+          <div className="suara-library-grid">
+            {pagedPosts.map((post, index) => (
+              <Link
+                className="suara-library-item"
+                key={post.id}
+                style={
+                  {
+                    "--row-index": Math.min(index, 11),
+                  } as CSSProperties
+                }
+                to={`/suara/${encodeURIComponent(post.id)}`}
+              >
+                <div className="suara-card-media">
+                  <LazyImage
+                    locale={locale}
+                    className="suara-thumb-img"
+                    wrapperClassName="suara-library-thumb"
+                    src={post.imageUrl}
+                    fallbackTitle={post.title}
+                    fallbackCategoryKey="kesaksian"
+                    fallbackCategory={translate(locale, "home.testimony")}
+                    alt={translate(locale, "suara.coverAlt", {
+                      title: post.title,
+                    })}
+                    loading={index < 4 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                  />
+                  <div className="suara-media-overlay" />
+                </div>
+                <div className="suara-card-content">
+                  <span className="suara-date">
+                    {new Date(post.publishedAt).toLocaleDateString(locale, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <strong>{post.title}</strong>
+                  <small>{post.excerpt}</small>
+                </div>
+              </Link>
+            ))}
+          </div>
+          {visibleCount < visiblePosts.length && (
+            <button
+              className="secondary-button literature-more"
+              type="button"
+              onClick={() => setVisibleCount((count) => count + 18)}
             >
-              <div className="suara-card-media">
-                <LazyImage
-                  locale={locale}
-                  className="suara-thumb-img"
-                  wrapperClassName="suara-library-thumb"
-                  src={post.imageUrl}
-                  fallbackTitle={post.title}
-                  fallbackCategoryKey="kesaksian"
-                  fallbackCategory={translate(locale, "home.testimony")}
-                  alt={translate(locale, "suara.coverAlt", {
-                    title: post.title,
-                  })}
-                  loading={index < 4 ? "eager" : "lazy"}
-                  fetchPriority={index === 0 ? "high" : "auto"}
-                />
-                <div className="suara-media-overlay" />
-              </div>
-              <div className="suara-card-content">
-                <span className="suara-date">
-                  {new Date(post.publishedAt).toLocaleDateString(locale, {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
-                <strong>{post.title}</strong>
-                <small>{post.excerpt}</small>
-              </div>
-            </Link>
-          ))}
-        </div>
+              {translate(locale, "literature.loadMore", {
+                count: Math.min(18, visiblePosts.length - visibleCount),
+              })}
+            </button>
+          )}
+        </>
       )}
     </div>
   );

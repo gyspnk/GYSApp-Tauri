@@ -46,233 +46,256 @@
   background: var(--canvas);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  /* The default theme is GYS blue: the church identity and the reader's
-     recognition of the app both live in this hue, so it must not drift to
-     another accent (an editorial palette can arrive through the theme or
-     accent switcher instead). Every theme keeps the accent in that same blue
-     family — dark and amoled lighten it for contrast, sepia deepens it — so a
-     reader who switches theme never sees the church hue turn green. */
-  --canvas: #f3f6fa;
+  /* Sanctuary Editorial palette: warm vellum canvas + midnight navy ink + GYS cerulean accent.
+     Every theme keeps the accent blue-dominant so the church identity holds across modes. */
+  --canvas: #f8f7f4;
   --surface: #ffffff;
   --surface-rgb: 255, 255, 255;
-  --surface-soft: #eaf0f7;
-  --ink: #1c2b3a;
-  /* Secondary ink remains readable on the default blue/white surfaces. */
-  --muted: #586b7d;
-  --line: #dce5ee;
-  /* Control borders, not hairlines: a button or a field edge has to clear the
-     3:1 non-text minimum against both the surface and the canvas, and
-     #bdcedd only reached 1,61:1 on white. */
-  --line-strong: #6b849b;
-  --blue: #00719c;
-  /* One focus ring for every control: the solid blue clears 3:1 on every
-     surface, unlike the translucent variants it replaces. */
+  --surface-soft: #f0ede6;
+  --surface-elevated: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.84);
+  --ink: #142033;
+  --ink-soft: #2c3e55;
+  --muted: #4e5e73;
+  --line: #dcd8ce;
+  --line-strong: #6c7a8d;
+  --blue: #00668f;
   --focus: var(--blue);
   --accent-fill: var(--blue);
   --on-accent: #ffffff;
-  --success: #23642b;
+  --success: #1f6b47;
   --danger: #b3261e;
-  --gold: #7a5c00;
-  --blue-soft: #e3f2fa;
-  --navy: #163f61;
-  --shadow: 0 14px 40px rgba(31, 66, 112, 0.08);
-  --shadow-lift: 0 18px 42px rgba(31, 66, 112, 0.14);
-  /* Shadow scale: three elevations, retinted per theme so a card never
-     borrows a blue-black shadow on a warm or pure-black surface. */
-  --shadow-xs: 0 1px 2px rgba(31, 66, 112, 0.06);
-  --shadow-sm: 0 1px 3px rgba(31, 66, 112, 0.09);
-  --shadow-float: 0 8px 26px rgba(31, 66, 112, 0.12);
+  --gold: #9a6e17;
+  --blue-soft: #e3f0f6;
+  --navy: #0e2240;
+  --shadow: 0 12px 36px rgba(14, 34, 64, 0.08);
+  --shadow-lift: 0 18px 42px rgba(14, 34, 64, 0.14);
+  --shadow-xs:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 1px 3px rgba(14, 34, 64, 0.06);
+  --shadow-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 4px 14px -2px rgba(14, 34, 64, 0.08),
+    0 2px 4px -1px rgba(14, 34, 64, 0.04);
+  --shadow-float:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 16px 38px -6px rgba(14, 34, 64, 0.14),
+    0 4px 12px -2px rgba(14, 34, 64, 0.06);
+  --shadow-hairline: 0 1px 0 0 var(--line);
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-card: 16px;
-  /* Buttons, selects and icon buttons share this corner. */
   --radius-control: 12px;
   --radius-feature: 24px;
-  /* Type scale: every absolute font-size uses one of these steps. Density
-     tokens (--text-ui/--text-meta in the density layer) stay separate because
-     they scale with the user's compact/comfortable choice. */
-  --type-micro: 0.625rem; /* 10px */
-  --type-caption: 0.6875rem; /* 11px */
-  --type-meta: 0.75rem; /* 12px */
-  --type-body-sm: 0.8125rem; /* 13px */
-  --type-body: 0.875rem; /* 14px */
-  --type-body-lg: 0.9375rem; /* 15px */
-  --type-base: 1rem; /* 16px */
-  --type-title-sm: 1.0625rem; /* 17px */
-  --type-title: 1.125rem; /* 18px */
-  --type-title-lg: 1.25rem; /* 20px */
-  --type-display-sm: 1.375rem; /* 22px */
-  --type-display: 1.5rem; /* 24px */
-  --type-display-lg: 1.75rem; /* 28px */
-  /* One motion scale for the whole app; components must not invent their
-     own durations. See the motion spec in the plan. */
+  --type-micro: 0.625rem;
+  --type-caption: 0.6875rem;
+  --type-meta: 0.75rem;
+  --type-body-sm: 0.8125rem;
+  --type-body: 0.875rem;
+  --type-body-lg: 0.9375rem;
+  --type-base: 1rem;
+  --type-title-sm: 1.0625rem;
+  --type-title: 1.125rem;
+  --type-title-lg: 1.25rem;
+  --type-display-sm: 1.375rem;
+  --type-display: 1.5rem;
+  --type-display-lg: 1.75rem;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.22, 1.36, 0.36, 1);
+  --ease-bubble: cubic-bezier(0.34, 1.56, 0.64, 1);
   --motion-fast: 120ms;
   --motion-normal: 180ms;
   --motion-slow: 260ms;
   --motion-entrance: 220ms;
-  --motion-stagger: 40ms;
+  --motion-stagger: 36ms;
   --motion-distance: 8px;
   --motion-lift: -2px;
-  --motion-press: 0.96;
-  /* Slower, decelerating curve for elements that arrive rather than move. */
+  --motion-press: 0.97;
   --motion-ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-6: 24px;
-
-  /* 6-Tier Design System Z-Index Stratification (R1) */
   --z-content: 0;
   --z-nav: 10;
   --z-media: 20;
   --z-toolbar: 30;
   --z-popover: 40;
   --z-modal: 50;
-
-  /* Global Topbar Height: standardized across all pages for layout consistency */
   --topbar-height: 58px;
-  /* Notch safety: one token, so a header pads once from the same place. */
+  --sidebar-width: 224px;
+  --sidebar-collapsed-width: 80px;
+  --content-max-width: 1120px;
+  --control-hit: 44px;
+  --reader-font-size: 1.25rem;
+  --reader-line-height: 1.72;
+  --bible-font-size: 1.25rem;
+  --bible-line-height: 1.72;
+  --chord-text-color: var(--navy);
+  --verse-indent: 1;
+  --lyrics-scale: 1;
+  --media-edge-bottom: 12px;
   --safe-area-top: env(safe-area-inset-top, 0px);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  /* Cool slate, not forest green: the surfaces must not tint the church accent. */
-  --canvas: #0f1418;
-  --surface: #171e24;
-  --surface-rgb: 23, 30, 36;
-  --surface-soft: #202a31;
-  --ink: #edebe2;
-  --muted: #c0beb3;
-  --line: #5f7480;
-  --line-strong: #8497a3;
-  --blue: #7fc6e8;
-  --on-accent: #06181f;
-  --success: #8ed39a;
-  --blue-soft: #14313d;
-  --danger: #ffb4ab;
-  --gold: #e8c46a;
-  --navy: #a9d8ef;
-  --shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
-  --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.6);
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.55);
-  --shadow-float: 0 8px 26px rgba(0, 0, 0, 0.55);
+  --canvas: #0f1623;
+  --surface: #162030;
+  --surface-rgb: 22, 32, 48;
+  --surface-soft: #1e2a3d;
+  --surface-elevated: #1e2b3f;
+  --surface-glass: rgba(15, 22, 35, 0.84);
+  --ink: #eef3fa;
+  --ink-soft: #cbd7e6;
+  --muted: #a6b5c8;
+  --line: #324359;
+  --line-strong: #7e8fa3;
+  --blue: #78bfe0;
+  --on-accent: #071928;
+  --success: #82d09c;
+  --blue-soft: #163344;
+  --danger: #ff9c94;
+  --gold: #e6be60;
+  --navy: #b5dbf0;
+  --shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.56);
+  --shadow-xs:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 6px 16px -2px rgba(0, 0, 0, 0.52);
+  --shadow-float:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 18px 40px -6px rgba(0, 0, 0, 0.64);
 }
 
 :root[data-theme="amoled"] {
   color-scheme: dark;
   --canvas: #000000;
-  --surface: #0a0a0a;
-  --surface-rgb: 10, 10, 10;
-  --surface-soft: #141414;
-  --ink: #fffcf5;
-  --muted: #bbb1a1;
-  --line: #555555;
-  --line-strong: #777777;
-  --blue: #7fc6e8;
-  --on-accent: #04161d;
-  --success: #8ed39a;
-  --blue-soft: #10242c;
-  --danger: #ffb4ab;
-  --gold: #e8c46a;
-  --navy: #cfe6f2;
-  --shadow: 0 14px 40px rgba(0, 0, 0, 0.7);
-  --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.85);
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.8);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.9);
-  --shadow-float: 0 8px 26px rgba(0, 0, 0, 0.9);
+  --surface: #0a0e14;
+  --surface-rgb: 10, 14, 20;
+  --surface-soft: #131922;
+  --surface-elevated: #151c26;
+  --surface-glass: rgba(8, 11, 16, 0.88);
+  --ink: #f5f7fa;
+  --ink-soft: #d5deea;
+  --muted: #a8b3c2;
+  --line: #273242;
+  --line-strong: #758294;
+  --blue: #7cc2e3;
+  --on-accent: #041621;
+  --success: #82d09c;
+  --blue-soft: #0f2533;
+  --danger: #ff9c94;
+  --gold: #e6be60;
+  --navy: #cde6f5;
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.72);
+  --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.88);
+  --shadow-xs:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 3px rgba(0, 0, 0, 0.8);
+  --shadow-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 6px 16px -2px rgba(0, 0, 0, 0.9);
+  --shadow-float:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 40px -6px rgba(0, 0, 0, 0.94);
 }
 
 :root[data-theme="sepia"] {
   color-scheme: light;
-  --canvas: #efe3cb;
-  --surface: #faf1df;
-  --surface-rgb: 250, 241, 223;
-  --surface-soft: #e8dbc1;
-  --ink: #2b1c0c;
-  --muted: #4c3926;
-  --line: #bbab96;
-  --line-strong: #7a6847;
-  --blue: #0b5c80;
+  --canvas: #f2e7d0;
+  --surface: #fbf4e4;
+  --surface-rgb: 251, 244, 228;
+  --surface-soft: #e8dac0;
+  --surface-elevated: #fdf8ec;
+  --surface-glass: rgba(251, 244, 228, 0.86);
+  --ink: #2b1d12;
+  --ink-soft: #473322;
+  --muted: #584434;
+  --line: #cbbba0;
+  --line-strong: #77644f;
+  --blue: #0b5e82;
   --on-accent: #ffffff;
-  --success: #24562a;
-  --danger: #a4342a;
-  --gold: #8a6a2a;
+  --success: #245a30;
+  --danger: #a43226;
+  --gold: #8c6419;
   --blue-soft: #dde9ef;
-  --navy: #12455e;
-  --shadow: 0 14px 40px rgba(92, 64, 51, 0.12);
-  --shadow-lift: 0 18px 42px rgba(92, 64, 51, 0.18);
-  --shadow-xs: 0 1px 2px rgba(92, 64, 51, 0.08);
-  --shadow-sm: 0 1px 3px rgba(92, 64, 51, 0.12);
-  --shadow-float: 0 8px 26px rgba(92, 64, 51, 0.14);
+  --navy: #143f58;
+  --shadow: 0 12px 34px rgba(72, 48, 28, 0.12);
+  --shadow-lift: 0 18px 42px rgba(72, 48, 28, 0.18);
+  --shadow-xs:
+    inset 0 1px 0 rgba(255, 250, 240, 0.6), 0 1px 3px rgba(72, 48, 28, 0.08);
+  --shadow-sm:
+    inset 0 1px 0 rgba(255, 250, 240, 0.68),
+    0 4px 14px -2px rgba(72, 48, 28, 0.12);
+  --shadow-float:
+    inset 0 1px 0 rgba(255, 250, 240, 0.75),
+    0 16px 36px -6px rgba(72, 48, 28, 0.18);
 }
 
 @media (prefers-color-scheme: dark) {
   :root[data-theme="system"] {
     color-scheme: dark;
-    --canvas: #0f1418;
-    --surface: #171e24;
-    --surface-rgb: 23, 30, 36;
-    --surface-soft: #202a31;
-    --ink: #edebe2;
-    --muted: #c0beb3;
-    --line: #5f7480;
-    --line-strong: #8497a3;
-    --blue: #7fc6e8;
-    --on-accent: #06181f;
-    --success: #8ed39a;
-    --blue-soft: #14313d;
-    --danger: #ffb4ab;
-    --gold: #e8c46a;
-    --navy: #a9d8ef;
-    --shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
-    --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.6);
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.55);
-    --shadow-float: 0 8px 26px rgba(0, 0, 0, 0.55);
+    --canvas: #0f1623;
+    --surface: #162030;
+    --surface-rgb: 22, 32, 48;
+    --surface-soft: #1e2a3d;
+    --surface-elevated: #1e2b3f;
+    --surface-glass: rgba(15, 22, 35, 0.84);
+    --ink: #eef3fa;
+    --ink-soft: #cbd7e6;
+    --muted: #a6b5c8;
+    --line: #324359;
+    --line-strong: #7e8fa3;
+    --blue: #78bfe0;
+    --on-accent: #071928;
+    --success: #82d09c;
+    --blue-soft: #163344;
+    --danger: #ff9c94;
+    --gold: #e6be60;
+    --navy: #b5dbf0;
+    --shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+    --shadow-lift: 0 18px 42px rgba(0, 0, 0, 0.56);
+    --shadow-xs:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 1px 3px rgba(0, 0, 0, 0.45);
+    --shadow-sm:
+      inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      0 6px 16px -2px rgba(0, 0, 0, 0.52);
+    --shadow-float:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 18px 40px -6px rgba(0, 0, 0, 0.64);
   }
 }
 
-/* When the OS asks for more contrast, the palette tightens one step per theme.
-   Only the tokens that carry a boundary or a label move: the hue stays, the
-   ratio grows, and nothing that already clears its floor gets weaker. Muted
-   labels go from 4,5:1 to roughly 7:1 and control edges from 3:1 to 4,5:1.
-   This block sits after every theme block on purpose — `data-theme` rules tie
-   on specificity, so the last one wins. The `system` shell keeps following the
-   OS light/dark preference; only its contrast steps up. */
 @media (prefers-contrast: more) {
   :root {
-    --muted: #3d5163;
-    --line: #b6c6d5;
-    --line-strong: #4a6a86;
+    --muted: #38495e;
+    --line: #b2ada1;
+    --line-strong: #4a5e78;
   }
   :root[data-theme="dark"] {
-    --muted: #e2e0d6;
-    --line: #77899a;
-    --line-strong: #a3b6c2;
+    --muted: #dde5ef;
+    --line: #5b718c;
+    --line-strong: #a0b2c8;
   }
   :root[data-theme="amoled"] {
-    --muted: #ddd3c3;
-    --line: #6e6e6e;
-    --line-strong: #9a9a9a;
+    --muted: #dfe5ee;
+    --line: #556173;
+    --line-strong: #9aa7b8;
   }
   :root[data-theme="sepia"] {
-    --muted: #39280f;
-    --line: #a08d74;
-    --line-strong: #5f4f32;
+    --muted: #39281a;
+    --line: #9c8a71;
+    --line-strong: #584632;
   }
 }
 
 @media (prefers-contrast: more) and (prefers-color-scheme: dark) {
   :root[data-theme="system"] {
-    --muted: #e2e0d6;
-    --line: #77899a;
-    --line-strong: #a3b6c2;
+    --muted: #dde5ef;
+    --line: #5b718c;
+    --line-strong: #a0b2c8;
   }
 }

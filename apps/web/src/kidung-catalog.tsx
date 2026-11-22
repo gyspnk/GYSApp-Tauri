@@ -100,19 +100,6 @@ export function HymnCatalog({
     () => (state.status === "ready" ? uniqueItems(state.items) : []),
     [state],
   );
-  const midiSongs = useMemo(
-    () =>
-      new Set(
-        musicLock
-          ? allItems
-              .filter((item) =>
-                findMusicAsset(musicLock, "midi", item.midiPath),
-              )
-              .map((item) => item.id)
-          : [],
-      ),
-    [allItems, musicLock],
-  );
   const [corpus, setCorpus] =
     useState<Awaited<ReturnType<typeof loadHymnSearchCorpus>>>();
   const [corpusError, setCorpusError] = useState<string>();
@@ -168,10 +155,6 @@ export function HymnCatalog({
       ""
     );
   }, [book, books]);
-  const songCount = useMemo(
-    () => allItems.filter((item) => !item.assetCode).length,
-    [allItems],
-  );
   const filtered = useMemo(() => {
     if (searchIndex) return searchHymns(searchIndex, deferredQuery, activeBook);
     // Every song in the active collection: an installed hymnal pack carries an
@@ -252,10 +235,7 @@ export function HymnCatalog({
             aria-controls="kidung-toolbar-filters"
             onClick={() => setFiltersCollapsed((value) => !value)}
           >
-            <Icon
-              name={filtersCollapsed ? "chevronRight" : "chevronLeft"}
-              size={18}
-            />
+            <Icon name="chevronLeft" size={18} />
             <span className="sr-only">
               {translate(
                 locale,

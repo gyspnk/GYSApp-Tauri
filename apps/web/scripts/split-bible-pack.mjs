@@ -1,7 +1,14 @@
 #!/usr/bin/env node
 // Splits the bundled reader pack into one gzipped file per book so the reader
 // can load only the book it shows. Runs after `vite build` (writes into dist).
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { gzipSync } from "node:zlib";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -63,11 +70,39 @@ export function splitBiblePack(pack) {
     });
 }
 
-export function writeSplitBiblePack({ source, outDir, log = console.log }) {
-  const pack = JSON.parse(readFileSync(source, "utf8"));
-  const books = splitBiblePack(pack);
+export function writeSplitBiblePack({
+  source,
+  outDir,
+  cacheDir,
+  log = console.log,
+}) {
   const dir = path.join(outDir, "offline", "bible", "books");
   mkdirSync(dir, { recursive: true });
+  const srcStat = statSync(source);
+  const cacheKey = `${srcStat.size}:${Math.trunc(srcStat.mtimeMs)}`;
+  const keyFile = cacheDir ? path.join(cacheDir, ".cache-key.json") : undefined;
+
+  if (cacheDir && keyFile && existsSync(keyFile)) {
+    try {
+      const cached = JSON.parse(readFileSync(keyFile, "utf8"));
+      if (
+        cached.key === cacheKey &&
+        existsSync(path.join(cacheDir, "index.json"))
+      ) {
+        cpSync(cacheDir, dir, { recursive: true, force: true });
+        log(
+          `[bible] split ${cached.count} books, ${cached.totalKiB} KiB total (cached)`,
+        );
+        return JSON.parse(readFileSync(path.join(dir, "index.json"), "utf8"))
+          .books;
+      }
+    } catch {
+      // Rebuild on corrupt cache.
+    }
+  }
+
+  const pack = JSON.parse(readFileSync(source, "utf8"));
+  const books = splitBiblePack(pack);
   let total = 0;
   const index = [];
   for (const entry of books) {
@@ -84,13 +119,18 @@ export function writeSplitBiblePack({ source, outDir, log = console.log }) {
       verses: entry.verses,
     });
   }
-  writeFileSync(
-    path.join(dir, "index.json"),
-    `${JSON.stringify({ books: index }, null, 2)}\n`,
-  );
-  log(
-    `[bible] split ${index.length} books, ${(total / 1024).toFixed(0)} KiB total`,
-  );
+  const indexJson = `${JSON.stringify({ books: index }, null, 2)}\n`;
+  writeFileSync(path.join(dir, "index.json"), indexJson);
+  const totalKiB = (total / 1024).toFixed(0);
+  if (cacheDir && keyFile) {
+    mkdirSync(cacheDir, { recursive: true });
+    cpSync(dir, cacheDir, { recursive: true, force: true });
+    writeFileSync(
+      keyFile,
+      JSON.stringify({ key: cacheKey, count: index.length, totalKiB }),
+    );
+  }
+  log(`[bible] split ${index.length} books, ${totalKiB} KiB total`);
   return index;
 }
 
@@ -101,5 +141,9 @@ if (
   writeSplitBiblePack({
     source: path.resolve("public/offline/bible/tb-reader.json"),
     outDir: path.resolve("dist"),
+    cacheDir:
+      process.env.GYS_FORCE_BIBLE_PACK === "1"
+        ? undefined
+        : path.resolve("node_modules/.cache/gys-bible-books"),
   });
 }

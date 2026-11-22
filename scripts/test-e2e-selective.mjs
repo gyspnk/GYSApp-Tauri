@@ -1,8 +1,9 @@
-import { spawnSync } from "node:child_process";
-import { pnpmInvocation, processExitCode } from "./process-result.mjs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { statSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync } from "node:fs";
+import { buildCommand, isFresh, newestSource } from "./e2e-one.mjs";
+import { pnpmInvocation, processExitCode } from "./process-result.mjs";
 import {
   collectChangedFiles,
   keepExistingSpecArgs,
@@ -12,9 +13,12 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const webDir = path.resolve(rootDir, "apps", "web");
-const userArgs = process.argv.slice(2);
+const userArgs = process.argv.slice(2).filter((arg) => arg !== "--");
 const changedFiles = collectChangedFiles({ rootDir });
 const plan = resolveSelectiveTestArgs(changedFiles, userArgs);
+if (!process.env.CI && !plan.args.some((arg) => arg.startsWith("--config"))) {
+  plan.args.unshift("--config=playwright.local.config.ts");
+}
 const specArgs = plan.args.filter((arg) => /^e2e\/.*\.spec\.ts$/.test(arg));
 if (specArgs.length) {
   const kept = keepExistingSpecArgs(plan.args, { webDir, existsSync });
@@ -46,10 +50,33 @@ if (plan.changedFiles?.length) {
 }
 console.log(`🚀 Running: pnpm exec playwright test ${plan.args.join(" ")}\n`);
 
+const env = { ...process.env };
+if (env.GYS_E2E_DEV !== "1") {
+  const distIndex = path.join(webDir, "dist", "index.html");
+  let fresh = false;
+  try {
+    fresh =
+      env.GYS_E2E_FORCE_BUILD !== "1" &&
+      isFresh(statSync(distIndex).mtimeMs, newestSource(webDir));
+  } catch {
+    fresh = false;
+  }
+  if (!fresh) {
+    const build = buildCommand(env);
+    execFileSync(build.command, build.args, {
+      cwd: rootDir,
+      stdio: "inherit",
+      env: build.env,
+    });
+  }
+  env.GYS_E2E_PREBUILT = "1";
+}
+
 const invocation = pnpmInvocation(["exec", "playwright", "test", ...plan.args]);
 const result = spawnSync(invocation.command, invocation.args, {
   cwd: webDir,
   stdio: "inherit",
+  env,
   shell: invocation.shell,
 });
 

@@ -5,7 +5,10 @@ import { describe, expect, it } from "vitest";
 // The catalogue's mode button paints its label on --blue when it is pressed.
 // --blue is a pale #7fc6e8 in dark and amoled, so a literal white label there
 // measures ~1.6:1. The label must use --on-accent, which flips with the surface.
-const css = readFileSync(new URL("./kidung-ux.css", import.meta.url), "utf8");
+const css = readFileSync(
+  new URL("./styles/04-kidung-and-media.css", import.meta.url),
+  "utf8",
+);
 
 function ruleFor(selector: string) {
   const index = css.indexOf(`${selector} {`);

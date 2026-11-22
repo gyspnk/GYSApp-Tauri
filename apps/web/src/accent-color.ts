@@ -6,7 +6,7 @@ export type AccentPreset = {
 
 export const ACCENT_PRESETS: readonly AccentPreset[] = [
   // The first preset is the default: GYS blue, the colour the app ships with.
-  { id: "church-blue", name: "Biru GYS", color: "#00719c" },
+  { id: "church-blue", name: "Biru GYS", color: "#00668f" },
   { id: "forest", name: "Hijau hutan", color: "#0d4326" },
   { id: "ink", name: "Tinta hangat", color: "#874536" },
   { id: "sapphire", name: "Biru Safir", color: "#2a65c7" },

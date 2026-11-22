@@ -1,7 +1,7 @@
-/* Ordered legacy cascade: keep this order; feature refinements follow in main.tsx. */
+/* Sanctuary Editorial 6-layer cascade */
 @import "./styles/00-tokens.css";
 @import "./styles/01-foundations-and-layout.css";
 @import "./styles/02-bible-and-settings.css";
-@import "./styles/03-shell-controls.css";
-@import "./styles/04-reader-media.css";
-@import "./styles/05-responsive-refinements.css";
+@import "./styles/03-home-and-catalogs.css";
+@import "./styles/04-kidung-and-media.css";
+@import "./styles/05-motion-and-print.css";

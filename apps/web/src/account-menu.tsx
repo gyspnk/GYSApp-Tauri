@@ -26,7 +26,6 @@ import { translate, type Locale } from "./i18n.js";
 import { Icon } from "./icons.js";
 import { ProviderMark } from "./egys-login-methods.js";
 import { useMenuPresence } from "./use-menu-presence.js";
-import "./account-menu.css";
 
 const GoogleButton = lazy(() =>
   import("./egys-google-button.js").then((m) => ({

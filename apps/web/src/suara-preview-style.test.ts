@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 // only carries its excerpt (the preview after a failed fetch) has no closing
 // lines, so that treatment turned the whole body italic and centred.
 const css = readFileSync(
-  new URL("./styles/01-foundations-and-layout.css", import.meta.url),
+  new URL("./styles/03-home-and-catalogs.css", import.meta.url),
   "utf8",
 );
 const component = readFileSync(

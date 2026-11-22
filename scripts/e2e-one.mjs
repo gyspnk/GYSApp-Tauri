@@ -152,8 +152,14 @@ function main() {
     });
   }
   const startedAt = Date.now();
+  const hasConfig = argv.some((arg) => arg.startsWith("--config"));
+  const pwArgs = playwrightArgs(
+    !process.env.CI && !hasConfig
+      ? [...argv, "--config=playwright.local.config.ts"]
+      : argv,
+  );
   try {
-    execFileSync("pnpm", playwrightArgs(argv), {
+    execFileSync("pnpm", pwArgs, {
       cwd: web,
       stdio: "inherit",
       env: { ...process.env, GYS_E2E_PREBUILT: "1" },

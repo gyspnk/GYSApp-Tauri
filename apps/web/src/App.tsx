@@ -254,9 +254,6 @@ function Navigation({ locale }: { locale: Locale }) {
   );
 
   const updateIndicator = useCallback(() => {
-    // Desktop selection is painted by the link; skip measurements as its
-    // sidebar width animates. The indicator is used on smaller screens.
-    if (window.matchMedia("(min-width: 960px)").matches) return;
     if (!navRef.current || !activePath) {
       setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
       return;

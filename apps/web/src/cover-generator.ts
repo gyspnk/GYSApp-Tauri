@@ -1,7 +1,7 @@
 /**
- * Generates rich, elegant SVG cover illustrations for Suara Sejati & Literature.
- * Ensures zero-dependency, instant, offline-ready thumbnail display with crisp
- * typography, sacred motifs, and category-coordinated color palettes.
+ * Generates rich, editorial SVG cover illustrations for Suara Sejati & Literature.
+ * Ensures zero-dependency, instant, offline-ready thumbnail display with varied
+ * Sanctuary Editorial palettes composed inside the shared 16:9 / 3:4 / 2:3 safe zone.
  */
 
 export interface CoverOptions {
@@ -22,70 +22,120 @@ interface CategoryTheme {
   label: string;
 }
 
-const DEFAULT_THEME: CategoryTheme = {
-  bg1: "#0f172a",
-  bg2: "#1e3a8a",
-  accent: "#60a5fa",
-  badgeBg: "rgba(59, 130, 246, 0.25)",
-  badgeText: "#93c5fd",
-  icon: `<path d="M100 35 v130 M65 75 h70" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>`,
-  label: "KESAKSIAN",
-};
+const CROSS_MOTIF = `<path d="M100 38 v124 M68 78 h64" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>`;
+
+const KESAKSIAN_PALETTES: readonly CategoryTheme[] = [
+  {
+    bg1: "#0c3547",
+    bg2: "#165c72",
+    accent: "#67e8f9",
+    badgeBg: "rgba(103, 232, 249, 0.2)",
+    badgeText: "#cffafe",
+    icon: CROSS_MOTIF,
+    label: "KESAKSIAN",
+  },
+  {
+    bg1: "#4a2511",
+    bg2: "#8a421a",
+    accent: "#fdba74",
+    badgeBg: "rgba(253, 186, 116, 0.2)",
+    badgeText: "#ffedd5",
+    icon: CROSS_MOTIF,
+    label: "KESAKSIAN",
+  },
+  {
+    bg1: "#1a3a2f",
+    bg2: "#2d604e",
+    accent: "#6ee7b7",
+    badgeBg: "rgba(110, 231, 183, 0.2)",
+    badgeText: "#d1fae5",
+    icon: CROSS_MOTIF,
+    label: "KESAKSIAN",
+  },
+  {
+    bg1: "#172554",
+    bg2: "#1e40af",
+    accent: "#93c5fd",
+    badgeBg: "rgba(147, 197, 253, 0.22)",
+    badgeText: "#dbeafe",
+    icon: CROSS_MOTIF,
+    label: "KESAKSIAN",
+  },
+  {
+    bg1: "#3d2c1e",
+    bg2: "#6b4c30",
+    accent: "#fcd34d",
+    badgeBg: "rgba(252, 211, 77, 0.2)",
+    badgeText: "#fef3c7",
+    icon: CROSS_MOTIF,
+    label: "KESAKSIAN",
+  },
+  {
+    bg1: "#2e1065",
+    bg2: "#4c1d95",
+    accent: "#c4b5fd",
+    badgeBg: "rgba(196, 181, 253, 0.2)",
+    badgeText: "#ede9fe",
+    icon: CROSS_MOTIF,
+    label: "KESAKSIAN",
+  },
+];
+
+const DEFAULT_THEME: CategoryTheme = KESAKSIAN_PALETTES[0]!;
 
 const CATEGORY_THEMES: Record<string, CategoryTheme> = {
-  kesaksian: DEFAULT_THEME,
   warta: {
     bg1: "#0c4a6e",
-    bg2: "#075985",
-    accent: "#38bdf8",
-    badgeBg: "rgba(14, 165, 233, 0.25)",
-    badgeText: "#7dd3fc",
-    icon: `<path d="M60 60 h80 v80 h-80 z M75 80 h50 M75 100 h50 M75 120 h30" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>`,
+    bg2: "#0369a1",
+    accent: "#7dd3fc",
+    badgeBg: "rgba(125, 211, 252, 0.2)",
+    badgeText: "#e0f2fe",
+    icon: `<path d="M62 62 h76 v76 h-76 z M76 80 h48 M76 100 h48 M76 120 h30" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>`,
     label: "WARTA",
   },
   "pelita-kecil": {
-    bg1: "#451a03",
-    bg2: "#78350f",
-    accent: "#fbbf24",
-    badgeBg: "rgba(245, 158, 11, 0.25)",
-    badgeText: "#fde68a",
-    icon: `<circle cx="100" cy="90" r="16" fill="currentColor"/><path d="M100 50 v15 M100 115 v15 M60 90 h15 M125 90 h15 M72 62 l10 10 M118 108 l10 10 M72 118 l10 -10 M118 72 l10 -10" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>`,
+    bg1: "#58240b",
+    bg2: "#9a4412",
+    accent: "#fcd34d",
+    badgeBg: "rgba(252, 211, 77, 0.22)",
+    badgeText: "#fef3c7",
+    icon: `<circle cx="100" cy="92" r="16" fill="currentColor"/><path d="M100 54 v14 M100 116 v14 M62 92 h14 M124 92 h14 M74 66 l10 10 M116 108 l10 10 M74 118 l10 -10 M116 76 l10 -10" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>`,
     label: "PELITA KECIL",
   },
   panduan: {
     bg1: "#1e293b",
     bg2: "#334155",
-    accent: "#94a3b8",
-    badgeBg: "rgba(148, 163, 184, 0.25)",
-    badgeText: "#cbd5e1",
-    icon: `<circle cx="100" cy="100" r="45" fill="none" stroke="currentColor" stroke-width="5"/><polygon points="100,70 115,115 100,105 85,115" fill="currentColor"/>`,
+    accent: "#cbd5e1",
+    badgeBg: "rgba(203, 213, 225, 0.2)",
+    badgeText: "#f1f5f9",
+    icon: `<circle cx="100" cy="100" r="42" fill="none" stroke="currentColor" stroke-width="4.5"/><polygon points="100,72 114,114 100,104 86,114" fill="currentColor"/>`,
     label: "PANDUAN",
   },
   renungan: {
     bg1: "#064e3b",
     bg2: "#047857",
-    accent: "#34d399",
-    badgeBg: "rgba(16, 185, 129, 0.25)",
-    badgeText: "#a7f3d0",
-    icon: `<path d="M60 120 C75 90 95 90 100 125 C105 90 125 90 140 120" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>`,
+    accent: "#6ee7b7",
+    badgeBg: "rgba(110, 231, 183, 0.22)",
+    badgeText: "#d1fae5",
+    icon: `<path d="M64 118 C78 90 95 90 100 122 C105 90 122 90 136 118" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>`,
     label: "RENUNGAN",
   },
   buku: {
     bg1: "#3b0764",
-    bg2: "#581c87",
-    accent: "#c084fc",
-    badgeBg: "rgba(168, 85, 247, 0.25)",
-    badgeText: "#e9d5ff",
-    icon: `<path d="M65 65 h35 v70 h-35 z M100 65 h35 v70 h-35 z" fill="none" stroke="currentColor" stroke-width="5"/>`,
+    bg2: "#6b21a8",
+    accent: "#d8b4fe",
+    badgeBg: "rgba(216, 180, 254, 0.2)",
+    badgeText: "#f3e8ff",
+    icon: `<path d="M66 66 h34 v68 h-34 z M100 66 h34 v68 h-34 z" fill="none" stroke="currentColor" stroke-width="4.5"/>`,
     label: "BUKU",
   },
   pujian: {
     bg1: "#500724",
-    bg2: "#831843",
-    accent: "#f472b6",
-    badgeBg: "rgba(236, 72, 153, 0.25)",
-    badgeText: "#fbcfe8",
-    icon: `<circle cx="80" cy="120" r="14" fill="currentColor"/><circle cx="120" cy="110" r="14" fill="currentColor"/><path d="M94 120 v-55 h40 v45" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>`,
+    bg2: "#9d174d",
+    accent: "#f9a8d4",
+    badgeBg: "rgba(249, 168, 212, 0.2)",
+    badgeText: "#fce7f3",
+    icon: `<circle cx="80" cy="118" r="13" fill="currentColor"/><circle cx="120" cy="108" r="13" fill="currentColor"/><path d="M93 118 v-52 h40 v42" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>`,
     label: "PUJIAN",
   },
 };
@@ -99,6 +149,20 @@ function hashString(str: string): number {
   return Math.abs(hash);
 }
 
+function escapeXml(value: string): string {
+  return value.replace(
+    /[<>&"']/g,
+    (character) =>
+      ({
+        "<": "&lt;",
+        ">": "&gt;",
+        "&": "&amp;",
+        '"': "&quot;",
+        "'": "&apos;",
+      })[character]!,
+  );
+}
+
 export function generateCoverSvg({
   title,
   category = "kesaksian",
@@ -106,101 +170,84 @@ export function generateCoverSvg({
   height = 280,
 }: CoverOptions): string {
   const normCat = (category || "kesaksian").toLowerCase();
-  const theme = CATEGORY_THEMES[normCat] ?? { ...DEFAULT_THEME, label: "GYS" };
-  const hash = hashString(title || "GYS");
+  const safeTitle = title || "GYS";
+  const hash = hashString(safeTitle);
+  const theme =
+    normCat === "kesaksian"
+      ? KESAKSIAN_PALETTES[hash % KESAKSIAN_PALETTES.length]!
+      : (CATEGORY_THEMES[normCat] ?? { ...DEFAULT_THEME, label: "GYS" });
 
-  const initials = (title || "GYS")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 3)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .replace(
-      /[<>&"']/g,
-      (character) =>
-        ({
-          "<": "&lt;",
-          ">": "&gt;",
-          "&": "&amp;",
-          '"': "&quot;",
-          "'": "&apos;",
-        })[character]!,
-    );
+  const initials = escapeXml(
+    safeTitle
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase(),
+  );
 
-  // Pattern variant based on title hash
+  const cx = width * 0.5;
+  const cy = height * 0.48;
   const patternType = hash % 3;
   let patternElements = "";
   if (patternType === 0) {
     patternElements = `
-      <circle cx="${(hash % 120) + 40}" cy="${(hash % 80) + 40}" r="90" fill="url(#glowGrad)" opacity="0.45"/>
-      <circle cx="${width - 60}" cy="${height - 60}" r="110" fill="url(#glowGrad)" opacity="0.3"/>
+      <circle cx="${cx}" cy="${cy}" r="92" fill="url(#glowGrad)" opacity="0.54"/>
+      <path d="M ${cx - 72} ${height * 0.84} V ${height * 0.4} A 72 72 0 0 1 ${cx + 72} ${height * 0.4} V ${height * 0.84}" fill="none" stroke="${theme.accent}" stroke-width="1.25" opacity="0.3"/>
     `;
   } else if (patternType === 1) {
     patternElements = `
-      <path d="M -20,${height * 0.4} Q ${width * 0.5},${height * 0.1} ${width + 20},${height * 0.45}" fill="none" stroke="${theme.accent}" stroke-width="2" opacity="0.25"/>
-      <path d="M -20,${height * 0.6} Q ${width * 0.5},${height * 0.85} ${width + 20},${height * 0.55}" fill="none" stroke="${theme.accent}" stroke-width="3" opacity="0.3"/>
-      <circle cx="${width * 0.5}" cy="${height * 0.45}" r="80" fill="url(#glowGrad)" opacity="0.4"/>
+      <circle cx="${cx}" cy="${cy}" r="94" fill="url(#glowGrad)" opacity="0.56"/>
+      <path d="M ${cx - 78},${height * 0.5} Q ${cx},${height * 0.3} ${cx + 78},${height * 0.5}" fill="none" stroke="${theme.accent}" stroke-width="1.35" opacity="0.28"/>
+      <path d="M ${cx - 78},${height * 0.68} Q ${cx},${height * 0.82} ${cx + 78},${height * 0.64}" fill="none" stroke="${theme.accent}" stroke-width="1.15" opacity="0.2"/>
     `;
   } else {
     patternElements = `
-      <rect x="${width * 0.1}" y="${height * 0.15}" width="${width * 0.8}" height="${height * 0.7}" rx="16" fill="none" stroke="${theme.accent}" stroke-width="1.5" stroke-dasharray="6,6" opacity="0.25"/>
-      <circle cx="${width * 0.5}" cy="${height * 0.5}" r="70" fill="url(#glowGrad)" opacity="0.4"/>
+      <circle cx="${cx}" cy="${cy}" r="92" fill="url(#glowGrad)" opacity="0.5"/>
+      <circle cx="${cx}" cy="${cy}" r="62" fill="none" stroke="${theme.accent}" stroke-width="1" opacity="0.26"/>
+      <rect x="${cx - 76}" y="28" width="152" height="${height - 56}" rx="12" fill="none" stroke="${theme.accent}" stroke-width="1" opacity="0.2"/>
     `;
   }
 
+  const badgeWidth = Math.min(136, Math.max(68, theme.label.length * 7.5 + 22));
+
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+  <title>TJC GYS — ${theme.label}</title>
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${theme.bg1}"/>
       <stop offset="100%" stop-color="${theme.bg2}"/>
     </linearGradient>
     <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="${theme.accent}" stop-opacity="0.6"/>
+      <stop offset="0%" stop-color="${theme.accent}" stop-opacity="0.58"/>
       <stop offset="100%" stop-color="${theme.accent}" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="overlayGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="rgba(0,0,0,0.1)"/>
-      <stop offset="100%" stop-color="rgba(0,0,0,0.65)"/>
+      <stop offset="0%" stop-color="rgba(0,0,0,0.08)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.52)"/>
     </linearGradient>
   </defs>
 
-  <!-- Background -->
   <rect width="${width}" height="${height}" fill="url(#bgGrad)"/>
-  
-  <!-- Subtle Grid Lines -->
-  <g opacity="0.07" stroke="#ffffff" stroke-width="1">
-    <line x1="0" y1="${height * 0.33}" x2="${width}" y2="${height * 0.33}"/>
-    <line x1="0" y1="${height * 0.66}" x2="${width}" y2="${height * 0.66}"/>
-    <line x1="${width * 0.33}" y1="0" x2="${width * 0.33}" y2="${height}"/>
-    <line x1="${width * 0.66}" y1="0" x2="${width * 0.66}" y2="${height}"/>
-  </g>
-
-  <!-- Dynamic Abstract Artwork -->
   ${patternElements}
 
-  <!-- Motif Watermark Icon -->
-  <g transform="translate(${width * 0.5 - 100}, ${height * 0.42 - 100}) scale(1)" color="${theme.accent}" opacity="0.32">
+  <g transform="translate(${cx - 100}, ${cy - 100})" color="${theme.accent}" opacity="0.22">
     ${theme.icon}
   </g>
 
-  <!-- Gradient Overlay for readability -->
   <rect width="${width}" height="${height}" fill="url(#overlayGrad)"/>
 
-  <!-- Category Badge -->
-  <rect x="18" y="18" width="${theme.label.length * 8 + 24}" height="24" rx="12" fill="${theme.badgeBg}" stroke="${theme.accent}" stroke-width="1" opacity="0.9"/>
-  <text x="${18 + (theme.label.length * 8 + 24) / 2}" y="34" fill="${theme.badgeText}" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="800" letter-spacing="0.08em" text-anchor="middle">
+  <rect x="${cx - badgeWidth / 2}" y="36" width="${badgeWidth}" height="22" rx="11" fill="${theme.badgeBg}" stroke="${theme.accent}" stroke-opacity="0.35" stroke-width="1"/>
+  <text x="${cx}" y="50.5" fill="${theme.badgeText}" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" letter-spacing="0.12em" text-anchor="middle">
     ${theme.label}
   </text>
 
-  <!-- Initials Crest in Center -->
-  <circle cx="${width * 0.5}" cy="${height * 0.48}" r="32" fill="rgba(255,255,255,0.08)" stroke="${theme.accent}" stroke-width="1.5" opacity="0.7"/>
-  <text x="${width * 0.5}" y="${height * 0.48 + 8}" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="900" letter-spacing="0.1em" text-anchor="middle" opacity="0.95">
+  <text x="${cx}" y="${height * 0.54}" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700" letter-spacing="0.08em" text-anchor="middle" opacity="0.92">
     ${initials}
   </text>
 
-  <!-- Brand Subtext -->
-  <text x="${width - 18}" y="34" fill="rgba(255,255,255,0.45)" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" text-anchor="end" letter-spacing="0.06em">
+  <text x="${cx}" y="${height - 42}" fill="${theme.badgeText}" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" letter-spacing="0.14em" text-anchor="middle" opacity="0.78">
     TJC GYS
   </text>
 </svg>`;

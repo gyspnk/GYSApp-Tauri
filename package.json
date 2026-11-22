@@ -74,6 +74,7 @@
     "ui:consistency": "node scripts/local-heavy-guard.mjs \"consistency audit\" && node apps/web/scripts/ui-consistency-audit.mjs",
     "ui:boxes": "node scripts/local-heavy-guard.mjs \"card-in-card audit\" && node apps/web/scripts/ui-box-audit.mjs",
     "verify": "node scripts/remote-verify.mjs",
+    "verify:local": "node scripts/fast-verify.mjs",
     "verify:watch": "node scripts/remote-verify.mjs --wait",
     "verify:qa": "node scripts/remote-verify.mjs --qa --wait",
     "e2e:orphans": "node scripts/orphan-selectors.mjs",

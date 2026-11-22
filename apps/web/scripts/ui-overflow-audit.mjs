@@ -32,10 +32,28 @@ const themes = (process.env.UI_AUDIT_THEMES ?? "light,dark").split(",");
 // audit runs at 100% by default and at 200% with UI_AUDIT_FONT_SCALE=200.
 const fontScale = Number(process.env.UI_AUDIT_FONT_SCALE ?? "100");
 
-const browser = await chromium.launch();
+const concurrency = Math.max(
+  1,
+  Number(process.env.UI_AUDIT_CONCURRENCY ?? "4"),
+);
+const settleMs = Number(process.env.UI_AUDIT_SETTLE_MS ?? "80");
+
+const browser = await chromium.launch({
+  args: [
+    "--disable-dev-shm-usage",
+    "--disable-background-timer-throttling",
+    "--disable-renderer-backgrounding",
+  ],
+});
+const pairs = viewports.flatMap((viewport) =>
+  themes.map((theme) => ({ viewport, theme })),
+);
 const findings = [];
-for (const viewport of viewports) {
-  for (const theme of themes) {
+let cursor = 0;
+
+async function runWorker() {
+  while (cursor < pairs.length) {
+    const { viewport, theme } = pairs[cursor++];
     const context = await browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },
     });
@@ -52,7 +70,22 @@ for (const viewport of viewports) {
     const page = await context.newPage();
     for (const route of routes) {
       await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
-      await page.waitForTimeout(450);
+      await page
+        .waitForFunction(
+          () =>
+            !document.querySelector(
+              ".route-loading, .non-reader-route-loading",
+            ),
+          { timeout: 5_000 },
+        )
+        .catch(() => undefined);
+      await page.evaluate(async () => {
+        await document.fonts?.ready;
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        );
+      });
+      await page.waitForTimeout(settleMs);
       const report = await page.evaluate(() => {
         const describe = (el) => {
           const parts = [];
@@ -136,6 +169,11 @@ for (const viewport of viewports) {
     await context.close();
   }
 }
+await Promise.all(
+  Array.from({ length: Math.min(concurrency, pairs.length) }, () =>
+    runWorker(),
+  ),
+);
 await browser.close();
 
 const problems = findings.filter(

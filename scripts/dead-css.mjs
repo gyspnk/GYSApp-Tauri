@@ -10,6 +10,7 @@
 // Report only, on purpose: deleting a rule changes what the browser paints, so
 // a human or an agent reads the list and removes rules in a reviewed commit.
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { join, relative } from "node:path";
@@ -105,17 +106,22 @@ async function walk(dir, out) {
  */
 export function trackedFiles(root) {
   try {
-    const output = execFileSync("git", ["ls-files", "-z"], {
-      cwd: root,
-      maxBuffer: 32 * 1024 * 1024,
-      stdio: ["ignore", "pipe", "ignore"],
-    });
+    const output = execFileSync(
+      "git",
+      ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+      {
+        cwd: root,
+        maxBuffer: 32 * 1024 * 1024,
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    );
     const listed = output
       .toString("utf8")
       .split("\0")
       .filter(Boolean)
       .map((path) => join(root, path));
     const usable = listed.filter((path) => {
+      if (!existsSync(path)) return false;
       const parts = relative(root, path).split("/");
       return !parts.some((part) => SKIP_DIRS.has(part)) && parts[0] !== "docs";
     });

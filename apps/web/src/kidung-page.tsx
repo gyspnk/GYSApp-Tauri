@@ -4,7 +4,7 @@ import {
   loadCoreHymnMetadata,
   getCachedCoreHymnMetadata,
 } from "./hymn-payloads.js";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { preloadable } from "./preloadable.js";
 import {
   Navigate,
@@ -143,6 +143,14 @@ function useHymnData<T extends HymnMetadata>(
   };
 }
 
+function readRailCollapsed(): boolean {
+  try {
+    return window.localStorage.getItem("gys-kidung-rail-collapsed") === "1";
+  } catch {
+    return false;
+  }
+}
+
 function KidungReaderDataPage({
   locale,
   songId,
@@ -156,6 +164,64 @@ function KidungReaderDataPage({
     parseCatalog,
   );
   const wide = useWideReader();
+  const [railCollapsed, setRailCollapsed] = useState(readRailCollapsed);
+  const [railTransitioning, setRailTransitioning] = useState(false);
+  const railTransitionTimerRef = useRef<number | undefined>(undefined);
+  const splitRef = useRef<HTMLDivElement>(null);
+  useEffect(
+    () => () => {
+      if (railTransitionTimerRef.current !== undefined)
+        window.clearTimeout(railTransitionTimerRef.current);
+    },
+    [],
+  );
+  const toggleRailCollapsed = () => {
+    const next = !railCollapsed;
+    const activeEl = document.activeElement;
+    const fromToggle =
+      next &&
+      Boolean(
+        activeEl &&
+        splitRef.current
+          ?.querySelector(".kidung-reader-rail")
+          ?.contains(activeEl),
+      );
+    const fromExpand =
+      !next && Boolean(activeEl?.classList.contains("kidung-rail-expand-btn"));
+    if (railTransitionTimerRef.current !== undefined) {
+      window.clearTimeout(railTransitionTimerRef.current);
+      railTransitionTimerRef.current = undefined;
+    }
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setRailTransitioning(true);
+      railTransitionTimerRef.current = window.setTimeout(() => {
+        setRailTransitioning(false);
+        railTransitionTimerRef.current = undefined;
+      }, 320);
+    }
+    setRailCollapsed(next);
+    try {
+      window.localStorage.setItem(
+        "gys-kidung-rail-collapsed",
+        next ? "1" : "0",
+      );
+    } catch {
+      // Private mode: keep in-memory state only.
+    }
+    if (fromToggle) {
+      window.requestAnimationFrame(() =>
+        splitRef.current
+          ?.querySelector<HTMLButtonElement>(".kidung-rail-expand-btn")
+          ?.focus(),
+      );
+    } else if (fromExpand) {
+      window.requestAnimationFrame(() =>
+        splitRef.current
+          ?.querySelector<HTMLButtonElement>(".kidung-rail-toggle")
+          ?.focus(),
+      );
+    }
+  };
   const split =
     catalog.status === "ready"
       ? splitHymnFallback(
@@ -181,25 +247,50 @@ function KidungReaderDataPage({
       songId={songId}
       state={catalog}
       {...(musicLock ? { musicLock } : {})}
+      {...(wide && catalog.status === "ready"
+        ? { railCollapsed, onToggleRail: toggleRailCollapsed }
+        : {})}
     />
   );
-  // Desktop buys the index a seat next to the text; phones keep the reader
-  // alone because a rail would eat half the columns they do not have.
-  if (!wide || catalog.status !== "ready") return detail;
+  // Keep one stable tree around HymnDetail so rotating between narrow and
+  // wide viewports (768x1024 <-> 1024x768) never remounts PDF/MIDI state.
   return (
-    <div className="kidung-reader-split">
-      <KidungReaderRail locale={locale} state={catalog} activeId={songId} />
+    <div
+      ref={splitRef}
+      className={`kidung-reader-split${wide && catalog.status === "ready" && railCollapsed ? " is-rail-collapsed" : ""}${railTransitioning ? " is-rail-transitioning" : ""}`}
+      onTransitionEnd={(event) => {
+        if (
+          event.target === splitRef.current &&
+          event.propertyName === "grid-template-columns"
+        ) {
+          setRailTransitioning(false);
+          if (railTransitionTimerRef.current !== undefined) {
+            window.clearTimeout(railTransitionTimerRef.current);
+            railTransitionTimerRef.current = undefined;
+          }
+        }
+      }}
+    >
+      {wide && catalog.status === "ready" && (
+        <KidungReaderRail
+          locale={locale}
+          state={catalog}
+          activeId={songId}
+          collapsed={railCollapsed}
+          onCollapse={toggleRailCollapsed}
+        />
+      )}
       <div className="kidung-reader-pane">{detail}</div>
     </div>
   );
 }
 
 function useWideReader() {
-  const [wide, setWide] = useState(
-    () => window.matchMedia("(min-width: 1200px)").matches,
-  );
+  const query =
+    "(min-width: 1200px), (min-width: 1024px) and (orientation: landscape)";
+  const [wide, setWide] = useState(() => window.matchMedia(query).matches);
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 1200px)");
+    const media = window.matchMedia(query);
     const sync = () => setWide(media.matches);
     sync();
     media.addEventListener("change", sync);

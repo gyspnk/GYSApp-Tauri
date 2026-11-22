@@ -12,6 +12,13 @@ export function useMenuPresence(
       setPresent(true);
       return;
     }
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setPresent(false);
+      return;
+    }
     let current = true;
     const finish = () => {
       if (current) setPresent(false);

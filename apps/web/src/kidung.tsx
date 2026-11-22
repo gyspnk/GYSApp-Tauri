@@ -136,11 +136,15 @@ export function HymnDetail({
   songId,
   state,
   musicLock,
+  railCollapsed = false,
+  onToggleRail,
 }: {
   locale: Locale;
   songId: string;
   state: CatalogState;
   musicLock?: UpstreamMusicLock;
+  railCollapsed?: boolean | undefined;
+  onToggleRail?: (() => void) | undefined;
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -220,11 +224,10 @@ export function HymnDetail({
       ? requestedMode
       : readHymnViewerMode(),
   );
-  // Landscape without a rail: the index has no seat beside the text, so the
-  // reader carries a disclosure of its own instead of sending people back to
-  // the catalogue. PDF mode keeps its own chrome.
+  // Landscape phones without a split rail carry a compact song picker bar
+  // above the text. Tablet landscape (>= 1024px) & desktop keep the rail.
   const showsSongPicker =
-    useMediaQuery("(orientation: landscape) and (max-width: 1199px)") &&
+    useMediaQuery("(orientation: landscape) and (max-width: 1023px)") &&
     viewerMode !== "pdf";
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [pdfBytes, setPdfBytes] = useState<Uint8Array>();
@@ -270,6 +273,53 @@ export function HymnDetail({
   const [pdfKeyMenuOpen, setPdfKeyMenuOpen] = useState(false);
   const pdfKeyMenuRef = useRef<HTMLDivElement>(null);
   const pdfKeyMenuPresent = useMenuPresence(pdfKeyMenuOpen, pdfKeyMenuRef);
+  const railExpandRef = useRef<HTMLButtonElement>(null);
+  const railExpandOpen = Boolean(railCollapsed && onToggleRail);
+  const railExpandPresent = useMenuPresence(railExpandOpen, railExpandRef);
+  const autoScrollSelectRef = useRef<HTMLSelectElement>(null);
+  const autoScrollSelectPresent = useMenuPresence(
+    autoScrollActive,
+    autoScrollSelectRef,
+  );
+  const capoResetRef = useRef<HTMLButtonElement>(null);
+  const capoResetPresent = useMenuPresence(capo > 0, capoResetRef);
+  const pdfTransposeResetRef = useRef<HTMLButtonElement>(null);
+  const pdfTransposeResetPresent = useMenuPresence(
+    transpose !== 0,
+    pdfTransposeResetRef,
+  );
+  const chordEditorRef = useRef<HTMLDivElement>(null);
+  const chordEditorPresent = useMenuPresence(
+    chordEditorEnabled,
+    chordEditorRef,
+  );
+  useEffect(() => {
+    if (!pdfKeyMenuOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest(".pdf-key-control")
+      )
+        return;
+      setPdfKeyMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.stopPropagation();
+      event.preventDefault();
+      setPdfKeyMenuOpen(false);
+      pdfKeyMenuRef.current
+        ?.closest(".pdf-key-control")
+        ?.querySelector<HTMLButtonElement>(".pdf-key-btn")
+        ?.focus();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [pdfKeyMenuOpen]);
   const [editableChords, setEditableChords] = useState<
     Record<string, PdfChordOverlayMarker[]>
   >({});
@@ -1638,6 +1688,22 @@ export function HymnDetail({
             <Icon name="chevronLeft" size={18} />
             <span className="sr-only">{translate(locale, "kidung.back")}</span>
           </Link>
+          {railExpandPresent && onToggleRail && (
+            <button
+              ref={railExpandRef}
+              type="button"
+              className="viewer-chrome-button kidung-rail-expand-btn"
+              data-kidung-presence={railExpandOpen}
+              inert={!railExpandOpen || undefined}
+              aria-hidden={!railExpandOpen || undefined}
+              onClick={onToggleRail}
+              aria-expanded={false}
+              aria-label={translate(locale, "kidung.expandList")}
+              title={translate(locale, "kidung.expandList")}
+            >
+              <Icon name="panelLeftOpen" size={18} />
+            </button>
+          )}
           <h1 title={item.title}>{item.title}</h1>
         </div>
         <div className="hymn-text-toolbar">
@@ -1814,9 +1880,13 @@ export function HymnDetail({
                         : translate(locale, "kidung.autoScroll")}
                     </span>
                   </button>
-                  {autoScrollActive && (
+                  {autoScrollSelectPresent && (
                     <select
+                      ref={autoScrollSelectRef}
                       className="hymn-autoscroll-speed-select"
+                      data-kidung-presence={autoScrollActive}
+                      inert={!autoScrollActive || undefined}
+                      aria-hidden={!autoScrollActive || undefined}
                       value={autoScrollSpeed}
                       onChange={(e) =>
                         setAutoScrollSpeed(Number(e.target.value))
@@ -2135,21 +2205,11 @@ export function HymnDetail({
                               aria-valuenow={midiState.loadingProgress}
                               aria-valuemin={0}
                               aria-valuemax={100}
-                              style={{
-                                height: 4,
-                                background: "rgba(141,110,63,0.18)",
-                                borderRadius: 999,
-                                overflow: "hidden",
-                                margin: "6px 0",
-                              }}
                             >
                               <div
                                 className="midi-preload-fill"
                                 style={{
                                   width: `${Math.max(4, midiState.loadingProgress)}%`,
-                                  height: "100%",
-                                  background: "var(--accent, #8d6e3f)",
-                                  transition: "width 0.2s ease",
                                 }}
                               />
                             </div>
@@ -2306,10 +2366,14 @@ export function HymnDetail({
                           >
                             +
                           </button>
-                          {capo > 0 && (
+                          {capoResetPresent && (
                             <button
+                              ref={capoResetRef}
                               type="button"
                               className="transpose-reset-btn"
+                              data-kidung-presence={capo > 0}
+                              inert={capo <= 0 || undefined}
+                              aria-hidden={capo <= 0 || undefined}
                               onClick={() => setCapo(0)}
                               title={translate(locale, "kidung.resetCapo")}
                             >
@@ -2391,6 +2455,7 @@ export function HymnDetail({
                   name="hymn-music-controls"
                   onToggle={(event) => {
                     if (event.currentTarget.open) setNotice("");
+                    else setPdfKeyMenuOpen(false);
                   }}
                 >
                   <summary
@@ -2548,10 +2613,14 @@ export function HymnDetail({
                           >
                             +
                           </button>
-                          {transpose !== 0 && (
+                          {pdfTransposeResetPresent && (
                             <button
+                              ref={pdfTransposeResetRef}
                               type="button"
                               className="viewer-chrome-button pdf-transpose-reset"
+                              data-kidung-presence={transpose !== 0}
+                              inert={transpose === 0 || undefined}
+                              aria-hidden={transpose === 0 || undefined}
                               onClick={() => updateTranspose(0)}
                               title={translate(locale, "kidung.resetTranspose")}
                             >
@@ -2564,9 +2633,13 @@ export function HymnDetail({
                   </div>
                 </details>
               )}
-              {chordEditorEnabled && (
+              {chordEditorPresent && (
                 <div
+                  ref={chordEditorRef}
                   className="chord-editor-toolbar"
+                  data-kidung-presence={chordEditorEnabled}
+                  inert={!chordEditorEnabled || undefined}
+                  aria-hidden={!chordEditorEnabled || undefined}
                   role="toolbar"
                   aria-label={translate(locale, "kidung.chordEditor")}
                 >

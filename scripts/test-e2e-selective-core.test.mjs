@@ -191,7 +191,10 @@ test("PDF-only edits select rendering and reader regressions without the global 
 
 test("a Playwright config does not downgrade a design change to the core tier", () => {
   const plan = resolveSelectiveTestArgs(
-    ["apps/web/playwright.ci.config.ts", "apps/web/src/app-design.css"],
+    [
+      "apps/web/playwright.ci.config.ts",
+      "apps/web/src/styles/01-foundations-and-layout.css",
+    ],
     [],
   );
   assert.ok(plan.args.includes("e2e/roadmap-ui-matrix.spec.ts"));

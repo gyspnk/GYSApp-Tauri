@@ -1,0 +1,4132 @@
+/* Sanctuary Editorial — Layer 4: Kidung Catalog, Lyrics, Chords, PDF & Persistent Media */
+
+/* ── Kidung Catalog Header & Command Bar ── */
+.hymn-page,
+.kidung-tool-page {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.hymn-page-header,
+.kidung-catalog-topbar,
+.kidung-index-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.kidung-index-toolbar {
+  padding-top: 12px;
+}
+.kidung-catalog-topbar {
+  min-width: 0;
+}
+.kidung-catalog-topbar > .hymn-page-header,
+.hymn-catalog-controls {
+  width: 100%;
+  min-width: 0;
+}
+.hymn-page .hymn-search-field {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.hymn-page .hymn-search-field > svg {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  margin: 0;
+  color: var(--blue);
+  pointer-events: none;
+}
+@media (min-width: 1200px) {
+  .kidung-index-toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .kidung-catalog-topbar {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+.kidung-tool-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.kidung-controls-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.kidung-controls-field .kidung-header-filter {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.kidung-controls-field .kidung-collection-select {
+  flex: 0 0 auto;
+  width: fit-content;
+  max-width: min(60vw, 220px);
+}
+.kidung-controls-field .kidung-collection-select .control-select-trigger {
+  min-width: 44px;
+  min-height: 44px;
+}
+.kidung-controls-field .control-select-menu {
+  left: 0;
+  right: auto;
+  min-width: max(100%, 160px);
+  max-width: calc(100vw - 32px);
+}
+@media (min-width: 720px) {
+  .kidung-controls-field {
+    flex-wrap: nowrap;
+    flex: 0 0 auto;
+  }
+  .kidung-controls-field .kidung-header-filter {
+    flex: 0 0 auto;
+  }
+}
+
+.kidung-local-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--surface-soft);
+  box-shadow: var(--shadow-xs);
+}
+.kidung-tool-page > .kidung-local-nav {
+  width: fit-content;
+}
+.kidung-local-nav-links {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+.kidung-nav-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  pointer-events: none;
+  transition: transform var(--motion-normal) var(--ease-out);
+}
+.kidung-local-nav a {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.kidung-local-nav a[aria-current="page"],
+.kidung-local-nav a.is-active {
+  background: var(--surface);
+  color: var(--navy);
+  box-shadow: var(--shadow-xs);
+}
+.kidung-local-nav small {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: var(--type-meta);
+  font-weight: 700;
+}
+.kidung-tool-page .kidung-controls-field {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1 1 auto;
+  width: 100%;
+  gap: 8px;
+}
+.kidung-tool-page .kidung-controls-field .kidung-local-nav {
+  width: auto;
+}
+.kidung-tool-page .kidung-local-nav-links,
+.kidung-tool-page .kidung-controls-field .kidung-local-nav-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(84px, 1fr));
+  gap: 4px;
+  width: auto;
+}
+.kidung-tool-page .kidung-local-nav a {
+  width: 100%;
+  min-width: 84px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  gap: 4px;
+  justify-content: center;
+  text-align: center;
+}
+.kidung-tool-page .kidung-local-nav a svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+@media (min-width: 1101px) {
+  .kidung-tool-page .kidung-controls-field .kidung-local-nav {
+    width: 264px;
+  }
+  .kidung-tool-page .kidung-controls-field .kidung-local-nav-links {
+    width: 100%;
+  }
+}
+@media (max-width: 1100px) {
+  .hymn-page:not(.kidung-tool-page) .kidung-controls-field {
+    display: grid;
+    grid-template-columns: max-content max-content max-content;
+    justify-content: start;
+    gap: 6px;
+  }
+  .hymn-page:not(.kidung-tool-page) .kidung-controls-field .kidung-local-nav,
+  .kidung-tool-page .kidung-controls-field .kidung-local-nav {
+    width: fit-content;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  .hymn-page:not(.kidung-tool-page)
+    .kidung-controls-field
+    .kidung-local-nav-links {
+    display: grid;
+    grid-template-columns: repeat(2, 44px);
+    gap: 4px;
+    width: auto;
+  }
+  .hymn-page:not(.kidung-tool-page) .kidung-controls-field .kidung-local-nav a {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    position: relative;
+  }
+  .hymn-page:not(.kidung-tool-page)
+    .kidung-controls-field
+    .kidung-local-nav
+    a
+    > span {
+    display: none;
+  }
+  .hymn-page:not(.kidung-tool-page)
+    .kidung-controls-field
+    .kidung-local-nav
+    small {
+    position: absolute;
+    inset-inline-end: 2px;
+    top: 2px;
+  }
+  .hymn-page:not(.kidung-tool-page)
+    .kidung-controls-field
+    .kidung-collection-select {
+    width: fit-content;
+    max-width: min(60vw, 220px);
+  }
+  .hymn-page:not(.kidung-tool-page)
+    .kidung-controls-field
+    .kidung-mode-control {
+    padding-left: 0;
+    border-left: 0;
+    justify-self: start;
+  }
+}
+
+.kidung-mode-control {
+  padding-left: 0;
+  border-left: 0;
+  display: inline-flex;
+  align-items: center;
+}
+/* Preserved for kidung-mode-contrast.test.ts */
+.kidung-mode-cycle {
+  position: relative;
+  overflow: hidden;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--blue-soft) 52%, var(--surface));
+  box-shadow: var(--shadow-xs);
+  color: var(--blue);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+.kidung-mode-cycle:hover {
+  background: var(--blue-soft);
+  border-color: color-mix(in srgb, var(--blue) 22%, transparent);
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+.kidung-mode-cycle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.kidung-mode-cycle[aria-pressed="true"] {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--on-accent);
+}
+.kidung-mode-cycle[aria-pressed="true"]:hover {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--on-accent);
+}
+@media (pointer: coarse) {
+  .kidung-controls-field .kidung-local-nav a,
+  .hymn-page .kidung-controls-field .control-select-trigger,
+  .kidung-mode-cycle,
+  .hymn-action,
+  .hymn-more-actions-summary,
+  .hymn-autoscroll-btn,
+  .hymn-reader-settings-summary {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+.hymn-catalog-controls {
+  display: grid;
+  gap: 8px;
+}
+.hymn-page .hymn-search-field input {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  padding: 10px 14px 10px 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--type-body);
+}
+.catalog-filter-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  font-size: var(--type-body-sm);
+  color: var(--muted);
+}
+.catalog-note {
+  font-size: var(--type-meta);
+  color: var(--muted);
+}
+.hymn-page .kidung-toolbar-collapse {
+  display: none;
+}
+@media (max-height: 540px) and (orientation: landscape) {
+  .hymn-page .kidung-controls-field {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) max-content;
+  }
+  .hymn-page .kidung-toolbar-collapse {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: color-mix(in srgb, var(--surface-soft) 80%, var(--surface));
+    box-shadow: var(--shadow-xs);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .hymn-page .kidung-toolbar-collapse svg {
+    transition: transform 240ms var(--ease-bubble);
+  }
+  .hymn-page .kidung-toolbar-collapse[aria-expanded="false"] svg {
+    transform: rotate(180deg);
+  }
+  .hymn-page .kidung-toolbar-collapse:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .hymn-page .kidung-index-toolbar.is-collapsed .kidung-local-nav,
+  .hymn-page .kidung-index-toolbar.is-collapsed .kidung-header-filter {
+    display: none;
+  }
+  .hymn-page .kidung-index-toolbar.is-collapsed .kidung-controls-field {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+  .hymn-page .kidung-index-toolbar.is-collapsed .kidung-mode-control {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+/* ── Virtualized / Content-Visibility Hymn Grid (1/2/3 columns) ── */
+.pujian-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+@media (min-width: 760px) {
+  .pujian-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1180px) {
+  .pujian-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.hymn-page .pujian-list > .pujian-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 60px;
+}
+.pujian-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 6px;
+  min-height: 56px;
+  padding: 4px 10px 4px 6px;
+  border-bottom: 0;
+  border-radius: var(--radius-control);
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+.pujian-item:hover,
+.pujian-item:focus-within {
+  background: var(--blue-soft);
+  border-radius: var(--radius-control);
+}
+.pujian-title {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: 6px 8px 6px 56px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  text-decoration: none;
+  text-align: left;
+  color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.35;
+  cursor: pointer;
+}
+@media (max-width: 599px) {
+  .hymn-page {
+    gap: 8px;
+  }
+  .kidung-index-toolbar {
+    gap: 8px;
+  }
+  .kidung-catalog-topbar {
+    width: 100%;
+  }
+  .hymn-page .catalog-filter-status {
+    min-height: 32px;
+    gap: 4px;
+  }
+  .kidung-controls-field {
+    width: 100%;
+    gap: 4px;
+  }
+  .kidung-controls-field .kidung-header-filter {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .kidung-controls-field .kidung-collection-select .control-select-trigger {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+  .hymn-page .pujian-list > .pujian-item {
+    contain-intrinsic-size: auto 48px;
+  }
+  .pujian-item {
+    gap: 6px;
+    min-height: 56px;
+    padding: 4px 8px 4px 4px;
+  }
+  .pujian-title {
+    min-height: 56px;
+    gap: 2px;
+    padding: 6px 8px 6px 52px;
+    white-space: normal;
+    line-height: 1.35;
+  }
+  .pujian-title-label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    font-size: var(--type-body);
+    line-height: 1.35;
+  }
+}
+.pujian-nomor {
+  grid-column: 1;
+  grid-row: 1;
+  z-index: 2;
+  justify-self: start;
+  width: 42px;
+  margin-left: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--blue);
+  font-size: var(--type-body-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  pointer-events: none;
+}
+.pujian-title-label {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-reading);
+  font-size: var(--type-body-lg);
+}
+.add-to-playlist-btn {
+  position: relative;
+  overflow: hidden;
+  grid-column: 2;
+  grid-row: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.add-to-playlist-btn:hover,
+.add-to-playlist-btn.in-playlist {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.kidung-empty-state,
+.kidung-search-empty {
+  display: grid;
+  gap: 8px;
+  padding: 24px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface-soft) 45%, var(--surface));
+  box-shadow: var(--shadow-xs);
+}
+@media (max-width: 599px) {
+  .app-frame .workspace .main-content:has(.hymn-page) {
+    padding-inline: 12px;
+  }
+}
+@media (min-width: 600px) {
+  .kidung-tool-page .kidung-empty-state {
+    width: min(100%, 640px);
+    max-width: 640px;
+    margin-inline: 0;
+  }
+}
+.kidung-tool-page .kidung-empty-state .text-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-hit, 44px);
+}
+.kidung-empty-state strong {
+  color: var(--navy);
+  font-size: var(--type-title);
+}
+
+/* ── Kidung Queue, Saved Playlists & Settings Pages ── */
+.kidung-playlist-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+.kidung-playlist-list > li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  overflow: visible;
+}
+.kidung-playlist-index {
+  min-width: 28px;
+  font-weight: 700;
+  color: var(--blue);
+  font-variant-numeric: tabular-nums;
+}
+.kidung-playlist-song {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  padding: 6px 4px;
+}
+.kidung-playlist-song:hover strong {
+  color: var(--blue);
+}
+.kidung-playlist-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.kidung-saved-playlists {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+.kidung-saved-playlists h2 {
+  font-size: var(--type-body-lg);
+}
+.kidung-saved-playlist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+.kidung-saved-playlist-item {
+  display: grid;
+  gap: 2px;
+}
+.kidung-row-menu {
+  position: relative;
+}
+.kidung-row-menu > summary {
+  list-style: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-soft) 80%, var(--surface));
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+}
+.kidung-row-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.kidung-row-menu > summary:focus-visible,
+.pdf-music-menu > summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.kidung-row-menu-panel {
+  position: absolute;
+  right: 0;
+  left: auto;
+  top: calc(100% + 6px);
+  z-index: var(--z-popover);
+  width: min(240px, calc(100vw - 32px));
+  min-width: 180px;
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--shadow-float);
+}
+@media (max-width: 599px) {
+  .kidung-row-menu-panel {
+    position: fixed;
+    top: auto;
+    right: 12px;
+    left: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: calc(var(--z-modal) - 1);
+    width: auto;
+  }
+}
+.kidung-row-menu-panel > .text-button {
+  min-height: 44px;
+  justify-content: flex-start;
+  width: 100%;
+}
+.kidung-danger-action {
+  color: var(--danger);
+}
+.kidung-settings-layout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+@media (min-width: 720px) {
+  .kidung-settings-layout > .kidung-settings-section:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+.kidung-settings-section {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 16px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface-soft) 45%, var(--surface));
+  box-shadow: var(--shadow-xs);
+}
+.kidung-settings-controls {
+  display: grid;
+  gap: 8px;
+}
+.kidung-settings-disclosure {
+  border-top: 1px solid color-mix(in srgb, var(--line) 32%, transparent);
+  padding-top: 8px;
+}
+.kidung-settings-summary {
+  list-style: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--ease-out);
+}
+.kidung-settings-summary:hover {
+  color: var(--blue);
+}
+.kidung-settings-summary > svg:last-child {
+  flex: none;
+  color: var(--muted);
+  transition:
+    transform 240ms var(--ease-bubble),
+    color var(--motion-fast) var(--ease-out);
+}
+.kidung-settings-disclosure[open] > .kidung-settings-summary > svg:last-child {
+  transform: rotate(180deg);
+  color: var(--blue);
+}
+.kidung-settings-summary::-webkit-details-marker {
+  display: none;
+}
+.kidung-settings-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 4px 8px;
+  margin-inline: -8px;
+  border-radius: var(--radius-control);
+  gap: 12px;
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+.kidung-settings-switch:hover {
+  background: color-mix(in srgb, var(--blue-soft) 42%, transparent);
+}
+.kidung-settings-switch > span {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.kidung-settings-switch > span small {
+  color: var(--muted);
+  font-size: var(--type-meta);
+}
+.kidung-settings-switch input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  order: 2;
+  position: relative;
+  flex: none;
+  width: 48px;
+  min-width: 48px;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.kidung-settings-switch input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 48px;
+  height: 28px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line-strong) 42%, var(--surface-soft));
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: background-color 220ms var(--ease-out);
+}
+.kidung-settings-switch input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translate3d(0, -50%, 0);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform 260ms var(--ease-bubble);
+}
+.kidung-settings-switch input[type="checkbox"]:checked::before {
+  background: var(--blue);
+  box-shadow: none;
+}
+.kidung-settings-switch input[type="checkbox"]:checked::after {
+  transform: translate3d(20px, -50%, 0);
+}
+.switch-thumb {
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+@media (max-width: 599px) {
+  .kidung-saved-playlist-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ── Hymn Detail Text Reader & Split Rail ── */
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer) .topbar,
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer)
+  .navigation-shell {
+  display: none;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer) .workspace {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 100dvh;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-text-viewer) .main-content {
+  max-width: none;
+  height: 100dvh;
+  overflow: hidden;
+  padding: 0 clamp(12px, 1.6vw, 24px);
+}
+.hymn-detail-page {
+  --reader-top-gap: 14px;
+  --kidung-accent: var(--accent, #8d6e3f);
+  --hymn-chrome-control: 32px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+:root[data-theme="dark"] .hymn-detail-page,
+:root[data-theme="amoled"] .hymn-detail-page {
+  --kidung-accent: color-mix(in srgb, var(--accent, #8d6e3f) 80%, #ffffff);
+}
+@media (pointer: coarse) {
+  .hymn-detail-page {
+    --hymn-chrome-control: 44px;
+  }
+}
+@media (min-width: 720px) {
+  .hymn-detail-page {
+    --reader-top-gap: 18px;
+  }
+}
+.hymn-detail-page.is-text-viewer {
+  width: min(100%, 1120px);
+  height: 100dvh;
+  margin: 0 auto;
+  padding-top: var(--reader-top-gap);
+}
+.hymn-detail-page.is-text-viewer .detail-hero {
+  min-height: 0;
+  padding: 4px 0;
+  border-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+.hymn-text-title {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+.hymn-text-title .viewer-chrome-button {
+  flex: none;
+}
+.hymn-text-title h1 {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-reading);
+  font-size: clamp(1rem, 2.2vw, 1.375rem);
+  font-weight: 600;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 599px) {
+  .hymn-text-title h1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    text-overflow: clip;
+    font-size: var(--type-body);
+    line-height: 1.25;
+  }
+}
+.kidung-reader-split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.kidung-reader-rail {
+  display: none;
+}
+@media (min-width: 1200px), (min-width: 1024px) and (orientation: landscape) {
+  .kidung-reader-split {
+    grid-template-columns: 264px minmax(0, 1fr);
+    transition:
+      grid-template-columns 260ms var(--ease-out),
+      gap 260ms var(--ease-out);
+  }
+  .kidung-reader-split.is-rail-collapsed {
+    grid-template-columns: 0px minmax(0, 1fr);
+    gap: 0;
+  }
+  .kidung-reader-rail {
+    position: sticky;
+    top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    max-height: calc(100dvh - 24px);
+    padding: 18px 0 12px;
+    border-right: 0;
+    overflow: hidden;
+    transform: translateX(0);
+    transition:
+      opacity 200ms var(--ease-out),
+      transform 240ms var(--ease-out);
+  }
+  .kidung-reader-rail.is-collapsed {
+    opacity: 0;
+    transform: translateX(-14px);
+    pointer-events: none;
+  }
+}
+.kidung-rail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 2px;
+}
+.kidung-rail-heading {
+  font-size: var(--type-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blue);
+  padding-left: 8px;
+}
+.kidung-rail-toggle {
+  position: relative;
+  overflow: hidden;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--blue-soft) 52%, var(--surface));
+  box-shadow: var(--shadow-xs);
+  color: var(--navy);
+  cursor: pointer;
+}
+.kidung-rail-toggle svg {
+  transition: transform 240ms var(--ease-bubble);
+}
+.kidung-rail-toggle:hover {
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+.kidung-rail-toggle:hover svg {
+  transform: translateX(-2px) scale(1.06);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-title .kidung-rail-expand-btn {
+  background: color-mix(in srgb, var(--blue-soft) 68%, var(--surface));
+  color: var(--blue);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-title .kidung-rail-expand-btn svg {
+  transition: transform 240ms var(--ease-bubble);
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-text-title
+  .kidung-rail-expand-btn:hover:not(:disabled) {
+  background: var(--blue-soft);
+  color: var(--navy);
+  box-shadow: var(--shadow-sm);
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-text-title
+  .kidung-rail-expand-btn:hover:not(:disabled)
+  svg {
+  transform: translateX(2px) scale(1.06);
+}
+.kidung-rail-list {
+  display: grid;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface-soft) 45%, var(--surface));
+  box-shadow: var(--shadow-xs);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.kidung-rail-row {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  color: var(--ink);
+  font-size: var(--type-body-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+.kidung-rail-row:hover {
+  background: color-mix(in srgb, var(--blue-soft) 55%, var(--surface));
+  color: var(--blue);
+}
+.kidung-rail-row.is-active,
+.kidung-rail-row[aria-current="page"] {
+  background: var(--surface);
+  color: var(--blue);
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
+}
+.kidung-rail-number {
+  flex: 0 0 auto;
+  min-width: 32px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--blue);
+}
+.kidung-rail-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kidung-reader-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.kidung-reader-picker {
+  margin: 4px 0 6px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-soft) 60%, var(--surface));
+  box-shadow: var(--shadow-xs);
+}
+.kidung-reader-picker > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+.kidung-reader-picker > summary:hover {
+  background: color-mix(in srgb, var(--blue-soft) 50%, var(--surface));
+  color: var(--blue);
+}
+.kidung-reader-picker > summary::-webkit-details-marker {
+  display: none;
+}
+.kidung-reader-picker > summary > svg:last-child {
+  flex: none;
+  color: var(--muted);
+  transition: transform 240ms var(--ease-bubble);
+}
+.kidung-reader-picker[open] > summary > svg:last-child {
+  transform: rotate(180deg);
+  color: var(--blue);
+}
+.kidung-reader-picker-label {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: var(--type-meta);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.kidung-reader-picker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  overflow: visible;
+  border-top: 1px solid color-mix(in srgb, var(--line) 35%, transparent);
+}
+.kidung-reader-picker-body .kidung-rail-list {
+  max-height: min(44dvh, 320px);
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+@media (max-height: 540px) and (orientation: landscape) {
+  .kidung-reader-picker-body .kidung-rail-list {
+    max-height: min(30dvh, 136px);
+  }
+  .hymn-detail-page.is-text-viewer {
+    --reader-top-gap: 6px;
+  }
+  .hymn-detail-page.is-text-viewer .lyrics-sheet {
+    padding: 6px 8px;
+  }
+  .hymn-detail-page.is-text-viewer .hymn-text-footer {
+    margin: 4px auto max(4px, env(safe-area-inset-bottom));
+  }
+}
+
+.hymn-text-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  width: max-content;
+  max-width: 100%;
+}
+.hymn-text-toolbar .detail-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: auto;
+  gap: 6px;
+}
+.hymn-detail-surface {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.hymn-detail-page.is-text-viewer
+  :is(
+    .viewer-chrome-button,
+    .hymn-action,
+    .reader-mode-button,
+    .hymn-text-footer > button,
+    .hymn-scope-pill-btn,
+    .hymn-autoscroll-btn,
+    .hymn-reader-settings-summary,
+    .hymn-more-actions-summary
+  ) {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface));
+  color: var(--ink);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-title .viewer-chrome-button {
+  width: 44px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.hymn-detail-page.is-text-viewer
+  :is(
+    .viewer-chrome-button,
+    .hymn-action,
+    .reader-mode-button,
+    .hymn-more-actions-summary
+  ):hover:not(:disabled) {
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+.hymn-pdf-viewer-chrome .hymn-action-label {
+  display: none;
+}
+.hymn-text-toolbar .reader-mode-button {
+  width: auto;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: var(--radius-control);
+  white-space: nowrap;
+}
+.hymn-pdf-viewer-chrome .reader-mode-button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+}
+.hymn-text-toolbar .hymn-more-actions-summary {
+  width: auto;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--radius-control);
+  white-space: nowrap;
+}
+.hymn-text-toolbar .hymn-action-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.hymn-text-toolbar .detail-actions > .hymn-action {
+  width: auto;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--radius-control);
+  white-space: nowrap;
+}
+.hymn-detail-page:not(.is-pdf-viewer) .hymn-text-toolbar .hymn-partitur-toggle {
+  color: var(--navy);
+}
+.hymn-text-toolbar .hymn-action-caption {
+  display: inline;
+  font-size: var(--type-meta);
+  font-weight: 600;
+  line-height: 1;
+  color: inherit;
+  white-space: nowrap;
+}
+.hymn-text-toolbar .hymn-action-label,
+.hymn-more-actions-panel .hymn-action-label,
+.hymn-more-actions-panel .reader-settings-copy {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 719px) {
+  .hymn-text-toolbar {
+    gap: 4px;
+  }
+  .hymn-text-toolbar .detail-actions {
+    gap: 4px;
+  }
+  .hymn-text-toolbar .detail-actions > .hymn-action,
+  .hymn-text-toolbar .hymn-partitur-toggle,
+  .hymn-text-toolbar .hymn-more-actions-summary {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+  }
+  .hymn-text-toolbar .detail-actions > .hymn-action .hymn-action-label,
+  .hymn-text-toolbar .hymn-action-caption,
+  .hymn-pdf-viewer-chrome .hymn-action-caption {
+    display: none;
+  }
+}
+.hymn-detail-page.is-text-viewer
+  :is(.hymn-action, .lyrics-ctrl-btn, .lyrics-hdr-btn):is(
+    .is-active,
+    [aria-pressed="true"]
+  ) {
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow:
+    inset 0 0 0 2px var(--blue),
+    var(--shadow-xs);
+}
+.hymn-detail-page.is-text-viewer .hymn-action-primary,
+.hymn-detail-page.is-text-viewer .hymn-scope-pill-btn.is-active {
+  background: color-mix(in srgb, var(--blue-soft) 72%, var(--surface));
+  color: var(--blue);
+}
+.hymn-detail-page.is-text-viewer .hymn-action-primary[aria-pressed="true"] {
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow:
+    inset 0 0 0 2px var(--blue),
+    var(--shadow-xs);
+}
+.hymn-segmented-toolbar,
+.hymn-scope-pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--surface-soft);
+}
+.hymn-more-actions {
+  position: relative;
+}
+.hymn-more-actions-summary {
+  list-style: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+.hymn-more-actions-summary::-webkit-details-marker {
+  display: none;
+}
+.hymn-more-actions-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: var(--z-popover);
+  width: min(360px, calc(100vw - 24px));
+  min-width: 240px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--shadow-float);
+}
+.hymn-more-actions-panel > .hymn-reader-settings {
+  width: 100%;
+}
+.hymn-more-actions-panel > .hymn-action,
+.hymn-more-actions-panel .hymn-reader-settings-summary {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: none;
+}
+.hymn-more-actions-panel > .hymn-action:hover,
+.hymn-more-actions-panel .hymn-reader-settings-summary:hover {
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow: none;
+}
+.hymn-more-actions-panel .hymn-action-caption {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: left;
+}
+.hymn-more-actions-panel .hymn-segmented-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+}
+.hymn-more-actions-panel .hymn-scope-pill-group {
+  flex: 1 1 auto;
+}
+.hymn-more-actions-panel .hymn-scope-pill-btn {
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+}
+.hymn-more-actions-panel .hymn-scope-pill-btn.is-active {
+  background: var(--blue);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-xs);
+}
+@media (max-width: 700px) {
+  .hymn-detail-page.is-text-viewer .hymn-more-actions-panel {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    max-height: calc(100dvh - 72px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  }
+  :root:has(.media-surface.is-kidung-media:not(.is-minimized))
+    .hymn-detail-page.is-text-viewer
+    .hymn-more-actions-panel {
+    bottom: calc(
+      124px + env(safe-area-inset-bottom) + var(--reader-media-space, 0px)
+    );
+  }
+  .hymn-detail-page.is-text-viewer
+    .hymn-more-actions-panel
+    > .hymn-segmented-toolbar {
+    grid-column: 1 / -1;
+  }
+  .hymn-more-actions-panel .hymn-reader-settings > .song-controls {
+    position: static;
+    width: 100%;
+    max-height: min(40dvh, 260px);
+    overflow-y: auto;
+    gap: 6px;
+    padding: 6px 0 0;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+.hymn-reader-settings {
+  position: relative;
+}
+.hymn-reader-settings-summary {
+  list-style: none;
+}
+.hymn-reader-settings-summary::-webkit-details-marker {
+  display: none;
+}
+.hymn-reader-settings > .song-controls,
+.hymn-reading-settings,
+.hymn-music-settings,
+.hymn-midi-reader-controls {
+  display: grid;
+  gap: 10px;
+}
+
+/* ── Lyrics Stage & Interlinear Chord Layer ── */
+.lyrics-sheet {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  place-content: safe center;
+  justify-items: center;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 16px 8px;
+  font-family: var(--font-reading);
+  font-size: calc(var(--reader-font-size, 1.25rem) * var(--lyrics-scale, 1));
+  line-height: var(--reader-line-height, 1.72);
+  text-align: center;
+  transition:
+    font-size 160ms var(--ease-out),
+    line-height 160ms var(--ease-out),
+    margin-bottom 220ms var(--ease-out);
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
+  margin-bottom: var(--reader-media-space, 0px);
+}
+.hymn-detail-page.is-text-viewer .lyrics-sheet.is-pinching,
+.lyrics-verse-text.is-pinching {
+  transition: none;
+}
+.lyrics-sheet p {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+@media (max-width: 599px) {
+  .hymn-detail-page.is-text-viewer .lyrics-sheet {
+    padding: 10px 0;
+    font-size: 1.0625rem;
+  }
+}
+.hymn-all-verses-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+.hymn-detail-page.is-text-viewer .hymn-all-verses-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-all-verses-container
+  > .lyrics-sheet.is-continuous {
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
+  place-content: initial;
+}
+.hymn-verse-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.hymn-verse-number-badge {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: var(--type-meta);
+  font-weight: 700;
+}
+.hymn-text-footer {
+  display: grid;
+  grid-template-columns: 44px 44px minmax(100px, 1fr) 44px 44px;
+  align-items: center;
+  gap: 6px;
+  width: min(100%, 24rem);
+  margin: 8px auto max(8px, env(safe-area-inset-bottom));
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer > span {
+  text-align: center;
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer > button {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+}
+.hymn-detail-page.is-text-viewer
+  .hymn-text-footer
+  > button:hover:not(:disabled) {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.hymn-detail-page.is-text-viewer .hymn-text-footer > button:disabled {
+  opacity: 0.35;
+}
+@media (min-width: 900px) {
+  .hymn-detail-page.is-text-viewer .hymn-text-footer:not(.is-all-verses),
+  .hymn-detail-page.is-text-viewer .hymn-text-footer.is-all-verses {
+    width: min(760px, 100%);
+    margin: 10px auto max(12px, env(safe-area-inset-bottom));
+    padding: 4px 14px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-sm);
+  }
+}
+.hymn-text-footer.is-all-verses {
+  grid-template-columns: 44px minmax(100px, 1fr) 44px;
+}
+
+.chord-capability {
+  display: block;
+  position: relative;
+  padding-top: 0;
+  line-height: inherit;
+}
+.chord-rich-line {
+  display: block;
+  position: relative;
+  padding-top: 1.25em;
+  line-height: inherit;
+}
+.chord-text-layer,
+.chord-text-word,
+.chord-text-space {
+  position: relative;
+}
+.chord-text-layer {
+  display: block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.chord-text-word {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+  transform-origin: top left;
+}
+.chord-text-char {
+  white-space: normal;
+}
+.chord-visual-row {
+  position: absolute;
+  top: 0;
+  height: 1em;
+  pointer-events: none;
+  transition: opacity var(--motion-normal) var(--ease-out);
+}
+.chord-visual-marker {
+  position: absolute;
+  top: 0;
+  left: clamp(
+    0px,
+    var(--chord-position, 0%),
+    calc(100% - var(--chord-width, 2em))
+  );
+  min-width: max-content;
+  padding: 0;
+  color: var(--chord-text-color, var(--navy));
+  font-size: calc(0.82em * var(--chord-font-scale, 1));
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  transform: none;
+  transform-origin: top left;
+}
+.chord-rich-line.is-wrapped .chord-text-layer {
+  line-height: 2.8;
+}
+.chord-rich-line.is-wrapped .chord-visual-row {
+  transform: translateY(-0.1em);
+}
+.chord-capability.is-hidden .chord-text-layer {
+  line-height: inherit;
+}
+.hymn-detail-page.is-text-viewer .chord-capability.is-hidden .chord-rich-line,
+.chord-capability.is-hidden .chord-rich-line {
+  padding-top: 0;
+}
+.chord-capability.is-hidden .chord-visual-row {
+  display: none;
+}
+
+/* ── Fullscreen Presentation Lyrics Panel ── */
+.lyrics-panel {
+  --transport-control: 32px;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 719px), (pointer: coarse), (hover: none) {
+  .lyrics-panel {
+    --transport-control: 44px;
+  }
+}
+.lyrics-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+}
+.lyrics-inner {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: max(8px, var(--safe-area-top)) 12px
+    max(8px, env(safe-area-inset-bottom));
+}
+.lyrics-header {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.lyrics-main-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title actions" "transport transport";
+  align-items: center;
+  gap: 4px;
+}
+.lyrics-title {
+  grid-area: title;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  justify-content: flex-start;
+  text-align: left;
+}
+.lyrics-title h2 {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lyrics-transport {
+  grid-area: transport;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+.lyrics-panel .lyrics-transport .lyrics-hdr-btn {
+  width: var(--transport-control);
+  min-width: var(--transport-control);
+  height: var(--transport-control);
+  min-height: var(--transport-control);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+.lyrics-panel .lyrics-transport .lyrics-play-toggle {
+  border-radius: 50%;
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--on-accent);
+}
+.lyrics-panel .lyrics-transport .lyrics-play-toggle:disabled {
+  background: var(--surface-soft);
+  border-color: var(--line);
+  color: var(--muted);
+}
+.lyrics-header-actions {
+  grid-area: actions;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+@media (min-width: 900px) {
+  .lyrics-main-line {
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 1fr) auto;
+    grid-template-areas: "title transport actions";
+    gap: 12px;
+  }
+}
+.lyrics-ctrl-btn {
+  width: var(--transport-control);
+  min-width: var(--transport-control);
+  height: var(--transport-control);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+@media (pointer: coarse), (hover: none) {
+  .lyrics-panel :is(.lyrics-seek, .lyrics-ctrl-btn, .lyrics-hdr-btn) {
+    min-height: 44px;
+  }
+  .lyrics-panel input[type="range"] {
+    height: 44px;
+    min-height: 44px;
+  }
+}
+.lyrics-ctrl-btn.is-active {
+  background: var(--blue-soft);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.lyrics-content {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  touch-action: pan-y;
+  padding: 12px 8px;
+}
+.lyrics-verse-container {
+  text-align: center;
+  width: min(100%, 44rem);
+}
+.lyrics-verse-text {
+  font-family: var(--font-reading);
+  font-size: calc(var(--reader-font-size, 1.375rem) * var(--lyrics-scale, 1));
+  line-height: 1.72;
+}
+.lyrics-verse-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.lyrics-verse-nav {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── PDF Overlay & Score Viewer ── */
+.hymn-detail-page.is-pdf-viewer {
+  --hymn-chrome-control: 44px;
+  --reader-control: var(--hymn-chrome-control, 44px);
+  min-height: 100dvh;
+}
+.hymn-detail-page.is-pdf-viewer > .detail-hero,
+.hymn-detail-page.is-pdf-viewer .kidung-reader-picker,
+.hymn-detail-page.is-pdf-viewer .hymn-text-toolbar,
+.hymn-detail-page.is-pdf-viewer .hymn-more-actions,
+.hymn-detail-page.is-pdf-viewer .hymn-reader-settings {
+  display: none;
+}
+.gys-pdf-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay,
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay .pdf-stage {
+  background: var(--surface);
+}
+.hymn-pdf-viewer-chrome {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+  align-items: center;
+  gap: 8px;
+  width: min(100%, 1120px);
+  margin-inline: auto;
+  padding: calc(var(--reader-top-gap, 14px) + 4px) clamp(12px, 1.6vw, 24px) 4px;
+  border-bottom: 0;
+  background: var(--surface);
+}
+.hymn-pdf-viewer-chrome.is-no-music {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+.hymn-pdf-viewer-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-inline: 0 6px;
+  font-family: var(--font-reading);
+  font-size: var(--type-title);
+}
+.hymn-pdf-viewer-title strong {
+  display: block;
+  min-width: 0;
+  font-family: var(--font-reading);
+  font-size: clamp(1rem, 2.2vw, 1.375rem);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 599px) {
+  .hymn-pdf-viewer-title strong {
+    font-size: var(--type-body);
+    line-height: 1.25;
+  }
+  .hymn-pdf-viewer-title small {
+    display: none;
+  }
+}
+.hymn-pdf-viewer-title small {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--muted);
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-viewer-chrome .viewer-chrome-button,
+.hymn-detail-page.is-pdf-viewer
+  .hymn-pdf-viewer-chrome
+  .hymn-pdf-text-toggle.reader-mode-button {
+  position: relative;
+  overflow: hidden;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface));
+  box-shadow: var(--shadow-xs);
+  color: var(--ink);
+  cursor: pointer;
+}
+.hymn-detail-page.is-pdf-viewer
+  .hymn-pdf-viewer-chrome
+  :is(.hymn-pdf-text-toggle.reader-mode-button, .pdf-music-summary) {
+  color: var(--blue);
+}
+.hymn-detail-page.is-pdf-viewer
+  .hymn-pdf-viewer-chrome
+  .viewer-chrome-button:hover:not(:disabled) {
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+.hymn-detail-page.is-pdf-viewer .hymn-pdf-text-toggle > span {
+  font-size: 0.9375rem;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.hymn-detail-page.is-pdf-viewer
+  .hymn-pdf-viewer-chrome
+  :is(.viewer-chrome-button, .pdf-music-summary)
+  > span[aria-hidden="true"] {
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+}
+.gys-pdf-overlay :is(button, summary) svg {
+  display: block;
+  margin: 0;
+}
+.pdf-reader {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.faith-pdf-body > .pdf-reader {
+  width: 100%;
+  height: 100%;
+}
+.pdf-reader .pdf-stage {
+  order: 0;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--surface-soft);
+}
+.pdf-reader .pdf-toolbar {
+  order: 1;
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  z-index: var(--z-nav);
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .gys-pdf-overlay
+  .pdf-reader-hymn
+  .pdf-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  width: min(100% - 24px, 24rem);
+  margin: 8px auto max(8px, env(safe-area-inset-bottom));
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+@media (min-width: 900px) {
+  .app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+    .gys-pdf-overlay
+    .pdf-reader-hymn
+    .pdf-toolbar {
+    width: min(760px, 100% - 24px);
+    max-width: none;
+    margin: 10px auto max(12px, env(safe-area-inset-bottom));
+    padding: 4px 14px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-sm);
+  }
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .gys-pdf-overlay
+  .pdf-reader-hymn
+  .pdf-toolbar:not(:has(> .pdf-song-navigation)) {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .gys-pdf-overlay
+  .pdf-reader-hymn
+  .pdf-toolbar:not(:has(> .pdf-song-navigation))
+  > .pdf-page-navigation {
+  grid-column: 2;
+  justify-self: center;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .gys-pdf-overlay
+  .pdf-reader-hymn
+  .pdf-toolbar:not(:has(> .pdf-song-navigation))
+  > .pdf-advanced-toggle {
+  grid-column: 3;
+  justify-self: end;
+}
+.pdf-page-navigation,
+.pdf-song-navigation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pdf-reader-hymn .pdf-page-navigation {
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: 8px;
+}
+.pdf-reader-hymn .pdf-page-navigation > span {
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pdf-reader .pdf-toolbar :is(button, .pdf-download) {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  display: inline-grid;
+  place-items: center;
+  color: var(--ink);
+  cursor: pointer;
+}
+.pdf-reader .pdf-toolbar :is(button, .pdf-download):hover:not(:disabled) {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.pdf-reader .pdf-toolbar button:disabled {
+  opacity: 0.35;
+}
+.pdf-reader-hymn .pdf-toolbar > button {
+  border-radius: 999px;
+}
+.pdf-reader-hymn .pdf-toolbar {
+  transition: opacity 240ms var(--ease-out);
+}
+.pdf-reader-hymn
+  .pdf-toolbar.is-collapsed:not(:hover):not(:focus-within):not(
+    :has(.pdf-advanced-controls.is-open)
+  ) {
+  opacity: 0.76;
+}
+.pdf-page-jump {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+}
+.pdf-page-jump input {
+  width: 44px;
+  height: 40px;
+  padding: 0 4px;
+  text-align: center;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-weight: 700;
+}
+.pdf-zoom-controls {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+.pdf-reader .pdf-advanced-controls {
+  display: none;
+}
+.pdf-reader .pdf-advanced-controls.is-open {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 12px;
+  align-items: center;
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  bottom: calc(100% + 8px);
+  width: min(320px, calc(100vw - 24px));
+  max-height: 60dvh;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--shadow-float);
+}
+.pdf-reader .pdf-advanced-controls > label,
+.pdf-reader .pdf-advanced-controls .pdf-zoom-reset {
+  display: none;
+}
+.pdf-reader .pdf-zoom-controls {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--surface-soft);
+}
+.pdf-reader .pdf-zoom-controls > button {
+  color: var(--ink);
+  font-size: 1.25rem;
+  border: 0;
+  background: transparent;
+}
+.pdf-reader .pdf-zoom-controls .pdf-zoom-indicator {
+  width: 100%;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.pdf-reader .pdf-layout-toggle {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.pdf-reader .pdf-layout-toggle > button {
+  width: 100%;
+  border: 0;
+}
+.pdf-reader .pdf-advanced-controls .pdf-download {
+  border: 0;
+  background: var(--surface-soft);
+}
+.pdf-reader .pdf-advanced-controls .pdf-layout-note,
+.pdf-reader .pdf-advanced-controls [role="status"] {
+  grid-column: 1 / -1;
+}
+.pdf-reader-hymn:not([data-direct-manipulation-ready="true"])
+  .pdf-advanced-controls,
+.pdf-reader-hymn .pdf-advanced-controls:not(.is-open) {
+  display: none !important;
+}
+.pdf-reader-hymn .pdf-advanced-controls > label:has(input[type="range"]) {
+  display: none !important;
+}
+.pdf-reader-hymn .pdf-advanced-controls.is-open {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  padding: 8px;
+  overflow: visible;
+}
+.pdf-reader-hymn .pdf-zoom-controls {
+  display: flex;
+  flex: none;
+  width: 136px;
+  gap: 0;
+  padding: 0;
+}
+.pdf-reader-hymn .pdf-zoom-controls .pdf-zoom-indicator {
+  width: 48px;
+  min-width: 48px;
+}
+.pdf-layout-selector {
+  position: relative;
+}
+.pdf-reader-hymn .pdf-layout-selector {
+  flex: none;
+}
+.pdf-reader-hymn .pdf-layout-options {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 14px);
+  right: 0;
+  width: 200px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--shadow-float);
+  z-index: 1;
+}
+.pdf-reader-hymn .pdf-layout-options.is-open {
+  display: grid;
+}
+.pdf-reader-hymn .pdf-layout-note {
+  display: none;
+}
+.pdf-reader-hymn .pdf-advanced-toggle,
+.pdf-reader-hymn .pdf-fullscreen-toggle {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.pdf-reader-hymn :is(.pdf-advanced-toggle, .pdf-fullscreen-toggle)::before {
+  content: none;
+}
+.pdf-reader-hymn :is(.pdf-advanced-toggle, .pdf-fullscreen-toggle) > svg {
+  display: block;
+  margin: 0;
+}
+.pdf-zoom-hud {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translate(-50%, -6px);
+  z-index: var(--z-toolbar);
+  min-width: 64px;
+  padding: 6px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--type-meta);
+  font-weight: 700;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+}
+.pdf-zoom-hud.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.pdf-key-control {
+  position: relative;
+}
+.pdf-key-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: var(--z-popover);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(44px, 1fr));
+  gap: 4px;
+  padding: 8px;
+  min-width: 168px;
+  border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--shadow-float);
+}
+.pdf-music-menu {
+  position: relative;
+}
+.pdf-music-summary {
+  list-style: none;
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface));
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+}
+.pdf-music-summary::-webkit-details-marker {
+  display: none;
+}
+.pdf-music-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: var(--z-popover);
+  width: min(320px, calc(100vw - 24px));
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--shadow-float);
+  display: grid;
+  gap: 10px;
+}
+.pdf-music-menu-panel .pdf-music-action {
+  width: 100%;
+  justify-content: flex-start;
+  border: 0;
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface));
+  box-shadow: var(--shadow-xs);
+}
+.pdf-music-menu-panel .pdf-music-action:hover:not(:disabled) {
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+@media (max-width: 767px) {
+  .pdf-music-menu-panel {
+    position: fixed;
+    top: auto;
+    right: 12px;
+    left: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: calc(var(--z-modal) - 1);
+    width: auto;
+    max-height: min(72dvh, 620px);
+    overflow: auto;
+  }
+  .hymn-detail-page.is-pdf-viewer .pdf-music-menu-panel {
+    --pdf-music-clearance: max(
+      calc(var(--reader-control, 44px) + 28px + env(safe-area-inset-bottom)),
+      var(--reader-media-clearance, 0px)
+    );
+    bottom: var(--pdf-music-clearance);
+    max-height: min(72dvh, calc(100dvh - var(--pdf-music-clearance) - 100px));
+  }
+}
+.pdf-stage[data-pdf-pannable="true"] {
+  cursor: grab;
+  touch-action: none;
+}
+.pdf-stage[data-pdf-dragging="true"] {
+  cursor: grabbing;
+}
+.pdf-chord-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  --chord-text-color: var(--blue);
+  --chord-fill-background: transparent;
+  --chord-fill-opacity: 70%;
+  --chord-font-scale: 1;
+  --chord-fill-padding-scale: 1;
+}
+.pdf-chord-layer.is-editor {
+  pointer-events: auto;
+}
+.pdf-chord-layer[data-chords-visible] {
+  opacity: 0;
+  transform: translateY(-3px);
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 220ms var(--ease-out);
+}
+.pdf-chord-layer[data-chords-visible="true"] {
+  opacity: 1;
+  transform: none;
+  animation: chord-arrival 220ms var(--ease-out);
+}
+@keyframes chord-arrival {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pdf-chord-marker {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: calc(2px * var(--chord-fill-padding-scale, 1))
+    calc(4px * var(--chord-fill-padding-scale, 1));
+  border: 1px solid color-mix(in srgb, var(--blue) 42%, var(--line));
+  border-radius: var(--radius-sm);
+  background: var(
+    --chord-fill-background,
+    color-mix(in srgb, var(--surface) 92%, transparent)
+  );
+  color: var(--chord-text-color, var(--blue));
+  font-size: clamp(
+    0.2rem,
+    calc(0.55rem * var(--pdf-chord-scale, 1) * var(--chord-font-scale, 1)),
+    1.25rem
+  );
+  font-weight: 750;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pdf-chord-layer[data-chords-visible] {
+    transition: none;
+    animation: none;
+  }
+}
+.chord-editor-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toolbar);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 16px);
+  padding: 8px 12px;
+  overflow-x: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+}
+.capo-btn-group,
+.pdf-transpose-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--surface-soft);
+}
+:is(.capo-btn-group, .pdf-transpose-btns) button,
+.capo-control button {
+  width: var(--midi-control, 44px);
+  min-width: var(--midi-control, 44px);
+  height: var(--midi-control, 44px);
+  min-height: var(--midi-control, 44px);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  cursor: pointer;
+}
+
+/* ── Persistent Media Player Dock & Edge Tab ── */
+.media-surface.persistent-media {
+  position: fixed;
+  z-index: var(--z-media);
+  left: max(12px, var(--media-sidebar-left, 12px));
+  right: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+}
+@media (max-width: 599px) {
+  .media-surface.persistent-media:not(.is-minimized) {
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    left: 12px;
+    right: 12px;
+    padding: 10px 12px;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 8px;
+  }
+  .media-surface.persistent-media:not(.is-minimized) .media-art {
+    display: none;
+  }
+}
+.media-art {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.media-main,
+.media-meta {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.media-context-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.media-meta strong,
+.media-context-link strong {
+  font-size: var(--type-body);
+  color: var(--navy);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.media-meta small,
+.media-seek-time span {
+  font-size: var(--type-meta);
+  color: var(--muted);
+}
+.media-seek-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.media-seek-time input[type="range"] {
+  flex: 1;
+  accent-color: var(--blue);
+}
+@media (pointer: coarse) {
+  .media-surface :is(input[type="range"], select) {
+    min-height: 44px;
+  }
+}
+.persistent-media .media-control,
+.persistent-media .media-minimize,
+.media-primary-control,
+.media-secondary-control,
+.media-close-button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.media-primary-control,
+.media-surface.is-kidung-media:not(.is-minimized) .media-primary-control {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--on-accent);
+  border-radius: 50%;
+}
+.media-surface.is-minimized .media-main {
+  visibility: hidden;
+  pointer-events: none;
+}
+.media-surface.persistent-media.is-minimized {
+  left: max(12px, var(--media-sidebar-left, 12px));
+  right: auto;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  width: var(--media-sidebar-width, 224px);
+  padding: 12px;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 44px 44px;
+  box-shadow: none;
+  background: var(--surface-soft);
+}
+.app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized,
+.media-surface.persistent-media.is-rail-player.is-minimized {
+  left: 12px;
+  width: 60px;
+  grid-template-columns: 44px;
+  padding: 8px;
+}
+.app-frame:has(.is-pdf-viewer)
+  .persistent-media.is-minimized
+  > .media-mini-context,
+.persistent-media.is-rail-player.is-minimized > .media-mini-context {
+  display: none;
+}
+.app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized > .media-control,
+.app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized > .media-minimize,
+.persistent-media.is-rail-player.is-minimized > .media-control,
+.persistent-media.is-rail-player.is-minimized > .media-minimize {
+  grid-column: 1;
+}
+@media (max-width: 599px) {
+  .media-surface.persistent-media.is-minimized,
+  .app-frame:has(.is-pdf-viewer) .persistent-media.is-minimized,
+  .media-surface.persistent-media.is-rail-player.is-minimized {
+    left: 12px;
+    right: 12px;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    width: auto;
+    grid-template-columns: minmax(0, 1fr) 44px 44px;
+  }
+  .media-surface.persistent-media.is-minimized > .media-mini-context,
+  .persistent-media.is-rail-player.is-minimized > .media-mini-context {
+    display: grid;
+    grid-column: 1;
+  }
+  .media-surface.persistent-media.is-minimized > .media-control,
+  .persistent-media.is-rail-player.is-minimized > .media-control {
+    grid-column: 2;
+  }
+  .media-surface.persistent-media.is-minimized > .media-minimize,
+  .persistent-media.is-rail-player.is-minimized > .media-minimize {
+    grid-column: 3;
+  }
+}
+.media-surface.is-edge-player {
+  z-index: calc(var(--z-modal) + 1);
+}
+.media-surface.persistent-media.is-edge-player.is-minimized {
+  z-index: calc(var(--z-modal) + 1);
+  top: clamp(
+    64px,
+    calc(var(--media-edge-y, 0.55) * 100dvh - 30px),
+    calc(100dvh - 60px - var(--media-edge-bottom, 12px))
+  );
+  left: 0;
+  right: auto;
+  bottom: auto;
+  width: 44px;
+  max-width: 44px;
+  height: 60px;
+  grid-template-columns: 44px;
+  grid-template-rows: 1fr;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.media-surface.persistent-media.is-edge-player.is-minimized[data-edge="right"] {
+  left: auto;
+  right: 0;
+}
+.media-surface.is-edge-player.is-minimized
+  > :not(.media-drag-handle, .media-primary-control, .media-minimize) {
+  display: none !important;
+}
+.media-surface.is-edge-player.is-minimized > .media-drag-handle {
+  position: relative;
+  width: 44px;
+  height: 60px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--on-accent);
+  cursor: grab;
+  touch-action: none;
+}
+.media-surface.is-edge-player.is-minimized > .media-drag-handle::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: -28px;
+  width: 56px;
+  height: 56px;
+  border: 1px solid color-mix(in srgb, var(--blue) 78%, #ffffff);
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--motion-normal) var(--ease-out);
+}
+.media-surface.is-edge-player.is-minimized[data-edge="right"]
+  > .media-drag-handle::before {
+  left: auto;
+  right: -28px;
+}
+.media-edge-glyph {
+  position: absolute;
+  left: 6px;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 60px;
+  pointer-events: none;
+}
+.media-surface.is-edge-player[data-edge="right"] .media-edge-glyph {
+  left: auto;
+  right: 6px;
+}
+.media-surface.is-edge-player.is-minimized
+  > .media-drag-handle:is(:hover, :focus-visible)::before,
+.media-surface.is-edge-dragging > .media-drag-handle::before {
+  transform: translateX(14px);
+}
+.media-surface.is-edge-player.is-minimized
+  > .media-drag-handle:is(:hover, :focus-visible)
+  .media-edge-glyph,
+.media-surface.is-edge-dragging .media-edge-glyph {
+  transform: translateX(8px);
+}
+.media-surface.is-edge-player.is-minimized[data-edge="right"]
+  > .media-drag-handle:is(:hover, :focus-visible)::before,
+.media-surface.is-edge-dragging[data-edge="right"]
+  > .media-drag-handle::before {
+  transform: translateX(-14px);
+}
+.media-surface.is-edge-player.is-minimized[data-edge="right"]
+  > .media-drag-handle:is(:hover, :focus-visible)
+  .media-edge-glyph,
+.media-surface.is-edge-dragging[data-edge="right"] .media-edge-glyph {
+  transform: translateX(-8px);
+}
+.media-surface.is-edge-dragging {
+  left: var(--edge-drag-x, 8px) !important;
+  top: var(--edge-drag-y, 50%) !important;
+  right: auto !important;
+  animation: none;
+  transition: none;
+  cursor: grabbing;
+}
+:is(
+  .hymn-more-actions-panel,
+  .hymn-reader-settings,
+  .lyrics-panel .lyrics-extra,
+  .media-advanced-panel,
+  .media-tempo-popover
+) {
+  --midi-control: 32px;
+}
+@media (pointer: coarse), (hover: none) {
+  :is(
+    .hymn-more-actions-panel,
+    .hymn-reader-settings,
+    .lyrics-panel .lyrics-extra,
+    .media-advanced-panel,
+    .media-tempo-popover
+  ) {
+    --midi-control: 44px;
+  }
+}
+.media-surface.is-kidung-media:not(.is-minimized) {
+  --midi-control: 32px;
+  grid-template-columns:
+    66px var(--midi-control) minmax(0, 1fr) var(--midi-control)
+    66px !important;
+  grid-template-areas: "title title title minimize close" "tempo playback playback playback advanced" !important;
+  padding: 4px 8px;
+  gap: 2px 4px;
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+  transition:
+    border-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
+}
+@media (pointer: coarse), (hover: none) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    --midi-control: 44px;
+  }
+}
+@media (min-width: 680px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    max-width: 900px;
+    margin-inline: auto;
+  }
+}
+body:has(.hymn-detail-page.is-text-viewer)
+  .media-surface.is-kidung-media:not(.is-minimized) {
+  bottom: calc(var(--midi-control) + 28px + env(safe-area-inset-bottom));
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-art,
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta-top {
+  display: none;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-main, .media-adjustments) {
+  display: contents;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+  grid-area: title;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+  padding: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  text-align: left;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-context-link strong {
+  font-size: var(--type-meta);
+  line-height: 1.25;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-meta .media-seek-time {
+  grid-area: auto !important;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  width: 100%;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-meta
+  .media-seek-time
+  > input {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  height: 24px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-meta
+  .media-seek-time
+  > span:first-child {
+  grid-column: 1;
+  grid-row: 1;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-meta
+  .media-seek-time
+  > span:last-child {
+  grid-column: 3;
+  grid-row: 1;
+}
+@media (pointer: fine) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    padding: 2px 8px;
+    gap: 2px 4px;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized)
+    :is(.media-meta, .media-playback-row) {
+    min-height: 0;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-context-link {
+    height: 18px;
+    min-height: 18px;
+    line-height: 1.2;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized)
+    .media-meta
+    .media-seek-time {
+    height: 18px;
+    min-height: 18px;
+    line-height: 1;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized)
+    .media-meta
+    .media-seek-time
+    > input {
+    height: 18px;
+    min-height: 18px;
+  }
+}
+.media-surface.is-kidung-media:not(.is-minimized) > .media-minimize {
+  grid-area: minimize;
+}
+.media-surface.is-kidung-media:not(.is-minimized) > .media-close-button {
+  grid-area: close !important;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  :is(.media-minimize, .media-close-button, .media-advanced-summary) {
+  justify-self: center;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  width: var(--midi-control);
+  min-width: var(--midi-control);
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-advanced-summary
+  small {
+  display: none;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-playback-row {
+  grid-area: playback;
+  display: grid;
+  grid-template-columns: calc(3 * var(--midi-control));
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-transport-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-playback-row
+  .media-control {
+  flex: 0 0 var(--midi-control);
+  width: var(--midi-control);
+  min-width: var(--midi-control);
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-adjustments
+  > .media-tempo-control {
+  grid-area: tempo;
+  position: static;
+  align-self: center;
+  min-width: 0;
+}
+.media-surface.is-kidung-media:not(.is-minimized)
+  .media-adjustments
+  > .media-tempo-control
+  > button {
+  width: 100%;
+  height: var(--midi-control);
+  min-height: var(--midi-control);
+  justify-content: center;
+  padding-inline: 4px;
+}
+.media-surface.is-kidung-media
+  .media-adjustments
+  > .media-tempo-control
+  .media-tempo-popover {
+  position: absolute;
+  left: 8px;
+  bottom: calc(100% + 8px);
+  z-index: calc(var(--z-popover) + 1);
+  width: min(280px, calc(100vw - 40px));
+  min-width: 0;
+}
+.media-surface.is-kidung-media.is-minimized
+  .media-adjustments
+  > .media-tempo-control {
+  display: none;
+}
+.media-surface.is-kidung-media:not(.is-minimized) .media-advanced-controls {
+  grid-area: advanced;
+  position: static;
+  justify-self: center;
+  align-self: center;
+}
+@media (max-width: 720px) {
+  .media-surface.is-kidung-media:not(.is-minimized) {
+    grid-template-columns: 60px 44px minmax(0, 1fr) 44px 60px !important;
+    grid-template-areas: "title title title minimize close" "tempo playback playback playback advanced" !important;
+    grid-template-rows: auto 48px;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-meta {
+    grid-area: 1 / 1 / 2 / -1 !important;
+    justify-content: center;
+    gap: 6px;
+    padding-right: 112px;
+    min-height: 44px;
+  }
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: calc(100% + 1px);
+    width: auto;
+    padding: 6px 8px;
+    gap: 4px;
+    border-radius: 16px 16px 0 0;
+    max-height: min(
+      480px,
+      calc(100dvh - var(--reader-media-space, 0px) - 86px)
+    );
+    overflow: auto;
+  }
+}
+@media (min-width: 721px) {
+  .media-surface.is-kidung-media:not(.is-minimized) .media-advanced-panel {
+    position: absolute;
+    left: auto;
+    right: 0;
+    top: auto;
+    bottom: calc(100% + 8px);
+    width: 380px;
+    padding: 6px 8px;
+    gap: 4px;
+    max-height: min(
+      480px,
+      calc(100dvh - var(--reader-media-space, 0px) - 86px)
+    );
+    overflow: auto;
+    box-shadow: var(--shadow-float);
+  }
+}
+.media-surface.is-kidung-media .media-panel-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-music-controls {
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 4px;
+  padding: 0;
+  border: 0;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-instrument-control {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-utility-controls {
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-volume-control {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-volume-control
+  input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-midi-actions {
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-midi-actions
+  .media-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  min-width: var(--midi-control, 44px);
+  height: var(--midi-control, 44px);
+  min-height: var(--midi-control, 44px);
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--muted);
+}
+.media-surface.is-kidung-media .media-advanced-panel .media-queue-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  width: 100%;
+  min-height: var(--midi-control, 44px);
+  padding: 4px 6px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--type-meta);
+  font-variant-numeric: tabular-nums;
+}
+.media-mute-button {
+  display: grid;
+  place-items: center;
+  width: var(--midi-control, 40px);
+  min-width: var(--midi-control, 40px);
+  height: var(--midi-control, 40px);
+  min-height: var(--midi-control, 40px);
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+}
+.media-surface.is-kidung-media
+  .media-advanced-panel
+  .media-utility-controls
+  :is(
+    .media-mute-control,
+    .media-stop-control,
+    .media-loop-control,
+    .media-control.media-secondary-control
+  ) {
+  width: var(--midi-control, 44px);
+  min-width: var(--midi-control, 44px);
+  height: var(--midi-control, 44px);
+  min-height: var(--midi-control, 44px);
+  padding: 0;
+  border-radius: var(--radius-control);
+  display: grid;
+  place-items: center;
+}
+.media-music-controls {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.media-music-controls .media-instrument-control {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.media-music-controls .control-select {
+  min-width: 0;
+  width: 100%;
+}
+.media-music-controls .control-select-menu {
+  max-height: min(272px, var(--select-available-space, 272px));
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-float);
+}
+.media-music-controls .control-select-label {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.media-music-controls .media-key-control > .control-select-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.media-music-controls .control-select-trigger,
+.hymn-reader-settings .control-select-trigger {
+  height: var(--midi-control, 40px);
+  min-height: var(--midi-control, 40px);
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  box-shadow: none;
+}
+.media-music-controls .media-transpose {
+  display: grid;
+  grid-template-columns:
+    var(--midi-control, 40px) minmax(24px, 1fr) var(--midi-control, 40px)
+    var(--midi-control, 40px);
+  align-items: center;
+  gap: 2px;
+  height: var(--midi-control, 40px);
+  min-height: var(--midi-control, 40px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+.media-music-controls .media-transpose button,
+.media-music-controls .media-transpose-reset {
+  display: grid;
+  place-items: center;
+  width: var(--midi-control, 40px);
+  min-width: var(--midi-control, 40px);
+  height: var(--midi-control, 40px);
+  min-height: var(--midi-control, 40px);
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.125rem;
+}
+.media-music-controls .media-transpose-value {
+  text-align: center;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+.media-advanced-panel {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  width: min(360px, calc(100vw - 40px));
+  padding: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+}
+.media-tempo-toggle {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+.midi-preload-bar,
+.speech-progress-track {
+  position: relative;
+  height: 5px;
+  margin-block: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 14%, var(--surface-soft));
+  box-shadow: inset 0 1px 2px rgba(14, 34, 64, 0.08);
+  overflow: hidden;
+}
+.midi-preload-fill,
+.speech-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--blue) 82%, var(--navy)) 0%,
+    var(--blue) 52%,
+    color-mix(in srgb, var(--blue) 56%, #ffffff) 100%
+  );
+  background-size: 200% 100%;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--blue) 38%, transparent);
+  transition: width 220ms var(--ease-out);
+  animation: loading-gradient-flow 1.8s ease-in-out infinite;
+}
+
+/* ── Additional Kidung, Chord Editor, Media & PDF Reader Surface Rules ── */
+.hymn-catalog-shell,
+.kidung-queue-surface {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.catalog-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.catalog-search {
+  flex: 1 1 220px;
+}
+.kidung-queue-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.kidung-inline-error {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--line));
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  color: var(--danger);
+  font-size: var(--type-body-sm);
+}
+.kidung-mode-glyph {
+  display: inline-grid;
+  place-items: center;
+}
+.kidung-manage-saved-items,
+.kidung-settings-disclosure-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kidung-reader-picker-current {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hymn-action-icon {
+  display: inline-grid;
+  place-items: center;
+}
+.hymn-action-label {
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+}
+.hymn-action-caption {
+  font-size: var(--type-meta);
+  color: var(--muted);
+}
+.hymn-autoscroll-control,
+.hymn-autoscroll-speed-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hymn-midi-seekbar {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.hymn-midi-time {
+  font-size: var(--type-meta);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.hymn-midi-toggle,
+.hymn-midi-volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hymn-key-description,
+.hymn-pdf-unmapped,
+.hymn-soundfont-active,
+.hymn-all-verses-summary,
+.step-label,
+.viewer-chrome-copy {
+  font-size: var(--type-meta);
+  color: var(--muted);
+}
+
+.chord-text-space {
+  white-space: pre-wrap;
+}
+.chord-ui-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chord-ui-slider {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+  accent-color: var(--blue);
+}
+.chord-ui-slider span {
+  font-size: var(--type-meta);
+  color: var(--muted);
+}
+.chord-ui-slider input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.chord-ui-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 22%, var(--surface-soft));
+}
+.chord-ui-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: var(--shadow-sm);
+  transition: transform 180ms var(--ease-bubble);
+}
+.chord-ui-slider input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 22%, var(--surface-soft));
+}
+.chord-ui-slider input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+@media (pointer: coarse) {
+  .chord-ui-slider input[type="range"] {
+    height: var(--control-hit, 44px);
+    min-height: var(--control-hit, 44px);
+    margin-block: 0;
+  }
+  .hymn-midi-volume input[type="range"] {
+    height: var(--control-hit, 44px);
+    min-height: var(--control-hit, 44px);
+  }
+  .reader-preferences button {
+    min-width: var(--control-hit, 44px);
+    min-height: var(--control-hit, 44px);
+  }
+}
+.chord-ui-swatch {
+  width: var(--control-hit, 44px);
+  height: var(--control-hit, 44px);
+  border-radius: var(--radius-control);
+  border: 2px solid var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  cursor: pointer;
+  transition:
+    border-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out),
+    opacity 180ms var(--ease-out);
+}
+.chord-ui-swatch.is-selected {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 2px var(--surface);
+}
+.chord-ui-swatch.is-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.chord-editor-label {
+  flex: none;
+  color: var(--blue);
+  font-size: var(--type-meta);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.capo-control,
+.transpose-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.transpose-reset-btn {
+  min-height: 44px;
+}
+
+.lyrics-extra {
+  position: absolute;
+  z-index: var(--z-popover);
+  top: calc(100% + 6px);
+  right: 12px;
+  width: min(360px, calc(100vw - 24px));
+  max-height: calc(100dvh - 160px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+}
+.lyrics-extra .media-panel-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.lyrics-key-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 64px;
+}
+.lyrics-midi-label,
+.lyrics-verse-indicator,
+.lyrics-song-number {
+  font-size: var(--type-meta);
+  color: var(--muted);
+}
+.lyrics-seek {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.lyrics-text-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.midi-tempo-stepper {
+  --tempo-target: var(--midi-control, 44px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+.midi-tempo-stepper > button {
+  display: grid;
+  place-items: center;
+  width: var(--tempo-target);
+  min-width: var(--tempo-target);
+  height: var(--tempo-target);
+  min-height: var(--tempo-target);
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 1.125rem;
+}
+.midi-tempo-stepper > label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  height: var(--tempo-target);
+  padding: 0 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-soft);
+}
+.midi-tempo-stepper input {
+  width: 3.5ch;
+  min-width: var(--tempo-target);
+  height: var(--tempo-target);
+  min-height: var(--tempo-target);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  appearance: textfield;
+}
+.midi-tempo-stepper input::-webkit-inner-spin-button,
+.midi-tempo-stepper input::-webkit-outer-spin-button {
+  appearance: none;
+}
+.midi-tempo-stepper label > span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.media-playback-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.media-transport-controls,
+.media-utility-controls,
+.media-queue-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.media-queue-badge {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: var(--type-meta);
+  font-weight: 700;
+}
+.media-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.media-kicker,
+.media-autonext-subtitle,
+.media-action-caption {
+  font-size: var(--type-meta);
+  color: var(--muted);
+}
+.media-mini-context {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.media-play-glyph {
+  display: inline-grid;
+  place-items: center;
+}
+.media-activity {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 18px;
+  height: 14px;
+  color: var(--muted);
+}
+.media-activity i {
+  width: 2px;
+  height: 12px;
+  border-radius: 6px;
+  background: currentColor;
+  transform: scaleY(0.35);
+}
+.media-activity i:nth-child(2) {
+  transform: scaleY(0.75);
+  animation-delay: -300ms;
+}
+.media-activity i:nth-child(3) {
+  transform: scaleY(0.5);
+  animation-delay: -580ms;
+}
+.media-activity i:nth-child(4) {
+  animation-delay: -150ms;
+}
+.media-surface[data-playing="true"] .media-activity {
+  color: var(--blue);
+}
+.media-surface[data-playing="true"] .media-activity i {
+  animation: midi-activity 850ms ease-in-out infinite alternate;
+}
+@keyframes midi-activity {
+  from {
+    transform: scaleY(0.25);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-surface[data-playing="true"] .media-activity i {
+    animation: none;
+  }
+}
+.media-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+.media-progress {
+  width: 100%;
+}
+.media-load-track {
+  position: absolute;
+  inset: auto 10px 0;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue) 16%, var(--surface-soft));
+}
+.media-load-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--blue) 0%,
+    color-mix(in srgb, var(--blue) 52%, #ffffff) 50%,
+    var(--blue) 100%
+  );
+  background-size: 200% 100%;
+  transform-origin: left;
+  transition: transform 200ms var(--ease-out);
+  animation: loading-gradient-flow 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-load-track > span {
+    transition: none;
+  }
+}
+.media-adjustments,
+.media-advanced-controls {
+  display: grid;
+  gap: 8px;
+}
+.media-advanced-summary {
+  list-style: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+.media-advanced-summary::-webkit-details-marker {
+  display: none;
+}
+.media-midi-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.media-panel-heading {
+  font-size: var(--type-body-sm);
+  font-weight: 700;
+  color: var(--navy);
+}
+.media-instrument-control,
+.media-key-control,
+.media-tempo-control,
+.media-volume-control,
+.media-speech-rate-control {
+  display: grid;
+  gap: 4px;
+}
+.media-tempo-popover {
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.media-transpose {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.media-transpose-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.media-transpose-reset,
+.media-mute-button,
+.media-mute-control,
+.media-stop-control,
+.media-loop-control {
+  min-width: var(--midi-control, 44px);
+  min-height: var(--midi-control, 44px);
+}
+.media-surface.is-speech-media:not(.is-minimized) {
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  width: min(720px, calc(100vw - 40px));
+}
+@media (max-width: 599px) {
+  .media-surface.is-speech-media:not(.is-minimized) {
+    left: 12px;
+    right: 12px;
+    margin-inline: 0;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    width: auto;
+  }
+}
+
+/* ── Focused Fullscreen Hymn PDF Viewer Chrome & Stage ── */
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer) .topbar,
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer)
+  .navigation-shell {
+  display: none;
+}
+.app-frame.is-reader-route:has(.hymn-detail-page.is-pdf-viewer) .workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+.pdf-reader .pdf-stage {
+  border: 0;
+}
+.pdf-reader .pdf-stage[data-pdf-layout="horizontal"] {
+  display: block;
+  scrollbar-gutter: auto;
+  overflow-anchor: none;
+  touch-action: none;
+}
+.pdf-reader .pdf-stage:is([data-pdf-layout="single"], [data-pdf-layout="two"]) {
+  display: block;
+  justify-items: normal;
+  scrollbar-gutter: auto;
+  overflow-anchor: none;
+}
+.pdf-reader :is(.pdf-layout-single, .pdf-layout-two) {
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+  align-items: center;
+}
+.pdf-pages {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+  padding: 0;
+}
+.pdf-pages.pdf-layout-vertical {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  justify-content: stretch;
+  justify-items: center;
+}
+.pdf-pages.pdf-layout-horizontal {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 18px;
+  width: max-content;
+  min-width: 100%;
+}
+.pdf-page-frame {
+  position: relative;
+  display: grid;
+  place-items: start center;
+  max-width: 100%;
+  background: var(--surface);
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+.pdf-reader .pdf-page-frame {
+  width: max-content;
+  max-width: none;
+  flex: none;
+  box-shadow: none;
+}
+.pdf-reader .pdf-page-frame > canvas {
+  display: block;
+  max-width: none;
+  max-height: none;
+  box-shadow: none;
+}
+.hymn-detail-page.is-pdf-viewer .gys-pdf-overlay .pdf-page-frame canvas {
+  outline: 1px solid var(--line);
+}
+.pdf-page-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: var(--type-meta);
+}
+.pdf-vertical-page,
+.pdf-horizontal-page {
+  position: relative;
+  display: grid;
+  place-items: center;
+  max-width: 100%;
+}
+.pdf-vertical-page {
+  min-height: 260px;
+  scroll-margin-top: 18px;
+}
+.pdf-vertical-page:not(.is-ready) {
+  width: min(100%, 820px);
+  aspect-ratio: 595 / 842;
+}
+.pdf-reader :is(.pdf-horizontal-page, .pdf-vertical-page) {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.pdf-reader .pdf-pages.pdf-layout-horizontal .pdf-horizontal-page {
+  flex: 0 0 auto;
+  width: calc(var(--pdf-slot-width, 100vw) * var(--pdf-chord-scale, 1));
+  height: calc(var(--pdf-slot-height, 70vh) * var(--pdf-chord-scale, 1));
+  min-height: 0;
+  aspect-ratio: auto;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+  scroll-margin: 0;
+  overflow: clip;
+}
+.pdf-reader .pdf-vertical-page.is-fit {
+  width: 100%;
+}
+.pdf-vertical-page.is-zoomed {
+  width: max-content;
+  max-width: none;
+}
+.pdf-pages > .pdf-page-frame:nth-child(2) {
+  display: none;
+}
+.pdf-pages.pdf-layout-two > .pdf-page-frame:nth-child(2),
+.pdf-pages.pdf-layout-vertical > .pdf-page-frame:nth-child(2) {
+  display: block;
+}
+.pdf-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+}
+.pdf-loading,
+.pdf-error-state {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  min-height: 280px;
+  padding: 24px;
+  text-align: center;
+}
+.pdf-reader .pdf-loading.is-page-loading {
+  inset: 0 0 auto;
+  height: 3px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pdf-reader .pdf-loading.is-page-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 38%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--blue) 50%,
+    color-mix(in srgb, var(--blue) 58%, #ffffff) 85%,
+    transparent 100%
+  );
+  animation: loading-flow 1.35s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.pdf-reader .pdf-loading.is-page-loading > * {
+  display: none;
+}
+.pdf-loading-page,
+.pdf-loading-slow,
+.pdf-loading-source,
+.pdf-layout-note {
+  font-size: var(--type-meta);
+  color: var(--muted);
+}
+.pdf-loading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pdf-detail-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  transform-origin: 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.pdf-detail-layer > canvas {
+  position: absolute;
+  display: block;
+  box-shadow: none;
+}
+.pdf-key-btn {
+  min-width: 44px;
+  font-weight: 700;
+}
+.pdf-layout-selector {
+  display: grid;
+  gap: 8px;
+}
+.pdf-layout-toggle {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+.pdf-layout-toggle button.is-active {
+  background: var(--blue);
+  color: var(--on-accent);
+  border-color: var(--blue);
+}
+.pdf-music-action,
+.pdf-transpose-inline,
+.pdf-transpose-reset,
+.pdf-zoom-indicator,
+.pdf-zoom-reset,
+.pdf-resume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

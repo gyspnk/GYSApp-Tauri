@@ -497,6 +497,8 @@ export const featureMessages: Record<Locale, Record<string, string>> = {
     "kidung.collection": "Koleksi",
     "kidung.showFilters": "Tampilkan filter",
     "kidung.hideFilters": "Sembunyikan filter",
+    "kidung.collapseList": "Sembunyikan daftar kidung",
+    "kidung.expandList": "Tampilkan daftar kidung",
     "kidung.searchEmptyTitle": "Nyanyian tidak ditemukan.",
     "kidung.searchEmptyBody": "Coba kata kunci lain, atau kosongkan pencarian.",
     "kidung.navigation": "Navigasi Kidung",

@@ -151,15 +151,15 @@ test("picks formatting, typecheck and the covering unit file", () => {
   const files = [
     "apps/web/src/egys-google.ts",
     "apps/web/src/egys-google.test.ts",
-    "apps/web/src/app-design.css",
+    "apps/web/src/styles/01-foundations-and-layout.css",
     "README.md",
   ];
   const { formatted, sources, tests, typechecks } = collectChecks(files);
   assert.deepEqual(formatted.sort(), [
     "README.md",
-    "apps/web/src/app-design.css",
     "apps/web/src/egys-google.test.ts",
     "apps/web/src/egys-google.ts",
+    "apps/web/src/styles/01-foundations-and-layout.css",
   ]);
   assert.deepEqual(sources, ["apps/web/src/egys-google.ts"]);
   // A stylesheet is in this change, so the stylesheet-wide policy suites ride

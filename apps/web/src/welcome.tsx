@@ -106,8 +106,13 @@ export function WelcomePage({
     <main className="welcome-page">
       <section className="welcome-card" aria-labelledby="welcome-title">
         <div className="welcome-copy">
-          <p className="welcome-mark" aria-hidden="true">
-            GYS
+          <p className="welcome-mark">
+            <img
+              src={`${import.meta.env.BASE_URL}assets/gys-logo.png`}
+              alt="Gereja Yesus Sejati"
+              width={40}
+              height={40}
+            />
           </p>
           <h1 id="welcome-title" ref={headingRef} tabIndex={-1}>
             {translate(locale, "welcome.title")}

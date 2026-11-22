@@ -1,37 +1,12 @@
-# Base stylesheet ownership
+# Stylesheet Architecture (Sanctuary Editorial)
 
-Reviewed 2026-10-07. [UI system](../../../../docs/ui-system.md) describes current
-sizing, focus and motion contracts.
+All global styles live in one ordered 6-layer cascade imported from `../styles.css` in `main.tsx`:
 
-`../styles.css` imports these layers in their original order. The extraction
-preserves the existing reviewed cascade; feature refinements imported by
-`main.tsx` still follow it. Keep tokens in `00-tokens.css`, foundational layout
-in `01-foundations-and-layout.css`, Bible/settings in `02-bible-and-settings.css`,
-shell controls in `03-shell-controls.css`, reader/media in `04-reader-media.css`,
-and responsive/final base adjustments in `05-responsive-refinements.css`.
+1. `00-tokens.css` — `@font-face`, 5-theme semantic palette tokens (`light`, `dark`, `amoled`, `sepia`, `system`), contrast boost (`prefers-contrast: more`), radius/type/spacing/shadow/motion/z-index scales.
+2. `01-foundations-and-layout.css` — reset, frosted topbar, desktop/tablet/mobile/landscape navigation shell, shared accessible 3:1 controls, account menu, welcome screen, global search, confirm dialog, loading/error/recovery states, toast, update banner, image fallbacks.
+3. `02-bible-and-settings.css` — Bible reader toolbar/drawer, split-view divider, verse list/cross-refs/highlights/notes/selection bar, quick-nav overlay; More/Settings single balanced column, e-GYS login parity, appearance swatches, density/font preferences, offline packs, backup & diagnostics.
+4. `03-home-and-catalogs.css` — Home bento hero, Daily Sauh card + compact offline state, continue activity, Suara Sejati shelves/library/reader, Faith 10 beliefs + modals, Literature shelves/rows/detail/reader.
+5. `04-kidung-and-media.css` — Kidung catalog toolbar, content-visibility grid, playlist queue & saved playlists, settings, split reader rail, lyrics & interlinear chords, fullscreen presentation panel, PDF overlay & persistent/edge media dock.
+6. `05-motion-and-print.css` — safe `translate3d`+`opacity` entrance waves, `@starting-style` menus, View Transitions, full `prefers-reduced-motion: reduce` support, landscape Bible overrides, and `@media print`.
 
-Some historical selectors cross these boundaries. Move or deduplicate those
-only with computed-style and rendered regression evidence: the filenames do
-not establish new cascade precedence. Reading surfaces, Kidung UX, typography,
-preferences and the final calm refinements retain their existing owners.
-
-New behavior contracts live in `kidung-style-behavior.spec.ts` and the 90-case
-`roadmap-ui-matrix.spec.ts`; source checks remain for structural import
-ordering. Unknown shared CSS
-changes select the full browser suite.
-
-## Current final feature layers
-
-`main.tsx` imports `persistent-media.css`, `app-design.css`, `menu-motion.css`
-and `midi-player.css` in that order after existing reader/refinement layers.
-`midi-player.css` owns compact expanded musical controls and the half-circle
-edge tab; its geometry must override legacy sidebar/rail rules at equivalent
-specificity. `menu-motion.css` owns exit as well as entrance behavior.
-`bible-picker.css` loads with the address picker/Bible feature.
-
-Default accent follows Church blue tokens; old warm editorial receipts are
-historical, not a new palette requirement. Use target-specific sizing (36 px
-mouse/40 px touch MIDI, 44 px secondary touch actions) and a full hit area for
-half-visible controls. Keep one animation owner per transition, inert closing
-menus and reduced-motion behavior. Computed styles and real hit testing catch
-cascade/focus defects that source-string checks cannot.
+Feature-lazy `bible-picker.css` loads only with `bible-picker.tsx`, and `startup.css` loads synchronously inside `index.html` for zero-FOUC boot splash styling.

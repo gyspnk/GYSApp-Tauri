@@ -17,16 +17,23 @@ describe("route loading reserve", () => {
     expect(start).toBeGreaterThan(-1);
     const rule = css.slice(start, css.indexOf("}", start));
     expect(rule).toContain("min-height: min(680px");
+    expect(css).toMatch(/\.reader-route-loading\s*\{[^}]*min-height:\s*180px/);
   });
 
-  it("does not let a later sheet shrink the page-shaped reserve", () => {
-    const css = read("./app-design.css");
-    const blocks = [
-      ...css.matchAll(/[^{}]*\.non-reader-route-loading[^{}]*\{[^}]*\}/g),
-    ];
-    for (const block of blocks) {
-      expect(block[0]).not.toMatch(/min-height:\s*(?:180px|0)\s*;/);
+  it("does not let later sheets shrink the page-shaped reserve", () => {
+    for (const sheet of [
+      "./styles/02-bible-and-settings.css",
+      "./styles/03-home-and-catalogs.css",
+      "./styles/04-kidung-and-media.css",
+      "./styles/05-motion-and-print.css",
+    ]) {
+      const css = read(sheet);
+      const blocks = [
+        ...css.matchAll(/[^{}]*\.non-reader-route-loading[^{}]*\{[^}]*\}/g),
+      ];
+      for (const block of blocks) {
+        expect(block[0]).not.toMatch(/min-height:\s*(?:180px|0)\s*;/);
+      }
     }
-    expect(css).toMatch(/\.reader-route-loading\s*\{[^}]*min-height:\s*180px/);
   });
 });
