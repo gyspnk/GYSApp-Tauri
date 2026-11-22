@@ -59,12 +59,14 @@ export function useLyricReflow(
         const after = position(element);
         const old = previous.get(key);
         next.set(key, after);
-        if (!old || !after.width || !after.height) continue;
+        if (!old || !old.width || !old.height || !after.width || !after.height)
+          continue;
         const before = moving.has(element) ? visible.get(element)! : old;
+        if (!before.width || !before.height) continue;
         if (
-          Math.abs(before.x - after.x) > 0.5 ||
-          Math.abs(before.y - after.y) > 0.5 ||
-          Math.abs(before.width - after.width) > 0.5
+          Math.abs(before.x - after.x) > 1.5 ||
+          Math.abs(before.y - after.y) > 1.5 ||
+          Math.abs(before.width - after.width) > 1.5
         )
           pending.push({ element, before, after });
       }

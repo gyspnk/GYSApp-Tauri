@@ -532,10 +532,12 @@ function remapChordIndex(
 
 function ChordLine({
   line,
+  active,
   transpose,
   accidental,
 }: {
   line: ChordTextLine;
+  active: boolean;
   transpose: number;
   accidental: "sharp" | "flat";
 }) {
@@ -550,6 +552,7 @@ function ChordLine({
       offset += [...text].length;
       return { text, index };
     });
+  const [measured, setMeasured] = useState(false);
   const [visualRows, setVisualRows] = useState<ChordVisualRow[]>(() =>
     groupChordMarkersByVisualRow(line.text, line.chords, [], {
       left: 0,
@@ -564,10 +567,18 @@ function ChordLine({
       setVisualRows((current) => (current.length ? [] : current));
       return;
     }
+    if (!active) {
+      setMeasured(false);
+      return;
+    }
     let frame = 0;
     const measure = () => {
       frame = 0;
       const bounds = textElement.getBoundingClientRect();
+      if (bounds.width <= 0 || bounds.height <= 0) {
+        setMeasured(false);
+        return;
+      }
       const rects = Array.from(
         textElement.querySelectorAll<HTMLElement>("[data-chord-char-index]"),
       ).map((element) => {
@@ -600,6 +611,7 @@ function ChordLine({
           ? current
           : nextRows,
       );
+      setMeasured(true);
     };
     const schedule = () => {
       if (frame) return;
@@ -608,7 +620,8 @@ function ChordLine({
           ? window.requestAnimationFrame(measure)
           : window.setTimeout(measure, 0);
     };
-    schedule();
+    // Measure synchronously before paint so chords never flash or FLIP from (0, 0).
+    measure();
     const observer =
       typeof ResizeObserver === "function"
         ? new ResizeObserver(schedule)
@@ -622,7 +635,7 @@ function ChordLine({
         else window.clearTimeout(frame);
       }
     };
-  }, [line.chords, line.text]);
+  }, [active, line.chords, line.text]);
 
   return (
     <span
@@ -660,13 +673,18 @@ function ChordLine({
             left: `${row.left * 100}%`,
             top: `${row.top}px`,
             width: `${row.width * 100}%`,
+            visibility: measured ? undefined : "hidden",
           }}
         >
           {row.markers.map((marker, markerIndex) => (
             <small
               className="chord-visual-marker"
               key={`${marker.index}-${marker.token}-${markerIndex}`}
-              data-reflow-key={`${lineId}-marker-${marker.index}-${marker.token}`}
+              data-reflow-key={
+                measured
+                  ? `${lineId}-marker-${marker.index}-${marker.token}`
+                  : undefined
+              }
               style={
                 {
                   "--chord-position": `${marker.position * 100}%`,
@@ -737,6 +755,7 @@ export function ChordCapability({
           <ChordLine
             key={`${index}-${line.text}`}
             line={line}
+            active={active && visible}
             transpose={transpose}
             accidental={accidental}
           />

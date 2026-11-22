@@ -1560,3 +1560,8 @@
 .media-surface.persistent-media.is-rail-player.is-minimized {
   border-radius: 999px;
 }
+
+/* Prevent ResizeObserver + FLIP vibration when MIDI dock mounts/unmounts in lyrics mode */
+.hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
+  transition: none;
+}
