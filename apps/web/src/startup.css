@@ -1,5 +1,5 @@
 html {
-  background: #f8f7f4;
+  background: #ffffff;
 }
 html[data-theme="dark"] {
   background: #0f1623;
@@ -16,9 +16,6 @@ html[data-theme="sepia"] {
   }
 }
 
-/* Boot splash sits above the shell until the first frame is styled and the
-   reading fonts are ready. It never captures input, so automation and fast
-   users are not trapped behind the overlay. */
 .shell-startup {
   position: fixed;
   inset: 0;
@@ -27,19 +24,21 @@ html[data-theme="sepia"] {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   pointer-events: none;
   opacity: 1;
+  color: #00668f;
   background:
     radial-gradient(
       620px 360px at 50% 42%,
       rgba(0, 102, 143, 0.08),
       transparent 72%
     ),
-    #f8f7f4;
-  transition: opacity 220ms ease;
+    #ffffff;
+  transition: opacity 460ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 html[data-theme="dark"] .shell-startup {
+  color: #78bfe0;
   background:
     radial-gradient(
       620px 360px at 50% 42%,
@@ -49,6 +48,7 @@ html[data-theme="dark"] .shell-startup {
     #0f1623;
 }
 html[data-theme="amoled"] .shell-startup {
+  color: #7cc2e3;
   background:
     radial-gradient(
       620px 360px at 50% 42%,
@@ -58,6 +58,7 @@ html[data-theme="amoled"] .shell-startup {
     #000000;
 }
 html[data-theme="sepia"] .shell-startup {
+  color: #0b5e82;
   background:
     radial-gradient(
       620px 360px at 50% 42%,
@@ -68,6 +69,7 @@ html[data-theme="sepia"] .shell-startup {
 }
 @media (prefers-color-scheme: dark) {
   html[data-theme="system"] .shell-startup {
+    color: #78bfe0;
     background:
       radial-gradient(
         620px 360px at 50% 42%,
@@ -77,18 +79,85 @@ html[data-theme="sepia"] .shell-startup {
       #0f1623;
   }
 }
+
+/* Flapping GYS Dove & luminous halo */
+.shell-startup-dove-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 80px;
+  transition:
+    transform 480ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 420ms ease;
+}
+.shell-startup-halo {
+  position: absolute;
+  inset: -12px;
+  border-radius: 999px;
+  background: radial-gradient(circle, currentColor 0%, transparent 68%);
+  opacity: 0.16;
+  animation: shell-halo-pulse 1.9s ease-in-out infinite;
+  transition:
+    transform 480ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 420ms ease;
+}
+.shell-startup-dove {
+  position: relative;
+  width: 92px;
+  height: 74px;
+  overflow: visible;
+  animation: shell-dove-hover 1.9s ease-in-out infinite;
+}
+.dove-wing-left {
+  transform-origin: 58px 50px;
+  animation: dove-flap-left 1.05s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dove-wing-right {
+  transform-origin: 62px 50px;
+  animation: dove-flap-right 1.05s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Exit choreography: dove spreads wings wide forward into the application */
 html[data-boot="ready"] .shell-startup {
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 220ms ease,
-    visibility 0s linear 220ms;
+    opacity 460ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 460ms;
 }
+html[data-boot="ready"] .shell-startup-dove-wrap {
+  transform: translate3d(0, -14px, 0) scale(2.65);
+  opacity: 0;
+}
+html[data-boot="ready"] .shell-startup-halo {
+  transform: scale(2.4);
+  opacity: 0;
+}
+html[data-boot="ready"] .shell-startup .dove-wing-left {
+  animation: none;
+  transform: rotate(-28deg) scaleX(1.22);
+}
+html[data-boot="ready"] .shell-startup .dove-wing-right {
+  animation: none;
+  transform: rotate(28deg) scaleX(1.22);
+}
+
 .shell-startup img {
   display: block;
   width: min(240px, 60vw);
   height: auto;
   animation: shell-logo-breathe 2.4s ease-in-out infinite;
+  transition:
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 320ms ease;
+}
+html[data-boot="ready"] .shell-startup img,
+html[data-boot="ready"] .shell-startup-track {
+  transform: translate3d(0, 10px, 0) scale(0.96);
+  opacity: 0;
 }
 html:is([data-theme="dark"], [data-theme="amoled"]) .shell-startup img {
   filter: brightness(1.55) contrast(1.08);
@@ -106,6 +175,9 @@ html:is([data-theme="dark"], [data-theme="amoled"]) .shell-startup img {
   box-shadow: inset 0 1px 2px rgba(14, 34, 64, 0.08);
   border-radius: 999px;
   overflow: hidden;
+  transition:
+    transform 320ms ease,
+    opacity 280ms ease;
 }
 .shell-startup-track > span {
   display: block;
@@ -164,6 +236,44 @@ html[data-theme="sepia"] .shell-startup-track > span {
   );
   box-shadow: 0 0 12px rgba(141, 94, 26, 0.3);
 }
+@keyframes dove-flap-left {
+  0%,
+  100% {
+    transform: rotate(-16deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(18deg) scaleY(0.86);
+  }
+}
+@keyframes dove-flap-right {
+  0%,
+  100% {
+    transform: rotate(16deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(-18deg) scaleY(0.86);
+  }
+}
+@keyframes shell-dove-hover {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+@keyframes shell-halo-pulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.12;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.22;
+  }
+}
 @keyframes shell-logo-breathe {
   0%,
   100% {
@@ -187,10 +297,17 @@ html[data-theme="sepia"] .shell-startup-track > span {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .shell-startup {
+  .shell-startup,
+  .shell-startup-dove-wrap,
+  .shell-startup-halo,
+  .dove-wing-left,
+  .dove-wing-right {
     transition: none;
+    animation: none;
+    transform: none;
   }
-  .shell-startup img {
+  .shell-startup img,
+  .shell-startup-dove {
     animation: none;
     transform: none;
   }

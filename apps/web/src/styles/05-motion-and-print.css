@@ -505,7 +505,6 @@
       box-shadow 260ms var(--ease-bubble),
       transform 110ms var(--ease-out);
   }
-
   /* Fallback press scale when JS control-motion is inactive (prevents double-scaling). */
   :root:not(.has-control-motion) :is(
       .primary-button,
@@ -1143,12 +1142,11 @@
   }
 }
 
-/* Crisp separation on pure-white light mode */
+/* Crisp separation on pure-white light mode & filled MIDI seek progress */
 :root[data-theme="light"] .more-card,
 :root[data-theme="system"] .more-card {
   border: 1px solid var(--line);
 }
-
 /* ── Redesigned Frosted-Glass MIDI Player Dock ── */
 .media-surface.persistent-media:not(.is-minimized) {
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
@@ -1257,30 +1255,84 @@
   opacity: 0;
   will-change: transform, opacity;
 }
-.gys-mote-1 { left: 18%; bottom: 12%; width: 4px; height: 4px; }
-.gys-mote-2 { left: 42%; bottom: 8%; width: 5px; height: 5px; background: var(--gold); }
-.gys-mote-3 { left: 68%; bottom: 16%; width: 4px; height: 4px; }
-.gys-mote-4 { left: 82%; bottom: 24%; width: 6px; height: 6px; background: var(--gold); }
-.gys-mote-5 { left: 28%; bottom: 22%; width: 3px; height: 3px; }
+.gys-mote-1 {
+  left: 18%;
+  bottom: 12%;
+  width: 4px;
+  height: 4px;
+}
+.gys-mote-2 {
+  left: 42%;
+  bottom: 8%;
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+}
+.gys-mote-3 {
+  left: 68%;
+  bottom: 16%;
+  width: 4px;
+  height: 4px;
+}
+.gys-mote-4 {
+  left: 82%;
+  bottom: 24%;
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+}
+.gys-mote-5 {
+  left: 28%;
+  bottom: 22%;
+  width: 3px;
+  height: 3px;
+}
 
 @keyframes gys-ray-sway {
-  0%, 100% { transform: rotate(-14deg) translate3d(0, 0, 0); }
-  50% { transform: rotate(-11deg) translate3d(-18px, 14px, 0); }
+  0%,
+  100% {
+    transform: rotate(-14deg) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: rotate(-11deg) translate3d(-18px, 14px, 0);
+  }
 }
 @keyframes gys-mote-rise {
-  0% { transform: translate3d(0, 0, 0) scale(0.8); opacity: 0; }
-  20% { opacity: 0.16; }
-  80% { opacity: 0.1; }
-  100% { transform: translate3d(14px, -180px, 0) scale(1.1); opacity: 0; }
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.16;
+  }
+  80% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: translate3d(14px, -180px, 0) scale(1.1);
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .gys-ambient-ray { animation: gys-ray-sway 30s ease-in-out infinite; }
-  .gys-mote-1 { animation: gys-mote-rise 22s ease-in-out infinite; }
-  .gys-mote-2 { animation: gys-mote-rise 26s ease-in-out 4s infinite; }
-  .gys-mote-3 { animation: gys-mote-rise 20s ease-in-out 8s infinite; }
-  .gys-mote-4 { animation: gys-mote-rise 28s ease-in-out 12s infinite; }
-  .gys-mote-5 { animation: gys-mote-rise 24s ease-in-out 16s infinite; }
+  .gys-ambient-ray {
+    animation: gys-ray-sway 30s ease-in-out infinite;
+  }
+  .gys-mote-1 {
+    animation: gys-mote-rise 22s ease-in-out infinite;
+  }
+  .gys-mote-2 {
+    animation: gys-mote-rise 26s ease-in-out 4s infinite;
+  }
+  .gys-mote-3 {
+    animation: gys-mote-rise 20s ease-in-out 8s infinite;
+  }
+  .gys-mote-4 {
+    animation: gys-mote-rise 28s ease-in-out 12s infinite;
+  }
+  .gys-mote-5 {
+    animation: gys-mote-rise 24s ease-in-out 16s infinite;
+  }
 }
 
 body:has(.media-surface[data-playing="true"]) .gys-ambient-aura {
@@ -1486,6 +1538,13 @@ html.has-custom-scrollbar *::-webkit-scrollbar {
   contain-intrinsic-size: auto 56px;
 }
 
+@media print {
+  .gys-scrollbar-track,
+  .gys-ambient-backdrop {
+    display: none !important;
+  }
+}
+
 /* ── Fluid Navigation UI Aesthetics & All-Device Responsiveness ── */
 html,
 body,
@@ -1493,6 +1552,7 @@ body,
   overflow-x: clip;
 }
 
+/* Re-enable liquid spring sliding pill indicator across desktop & tablet */
 @media (min-width: 600px) {
   .navigation-shell {
     -webkit-backdrop-filter: blur(16px) saturate(1.3);
@@ -1516,6 +1576,7 @@ body,
   }
 }
 
+/* Flagship translucent floating bottom bar on phones */
 @media (max-width: 599px) {
   .navigation-shell {
     -webkit-backdrop-filter: blur(18px) saturate(1.4);
@@ -1533,6 +1594,7 @@ body,
   }
 }
 
+/* Smooth active icon pop across all screen sizes */
 @media (prefers-reduced-motion: no-preference) {
   .nav-item.is-active svg {
     transform: scale(1.08);
@@ -1542,9 +1604,218 @@ body,
   }
 }
 
-@media print {
-  .gys-scrollbar-track,
-  .gys-ambient-backdrop {
-    display: none !important;
+/* ── Redesigned Member Card & Unified Settings Sections ── */
+.more-page .more-account-section .member-card,
+.member-card {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  gap: 16px;
+}
+.member-card-head {
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+}
+.member-card-identity {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.member-card-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-weight: 600;
+}
+.member-card-field {
+  gap: 4px;
+}
+.member-card-field dt {
+  font-size: var(--type-meta);
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.member-card-field dd {
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.member-card-signout {
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--line));
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface));
+  color: var(--danger);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    transform 140ms var(--ease-spring);
+}
+.member-card-signout:hover {
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  border-color: color-mix(in srgb, var(--danger) 48%, var(--line));
+}
+
+/* Unify Settings cards (Unduhan, Backup, Diagnostik, Laporan) on pure white & dark */
+.distributed-assets-card,
+.report-card,
+.utility-panel,
+.backup-inline,
+.diagnostics-card,
+.appearance-card,
+.account-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  box-shadow: var(--shadow-xs);
+}
+.distributed-asset-group-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+.distributed-asset-group-label span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: var(--type-caption);
+  font-weight: 700;
+}
+.distributed-asset-row {
+  padding: 12px 10px;
+  border-radius: var(--radius-control);
+  transition: background-color 160ms var(--ease-out);
+}
+.distributed-asset-row:hover {
+  background: color-mix(in srgb, var(--blue-soft) 32%, var(--surface));
+}
+
+/* ── Visible Translucent GYS Dove Inline SVG & 10 Sanctuary Light Motes ── */
+.gys-ambient-emblem {
+  color: var(--blue);
+  filter: none;
+}
+.gys-ambient-emblem svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ambient-dove-wing-left {
+  transform-origin: 106px 112px;
+}
+.ambient-dove-wing-right {
+  transform-origin: 114px 112px;
+}
+.gys-ambient-mote {
+  box-shadow: 0 0 8px currentColor;
+  color: var(--blue);
+}
+.gys-mote-6 {
+  left: 10%;
+  bottom: 34%;
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  color: var(--gold);
+}
+.gys-mote-7 {
+  left: 55%;
+  bottom: 20%;
+  width: 3px;
+  height: 3px;
+}
+.gys-mote-8 {
+  left: 74%;
+  bottom: 38%;
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  color: var(--gold);
+}
+.gys-mote-9 {
+  left: 36%;
+  bottom: 42%;
+  width: 4px;
+  height: 4px;
+}
+.gys-mote-10 {
+  left: 90%;
+  bottom: 14%;
+  width: 4px;
+  height: 4px;
+}
+
+@keyframes ambient-wing-left {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes ambient-wing-right {
+  0%,
+  100% {
+    transform: rotate(4deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+}
+
+/* In-app LoadingProgress flapping dove */
+.loading-dove-stage {
+  display: grid;
+  place-items: center;
+  color: var(--blue);
+}
+.loading-dove-svg {
+  overflow: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ambient-dove-wing-left {
+    animation: ambient-wing-left 9s ease-in-out infinite;
+  }
+  .ambient-dove-wing-right {
+    animation: ambient-wing-right 9s ease-in-out infinite;
+  }
+  .gys-mote-6 {
+    animation: gys-mote-rise 25s ease-in-out 2s infinite;
+  }
+  .gys-mote-7 {
+    animation: gys-mote-rise 19s ease-in-out 6s infinite;
+  }
+  .gys-mote-8 {
+    animation: gys-mote-rise 27s ease-in-out 10s infinite;
+  }
+  .gys-mote-9 {
+    animation: gys-mote-rise 23s ease-in-out 14s infinite;
+  }
+  .gys-mote-10 {
+    animation: gys-mote-rise 21s ease-in-out 18s infinite;
+  }
+  .loading-dove-svg {
+    animation: shell-dove-hover 1.9s ease-in-out infinite;
   }
 }

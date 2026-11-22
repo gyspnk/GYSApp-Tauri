@@ -73,6 +73,8 @@ if (restoredPath) {
   );
 }
 
+/** The shell must never appear mid-swap: keep the boot splash until the two
+ * reading faces are resolved, then reveal the already-painted app. */
 const BOOT_FONT_TIMEOUT_MS = 1200;
 const CRITICAL_FONT_FACES = [
   '400 1em "GYS Reading Sans"',
@@ -86,7 +88,7 @@ function releaseBootSplash() {
   const splash = document.getElementById("boot-splash");
   if (!splash) return;
   splash.setAttribute("aria-hidden", "true");
-  window.setTimeout(() => splash.remove(), 260);
+  window.setTimeout(() => splash.remove(), 500);
 }
 
 async function waitForBootFonts(): Promise<void> {
@@ -103,6 +105,8 @@ async function waitForBootFonts(): Promise<void> {
 }
 
 async function boot(): Promise<void> {
+  // A stored English or Chinese locale loads its table before the shell renders;
+  // the default Indonesian table is already in the initial chunk.
   const storage = getShellSettingsStorage();
   const locale = storage ? readShellSettings(storage).locale : "id";
   await loadLocaleMessages(locale).catch(() => undefined);
@@ -112,6 +116,7 @@ async function boot(): Promise<void> {
     </StrictMode>,
   );
   void waitForBootFonts().then(() => {
+    // One frame resolves the fonts, the second settles layout before revealing.
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         releaseBootSplash();

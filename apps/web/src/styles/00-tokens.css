@@ -46,7 +46,7 @@
   background: var(--canvas);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  /* Sanctuary Editorial palette: crisp white canvas + midnight navy ink + GYS cerulean accent.
+  /* Sanctuary Editorial palette: warm vellum canvas + midnight navy ink + GYS cerulean accent.
      Every theme keeps the accent blue-dominant so the church identity holds across modes. */
   --canvas: #ffffff;
   --surface: #ffffff;
@@ -145,7 +145,7 @@
   --scrollbar-thumb-active: var(--blue);
   --interactive-glow: rgba(0, 102, 143, 0.14);
   --ambient-aura-opacity: 0.055;
-  --ambient-emblem-opacity: 0.036;
+  --ambient-emblem-opacity: 0.085;
   --ambient-emblem-filter: grayscale(100%);
 }
 
@@ -184,7 +184,7 @@
   --scrollbar-thumb-active: var(--blue);
   --interactive-glow: rgba(120, 191, 224, 0.18);
   --ambient-aura-opacity: 0.075;
-  --ambient-emblem-opacity: 0.048;
+  --ambient-emblem-opacity: 0.11;
   --ambient-emblem-filter: grayscale(100%) invert(1);
 }
 
@@ -223,7 +223,7 @@
   --scrollbar-thumb-active: var(--blue);
   --interactive-glow: rgba(124, 194, 227, 0.2);
   --ambient-aura-opacity: 0.065;
-  --ambient-emblem-opacity: 0.045;
+  --ambient-emblem-opacity: 0.1;
   --ambient-emblem-filter: grayscale(100%) invert(1);
 }
 
@@ -263,7 +263,7 @@
   --scrollbar-thumb-active: var(--blue);
   --interactive-glow: rgba(11, 94, 130, 0.16);
   --ambient-aura-opacity: 0.05;
-  --ambient-emblem-opacity: 0.042;
+  --ambient-emblem-opacity: 0.09;
   --ambient-emblem-filter: sepia(80%) grayscale(40%);
 }
 
@@ -304,7 +304,7 @@
     --scrollbar-thumb-active: var(--blue);
     --interactive-glow: rgba(120, 191, 224, 0.18);
     --ambient-aura-opacity: 0.075;
-    --ambient-emblem-opacity: 0.048;
+    --ambient-emblem-opacity: 0.11;
     --ambient-emblem-filter: grayscale(100%) invert(1);
   }
 }
