@@ -1,39 +1,10 @@
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { gunzipSync } from "node:zlib";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 // @ts-expect-error plain ESM helper shared with the unit tests
 import { coreIntegrityFrom, corePathsFromSw } from "./scripts/sw-core.mjs";
-
-const ALLOWED_PROXY_HOSTS = new Set([
-  "tjc.org",
-  "www.tjc.org",
-  "tjcorguploads.s3.amazonaws.com",
-]);
-
-function buildTjcCandidates(targetUrl: string): string[] | null {
-  const parsed = new URL(targetUrl);
-  const hostname = parsed.hostname.toLowerCase();
-  if (!ALLOWED_PROXY_HOSTS.has(hostname)) return null;
-  const candidates = [targetUrl];
-  if (
-    hostname.includes("tjc.org") &&
-    parsed.pathname.includes("wp-content/uploads/")
-  ) {
-    const stripped = parsed.pathname.replace(/^\/id/, "");
-    candidates.push(
-      `https://tjcorguploads.s3.amazonaws.com/tjcorg${stripped}`,
-      `https://tjcorguploads.s3.amazonaws.com${stripped}`,
-    );
-  } else if (hostname === "tjcorguploads.s3.amazonaws.com") {
-    candidates.push(
-      `https://tjc.org/id${parsed.pathname.replace(/^\/tjcorg/, "")}`,
-    );
-  }
-  return candidates;
-}
 
 function offlineBuildAssetsPlugin(): Plugin {
   let buildId = "";
@@ -41,6 +12,8 @@ function offlineBuildAssetsPlugin(): Plugin {
     name: "offline-build-assets",
     apply: "build",
     async generateBundle(_options, bundle) {
+      // Fetch code into CacheStorage without importing or executing lazy views.
+      // Public music binaries remain verified, explicit asset downloads.
       const assets = Object.values(bundle)
         .map((entry) => entry.fileName)
         .filter((file) => /^assets\/.*\.(?:js|mjs|css|wasm|woff2)$/.test(file))
@@ -68,6 +41,8 @@ function offlineBuildAssetsPlugin(): Plugin {
       });
     },
     async writeBundle(options) {
+      // Vite can still rewrite chunks after generateBundle. Hash the exact
+      // emitted bytes consumed by the service worker, not intermediate code.
       const directory = options.dir ?? "dist";
       const manifestPath = resolve(directory, "offline-shell-assets.json");
       const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
@@ -105,6 +80,8 @@ function offlineBuildAssetsPlugin(): Plugin {
         corePaths,
         digestFile: async (path: string) => {
           const bytes = await readFile(resolve(directory, path));
+          // Served with `content-encoding: gzip`, so the browser caches the
+          // decompressed bytes; hash what the worker will actually verify.
           const payload = path.endsWith(".gz") ? gunzipSync(bytes) : bytes;
           return createHash("sha256").update(payload).digest("base64");
         },
@@ -141,50 +118,135 @@ function devImageProxyPlugin(): Plugin {
     name: "dev-image-proxy",
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        const isImage = req.url?.startsWith("/api/v1/content/image");
-        const isPdf = req.url?.startsWith("/api/v1/content/pdf?");
-        if (!isImage && !isPdf) return next();
-
-        const targetUrl = new URL(req.url!, "http://localhost:5173").searchParams.get("url");
-        if (!targetUrl) {
-          res.statusCode = 400;
-          return res.end("Missing url");
-        }
-        try {
-          const candidates = buildTjcCandidates(targetUrl);
-          if (!candidates) {
-            res.statusCode = 403;
-            return res.end("Forbidden");
+        if (req.url && req.url.startsWith("/api/v1/content/image")) {
+          const parsed = new URL(req.url, "http://localhost:5173");
+          const targetUrl = parsed.searchParams.get("url");
+          if (!targetUrl) {
+            res.statusCode = 400;
+            return res.end("Missing url");
           }
-          const signal = isImage ? AbortSignal.timeout(3_000) : undefined;
-          const range = isPdf ? req.headers.range : undefined;
-          for (const candidate of candidates) {
-            try {
-              const upstream = await fetch(candidate, {
-                ...(signal ? { signal } : {}),
-                headers: {
-                  "User-Agent":
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                  Accept: isImage
-                    ? "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
-                    : "application/pdf,*/*",
-                  Referer: "https://tjc.org/",
-                  ...(range ? { Range: range } : {}),
-                },
-              });
-              if (upstream.ok || (isPdf && upstream.status === 206)) {
-                res.statusCode = upstream.status;
-                res.setHeader(
-                  "Content-Type",
-                  upstream.headers.get("content-type") ||
-                    (isImage ? "image/jpeg" : "application/pdf"),
-                );
-                res.setHeader(
-                  "Cache-Control",
-                  isImage ? "public, max-age=604800" : "public, max-age=86400",
-                );
-                res.setHeader("Access-Control-Allow-Origin", "*");
-                if (isPdf) {
+          try {
+            const parsedTarget = new URL(targetUrl);
+            const hostname = parsedTarget.hostname.toLowerCase();
+            if (
+              ![
+                "tjc.org",
+                "www.tjc.org",
+                "tjcorguploads.s3.amazonaws.com",
+              ].includes(hostname)
+            ) {
+              res.statusCode = 403;
+              return res.end("Forbidden");
+            }
+            const candidates = [targetUrl];
+            if (
+              hostname.includes("tjc.org") &&
+              parsedTarget.pathname.includes("wp-content/uploads/")
+            ) {
+              candidates.push(
+                `https://tjcorguploads.s3.amazonaws.com/tjcorg${parsedTarget.pathname.replace(/^\/id/, "")}`,
+              );
+              candidates.push(
+                `https://tjcorguploads.s3.amazonaws.com${parsedTarget.pathname.replace(/^\/id/, "")}`,
+              );
+            } else if (hostname.includes("amazonaws.com")) {
+              candidates.push(
+                `https://tjc.org/id${parsedTarget.pathname.replace(/^\/tjcorg/, "")}`,
+              );
+            }
+
+            // A dead publisher must not occupy the browser's local-origin
+            // connections and delay lazy route modules during development.
+            const imageRequestSignal = AbortSignal.timeout(3_000);
+            for (const cand of candidates) {
+              try {
+                const upstream = await fetch(cand, {
+                  signal: imageRequestSignal,
+                  headers: {
+                    "User-Agent":
+                      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    Accept:
+                      "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                    Referer: "https://tjc.org/",
+                  },
+                });
+                if (upstream.ok) {
+                  res.statusCode = 200;
+                  res.setHeader(
+                    "Content-Type",
+                    upstream.headers.get("content-type") || "image/jpeg",
+                  );
+                  res.setHeader("Cache-Control", "public, max-age=604800");
+                  res.setHeader("Access-Control-Allow-Origin", "*");
+                  const arrayBuffer = await upstream.arrayBuffer();
+                  return res.end(Buffer.from(arrayBuffer));
+                }
+              } catch {
+                // try next
+              }
+            }
+            res.statusCode = 404;
+            return res.end("Not found");
+          } catch {
+            res.statusCode = 500;
+            return res.end("Proxy error");
+          }
+        }
+        if (req.url && req.url.startsWith("/api/v1/content/pdf?")) {
+          const parsed = new URL(req.url, "http://localhost:5173");
+          const targetUrl = parsed.searchParams.get("url");
+          if (!targetUrl) {
+            res.statusCode = 400;
+            return res.end("Missing url");
+          }
+          try {
+            const parsedTarget = new URL(targetUrl);
+            const hostname = parsedTarget.hostname.toLowerCase();
+            if (
+              ![
+                "tjc.org",
+                "www.tjc.org",
+                "tjcorguploads.s3.amazonaws.com",
+              ].includes(hostname)
+            ) {
+              res.statusCode = 403;
+              return res.end("Forbidden");
+            }
+            const candidates = [targetUrl];
+            if (
+              hostname.includes("tjc.org") &&
+              parsedTarget.pathname.includes("wp-content/uploads/")
+            ) {
+              candidates.push(
+                `https://tjcorguploads.s3.amazonaws.com/tjcorg${parsedTarget.pathname.replace(/^\/id/, "")}`,
+                `https://tjcorguploads.s3.amazonaws.com${parsedTarget.pathname.replace(/^\/id/, "")}`,
+              );
+            } else if (hostname === "tjcorguploads.s3.amazonaws.com") {
+              candidates.push(
+                `https://tjc.org/id${parsedTarget.pathname.replace(/^\/tjcorg/, "")}`,
+              );
+            }
+
+            for (const candidate of candidates) {
+              try {
+                const range = req.headers.range;
+                const upstream = await fetch(candidate, {
+                  headers: {
+                    "User-Agent":
+                      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    Accept: "application/pdf,*/*",
+                    Referer: "https://tjc.org/",
+                    ...(range ? { Range: range } : {}),
+                  },
+                });
+                if (upstream.ok || upstream.status === 206) {
+                  res.statusCode = upstream.status;
+                  res.setHeader(
+                    "Content-Type",
+                    upstream.headers.get("content-type") || "application/pdf",
+                  );
+                  res.setHeader("Cache-Control", "public, max-age=86400");
+                  res.setHeader("Access-Control-Allow-Origin", "*");
                   res.setHeader(
                     "Access-Control-Expose-Headers",
                     "Accept-Ranges, Content-Length, Content-Range",
@@ -199,25 +261,30 @@ function devImageProxyPlugin(): Plugin {
                     const value = upstream.headers.get(header);
                     if (value) res.setHeader(header, value);
                   }
+                  const arrayBuffer = await upstream.arrayBuffer();
+                  return res.end(Buffer.from(arrayBuffer));
                 }
-                const arrayBuffer = await upstream.arrayBuffer();
-                return res.end(Buffer.from(arrayBuffer));
+              } catch {
+                // try the publisher's mirrored host
               }
-            } catch {
-              // try next mirror
             }
+            res.statusCode = 404;
+            return res.end("Upstream error");
+          } catch {
+            res.statusCode = 500;
+            return res.end("Proxy error");
           }
-          res.statusCode = 404;
-          return res.end(isImage ? "Not found" : "Upstream error");
-        } catch {
-          res.statusCode = 500;
-          return res.end("Proxy error");
         }
+        next();
       });
     },
   };
 }
 
+// GitHub Pages serves the app below `/GYSApp-Tauri/`, while a Tauri bundle
+// serves the same dist directory from its WebView root. Tauri exposes the
+// target to hook commands through `TAURI_ENV_PLATFORM`; using that signal
+// avoids shipping Pages-prefixed asset URLs inside the native executable.
 const isTauriBuild = Boolean(process.env.TAURI_ENV_PLATFORM);
 
 export default defineConfig({
@@ -231,6 +298,12 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
     watch: {
+      // Vitest bundles this package's config into a short-lived
+      // `.vitest.config.ts.<pid>.<uuid>.tmpdir` beside it. On Windows the dev
+      // watcher picks that directory up and dies with `EBUSY` when the temp
+      // file is locked or removed, tearing down `pnpm dev` whenever a test run
+      // overlaps it. Vite already ignores `test-results`, `node_modules` and
+      // the cache dir; only these transient config bundles need adding.
       ignored: ["**/*.tmpdir/**"],
     },
   },
@@ -239,11 +312,22 @@ export default defineConfig({
     port: 4173,
     strictPort: false,
   },
+  esbuild: {
+    legalComments: "none",
+    drop: ["debugger"],
+  },
   build: {
     target: "es2022",
+    minify: "esbuild",
+    cssMinify: "esbuild",
     manifest: true,
+    // The shell Service Worker owns the same module requests. Vite's
+    // modulepreload links then trigger Chromium cross-world mismatch warnings
+    // without improving the offline cache path.
     modulePreload: false,
+    // Source maps are useful for local diagnostics, but shipping them to
+    // Pages adds several megabytes to the deploy without improving runtime.
     sourcemap: process.env.VITE_SOURCE_MAPS === "true",
-    reportCompressedSize: Boolean(process.env.CI),
+    reportCompressedSize: true,
   },
 });

@@ -47,6 +47,9 @@ export function KidungReaderRail({
   );
 }
 
+// Landscape phones and tablets have no room for a permanent rail, so the index
+// rides in a disclosure above the text: one tap to pick another song, closed by
+// default so the reading surface keeps every row.
 export function KidungReaderPicker({
   locale,
   state,
@@ -127,7 +130,10 @@ function RailBody({
     else if (!book && books.length > 0) setBook(resolveCollection(books, ""));
   }, [active?.book, book, books]);
 
-  const activeBook = book && books.includes(book) ? book : resolveCollection(books, active?.book ?? "");
+  const activeBook =
+    book && books.some((entry) => entry === book)
+      ? book
+      : resolveCollection(books, active?.book ?? "");
 
   // Load every song in the active collection at once, ordered by hymn number,
   // so opening KR lyrics mode immediately exposes the full song list.

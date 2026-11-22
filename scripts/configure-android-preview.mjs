@@ -28,8 +28,10 @@ export async function configureAndroid(
   const compressionMarker = "// GYSApp compact JNI packaging";
   if (!source.includes(compressionMarker)) {
     // Extracted once by Android at installation; runtime library bytes stay intact.
+    // Also strip unused AndroidX locale tables and redundant JVM/Kotlin metadata.
     additions.push(
-      `${compressionMarker}\nandroid {\n    packaging {\n        jniLibs.useLegacyPackaging = true\n    }\n}\n`,
+      `${compressionMarker}\nandroid {\n    androidResources {\n        localeFilters += listOf("en", "in", "id", "zh")\n    }\n    packaging {\n        jniLibs.useLegacyPackaging = true\n        resources {\n            excludes += listOf(\n                "META-INF/DEPENDENCIES",\n                "META-INF/LICENSE*",\n                "META-INF/NOTICE*",\n                "META-INF/*.kotlin_module",\n                "META-INF/AL2.0",\n                "META-INF/LGPL2.1",\n                "DebugProbesKt.bin",\n                "kotlin/**",
+            )\n        }\n    }\n}\n`,
     );
   }
   if (additions.length) {

@@ -35,11 +35,12 @@ ndk-context = "0.1.1"
 [features]
 custom-protocol = ["tauri/custom-protocol"]
 
-# Keep unwinding and all runtime features; remove build-only metadata instead.
+# Maximum safe size optimization for compact native binaries without dropping capabilities.
 [profile.release]
 opt-level = "z"
 lto = true
 codegen-units = 1
-strip = "symbols"
+panic = "abort"
+strip = true
 debug = 0
 incremental = false
