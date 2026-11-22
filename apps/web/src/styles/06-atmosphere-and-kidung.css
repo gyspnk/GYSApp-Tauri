@@ -1271,3 +1271,292 @@
   opacity: 0.65;
   cursor: default;
 }
+
+/* ── Flagship Sanctuary Sidebar Samping & Persistent MIDI Player Polish ── */
+@media (min-width: 600px) {
+  .navigation-shell {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-glass) 92%, var(--canvas)) 0%,
+      color-mix(in srgb, var(--surface-soft) 56%, var(--canvas)) 100%
+    );
+    -webkit-backdrop-filter: blur(22px) saturate(1.45);
+    backdrop-filter: blur(22px) saturate(1.45);
+    border-right: 1px solid color-mix(in srgb, var(--blue) 12%, var(--line));
+    box-shadow:
+      inset -1px 0 0 color-mix(in srgb, var(--surface) 64%, transparent),
+      4px 0 24px -12px color-mix(in srgb, var(--navy) 10%, transparent);
+  }
+
+  .sidebar-collapse-toggle {
+    border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+    border-radius: var(--radius-control);
+    background: color-mix(in srgb, var(--surface) 76%, transparent);
+    box-shadow: var(--shadow-xs);
+    color: var(--ink-soft);
+    transition:
+      border-color 180ms var(--ease-out),
+      background-color 180ms var(--ease-out),
+      color 180ms var(--ease-out),
+      box-shadow 180ms var(--ease-out);
+  }
+
+  .sidebar-collapse-toggle:hover {
+    border-color: color-mix(in srgb, var(--blue) 42%, var(--line));
+    background: color-mix(in srgb, var(--blue-soft) 72%, var(--surface));
+    color: var(--blue);
+    box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--blue) 28%, transparent);
+  }
+
+  .sidebar-toggle-glyph {
+    transition: transform 260ms var(--ease-spring);
+  }
+
+  .navigation-shell .nav-active-indicator {
+    background: linear-gradient(
+      135deg,
+      var(--blue) 0%,
+      color-mix(in srgb, var(--blue) 82%, var(--navy)) 100%
+    );
+    box-shadow:
+      0 8px 20px -6px color-mix(in srgb, var(--blue) 44%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+
+  .navigation-shell .nav-item {
+    border-radius: var(--radius-control);
+    font-weight: 500;
+  }
+
+  .navigation-shell .nav-item.is-active {
+    font-weight: 700;
+  }
+
+  .navigation-shell .nav-item.is-active svg {
+    color: var(--on-accent);
+  }
+
+  .navigation-shell .nav-item:not(.is-active):hover {
+    background: color-mix(in srgb, var(--blue-soft) 64%, transparent);
+    color: var(--blue);
+  }
+
+  .navigation-shell .nav-item:not(.is-active):hover svg {
+    color: var(--blue);
+  }
+
+  .sidebar-media-anchor {
+    position: relative;
+  }
+
+  .sidebar-media-anchor::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--line) 85%, transparent) 24%,
+      color-mix(in srgb, var(--line) 85%, transparent) 76%,
+      transparent 100%
+    );
+  }
+}
+
+/* Flagship Frosted-Glass Persistent MIDI Player (Expanded, Minimized & Rail) */
+.media-surface.persistent-media:not(.is-minimized) {
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface-glass) 94%, var(--surface)) 0%,
+    color-mix(in srgb, var(--surface) 92%, var(--surface-soft)) 100%
+  );
+  -webkit-backdrop-filter: blur(24px) saturate(1.55);
+  backdrop-filter: blur(24px) saturate(1.55);
+  box-shadow:
+    var(--shadow-float),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 36%, transparent);
+  transition:
+    border-color 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    background-color 220ms var(--ease-out);
+}
+
+.media-surface.persistent-media[data-playing="true"]:not(.is-minimized) {
+  border-color: color-mix(in srgb, var(--blue) 48%, var(--line));
+  box-shadow:
+    var(--shadow-float),
+    0 0 0 2px color-mix(in srgb, var(--blue) 14%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 42%, transparent);
+}
+
+.media-surface.persistent-media .media-art {
+  border: 1px solid color-mix(in srgb, var(--blue) 18%, transparent);
+  background: linear-gradient(
+    135deg,
+    var(--blue-soft) 0%,
+    color-mix(in srgb, var(--blue) 16%, var(--surface)) 100%
+  );
+  color: var(--blue);
+  transition:
+    background 220ms var(--ease-out),
+    color 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out);
+}
+
+.media-surface.persistent-media[data-playing="true"] .media-art {
+  border-color: transparent;
+  background: linear-gradient(
+    135deg,
+    var(--blue) 0%,
+    color-mix(in srgb, var(--blue) 78%, var(--navy)) 100%
+  );
+  color: var(--on-accent);
+  box-shadow: 0 6px 14px -4px color-mix(in srgb, var(--blue) 45%, transparent);
+}
+
+.media-surface.is-kidung-media .media-meta-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.media-surface.is-kidung-media .media-meta-top small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: var(--type-caption);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.media-surface.is-kidung-media[data-playing="true"]
+  .media-meta-top
+  small::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--blue);
+  animation: loading-dot-pulse 1.4s ease-in-out infinite;
+}
+
+.media-surface.persistent-media .media-primary-control,
+.media-surface.is-kidung-media:not(.is-minimized) .media-primary-control {
+  border: 0;
+  background: linear-gradient(
+    135deg,
+    var(--blue) 0%,
+    color-mix(in srgb, var(--blue) 80%, var(--navy)) 100%
+  );
+  color: var(--on-accent);
+  box-shadow:
+    0 6px 16px -4px color-mix(in srgb, var(--blue) 48%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  transition:
+    transform 180ms var(--ease-spring),
+    box-shadow 200ms var(--ease-out),
+    filter 180ms var(--ease-out);
+}
+
+.media-surface.persistent-media .media-primary-control:hover:not(:disabled) {
+  transform: scale(1.06);
+  filter: brightness(1.05);
+  box-shadow:
+    0 10px 22px -4px color-mix(in srgb, var(--blue) 54%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.media-surface.persistent-media .media-primary-control:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.media-surface.persistent-media .media-tempo-toggle,
+.media-surface.persistent-media .media-advanced-summary {
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-soft) 76%, transparent);
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  transition:
+    border-color 180ms var(--ease-out),
+    background-color 180ms var(--ease-out),
+    color 180ms var(--ease-out);
+}
+
+.media-surface.persistent-media .media-tempo-toggle:hover:not(:disabled),
+.media-surface.persistent-media .media-advanced-summary:hover,
+.media-surface.persistent-media
+  .media-advanced-controls[open]
+  > .media-advanced-summary {
+  border-color: color-mix(in srgb, var(--blue) 38%, var(--line));
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.media-surface.persistent-media .media-tempo-popover,
+.media-surface.persistent-media .media-advanced-panel {
+  border: 1px solid color-mix(in srgb, var(--blue) 20%, var(--line));
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface-glass) 94%, var(--surface));
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+  backdrop-filter: blur(22px) saturate(1.45);
+  box-shadow: var(--shadow-float);
+}
+
+/* Polished Frosted-Glass Minimized Mini-Player Capsule (Sidebar & Rail) */
+.media-surface.persistent-media.is-minimized {
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  -webkit-backdrop-filter: blur(20px) saturate(1.45);
+  backdrop-filter: blur(20px) saturate(1.45);
+  box-shadow:
+    var(--shadow-sm),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 34%, transparent);
+  transition:
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    transform 200ms var(--ease-spring);
+}
+
+.media-surface.persistent-media.is-minimized[data-playing="true"] {
+  border-color: color-mix(in srgb, var(--blue) 46%, var(--line));
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 2px color-mix(in srgb, var(--blue) 14%, transparent);
+}
+
+.media-surface.persistent-media.is-minimized .media-mini-context {
+  border-radius: var(--radius-control);
+  transition: background-color 160ms var(--ease-out);
+}
+
+.media-surface.persistent-media.is-minimized .media-mini-context:hover {
+  background: color-mix(in srgb, var(--blue-soft) 52%, transparent);
+}
+
+.media-surface.persistent-media.is-minimized .media-minimize {
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  color: var(--ink-soft);
+}
+
+.media-surface.persistent-media.is-minimized .media-minimize:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.media-surface.persistent-media.is-rail-player.is-minimized {
+  border-radius: 999px;
+}
