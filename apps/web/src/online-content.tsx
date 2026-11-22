@@ -1,7 +1,14 @@
 import type { CSSProperties } from "react";
 import { LoadingProgress } from "./loading-progress.js";
 import { Icon } from "./icons.js";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link, useParams } from "react-router-dom";
 import type { SauhPost, SuaraSejatiPost } from "@gys/contracts";
 import { prefersSmallImages } from "./network-hints.js";
@@ -311,17 +318,32 @@ export function SuaraPage({ locale }: { locale: Locale }) {
       }),
     [],
   );
-  const normalizedQuery = query.trim().toLocaleLowerCase(locale);
-  const filteredPosts =
-    state.status === "ready"
+  const deferredQuery = useDeferredValue(query);
+  const normalizedQuery = deferredQuery.trim().toLocaleLowerCase(locale);
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale === "id" ? "id-ID" : locale, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+    [locale],
+  );
+  const visiblePosts = useMemo(() => {
+    if (state.status !== "ready") return [];
+    const filtered = normalizedQuery
       ? state.posts.filter((post) =>
           `${post.title} ${post.excerpt}`
             .toLocaleLowerCase(locale)
             .includes(normalizedQuery),
         )
-      : [];
-  const visiblePosts = sortSuaraPosts(filteredPosts, sort);
-  const pagedPosts = visiblePosts.slice(0, visibleCount);
+      : state.posts;
+    return sortSuaraPosts(filtered, sort);
+  }, [locale, normalizedQuery, sort, state]);
+  const pagedPosts = useMemo(
+    () => visiblePosts.slice(0, visibleCount),
+    [visibleCount, visiblePosts],
+  );
   useEffect(() => {
     setVisibleCount(18);
   }, [normalizedQuery, sort]);
@@ -465,11 +487,7 @@ export function SuaraPage({ locale }: { locale: Locale }) {
                 </div>
                 <div className="suara-card-content">
                   <span className="suara-date">
-                    {new Date(post.publishedAt).toLocaleDateString(locale, {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {dateFormatter.format(new Date(post.publishedAt))}
                   </span>
                   <strong>{post.title}</strong>
                   <small>{post.excerpt}</small>
