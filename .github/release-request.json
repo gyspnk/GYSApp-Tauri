@@ -1,5 +1,5 @@
 {
-  "tag": "v0.1.0-preview.20261123.1",
-  "title": "GYSApp 0.1.0 Preview (Ultra-Lean ~14-15 MB APK & GYS Dove Icon)",
-  "notes": "Pengurangan ukuran APK Android drastis (~20 MB lebih ringan, dari ~34.45 MB ke ~14-15 MB) dengan memuat 10 PDF Dasar Kepercayaan on-demand + cache offline dan memangkas duplikat tb-reader.json.gz di build native, tetap mempertahankan 100% kapabilitas Alkitab 66 kitab offline, Kidung + MIDI offline, ikon resmi burung merpati GYS otomatis di CI, serta perbaikan kontrak E2E dan formatting CI."
+  "tag": "v0.1.0-preview.20261123.2",
+  "title": "GYSApp 0.1.0 Preview (15 MB Ultra-Lean APK, GYS Dove Icon & All-Green CI)",
+  "notes": "APK Android ultra-ringan (~15 MB, turun >55% dari 34,45 MB) dengan 10 PDF Dasar Kepercayaan on-demand + cache offline, minifikasi JSON offline native, R8 DEX optimization + NDK debug symbol strip, ikon resmi burung merpati GYS otomatis di CI, perbaikan bug timer/persistensi font viewer Suara Sejati & Sauh Bagi Jiwa, serta 100% CI hijau."
 }

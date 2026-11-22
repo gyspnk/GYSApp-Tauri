@@ -503,7 +503,8 @@
       transform 110ms var(--ease-out);
   }
   /* Fallback press scale when JS control-motion is inactive (prevents double-scaling). */
-  :root:not(.has-control-motion) :is(
+  :root:not(.has-control-motion)
+    :is(
       .primary-button,
       .secondary-button,
       .quiet-button,
@@ -1166,7 +1167,9 @@
   color: var(--ink-soft);
 }
 .persistent-media:not(.is-minimized)
-  :is(.media-secondary-control, .media-minimize, .media-close-button):hover:not(:disabled) {
+  :is(.media-secondary-control, .media-minimize, .media-close-button):hover:not(
+    :disabled
+  ) {
   background: var(--blue-soft);
   color: var(--blue);
 }
@@ -1346,7 +1349,8 @@ html.is-tab-hidden .gys-ambient-backdrop * {
 
 /* All-ages reverent clarity: crisp card separation on pure white, warm devotional accent,
    clear active indicators, and unmistakable accessible focus rings. */
-:root[data-theme="light"] :is(
+:root[data-theme="light"]
+  :is(
     .home-portal,
     .verse-panel,
     .continue-panel,
@@ -1354,7 +1358,8 @@ html.is-tab-hidden .gys-ambient-backdrop * {
     .more-setting-row,
     .hymn-catalog-shell
   ),
-:root[data-theme="system"] :is(
+:root[data-theme="system"]
+  :is(
     .home-portal,
     .verse-panel,
     .continue-panel,
@@ -1403,14 +1408,14 @@ html.is-tab-hidden .gys-ambient-backdrop * {
 }
 
 :is(
-    button,
-    a[href],
-    summary,
-    input,
-    select,
-    textarea,
-    [tabindex]:not([tabindex="-1"])
-  ):focus-visible {
+  button,
+  a[href],
+  summary,
+  input,
+  select,
+  textarea,
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px var(--interactive-glow);
@@ -2162,19 +2167,23 @@ body,
   box-shadow: none;
 }
 .accent-palette-item:is(
-    .is-active,
-    [aria-checked="true"],
-    [aria-pressed="true"]
-  ) {
+  .is-active,
+  [aria-checked="true"],
+  [aria-pressed="true"]
+) {
   border-color: var(--blue);
   box-shadow: 0 0 0 2px var(--interactive-glow);
 }
 
 /* Airy single-column Manajemen Aset grouped cleanly with inline horizontal actions */
-.more-page .more-setting-section[data-setting="offline"] .distributed-assets-list {
+.more-page
+  .more-setting-section[data-setting="offline"]
+  .distributed-assets-list {
   gap: 18px;
 }
-.more-page .more-setting-section[data-setting="offline"] .distributed-asset-group {
+.more-page
+  .more-setting-section[data-setting="offline"]
+  .distributed-asset-group {
   grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   padding: 14px 16px;
@@ -2333,21 +2342,25 @@ body,
   .more-setting-icon svg {
     transition: transform 240ms var(--ease-spring);
   }
-  :is(.primary-button, .secondary-button, .quiet-button, .icon-button):hover:not(
-      :disabled
-    )
+  :is(
+      .primary-button,
+      .secondary-button,
+      .quiet-button,
+      .icon-button
+    ):hover:not(:disabled)
     svg {
     transform: translateY(-1px) scale(1.12);
   }
-  :is(.primary-button, .secondary-button, .quiet-button, .icon-button):active:not(
-      :disabled
-    )
+  :is(
+      .primary-button,
+      .secondary-button,
+      .quiet-button,
+      .icon-button
+    ):active:not(:disabled)
     svg {
     transform: scale(0.92);
   }
-  body:has(.media-surface[data-playing="true"])
-    .nav-item[href*="kidung"]
-    svg {
+  body:has(.media-surface[data-playing="true"]) .nav-item[href*="kidung"] svg {
     animation: gys-icon-note-sway 1.6s ease-in-out infinite;
   }
 }
