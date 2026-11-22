@@ -1,12 +1,13 @@
 import { LoadingProgress } from "./loading-progress.js";
 import { useReadinessMarker } from "./readiness.js";
-import { useCallback, useSyncExternalStore } from "react";
 import {
+  useCallback,
   useEffect,
   useDeferredValue,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
 } from "react";
@@ -14,7 +15,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { type HymnMetadata, type UpstreamMusicLock } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
 import { recordDiagnostic } from "./diagnostics.js";
-import { findMusicAsset } from "./music-assets.js";
 import { Icon } from "./icons.js";
 import { triggerRipple } from "./ripple.js";
 import { buildHymnSearchIndex, searchHymns } from "./hymn-search.js";
@@ -31,7 +31,6 @@ import {
 } from "./kidung-shared.js";
 import {
   readStoredCollection,
-  resolveCollection,
   writeStoredCollection,
 } from "./kidung-collection-store.js";
 import { Select } from "./select.js";
@@ -40,18 +39,9 @@ import { KidungLocalNav } from "./kidung-local-nav.js";
 import { readHymnViewerMode, writeHymnViewerMode } from "./hymn-view-mode.js";
 import { navigateSmooth } from "./route-transitions.js";
 
-// First paint commits only half a phone screen; the rest arrives in batches
-// while the browser is idle. Committing all 533 at once measured 1 314 ms to
-// first row on the hosted runner.
-// One commit must fill the screen it lands on: a two-column desktop shows
-// twenty-six rows, so a fourteen-row first batch left the card half height and
-// grew in visible steps while the entrance ran — "the animation only covers
-// half the page". The rest still arrives in idle batches.
-
 export function HymnCatalog({
   locale,
   state,
-  musicLock,
   onRetry,
 }: {
   locale: Locale;
@@ -70,13 +60,7 @@ export function HymnCatalog({
     );
   });
   const [query, setQuery] = useState("");
-  // Landscape phones have one short row for the whole toolbar; the collection
-  // and section switches can fold away so the list starts higher.
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
-  // Rows arrive once, with a short stagger; afterwards the list keeps still.
-  // The clock starts when the first row exists, not when the page mounts: a
-  // slow load would otherwise spend the whole wave on an empty list and paint
-  // every row at once.
   const [staggering, setStaggering] = useState(false);
   const hasRows = state.status === "ready" && state.items.length > 0;
   useEffect(() => {
@@ -88,8 +72,6 @@ export function HymnCatalog({
       setStaggering(false);
     };
   }, [hasRows]);
-  // The reader picks a collection once; reopening the catalogue should land on
-  // the same book instead of jumping back to the first one.
   const [book, setBookState] = useState(readStoredCollection);
   const setBook = useCallback((next: string) => {
     setBookState(next);
@@ -132,11 +114,10 @@ export function HymnCatalog({
     };
   }, [needsCorpus, allItems, corpusAttempt, locale]);
   const searchableItems = useMemo(() => {
-    const byId = new Map(corpus?.map((item) => [item.id, item]));
+    if (!corpus) return allItems;
+    const byId = new Map(corpus.map((item) => [item.id, item]));
     return allItems.map((item) => byId.get(item.id) ?? item);
   }, [allItems, corpus]);
-  // Building the search index touches every entry, and the catalogue is useful
-  // before anyone types: keep it lazy so opening Kidung only pays for the rows.
   const searchIndex = useMemo(
     () => (deferredQuery.trim() ? buildHymnSearchIndex(searchableItems) : null),
     [deferredQuery, searchableItems],
@@ -145,8 +126,6 @@ export function HymnCatalog({
     () => [...new Set(allItems.map((item) => item.book))].sort(),
     [allItems],
   );
-  // One collection is always active: KR (Kidung Rohani) unless the reader
-  // chose another one, and "all" is not offered, so rows and count never mix.
   const activeBook = useMemo(() => {
     if (book && books.some((entry) => entry === book)) return book;
     return (
@@ -157,19 +136,10 @@ export function HymnCatalog({
   }, [book, books]);
   const filtered = useMemo(() => {
     if (searchIndex) return searchHymns(searchIndex, deferredQuery, activeBook);
-    // Every song in the active collection: an installed hymnal pack carries an
-    // asset code, and hiding those made its songs vanish from the catalogue.
     return allItems
       .filter((item) => item.book === activeBook)
       .sort((a, b) => a.number - b.number);
   }, [activeBook, allItems, deferredQuery, searchIndex]);
-  // One commit renders the list. The progressive batches that used to guard
-  // this were measured on 13 Nov: a run row arrives at 640–720 ms either way,
-  // and the whole 533-row list lands at ~700 ms in one commit against 900–940
-  // ms through idle batches — the screenful-first version only added timing
-  // state and two broken contracts.
-  // Marks let the hosted navigation baseline say whether a slow step was
-  // mount work or data; they are two entries and cost nothing at runtime.
   useEffect(() => {
     performance.mark("gys-kidung-catalog-mounted");
     const frame = window.requestAnimationFrame(() => {
@@ -187,14 +157,11 @@ export function HymnCatalog({
     () => new Set(queue.items.map((entry) => entry.songId)),
     [queue],
   );
-  // Warming the reader on hover costs nothing until a pointer/focus actually
-  // arrives, and it turns the first row click into a paint instead of a chunk
-  // cascade (measured 1 591 ms cold on the hosted runner).
-  const warmRow = (songId: string) => {
+  const warmRow = useCallback((songId: string) => {
     void import("./route-preload.js")
       .then((module) => module.preloadRoute(`/kidung/${songId}`))
       .catch(() => undefined);
-  };
+  }, []);
   const onRowClick = (
     event: ReactMouseEvent<HTMLButtonElement>,
     songId: string,
@@ -212,7 +179,6 @@ export function HymnCatalog({
     item: HymnMetadata,
   ) => {
     event.stopPropagation();
-    triggerRipple(event.currentTarget, event.clientX, event.clientY);
     addMidiPlaylistItem({
       songId: item.id,
       title: item.title,
@@ -220,9 +186,6 @@ export function HymnCatalog({
   };
   return (
     <div className="page hymn-page">
-      {/* The owner asked for no hero header here: the destination is already
-          named by the sidebar and the tab row, so the title stays for screen
-          readers only and the toolbar opens the page. */}
       <h1 className="sr-only">{translate(locale, "page.kidungTitle")}</h1>
       <div
         className={`kidung-index-toolbar${filtersCollapsed ? " is-collapsed" : ""}`}
@@ -267,9 +230,6 @@ export function HymnCatalog({
             <button
               type="button"
               className="kidung-mode-cycle"
-              // The name states what the press will do. Naming the current
-              // mode made a screen reader announce "Teks, not pressed" on a
-              // button that actually opens the score.
               aria-label={translate(
                 locale,
                 pdfMode ? "kidung.showText" : "kidung.showScore",
@@ -373,21 +333,16 @@ export function HymnCatalog({
               </button>
             </div>
           )}
-          {/* While the deferred corpus is still loading the "no results" panel
-           * would be a lie and would double the single status landmark. */}
           {filtered.length === 0 &&
             (!needsCorpus || Boolean(corpus) || Boolean(corpusError)) && (
               <div className="empty-state kidung-search-empty" role="status">
                 <strong>{translate(locale, "kidung.searchEmptyTitle")}</strong>
                 <span>{translate(locale, "kidung.searchEmptyBody")}</span>
-                {(query.trim().length > 0 || book !== "all") && (
+                {query.trim().length > 0 && (
                   <button
                     type="button"
                     className="text-button"
-                    onClick={() => {
-                      setQuery("");
-                      setBook(activeBook);
-                    }}
+                    onClick={() => setQuery("")}
                   >
                     {translate(locale, "catalog.reset")}
                   </button>

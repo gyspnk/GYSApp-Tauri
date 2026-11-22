@@ -505,44 +505,131 @@
       box-shadow 260ms var(--ease-bubble),
       transform 110ms var(--ease-out);
   }
-  .primary-button:active:not(:disabled),
-  .secondary-button:active:not(:disabled),
-  .quiet-button:active:not(:disabled),
-  .danger-button:active:not(:disabled),
-  .icon-button:active:not(:disabled),
-  .text-button:active:not(:disabled),
-  .control-select-trigger:active:not(:disabled),
-  .control-select-option:active:not(:disabled),
-  .bible-parallel-pill:active:not(:disabled),
-  .reader-context-book-picker:active:not(:disabled),
-  .reader-context-button:active:not(:disabled),
-  .reader-speech-btn:active:not(:disabled),
-  .speech-settings-toggle:active:not(:disabled),
-  .reader-mode-button:active:not(:disabled),
-  .reader-hamburger-btn:active:not(:disabled),
-  .selected-verse-close:active:not(:disabled),
-  .account-button:active:not(:disabled),
-  .topbar-appearance-button:active:not(:disabled),
-  .search-trigger:active:not(:disabled),
-  .home-portal:active:not(:disabled),
-  .more-library-link:active:not(:disabled),
-  .more-setting-row:active:not(:disabled),
-  .continue-item:active:not(:disabled),
-  .accent-palette-item:active:not(:disabled),
-  .audio-setting-preview:active:not(:disabled),
-  .kidung-rail-toggle:active:not(:disabled),
-  .kidung-rail-expand-btn:active:not(:disabled),
-  .kidung-rail-row:active:not(:disabled),
-  .viewer-chrome-button:active:not(:disabled),
-  .hymn-action:active:not(:disabled),
-  .hymn-partitur-toggle:active:not(:disabled),
-  .hymn-more-actions-summary:active:not(:disabled),
-  .pdf-music-summary:active:not(:disabled),
-  .kidung-mode-cycle:active:not(:disabled),
-  .add-to-playlist-btn:active:not(:disabled),
-  .egys-provider:active:not(:disabled) {
+
+  /* Fallback press scale when JS control-motion is inactive (prevents double-scaling). */
+  :root:not(.has-control-motion) :is(
+      .primary-button,
+      .secondary-button,
+      .quiet-button,
+      .danger-button,
+      .icon-button,
+      .text-button,
+      .control-select-trigger,
+      .control-select-option,
+      .bible-parallel-pill,
+      .reader-context-book-picker,
+      .reader-context-button,
+      .reader-speech-btn,
+      .speech-settings-toggle,
+      .reader-mode-button,
+      .reader-hamburger-btn,
+      .selected-verse-close,
+      .account-button,
+      .topbar-appearance-button,
+      .search-trigger,
+      .home-portal,
+      .more-library-link,
+      .more-setting-row,
+      .continue-item,
+      .accent-palette-item,
+      .audio-setting-preview,
+      .kidung-rail-toggle,
+      .kidung-rail-expand-btn,
+      .kidung-rail-row,
+      .viewer-chrome-button,
+      .hymn-action,
+      .hymn-partitur-toggle,
+      .hymn-more-actions-summary,
+      .pdf-music-summary,
+      .kidung-mode-cycle,
+      .add-to-playlist-btn,
+      .egys-provider
+    ):active:not(:disabled) {
     transform: scale(var(--motion-press));
     transition-duration: 110ms;
+  }
+
+  /* Tactile hover depth, subtle accent glow & fine-pointer specular spotlight */
+  @media (hover: hover) and (pointer: fine) {
+    .home-portal,
+    .more-library-link,
+    .continue-item,
+    .primary-button {
+      position: relative;
+      overflow: hidden;
+    }
+    .home-portal::after,
+    .more-library-link::after,
+    .continue-item::after,
+    .primary-button::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(
+        180px circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+        var(--interactive-glow),
+        transparent 70%
+      );
+      transition: opacity 220ms var(--ease-out);
+    }
+    .home-portal:hover::after,
+    .more-library-link:hover::after,
+    .continue-item:hover::after,
+    .primary-button:hover:not(:disabled)::after {
+      opacity: 1;
+    }
+    .home-portal:hover,
+    .more-library-link:hover,
+    .continue-item:hover {
+      transform: translate3d(0, var(--motion-lift), 0);
+      box-shadow: var(--shadow-sm);
+    }
+    .primary-button:hover:not(:disabled) {
+      transform: translate3d(0, -1px, 0);
+      box-shadow: var(--shadow-sm);
+    }
+    .secondary-button:hover:not(:disabled),
+    .quiet-button:hover:not(:disabled),
+    .egys-provider:hover:not(:disabled) {
+      transform: translate3d(0, -1px, 0);
+    }
+    .kidung-rail-row:hover {
+      transform: translate3d(2px, 0, 0);
+    }
+    .pujian-item:hover .pujian-title-label {
+      color: var(--blue);
+    }
+  }
+
+  /* Liquid spring glide for primary navigation active pill */
+  .nav-active-indicator {
+    transition:
+      transform 320ms var(--ease-spring),
+      width 280ms var(--ease-out),
+      height 280ms var(--ease-out),
+      opacity 180ms var(--ease-out);
+  }
+
+  /* Smooth disclosure chevron rotation */
+  .kidung-reader-picker > summary svg:last-child {
+    transition: transform 220ms var(--ease-spring);
+  }
+  .kidung-reader-picker[open] > summary svg:last-child {
+    transform: rotate(180deg);
+  }
+
+  /* Refined soft radial press ripple */
+  .gys-ripple {
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, currentColor 22%, transparent) 0%,
+      color-mix(in srgb, currentColor 8%, transparent) 55%,
+      transparent 75%
+    );
+    animation: gys-ripple-grow 520ms var(--ease-out) forwards;
   }
 
   @starting-style {
@@ -950,5 +1037,322 @@
     padding: 0 !important;
     background: #ffffff !important;
     color: #000000 !important;
+  }
+}
+
+@keyframes gys-aura-drift-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-28px, 22px, 0) scale(1.06);
+  }
+}
+
+@keyframes gys-aura-drift-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(26px, -20px, 0) scale(1.05);
+  }
+}
+
+@keyframes gys-emblem-breathe {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) scale(1.03);
+  }
+}
+
+@keyframes media-playing-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--interactive-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--interactive-glow);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gys-ambient-aura-primary {
+    animation: gys-aura-drift-a 28s ease-in-out infinite;
+  }
+  .gys-ambient-aura-secondary {
+    animation: gys-aura-drift-b 34s ease-in-out infinite;
+  }
+  .gys-ambient-emblem {
+    animation: gys-emblem-breathe 26s ease-in-out infinite;
+  }
+
+  /* Settings page micro-interactions & pure-white card definition */
+  .more-setting-section > .more-setting-row > svg:last-child {
+    transition: transform 240ms var(--ease-spring);
+  }
+  .more-setting-section[open] > .more-setting-row > svg:last-child {
+    transform: rotate(180deg);
+  }
+  .more-setting-section[open] > .more-card {
+    animation: surface-rise-in 220ms var(--motion-ease-entrance) backwards;
+  }
+  .accent-palette-item .accent-swatch-circle {
+    transition:
+      transform 220ms var(--ease-spring),
+      box-shadow 200ms var(--ease-out);
+  }
+  .accent-palette-item:hover .accent-swatch-circle {
+    transform: scale(1.1);
+  }
+  .accent-palette-item.is-active .accent-swatch-circle {
+    transform: scale(1.14);
+    box-shadow: 0 0 0 3px var(--interactive-glow);
+  }
+  .kidung-settings-switch input[type="checkbox"] {
+    transition:
+      background-color 180ms var(--ease-out),
+      border-color 180ms var(--ease-out),
+      transform 140ms var(--ease-spring);
+  }
+  .kidung-settings-switch input[type="checkbox"]:active {
+    transform: scale(0.92);
+  }
+
+  /* MIDI player tactile polish & live progress visual */
+  .media-play-glyph {
+    display: inline-flex;
+    animation: kidung-glyph-pop 200ms var(--ease-spring) backwards;
+  }
+  .media-surface[data-playing="true"] .media-primary-control {
+    animation: media-playing-pulse 2.4s ease-in-out infinite;
+  }
+  .media-control {
+    transition:
+      background-color 180ms var(--ease-out),
+      color 180ms var(--ease-out),
+      box-shadow 220ms var(--ease-out),
+      transform 160ms var(--ease-spring);
+  }
+  .media-control:hover:not(:disabled) {
+    transform: scale(1.06);
+  }
+}
+
+/* Crisp separation on pure-white light mode & filled MIDI seek progress */
+:root[data-theme="light"] .more-card,
+:root[data-theme="system"] .more-card {
+  border: 1px solid var(--line);
+}
+.media-progress input[type="range"],
+.media-seek-time input[type="range"] {
+  background: linear-gradient(
+    90deg,
+    var(--blue) 0%,
+    var(--blue) var(--seek-pct, 0%),
+    color-mix(in srgb, var(--line) 72%, var(--surface-soft)) var(--seek-pct, 0%),
+    color-mix(in srgb, var(--line) 72%, var(--surface-soft)) 100%
+  );
+  border-radius: 999px;
+}
+
+/* All-ages reverent clarity: crisp card separation on pure white, warm devotional accent,
+   clear active indicators, and unmistakable accessible focus rings. */
+:root[data-theme="light"] :is(
+    .home-portal,
+    .verse-panel,
+    .continue-panel,
+    .more-library-link,
+    .more-setting-row,
+    .hymn-catalog-shell
+  ),
+:root[data-theme="system"] :is(
+    .home-portal,
+    .verse-panel,
+    .continue-panel,
+    .more-library-link,
+    .more-setting-row,
+    .hymn-catalog-shell
+  ) {
+  border: 1px solid var(--line);
+}
+
+.verse-panel {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--blue-soft) 28%, var(--surface)) 0%,
+    var(--surface) 58%
+  );
+}
+.verse-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--blue) 0%, var(--gold) 100%);
+  border-radius: 999px;
+}
+
+.kidung-rail-row[aria-current="page"] {
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
+.bible-reader .verse-row {
+  transition:
+    background-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
+}
+
+.pujian-item {
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out);
+}
+.pujian-item:hover {
+  background: color-mix(in srgb, var(--blue-soft) 36%, var(--surface));
+}
+
+:is(
+    button,
+    a[href],
+    summary,
+    input,
+    select,
+    textarea,
+    [tabindex]:not([tabindex="-1"])
+  ):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--interactive-glow);
+}
+
+/* Hide native OS scrollbars when custom JS overlay scrollbar is active */
+html.has-custom-scrollbar,
+html.has-custom-scrollbar * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html.has-custom-scrollbar::-webkit-scrollbar,
+html.has-custom-scrollbar *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.gys-scrollbar-track {
+  position: fixed;
+  top: 0;
+  right: 2px;
+  width: 12px;
+  padding: 0 2px;
+  z-index: calc(var(--z-modal) + 10);
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  touch-action: none;
+  transition: opacity 220ms var(--ease-out);
+}
+.gys-scrollbar-track.is-visible,
+.gys-scrollbar-track.is-hovered,
+.gys-scrollbar-track.is-dragging {
+  opacity: 1;
+  pointer-events: auto;
+}
+.gys-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  width: 5px;
+  min-height: 36px;
+  border-radius: 999px;
+  background: var(--scrollbar-thumb);
+  will-change: transform, width, background-color;
+  transition:
+    width 160ms var(--ease-spring),
+    background-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
+  cursor: pointer;
+}
+.gys-scrollbar-track.is-hovered .gys-scrollbar-thumb {
+  width: 8px;
+  background: var(--scrollbar-thumb-hover);
+}
+.gys-scrollbar-track.is-dragging .gys-scrollbar-thumb {
+  width: 8px;
+  background: var(--scrollbar-thumb-active);
+  box-shadow: 0 0 0 2px var(--interactive-glow);
+}
+
+/* Passive translucent Gereja Yesus Sejati ambient background */
+.gys-ambient-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+.gys-ambient-aura {
+  position: absolute;
+  border-radius: 50%;
+  opacity: var(--ambient-aura-opacity);
+  will-change: transform;
+}
+.gys-ambient-aura-primary {
+  width: min(68vw, 680px);
+  height: min(68vw, 680px);
+  top: -18%;
+  right: -12%;
+  background: radial-gradient(circle, var(--blue) 0%, transparent 68%);
+}
+.gys-ambient-aura-secondary {
+  width: min(58vw, 560px);
+  height: min(58vw, 560px);
+  bottom: -20%;
+  left: -10%;
+  background: radial-gradient(circle, var(--gold) 0%, transparent 68%);
+}
+.gys-ambient-emblem {
+  position: absolute;
+  right: max(24px, 4vw);
+  bottom: max(24px, 4vh);
+  width: min(38vw, 320px);
+  height: min(38vw, 320px);
+  opacity: var(--ambient-emblem-opacity);
+  filter: var(--ambient-emblem-filter);
+  will-change: transform;
+}
+.gys-ambient-emblem img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.workspace {
+  position: relative;
+  z-index: 1;
+}
+
+/* Content-visibility rendering optimization for full KR song lists */
+.kidung-rail-list > li {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 44px;
+}
+.pujian-list:not(.is-staggering) > .pujian-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 56px;
+}
+
+@media print {
+  .gys-scrollbar-track,
+  .gys-ambient-backdrop {
+    display: none !important;
   }
 }

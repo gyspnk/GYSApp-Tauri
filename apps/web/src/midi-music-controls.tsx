@@ -13,7 +13,17 @@ const instruments = GM_INSTRUMENTS.map((label, value) => ({
   icon: "musicNote" as const,
 }));
 
-/** Quick taps step once; held pointers repeat the latest value and always clean up. */
+const KEY_OPTIONS = {
+  sharp: Array.from({ length: 12 }, (_, value) => ({
+    value,
+    label: chordKeyName(value, "sharp"),
+  })),
+  flat: Array.from({ length: 12 }, (_, value) => ({
+    value,
+    label: chordKeyName(value, "flat"),
+  })),
+};
+
 function StepButton({
   onStep,
   disabled,
@@ -78,7 +88,6 @@ function StepButton({
   );
 }
 
-/** Musical controls share the utility panel to keep the dock compact. */
 export function MidiMusicControls({
   locale,
   keyIndex,
@@ -120,10 +129,7 @@ export function MidiMusicControls({
         className={`media-key-control${fullscreen ? " lyrics-key-select" : ""}`}
         label={translate(locale, "media.keySelect")}
         value={keyIndex}
-        options={Array.from({ length: 12 }, (_, value) => ({
-          value,
-          label: chordKeyName(value, accidental),
-        }))}
+        options={KEY_OPTIONS[accidental]}
         onChange={(value) =>
           onTransposeChange(transposeToKey(keyIndex, value, transpose))
         }
@@ -169,7 +175,6 @@ export function MidiMusicControls({
   );
 }
 
-/** The same bounded editor is used by both player surfaces. */
 export function MidiTempoStepper({
   locale,
   tempo,
