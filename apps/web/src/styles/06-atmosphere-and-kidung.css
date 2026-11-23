@@ -2116,3 +2116,23 @@
   padding: 0 16px;
   border-radius: 999px;
 }
+
+/* ── Cohesive Frosted-Glass Cards for Literatur, Suara Sejati & Sauh Bagi Jiwa ── */
+.suara-library-item,
+.literature-row {
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.25);
+  backdrop-filter: blur(12px) saturate(1.25);
+  transition:
+    transform 200ms var(--ease-spring),
+    border-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out),
+    background-color 180ms var(--ease-out);
+}
+
+.suara-library-item:hover,
+.literature-row:hover {
+  border-color: color-mix(in srgb, var(--blue) 38%, var(--line));
+  box-shadow: var(--shadow-sm);
+}

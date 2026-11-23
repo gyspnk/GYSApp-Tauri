@@ -1076,7 +1076,9 @@ export function MorePage({
     }
   };
 
-  const sectionAnims = useRef(new WeakMap<HTMLDetailsElement, Animation>());
+  const sectionAnims = useRef(
+    new WeakMap<HTMLDetailsElement, { box: Animation; panel?: Animation }>(),
+  );
   const animateSettingToggle = useCallback((event: MouseEvent<HTMLElement>) => {
     const summary = event.currentTarget;
     const details = summary.parentElement;
@@ -1087,26 +1089,51 @@ export function MorePage({
     if (reducedMotion || typeof details.animate !== "function") return;
 
     event.preventDefault();
-    sectionAnims.current.get(details)?.cancel();
+    const prev = sectionAnims.current.get(details);
+    if (prev) {
+      prev.box.cancel();
+      prev.panel?.cancel();
+      sectionAnims.current.delete(details);
+    }
     const isHymns = details.dataset.setting === "hymns";
     const isClosing = details.open;
-    const summaryHeight = summary.offsetHeight;
+    const borderY = details.offsetHeight - details.clientHeight;
+    const collapsedHeight = summary.offsetHeight + borderY;
+    const panel = summary.nextElementSibling;
 
     if (isClosing) {
       const startHeight = details.offsetHeight;
       details.style.overflow = "hidden";
-      const anim = details.animate(
-        { height: [`${startHeight}px`, `${summaryHeight}px`] },
-        { duration: 220, easing: "cubic-bezier(0.4, 0, 0.2, 1)" },
+      const box = details.animate(
+        { height: [`${startHeight}px`, `${collapsedHeight}px`] },
+        {
+          duration: 210,
+          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+          fill: "forwards",
+        },
       );
-      sectionAnims.current.set(details, anim);
-      anim.onfinish = () => {
+      const panelAnim =
+        panel instanceof HTMLElement && typeof panel.animate === "function"
+          ? panel.animate([{ opacity: 1 }, { opacity: 0 }], {
+              duration: 160,
+              easing: "ease-out",
+              fill: "forwards",
+            })
+          : undefined;
+      sectionAnims.current.set(details, {
+        box,
+        ...(panelAnim ? { panel: panelAnim } : {}),
+      });
+      box.onfinish = () => {
         details.open = false;
         if (isHymns) setHymnSettingsOpen(false);
+        box.cancel();
+        panelAnim?.cancel();
         details.style.overflow = "";
         sectionAnims.current.delete(details);
       };
-      anim.oncancel = () => {
+      box.oncancel = () => {
+        panelAnim?.cancel();
         details.style.overflow = "";
         sectionAnims.current.delete(details);
       };
@@ -1116,28 +1143,38 @@ export function MorePage({
     details.style.overflow = "hidden";
     details.open = true;
     if (isHymns) setHymnSettingsOpen(true);
-    const panel = summary.nextElementSibling;
     requestAnimationFrame(() => {
       const endHeight = details.offsetHeight;
-      const anim = details.animate(
-        { height: [`${summaryHeight}px`, `${endHeight}px`] },
-        { duration: 280, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+      const box = details.animate(
+        { height: [`${collapsedHeight}px`, `${endHeight}px`] },
+        {
+          duration: 260,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          fill: "forwards",
+        },
       );
-      if (panel instanceof HTMLElement && typeof panel.animate === "function") {
-        panel.animate(
-          [
-            { opacity: 0, transform: "translate3d(0, -8px, 0)" },
-            { opacity: 1, transform: "translate3d(0, 0, 0)" },
-          ],
-          { duration: 260, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
-        );
-      }
-      sectionAnims.current.set(details, anim);
-      anim.onfinish = () => {
+      const panelAnim =
+        panel instanceof HTMLElement && typeof panel.animate === "function"
+          ? panel.animate(
+              [
+                { opacity: 0, transform: "translate3d(0, -6px, 0)" },
+                { opacity: 1, transform: "translate3d(0, 0, 0)" },
+              ],
+              { duration: 240, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+            )
+          : undefined;
+      sectionAnims.current.set(details, {
+        box,
+        ...(panelAnim ? { panel: panelAnim } : {}),
+      });
+      box.onfinish = () => {
+        box.cancel();
+        panelAnim?.cancel();
         details.style.overflow = "";
         sectionAnims.current.delete(details);
       };
-      anim.oncancel = () => {
+      box.oncancel = () => {
+        panelAnim?.cancel();
         details.style.overflow = "";
         sectionAnims.current.delete(details);
       };
@@ -1193,10 +1230,7 @@ export function MorePage({
           className="more-setting-section more-account-section"
           data-setting="account"
         >
-          <summary
-            className="more-setting-row"
-            onClick={animateSettingToggle}
-          >
+          <summary className="more-setting-row" onClick={animateSettingToggle}>
             <span className="more-setting-icon">
               <AccountAvatar />
             </span>
@@ -1369,10 +1403,7 @@ export function MorePage({
         </details>
 
         <details className="more-setting-section" data-setting="appearance">
-          <summary
-            className="more-setting-row"
-            onClick={animateSettingToggle}
-          >
+          <summary className="more-setting-row" onClick={animateSettingToggle}>
             <span className="more-setting-icon">
               <Icon name="sun" size={20} />
             </span>
@@ -1514,10 +1545,7 @@ export function MorePage({
         </h2>
 
         <details className="more-setting-section" data-setting="audio">
-          <summary
-            className="more-setting-row"
-            onClick={animateSettingToggle}
-          >
+          <summary className="more-setting-row" onClick={animateSettingToggle}>
             <span className="more-setting-icon">
               <Icon name="volume" size={20} />
             </span>
@@ -1540,10 +1568,7 @@ export function MorePage({
               setHymnSettingsOpen(event.currentTarget.open);
           }}
         >
-          <summary
-            className="more-setting-row"
-            onClick={animateSettingToggle}
-          >
+          <summary className="more-setting-row" onClick={animateSettingToggle}>
             <span className="more-setting-icon">
               <Icon name="music" size={20} />
             </span>
@@ -1610,10 +1635,7 @@ export function MorePage({
         </details>
 
         <details className="more-setting-section" data-setting="offline">
-          <summary
-            className="more-setting-row"
-            onClick={animateSettingToggle}
-          >
+          <summary className="more-setting-row" onClick={animateSettingToggle}>
             <span className="more-setting-icon">
               <Icon name="download" size={20} />
             </span>
@@ -1771,10 +1793,7 @@ export function MorePage({
         </details>
 
         <details className="more-setting-section" data-setting="backup">
-          <summary
-            className="more-setting-row"
-            onClick={animateSettingToggle}
-          >
+          <summary className="more-setting-row" onClick={animateSettingToggle}>
             <span className="more-setting-icon">
               <Icon name="copy" size={20} />
             </span>
@@ -1842,10 +1861,7 @@ export function MorePage({
         </h2>
 
         <details className="more-setting-section" data-setting="about">
-          <summary
-            className="more-setting-row"
-            onClick={animateSettingToggle}
-          >
+          <summary className="more-setting-row" onClick={animateSettingToggle}>
             <span className="more-setting-icon">
               <Icon name="checkCircle" size={20} />
             </span>
