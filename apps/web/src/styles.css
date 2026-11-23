@@ -9,7 +9,7 @@
 
 /* Seamless left-wing shoulder-socket pivot for the ambient GYS Dove */
 .gys-ambient-wing-near {
-  transform-origin: 272px 108px;
+  transform-origin: 292px 92px;
 }
 
 @keyframes gys-ambient-wing-near-flap {
@@ -18,16 +18,55 @@
     transform: rotate(0deg) scaleY(1);
   }
   32% {
-    transform: rotate(-9deg) scaleY(0.94);
+    transform: rotate(-6deg) scaleY(0.96);
   }
   62% {
-    transform: rotate(5deg) scaleY(1.02);
+    transform: rotate(4deg) scaleY(1.01);
   }
 }
 
 /* Prevent 512px PdfDetailLayer tile canvases from inheriting page-frame outline on mobile */
 .is-pdf-viewer .gys-pdf-overlay .pdf-page-frame .pdf-detail-layer > canvas {
   outline: none;
+}
+
+/* Disable native ::details-content transition on Settings accordions so WAAPI expand/collapse runs once smoothly */
+@supports selector(::details-content) {
+  .more-setting-section::details-content {
+    transition: none !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+  .more-setting-section[open]::details-content {
+    block-size: auto !important;
+    content-visibility: visible !important;
+  }
+  .more-setting-section:not([open])::details-content {
+    block-size: 0 !important;
+  }
+}
+
+/* Keep Kidung search bar, category, and collection controls persistent while scrolling the hymn list */
+.hymn-page > .kidung-index-toolbar {
+  position: sticky;
+  top: var(--topbar-height);
+  z-index: var(--z-nav);
+  padding: 10px 14px;
+  margin-inline: -14px;
+  border-radius: var(--radius-card);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: var(--shadow-xs);
+}
+
+@media (max-width: 599px) {
+  .hymn-page > .kidung-index-toolbar {
+    padding: 8px 12px;
+    margin-inline: -12px;
+    border-radius: 0;
+  }
 }
 
 /* Polished Bible Menu Bacaan drawer: soft hairlines, frosted glass, and consistent row alignment */

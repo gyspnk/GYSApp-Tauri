@@ -137,7 +137,7 @@ html[data-theme="sepia"] .shell-startup {
 /* Rounded shoulder-socket pivot so upper & lower wing edges stay seamless through every stroke */
 .gys-wing-near {
   transform-box: view-box;
-  transform-origin: 272px 108px;
+  transform-origin: 292px 92px;
   will-change: transform;
   animation: gys-wing-near-flap 1.9s cubic-bezier(0.42, 0, 0.58, 1) infinite;
 }
@@ -319,13 +319,13 @@ html[data-theme="sepia"] .shell-startup-track > span {
 @keyframes gys-wing-near-flap {
   0%,
   100% {
-    transform: rotate(6deg) scaleY(1.02);
+    transform: rotate(5deg) scaleY(1.01);
   }
   42% {
-    transform: rotate(-9deg) scaleY(0.94);
+    transform: rotate(-7deg) scaleY(0.96);
   }
   74% {
-    transform: rotate(3deg) scaleY(1.01);
+    transform: rotate(2deg) scaleY(1);
   }
 }
 @keyframes gys-wing-far-flap {
@@ -393,22 +393,22 @@ html[data-theme="sepia"] .shell-startup-track > span {
 }
 @keyframes gys-wing-near-takeoff {
   0% {
-    transform: rotate(4deg) scaleY(1);
+    transform: rotate(3deg) scaleY(1);
   }
   20% {
-    transform: rotate(9deg) scaleY(1.03);
+    transform: rotate(6deg) scaleY(1.02);
   }
   42% {
-    transform: rotate(-10deg) scaleY(0.92);
+    transform: rotate(-8deg) scaleY(0.95);
   }
   64% {
-    transform: rotate(8deg) scaleY(1.02);
+    transform: rotate(5deg) scaleY(1.01);
   }
   84% {
-    transform: rotate(-8deg) scaleY(0.94);
+    transform: rotate(-6deg) scaleY(0.96);
   }
   100% {
-    transform: rotate(3deg) scaleY(1);
+    transform: rotate(2deg) scaleY(1);
   }
 }
 @keyframes gys-wing-far-takeoff {
