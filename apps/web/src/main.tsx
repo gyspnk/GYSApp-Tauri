@@ -19,19 +19,25 @@ document.documentElement.classList.toggle(
   typeof document.startViewTransition === "function",
 );
 installImmersiveInteractions();
-void import("./control-motion.js").then(({ installControlMotion }) => {
-  const dispose = installControlMotion();
-  import.meta.hot?.dispose(dispose);
-});
-void import("./custom-scrollbar.js").then(({ installCustomScrollbar }) => {
-  const dispose = installCustomScrollbar();
-  import.meta.hot?.dispose(dispose);
-});
-void import("./ambient-backdrop.js").then(({ installAmbientBackdrop }) => {
-  const dispose = installAmbientBackdrop();
-  import.meta.hot?.dispose(dispose);
-});
 installGlobalDiagnostics();
+
+let atmosphereMounted = false;
+function mountDeferredAtmosphere() {
+  if (atmosphereMounted) return;
+  atmosphereMounted = true;
+  void import("./control-motion.js").then(({ installControlMotion }) => {
+    const dispose = installControlMotion();
+    import.meta.hot?.dispose(dispose);
+  });
+  void import("./custom-scrollbar.js").then(({ installCustomScrollbar }) => {
+    const dispose = installCustomScrollbar();
+    import.meta.hot?.dispose(dispose);
+  });
+  void import("./ambient-backdrop.js").then(({ installAmbientBackdrop }) => {
+    const dispose = installAmbientBackdrop();
+    import.meta.hot?.dispose(dispose);
+  });
+}
 
 if (typeof window !== "undefined") {
   window.addEventListener("vite:preloadError", (event) => {
@@ -91,15 +97,27 @@ function releaseBootSplash() {
     if (root.dataset.boot === "ready") return;
     root.dataset.boot = "ready";
     const splash = document.getElementById("boot-splash");
-    if (!splash) return;
+    if (!splash) {
+      mountDeferredAtmosphere();
+      return;
+    }
     splash.setAttribute("aria-hidden", "true");
-    window.setTimeout(() => splash.remove(), reducedMotion ? 40 : 1500);
+    window.setTimeout(
+      () => {
+        splash.remove();
+        mountDeferredAtmosphere();
+      },
+      reducedMotion ? 40 : 1850,
+    );
   };
   if (reducedMotion) {
     trigger();
     return;
   }
-  window.setTimeout(trigger, 200);
+  // Let initial layout & hydration settle so the entrance flight starts cleanly at 60fps.
+  window.setTimeout(() => {
+    requestAnimationFrame(() => trigger());
+  }, 280);
 }
 
 async function waitForBootFonts(): Promise<void> {
