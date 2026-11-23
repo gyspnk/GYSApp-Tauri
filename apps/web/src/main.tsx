@@ -19,22 +19,22 @@ document.documentElement.classList.toggle(
   typeof document.startViewTransition === "function",
 );
 installImmersiveInteractions();
+void import("./ambient-backdrop.js").then(({ installAmbientBackdrop }) => {
+  const dispose = installAmbientBackdrop();
+  import.meta.hot?.dispose(dispose);
+});
 installGlobalDiagnostics();
 
-let atmosphereMounted = false;
-function mountDeferredAtmosphere() {
-  if (atmosphereMounted) return;
-  atmosphereMounted = true;
+let deferredUiMounted = false;
+function mountDeferredUiEnhancements() {
+  if (deferredUiMounted) return;
+  deferredUiMounted = true;
   void import("./control-motion.js").then(({ installControlMotion }) => {
     const dispose = installControlMotion();
     import.meta.hot?.dispose(dispose);
   });
   void import("./custom-scrollbar.js").then(({ installCustomScrollbar }) => {
     const dispose = installCustomScrollbar();
-    import.meta.hot?.dispose(dispose);
-  });
-  void import("./ambient-backdrop.js").then(({ installAmbientBackdrop }) => {
-    const dispose = installAmbientBackdrop();
     import.meta.hot?.dispose(dispose);
   });
 }
@@ -98,14 +98,14 @@ function releaseBootSplash() {
     root.dataset.boot = "ready";
     const splash = document.getElementById("boot-splash");
     if (!splash) {
-      mountDeferredAtmosphere();
+      mountDeferredUiEnhancements();
       return;
     }
     splash.setAttribute("aria-hidden", "true");
     window.setTimeout(
       () => {
         splash.remove();
-        mountDeferredAtmosphere();
+        mountDeferredUiEnhancements();
       },
       reducedMotion ? 40 : 1850,
     );
