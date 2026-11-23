@@ -28,7 +28,69 @@ const EGYS_LOGIN_WINDOW_LABEL: &str = "egys-login";
 const EGYS_LOGIN_TOKEN_KEY: &str = "egys-live-v1-token";
 const EGYS_LOGIN_BRIDGE_SCRIPT: &str = r#"
 (() => {
+  const installNavBar = () => {
+    if (document.getElementById('gys-native-login-bar')) return;
+    const isEgys = window.location.hostname === 'e.gys.or.id';
+    const closeLogin = () => {
+      if (isEgys) {
+        const internals = window.__TAURI_INTERNALS__;
+        const invoke =
+          internals?.invoke?.bind(internals) ??
+          window.__TAURI__?.core?.invoke?.bind(window.__TAURI__.core);
+        if (invoke) {
+          invoke('egys_login_message', { message: { cmd: 'closelogin' } }).catch(() => {
+            window.close();
+          });
+          return;
+        }
+      }
+      window.location.replace('https://e.gys.or.id/login?gys_close=1');
+    };
+    window.__gysCloseEgysLogin = closeLogin;
+    const mount = () => {
+      if (!document.body || document.getElementById('gys-native-login-bar')) return;
+      const bar = document.createElement('div');
+      bar.id = 'gys-native-login-bar';
+      bar.style.cssText = 'position:sticky;top:0;z-index:2147483647;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:rgba(255,255,255,0.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(15,23,42,0.1);font:600 14px/1.2 system-ui,-apple-system,sans-serif;color:#0f172a;';
+      const backBtn = document.createElement('button');
+      backBtn.type = 'button';
+      backBtn.textContent = isEgys ? '← Kembali ke Aplikasi' : '← Kembali ke e-GYS';
+      backBtn.style.cssText = 'border:1px solid rgba(0,102,143,0.22);background:rgba(0,102,143,0.08);color:#00668f;padding:7px 12px;border-radius:999px;font:inherit;cursor:pointer;';
+      backBtn.addEventListener('click', () => {
+        if (!isEgys && window.history.length > 1) {
+          window.history.back();
+        } else if (!isEgys) {
+          window.location.replace('https://e.gys.or.id/login');
+        } else {
+          closeLogin();
+        }
+      });
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.textContent = 'Tutup';
+      closeBtn.style.cssText = 'border:1px solid rgba(15,23,42,0.14);background:#fff;color:#334155;padding:7px 12px;border-radius:999px;font:inherit;cursor:pointer;';
+      closeBtn.addEventListener('click', closeLogin);
+      bar.append(backBtn, closeBtn);
+      document.body.prepend(bar);
+    };
+    if (document.body) mount();
+    else document.addEventListener('DOMContentLoaded', mount, { once: true });
+  };
+  installNavBar();
+
   const install = () => {
+    if (window.location.hostname === 'e.gys.or.id' && new URLSearchParams(window.location.search).get('gys_close') === '1') {
+      const internals = window.__TAURI_INTERNALS__;
+      const invoke =
+        internals?.invoke?.bind(internals) ??
+        window.__TAURI__?.core?.invoke?.bind(window.__TAURI__.core);
+      if (invoke) {
+        invoke('egys_login_message', { message: { cmd: 'closelogin' } }).catch(() => undefined);
+        return;
+      }
+      window.setTimeout(install, 25);
+      return;
+    }
     const internals = window.__TAURI_INTERNALS__;
     const invoke =
       internals?.invoke?.bind(internals) ??
@@ -310,6 +372,11 @@ fn is_allowed_egys_navigation(url: &url::Url) -> bool {
         url.host_str(),
         Some("e.gys.or.id")
             | Some("accounts.google.com")
+            | Some("accounts.youtube.com")
+            | Some("myaccount.google.com")
+            | Some("gds.google.com")
+            | Some("consent.google.com")
+            | Some("oauth2.googleapis.com")
             | Some("appleid.apple.com")
             | Some("appleid.cdn-apple.com")
     )
@@ -431,6 +498,12 @@ fn egys_login_message(
         .get("cmd")
         .and_then(serde_json::Value::as_str)
         .unwrap_or_default();
+    if command == "closelogin" {
+        if window.label() == EGYS_LOGIN_WINDOW_LABEL {
+            let _ = window.close();
+        }
+        return Ok(());
+    }
     if command == "googlelogin" {
         window
             .eval(

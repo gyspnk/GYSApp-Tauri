@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import kotlin.math.roundToInt
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -21,10 +22,17 @@ import androidx.webkit.WebMessageCompat
 
 class MainActivity : TauriActivity() {
   private var appWebView: WebView? = null
+  private var overlayWebView: WebView? = null
   private var statusBackdrop: View? = null
   private var accent = "#0079a8"
   private val accentPattern = Regex("^#[0-9a-fA-F]{6}$")
   private val appOrigins = setOf("https://tauri.localhost", "http://tauri.localhost")
+
+  private fun isAppOrigin(url: String?): Boolean {
+    if (url.isNullOrBlank()) return false
+    val uri = Uri.parse(url)
+    return "${uri.scheme}://${uri.authority}" in appOrigins
+  }
 
   private fun applyStatusAccent() {
     val color = Color.parseColor(accent)
@@ -43,15 +51,72 @@ class MainActivity : TauriActivity() {
   private fun requestWebAccent() {
     val webView = appWebView ?: return
     val url = webView.url ?: return
-    val uri = Uri.parse(url)
-    if ("${uri.scheme}://${uri.authority}" !in appOrigins) return
+    if (!isAppOrigin(url)) return
     webView.evaluateJavascript("window.dispatchEvent(new Event('gys-native-accent-request'))", null)
+  }
+
+  private fun activeOverlayWebView(): WebView? {
+    val overlay = overlayWebView ?: return null
+    if (!overlay.isAttachedToWindow) {
+      overlayWebView = null
+      return null
+    }
+    return overlay
+  }
+
+  private fun handleBackNavigation(callback: OnBackPressedCallback) {
+    val overlay = activeOverlayWebView()
+    if (overlay != null) {
+      val overlayUrl = overlay.url
+      if (overlay.canGoBack()) {
+        overlay.goBack()
+        return
+      }
+      if (overlayUrl != null && overlayUrl.startsWith("https://e.gys.or.id")) {
+        overlay.evaluateJavascript("window.__gysCloseEgysLogin?.()", null)
+      } else {
+        overlay.loadUrl("https://e.gys.or.id/login?gys_close=1")
+      }
+      return
+    }
+
+    val main = appWebView
+    if (main != null) {
+      val mainUrl = main.url
+      if (!isAppOrigin(mainUrl)) {
+        if (main.canGoBack()) {
+          main.goBack()
+          return
+        }
+        main.loadUrl("https://tauri.localhost/")
+        return
+      }
+      if (main.canGoBack()) {
+        main.goBack()
+        return
+      }
+    }
+
+    callback.isEnabled = false
+    onBackPressedDispatcher.onBackPressed()
+    callback.isEnabled = true
   }
 
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
-    appWebView = webView
-    if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+    val isPrimary = appWebView == null || appWebView === webView
+    if (isPrimary) {
+      appWebView = webView
+    } else {
+      overlayWebView = webView
+      // Remove Android WebView's "; wv" token on the login overlay so Google
+      // Sign-In does not reject the flow with 403 disallowed_useragent.
+      val ua = webView.settings.userAgentString
+      if (ua.contains("; wv")) {
+        webView.settings.userAgentString = ua.replace("; wv", "").replace("Version/4.0 ", "")
+      }
+    }
+    if (isPrimary && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
       // Origin-scoped messaging exposes only color updates, including a main
       // frame check. No Java reflection bridge or general native commands.
       WebViewCompat.addWebMessageListener(webView, "GysStatusAccent", appOrigins) {
@@ -77,7 +142,9 @@ class MainActivity : TauriActivity() {
 
   private fun updateTextScale() {
     // WebView defaults to 100 even when Android accessibility font size changes.
-    appWebView?.settings?.textZoom = (resources.configuration.fontScale * 100).roundToInt()
+    val zoom = (resources.configuration.fontScale * 100).roundToInt()
+    appWebView?.settings?.textZoom = zoom
+    overlayWebView?.settings?.textZoom = zoom
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
@@ -103,6 +170,12 @@ class MainActivity : TauriActivity() {
     initializeCredentialContext(applicationContext)
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
+
+    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+      override fun handleOnBackPressed() {
+        handleBackNavigation(this)
+      }
+    })
 
     accent = getSharedPreferences("gys-chrome", MODE_PRIVATE).getString("accent", null)
       ?.takeIf { accentPattern.matches(it) } ?: "#0079a8"
