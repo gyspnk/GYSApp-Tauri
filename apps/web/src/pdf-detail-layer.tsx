@@ -101,8 +101,10 @@ export function PdfDetailLayer({
             x += TILE_SIZE
           ) {
             const tile = document.createElement("canvas");
-            const tileWidth = Math.min(TILE_SIZE, width - x),
-              tileHeight = Math.min(TILE_SIZE, height - y);
+            const overlapX = x + TILE_SIZE < width ? 1 : 0;
+            const overlapY = y + TILE_SIZE < height ? 1 : 0;
+            const tileWidth = Math.min(TILE_SIZE + overlapX, width - x);
+            const tileHeight = Math.min(TILE_SIZE + overlapY, height - y);
             tile.width = Math.ceil(tileWidth * dpr);
             tile.height = Math.ceil(tileHeight * dpr);
             tile.dataset.pdfDetail = String(dpr);

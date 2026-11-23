@@ -6,3 +6,26 @@
 @import "./styles/04-kidung-and-media.css";
 @import "./styles/05-motion-and-print.css";
 @import "./styles/06-atmosphere-and-kidung.css";
+
+/* Seamless left-wing shoulder-socket pivot for the ambient GYS Dove */
+.gys-ambient-wing-near {
+  transform-origin: 272px 108px;
+}
+
+@keyframes gys-ambient-wing-near-flap {
+  0%,
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  32% {
+    transform: rotate(-9deg) scaleY(0.94);
+  }
+  62% {
+    transform: rotate(5deg) scaleY(1.02);
+  }
+}
+
+/* Prevent 512px PdfDetailLayer tile canvases from inheriting page-frame outline on mobile */
+.is-pdf-viewer .gys-pdf-overlay .pdf-page-frame .pdf-detail-layer > canvas {
+  outline: none;
+}

@@ -137,7 +137,7 @@ html[data-theme="sepia"] .shell-startup {
 /* Lock both wings to their exact torso shoulder joints so neither wing ever detaches */
 .gys-wing-near {
   transform-box: view-box;
-  transform-origin: 296px 86px;
+  transform-origin: 272px 108px;
   will-change: transform;
   animation: gys-wing-near-flap 1.24s cubic-bezier(0.37, 0, 0.63, 1) infinite;
 }
@@ -366,13 +366,13 @@ html[data-theme="sepia"] .shell-startup-track > span {
 @keyframes gys-wing-near-flap {
   0%,
   100% {
-    transform: translate3d(1px, 1px, 0) rotate(9deg) scaleY(1.03);
+    transform: rotate(8deg) scaleY(1.03);
   }
   36% {
-    transform: translate3d(3px, 3px, 0) rotate(-12deg) scaleY(0.91);
+    transform: rotate(-11deg) scaleY(0.92);
   }
   68% {
-    transform: translate3d(1px, 1px, 0) rotate(4deg) scaleY(1.01);
+    transform: rotate(4deg) scaleY(1.01);
   }
 }
 @keyframes gys-wing-far-flap {
@@ -440,22 +440,22 @@ html[data-theme="sepia"] .shell-startup-track > span {
 }
 @keyframes gys-wing-near-takeoff {
   0% {
-    transform: translate3d(1px, 1px, 0) rotate(5deg) scaleY(1);
+    transform: rotate(4deg) scaleY(1);
   }
   18% {
-    transform: translate3d(0, 0, 0) rotate(13deg) scaleY(1.05);
+    transform: rotate(11deg) scaleY(1.04);
   }
   36% {
-    transform: translate3d(3px, 4px, 0) rotate(-15deg) scaleY(0.88);
+    transform: rotate(-13deg) scaleY(0.9);
   }
   56% {
-    transform: translate3d(1px, 1px, 0) rotate(11deg) scaleY(1.04);
+    transform: rotate(10deg) scaleY(1.03);
   }
   76% {
-    transform: translate3d(3px, 3px, 0) rotate(-13deg) scaleY(0.9);
+    transform: rotate(-11deg) scaleY(0.92);
   }
   100% {
-    transform: translate3d(1px, 1px, 0) rotate(6deg) scaleY(1);
+    transform: rotate(5deg) scaleY(1);
   }
 }
 @keyframes gys-wing-far-takeoff {
