@@ -5,6 +5,7 @@ import {
   useSyncExternalStore,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { SpeechEnginePreferenceSchema } from "@gys/contracts";
 import { translate, type Locale } from "./i18n.js";
@@ -110,9 +111,11 @@ export function BibleHeader({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
         hamburgerRef.current &&
-        !hamburgerRef.current.contains(event.target as Node)
+        !hamburgerRef.current.contains(target) &&
+        !drawerRef.current?.contains(target)
       ) {
         setHamburgerOpen(false);
       }
@@ -308,375 +311,395 @@ export function BibleHeader({
                     <i />
                   </span>
                 </button>
-                {drawerPresent && (
-                  <>
-                    <div
-                      className="reader-hamburger-backdrop"
-                      data-menu-open={hamburgerOpen}
-                      onClick={() => setHamburgerOpen(false)}
-                      aria-hidden="true"
-                    />
-                    <div
-                      ref={drawerRef}
-                      className="reader-hamburger-drawer"
-                      data-menu-open={hamburgerOpen}
-                      inert={!hamburgerOpen}
-                      aria-hidden={!hamburgerOpen}
-                      role="dialog"
-                      tabIndex={-1}
-                      aria-label={translate(locale, "bible.menuTitle")}
-                    >
-                      <div className="hamburger-drawer-header">
-                        <div className="hamburger-drawer-title">
-                          <Icon name="book" size={16} />
-                          <strong>
-                            {translate(locale, "bible.menuTitle")}
-                          </strong>
-                        </div>
-                        <button
-                          className="hamburger-drawer-close"
-                          type="button"
-                          onClick={() => setHamburgerOpen(false)}
-                          aria-label={translate(locale, "bible.closeMenu")}
-                          title={translate(locale, "bible.closeMenu")}
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      <div className="hamburger-drawer-body">
-                        <div className="hamburger-section">
-                          <div className="hamburger-group">
-                            <button
-                              className="hamburger-item"
-                              type="button"
-                              onClick={() => {
-                                bibleHeader.onOpenNotes();
-                                setHamburgerOpen(false);
-                              }}
-                            >
-                              <div className="hamburger-item-icon">
-                                <Icon name="bookmark" size={16} />
-                              </div>
-                              <div className="hamburger-item-text">
-                                <strong>
-                                  {translate(locale, "bible.notes")}
-                                </strong>
-                              </div>
-                            </button>
+                {drawerPresent &&
+                  typeof document !== "undefined" &&
+                  createPortal(
+                    <>
+                      <div
+                        className="reader-hamburger-backdrop"
+                        data-menu-open={hamburgerOpen}
+                        onClick={() => setHamburgerOpen(false)}
+                        aria-hidden="true"
+                      />
+                      <div
+                        ref={drawerRef}
+                        className="reader-hamburger-drawer"
+                        data-menu-open={hamburgerOpen}
+                        inert={!hamburgerOpen}
+                        aria-hidden={!hamburgerOpen}
+                        role="dialog"
+                        tabIndex={-1}
+                        aria-label={translate(locale, "bible.menuTitle")}
+                      >
+                        <div className="hamburger-drawer-header">
+                          <div className="hamburger-drawer-title">
+                            <Icon name="book" size={16} />
+                            <strong>
+                              {translate(locale, "bible.menuTitle")}
+                            </strong>
                           </div>
+                          <button
+                            className="hamburger-drawer-close"
+                            type="button"
+                            onClick={() => setHamburgerOpen(false)}
+                            aria-label={translate(locale, "bible.closeMenu")}
+                            title={translate(locale, "bible.closeMenu")}
+                          >
+                            ✕
+                          </button>
                         </div>
 
-                        {/* Section 1: Typography */}
-                        <div className="hamburger-card">
-                          <div className="hamburger-card-header">
-                            <span className="hamburger-section-label">
-                              {translate(locale, "bible.textSize")}
-                            </span>
-                            <span className="hamburger-size-badge">
-                              {bibleHeader.fontSize}px
-                            </span>
-                          </div>
-                          <div className="hamburger-typography-stepper">
-                            <button
-                              type="button"
-                              className="typography-step-btn"
-                              onClick={bibleHeader.onDecreaseFontSize}
-                              disabled={
-                                bibleHeader.fontSize <= bibleHeader.minFontSize
-                              }
-                              aria-label={translate(
-                                locale,
-                                "common.decreaseText",
-                              )}
-                            >
-                              <span className="step-label">A−</span>
-                              <small>{translate(locale, "bible.small")}</small>
-                            </button>
-                            <div className="typography-size-indicator">
-                              <strong>{bibleHeader.fontSize}</strong>
-                              <small>pt</small>
-                            </div>
-                            <button
-                              type="button"
-                              className="typography-step-btn"
-                              onClick={bibleHeader.onIncreaseFontSize}
-                              disabled={
-                                bibleHeader.fontSize >= bibleHeader.maxFontSize
-                              }
-                              aria-label={translate(
-                                locale,
-                                "common.increaseText",
-                              )}
-                            >
-                              <span className="step-label">A+</span>
-                              <small>{translate(locale, "bible.large")}</small>
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Section 2: Mode Tampilan */}
-                        <div className="hamburger-section">
-                          <span className="hamburger-section-label">
-                            {translate(locale, "bible.viewMode")}
-                          </span>
-                          <div className="hamburger-group">
-                            <button
-                              className={`hamburger-item${bibleHeader.splitView ? " is-active" : ""}`}
-                              type="button"
-                              onClick={() => {
-                                bibleHeader.onToggleSplitView();
-                              }}
-                            >
-                              <div className="hamburger-item-icon">
-                                <Icon name="columns" size={16} />
-                              </div>
-                              <div className="hamburger-item-text">
-                                <strong>
-                                  {translate(locale, "bible.splitView")}
-                                </strong>
-                              </div>
-                              <div
-                                className={`hamburger-switch ${bibleHeader.splitView ? "is-on" : ""}`}
-                              >
-                                <span className="switch-thumb" />
-                              </div>
-                            </button>
-
-                            {bibleHeader.splitView && (
+                        <div className="hamburger-drawer-body">
+                          <div className="hamburger-section">
+                            <div className="hamburger-group">
                               <button
-                                className={`hamburger-item${bibleHeader.syncScroll ? " is-active" : ""}`}
+                                className="hamburger-item"
                                 type="button"
-                                onClick={() => bibleHeader.onToggleSyncScroll()}
+                                onClick={() => {
+                                  bibleHeader.onOpenNotes();
+                                  setHamburgerOpen(false);
+                                }}
                               >
                                 <div className="hamburger-item-icon">
-                                  <Icon name="arrow" size={16} />
+                                  <Icon name="bookmark" size={16} />
                                 </div>
                                 <div className="hamburger-item-text">
                                   <strong>
-                                    {translate(locale, "bible.syncScroll")}
+                                    {translate(locale, "bible.notes")}
+                                  </strong>
+                                </div>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Section 1: Typography */}
+                          <div className="hamburger-card">
+                            <div className="hamburger-card-header">
+                              <span className="hamburger-section-label">
+                                {translate(locale, "bible.textSize")}
+                              </span>
+                              <span className="hamburger-size-badge">
+                                {bibleHeader.fontSize}px
+                              </span>
+                            </div>
+                            <div className="hamburger-typography-stepper">
+                              <button
+                                type="button"
+                                className="typography-step-btn"
+                                onClick={bibleHeader.onDecreaseFontSize}
+                                disabled={
+                                  bibleHeader.fontSize <=
+                                  bibleHeader.minFontSize
+                                }
+                                aria-label={translate(
+                                  locale,
+                                  "common.decreaseText",
+                                )}
+                              >
+                                <span className="step-label">A−</span>
+                                <small>
+                                  {translate(locale, "bible.small")}
+                                </small>
+                              </button>
+                              <div className="typography-size-indicator">
+                                <strong>{bibleHeader.fontSize}</strong>
+                                <small>px</small>
+                              </div>
+                              <button
+                                type="button"
+                                className="typography-step-btn"
+                                onClick={bibleHeader.onIncreaseFontSize}
+                                disabled={
+                                  bibleHeader.fontSize >=
+                                  bibleHeader.maxFontSize
+                                }
+                                aria-label={translate(
+                                  locale,
+                                  "common.increaseText",
+                                )}
+                              >
+                                <span className="step-label">A+</span>
+                                <small>
+                                  {translate(locale, "bible.large")}
+                                </small>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Section 2: Mode Tampilan */}
+                          <div className="hamburger-section">
+                            <span className="hamburger-section-label">
+                              {translate(locale, "bible.viewMode")}
+                            </span>
+                            <div className="hamburger-group">
+                              <button
+                                className={`hamburger-item${bibleHeader.splitView ? " is-active" : ""}`}
+                                type="button"
+                                onClick={() => {
+                                  bibleHeader.onToggleSplitView();
+                                }}
+                              >
+                                <div className="hamburger-item-icon">
+                                  <Icon name="columns" size={16} />
+                                </div>
+                                <div className="hamburger-item-text">
+                                  <strong>
+                                    {translate(locale, "bible.splitView")}
                                   </strong>
                                 </div>
                                 <div
-                                  className={`hamburger-switch ${bibleHeader.syncScroll ? "is-on" : ""}`}
+                                  className={`hamburger-switch ${bibleHeader.splitView ? "is-on" : ""}`}
                                 >
                                   <span className="switch-thumb" />
                                 </div>
                               </button>
-                            )}
-                          </div>
-                        </div>
 
-                        {/* Section 3: Audio Alkitab Suara */}
-                        <div className="hamburger-section">
-                          <span className="hamburger-section-label">
-                            {translate(locale, "bible.audioBible")}
-                          </span>
-                          <div className="hamburger-group">
-                            <button
-                              className={`hamburger-item${speechSnapshot.playerOpen || bibleHeader.speaking ? " is-active" : ""}`}
-                              type="button"
-                              disabled={!bibleHeader.speechAvailable}
-                              onClick={() => {
-                                bibleHeader.onToggleSpeech();
-                                setHamburgerOpen(false);
-                              }}
-                            >
-                              <div className="hamburger-item-icon">
-                                <Icon
-                                  name={
-                                    speechSnapshot.playerOpen ||
-                                    bibleHeader.speaking
-                                      ? "bible"
-                                      : "play"
+                              {bibleHeader.splitView && (
+                                <button
+                                  className={`hamburger-item${bibleHeader.syncScroll ? " is-active" : ""}`}
+                                  type="button"
+                                  onClick={() =>
+                                    bibleHeader.onToggleSyncScroll()
                                   }
-                                  size={16}
-                                />
-                              </div>
-                              <div className="hamburger-item-text">
-                                <strong>
-                                  {translate(locale, "bible.audioPlayer")}
-                                </strong>
-                              </div>
-                              <span
-                                className={`hamburger-badge ${speechSnapshot.playerOpen || bibleHeader.speaking ? "is-playing" : ""}`}
-                              >
-                                {speechSnapshot.playerOpen ||
-                                bibleHeader.speaking
-                                  ? translate(locale, "bible.active")
-                                  : translate(locale, "bible.showAudioPlayer")}
-                              </span>
-                            </button>
-
-                            <button
-                              className={`hamburger-item speech-settings-toggle${bibleHeader.speechControlsOpen ? " is-active" : ""}`}
-                              type="button"
-                              aria-expanded={bibleHeader.speechControlsOpen}
-                              onClick={bibleHeader.onToggleSpeechControls}
-                            >
-                              <div className="hamburger-item-icon">
-                                <Icon name="settings" size={16} />
-                              </div>
-                              <div className="hamburger-item-text">
-                                <strong>
-                                  {translate(locale, "bible.audioSettings")}
-                                </strong>
-                              </div>
-                              <div className="hamburger-expand-badge">
-                                <Icon
-                                  name={
-                                    bibleHeader.speechControlsOpen
-                                      ? "chevronUp"
-                                      : "chevronDown"
-                                  }
-                                  size={16}
-                                />
-                              </div>
-                            </button>
-                          </div>
-
-                          {/* Pengaturan Detail Alkitab Suara */}
-                          {speechControlsPresent && (
-                            <div
-                              ref={speechControlsRef}
-                              className="drawer-speech-motion"
-                              data-menu-open={bibleHeader.speechControlsOpen}
-                              inert={!bibleHeader.speechControlsOpen}
-                              aria-hidden={!bibleHeader.speechControlsOpen}
-                            >
-                              <div className="drawer-speech-card">
-                                <label className="drawer-speech-row">
-                                  <span>
-                                    {translate(locale, "bible.engine")}
-                                  </span>
-                                  <select
-                                    className="drawer-speech-select"
-                                    value={speechSnapshot.engine}
-                                    onChange={(event) =>
-                                      speechPlayer.setEngine(
-                                        SpeechEnginePreferenceSchema.parse(
-                                          event.target.value,
-                                        ),
-                                      )
-                                    }
-                                  >
-                                    <option value="auto">
-                                      {translate(locale, "bible.autoTts")}
-                                    </option>
-                                    <option
-                                      value="edge"
-                                      disabled={!isEdgeSpeechConfigured()}
-                                    >
-                                      {translate(locale, "bible.edgeOnlineTts")}
-                                    </option>
-                                    <option value="local">
-                                      {translate(locale, "bible.localTts")}
-                                    </option>
-                                  </select>
-                                </label>
-
-                                <p className="drawer-speech-link">
-                                  <Link to="/lainnya?section=audio">
-                                    {translate(
-                                      locale,
-                                      "bible.audioSettingsLink",
-                                    )}
-                                  </Link>
-                                </p>
-
-                                {speechSnapshot.engine === "edge" && (
-                                  <label className="drawer-speech-row">
-                                    <span className="drawer-speech-label">
-                                      {translate(
-                                        locale,
-                                        "bible.gatewayEndpoint",
-                                      )}{" "}
-                                      ({translate(locale, "bible.optional")})
-                                    </span>
-                                    <input
-                                      type="url"
-                                      className="drawer-speech-input"
-                                      placeholder={translate(
-                                        locale,
-                                        "bible.edgeEndpointPlaceholder",
-                                      )}
-                                      defaultValue={getCustomEdgeEndpoint()}
-                                      onBlur={(e) => {
-                                        setCustomEdgeEndpoint(e.target.value);
-                                        void speechPlayer.loadVoices();
-                                      }}
-                                    />
-                                  </label>
-                                )}
-
-                                <div className="drawer-speech-row">
-                                  <div className="drawer-speech-row-header">
-                                    <span className="drawer-speech-label">
-                                      {translate(locale, "bible.volume")}
-                                    </span>
-                                    <span className="drawer-speech-val">
-                                      {Math.round(speechSnapshot.volume * 100)}%
-                                    </span>
+                                >
+                                  <div className="hamburger-item-icon">
+                                    <Icon name="arrow" size={16} />
                                   </div>
-                                  <input
-                                    type="range"
-                                    className="drawer-speech-range"
-                                    aria-label={translate(
-                                      locale,
-                                      "bible.voiceVolume",
-                                    )}
-                                    min="0"
-                                    max="1"
-                                    step="0.05"
-                                    value={speechSnapshot.volume}
-                                    onChange={(e) =>
-                                      speechPlayer.setVolume(
-                                        Number(e.target.value),
-                                      )
+                                  <div className="hamburger-item-text">
+                                    <strong>
+                                      {translate(locale, "bible.syncScroll")}
+                                    </strong>
+                                  </div>
+                                  <div
+                                    className={`hamburger-switch ${bibleHeader.syncScroll ? "is-on" : ""}`}
+                                  >
+                                    <span className="switch-thumb" />
+                                  </div>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Section 3: Audio Alkitab Suara */}
+                          <div className="hamburger-section">
+                            <span className="hamburger-section-label">
+                              {translate(locale, "bible.audioBible")}
+                            </span>
+                            <div className="hamburger-group">
+                              <button
+                                className={`hamburger-item${speechSnapshot.playerOpen || bibleHeader.speaking ? " is-active" : ""}`}
+                                type="button"
+                                disabled={!bibleHeader.speechAvailable}
+                                onClick={() => {
+                                  bibleHeader.onToggleSpeech();
+                                  setHamburgerOpen(false);
+                                }}
+                              >
+                                <div className="hamburger-item-icon">
+                                  <Icon
+                                    name={
+                                      speechSnapshot.playerOpen ||
+                                      bibleHeader.speaking
+                                        ? "bible"
+                                        : "play"
                                     }
+                                    size={16}
                                   />
                                 </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                                <div className="hamburger-item-text">
+                                  <strong>
+                                    {translate(locale, "bible.audioPlayer")}
+                                  </strong>
+                                </div>
+                                <span
+                                  className={`hamburger-badge ${speechSnapshot.playerOpen || bibleHeader.speaking ? "is-playing" : ""}`}
+                                >
+                                  {speechSnapshot.playerOpen ||
+                                  bibleHeader.speaking
+                                    ? translate(locale, "bible.active")
+                                    : translate(
+                                        locale,
+                                        "bible.showAudioPlayer",
+                                      )}
+                                </span>
+                              </button>
 
-                        {/* Section 4: languages stay switchable here because the
-                            reader has its own top bar; the theme keeps its one
-                            home in Settings, so the drawer links there. */}
-                        <div className="hamburger-section">
-                          <span className="hamburger-section-label">
-                            {translate(locale, "more.appearance")}
-                          </span>
-                          <div
-                            className="hamburger-group"
-                            style={{ padding: "12px 14px" }}
-                          >
-                            <Select
-                              value={locale}
-                              onChange={setLocale}
-                              className="topbar-select"
-                              label={translate(locale, "shell.language")}
-                              options={[
-                                { value: "id", label: "ID" },
-                                { value: "en", label: "EN" },
-                                { value: "zh", label: "中文" },
-                              ]}
-                            />
+                              <button
+                                className={`hamburger-item speech-settings-toggle${bibleHeader.speechControlsOpen ? " is-active" : ""}`}
+                                type="button"
+                                aria-expanded={bibleHeader.speechControlsOpen}
+                                onClick={bibleHeader.onToggleSpeechControls}
+                              >
+                                <div className="hamburger-item-icon">
+                                  <Icon name="settings" size={16} />
+                                </div>
+                                <div className="hamburger-item-text">
+                                  <strong>
+                                    {translate(locale, "bible.audioSettings")}
+                                  </strong>
+                                </div>
+                                <div className="hamburger-expand-badge">
+                                  <Icon
+                                    name={
+                                      bibleHeader.speechControlsOpen
+                                        ? "chevronUp"
+                                        : "chevronDown"
+                                    }
+                                    size={16}
+                                  />
+                                </div>
+                              </button>
+                            </div>
+
+                            {/* Pengaturan Detail Alkitab Suara */}
+                            {speechControlsPresent && (
+                              <div
+                                ref={speechControlsRef}
+                                className="drawer-speech-motion"
+                                data-menu-open={bibleHeader.speechControlsOpen}
+                                inert={!bibleHeader.speechControlsOpen}
+                                aria-hidden={!bibleHeader.speechControlsOpen}
+                              >
+                                <div className="drawer-speech-card">
+                                  <label className="drawer-speech-row">
+                                    <span>
+                                      {translate(locale, "bible.engine")}
+                                    </span>
+                                    <select
+                                      className="drawer-speech-select"
+                                      value={speechSnapshot.engine}
+                                      onChange={(event) =>
+                                        speechPlayer.setEngine(
+                                          SpeechEnginePreferenceSchema.parse(
+                                            event.target.value,
+                                          ),
+                                        )
+                                      }
+                                    >
+                                      <option value="auto">
+                                        {translate(locale, "bible.autoTts")}
+                                      </option>
+                                      <option
+                                        value="edge"
+                                        disabled={!isEdgeSpeechConfigured()}
+                                      >
+                                        {translate(
+                                          locale,
+                                          "bible.edgeOnlineTts",
+                                        )}
+                                      </option>
+                                      <option value="local">
+                                        {translate(locale, "bible.localTts")}
+                                      </option>
+                                    </select>
+                                  </label>
+
+                                  <p className="drawer-speech-link">
+                                    <Link to="/lainnya?section=audio">
+                                      {translate(
+                                        locale,
+                                        "bible.audioSettingsLink",
+                                      )}
+                                    </Link>
+                                  </p>
+
+                                  {speechSnapshot.engine === "edge" && (
+                                    <label className="drawer-speech-row">
+                                      <span className="drawer-speech-label">
+                                        {translate(
+                                          locale,
+                                          "bible.gatewayEndpoint",
+                                        )}{" "}
+                                        ({translate(locale, "bible.optional")})
+                                      </span>
+                                      <input
+                                        type="url"
+                                        className="drawer-speech-input"
+                                        placeholder={translate(
+                                          locale,
+                                          "bible.edgeEndpointPlaceholder",
+                                        )}
+                                        defaultValue={getCustomEdgeEndpoint()}
+                                        onBlur={(e) => {
+                                          setCustomEdgeEndpoint(e.target.value);
+                                          void speechPlayer.loadVoices();
+                                        }}
+                                      />
+                                    </label>
+                                  )}
+
+                                  <div className="drawer-speech-row">
+                                    <div className="drawer-speech-row-header">
+                                      <span className="drawer-speech-label">
+                                        {translate(locale, "bible.volume")}
+                                      </span>
+                                      <span className="drawer-speech-val">
+                                        {Math.round(
+                                          speechSnapshot.volume * 100,
+                                        )}
+                                        %
+                                      </span>
+                                    </div>
+                                    <input
+                                      type="range"
+                                      className="drawer-speech-range"
+                                      aria-label={translate(
+                                        locale,
+                                        "bible.voiceVolume",
+                                      )}
+                                      min="0"
+                                      max="1"
+                                      step="0.05"
+                                      value={speechSnapshot.volume}
+                                      onChange={(e) =>
+                                        speechPlayer.setVolume(
+                                          Number(e.target.value),
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <p className="drawer-speech-link">
-                            <Link to="/lainnya?section=appearance">
-                              {translate(
-                                locale,
-                                "bible.appearanceSettingsLink",
-                              )}
-                            </Link>
-                          </p>
+
+                          {/* Section 4: languages stay switchable here because the
+                              reader has its own top bar; the theme keeps its one
+                              home in Settings, so the drawer links there. */}
+                          <div className="hamburger-section">
+                            <span className="hamburger-section-label">
+                              {translate(locale, "more.appearance")}
+                            </span>
+                            <div
+                              className="hamburger-group"
+                              style={{ padding: "12px 14px" }}
+                            >
+                              <Select
+                                value={locale}
+                                onChange={setLocale}
+                                className="topbar-select"
+                                label={translate(locale, "shell.language")}
+                                options={[
+                                  { value: "id", label: "ID" },
+                                  { value: "en", label: "EN" },
+                                  { value: "zh", label: "中文" },
+                                ]}
+                              />
+                            </div>
+                            <p className="drawer-speech-link">
+                              <Link to="/lainnya?section=appearance">
+                                {translate(
+                                  locale,
+                                  "bible.appearanceSettingsLink",
+                                )}
+                              </Link>
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </>
-                )}
+                    </>,
+                    document.body,
+                  )}
               </div>
             </>
           ) : (
