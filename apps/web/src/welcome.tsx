@@ -66,7 +66,7 @@ export function WelcomePage({
   );
   useEffect(() => {
     if (!native) return;
-    return subscribeNativeEgysLogin(() => {
+    const unsubscribe = subscribeNativeEgysLogin(() => {
       void runAuth(async () => {
         const profile = await getEgysProfile();
         if (!profile)
@@ -75,6 +75,22 @@ export function WelcomePage({
         completeOnce();
       });
     });
+    const onReturnFocus = () => {
+      setNotice("");
+      if (completedRef.current) return;
+      void getEgysProfile()
+        .then((profile) => {
+          if (!profile || completedRef.current) return;
+          saveEgysProfile(profile);
+          completeOnce();
+        })
+        .catch(() => undefined);
+    };
+    window.addEventListener("focus", onReturnFocus);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("focus", onReturnFocus);
+    };
   }, [native, runAuth, locale, completeOnce]);
   const handleCredential = useCallback(
     (credential: string) =>

@@ -169,8 +169,8 @@ function suaraNetworkCandidates(): string[] {
     typeof window !== "undefined" &&
     Boolean(
       base &&
-      (base.includes("127.0.0.1") || base.includes("localhost")) &&
-      !base.includes(`:${window.location.port}`),
+        (base.includes("127.0.0.1") || base.includes("localhost")) &&
+        !base.includes(`:${window.location.port}`),
     );
   const proxy =
     isCrossPortLocalhost || Date.now() < proxyCooldownUntil

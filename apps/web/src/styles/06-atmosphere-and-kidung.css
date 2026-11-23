@@ -1565,3 +1565,190 @@
 .hymn-detail-page.is-text-viewer .lyrics-sheet:not(.is-continuous) {
   transition: none;
 }
+
+/* ── Unified Sanctuary Frosted-Glass Polish: Alkitab, PDF Viewer, Toasts & Dialogs ── */
+.reader-context-bar {
+  background: color-mix(in srgb, var(--surface-glass) 90%, var(--surface));
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom: 1px solid color-mix(in srgb, var(--blue) 14%, var(--line));
+}
+
+.selected-verse-toolbar {
+  border: 1px solid color-mix(in srgb, var(--blue) 24%, var(--line));
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  box-shadow:
+    var(--shadow-float),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 34%, transparent);
+}
+
+.bible-picker-backdrop,
+.bible-notes-backdrop {
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+}
+
+.bible-picker-modal,
+.bible-notes-modal,
+.bible-crossref-modal,
+.confirm-dialog {
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  background: color-mix(in srgb, var(--surface-glass) 94%, var(--surface));
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+  box-shadow:
+    var(--shadow-float),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 30%, transparent);
+}
+
+.pdf-toolbar {
+  border: 1px solid color-mix(in srgb, var(--blue) 20%, var(--line));
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  -webkit-backdrop-filter: blur(20px) saturate(1.45);
+  backdrop-filter: blur(20px) saturate(1.45);
+  box-shadow: var(--shadow-sm);
+}
+
+.pdf-key-dropdown,
+.pdf-advanced-controls,
+.pdf-layout-options {
+  border: 1px solid color-mix(in srgb, var(--blue) 20%, var(--line));
+  background: color-mix(in srgb, var(--surface-glass) 94%, var(--surface));
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+  backdrop-filter: blur(22px) saturate(1.45);
+  box-shadow: var(--shadow-float);
+}
+
+.toast {
+  border: 1px solid color-mix(in srgb, var(--blue) 26%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-glass) 94%, var(--surface));
+  -webkit-backdrop-filter: blur(20px) saturate(1.45);
+  backdrop-filter: blur(20px) saturate(1.45);
+  box-shadow: var(--shadow-float);
+}
+
+.app-update-banner {
+  border: 1px solid color-mix(in srgb, var(--blue) 26%, var(--line));
+  background: color-mix(in srgb, var(--surface-glass) 94%, var(--surface));
+  -webkit-backdrop-filter: blur(20px) saturate(1.45);
+  backdrop-filter: blur(20px) saturate(1.45);
+  box-shadow: var(--shadow-float);
+}
+
+/* ── Optimized Sanctuary Frosted-Glass Pengaturan Page ── */
+.more-page .more-library-link {
+  border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  box-shadow: var(--shadow-xs);
+}
+
+.more-page .more-library-link:hover {
+  border-color: color-mix(in srgb, var(--blue) 36%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 40%, var(--surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.more-page .more-library-link:hover .more-library-icon {
+  background: var(--blue);
+  color: var(--on-accent);
+}
+
+.more-page .more-settings-list {
+  gap: 8px;
+}
+
+.more-page .more-settings-group {
+  margin-top: 20px;
+  margin-bottom: 4px;
+  padding-inline: 4px;
+}
+
+.more-page .more-settings-group:first-child {
+  margin-top: 4px;
+}
+
+.more-page .more-setting-section {
+  border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out),
+    background-color 180ms var(--ease-out);
+}
+
+.more-page .more-setting-section:hover {
+  border-color: color-mix(in srgb, var(--blue) 32%, var(--line));
+}
+
+.more-page .more-setting-section[open] {
+  border-color: color-mix(in srgb, var(--blue) 36%, var(--line));
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.more-page .more-setting-row {
+  padding: 12px 16px;
+  border-radius: var(--radius-card);
+}
+
+.more-page .more-setting-section[open] > .more-setting-row {
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  background: color-mix(in srgb, var(--blue-soft) 32%, transparent);
+}
+
+.more-page .more-setting-section[open] > .more-setting-row .more-setting-icon {
+  background: var(--blue);
+  color: var(--on-accent);
+}
+
+.more-page .more-setting-summary-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.more-page .more-setting-accent-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--surface) 85%, transparent);
+  flex-shrink: 0;
+}
+
+.more-page .more-settings-content {
+  padding: 16px;
+}
+
+.more-page .more-setting-section[open] > .more-card {
+  margin: 0;
+  border: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: transparent;
+  box-shadow: none;
+}
+
+.more-page .more-settings-content .more-card {
+  border: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+  background: color-mix(in srgb, var(--surface-soft) 56%, var(--surface));
+}
+
+.more-page .pack-stats {
+  gap: 8px;
+}
+
+.more-page .pack-stats > span {
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
