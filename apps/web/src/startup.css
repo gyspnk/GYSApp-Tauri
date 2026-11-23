@@ -132,25 +132,20 @@ html[data-theme="sepia"] .shell-startup {
   height: auto;
   overflow: visible;
   will-change: transform;
-  animation: gys-dove-glide 1.55s ease-in-out 720ms infinite;
+  animation: gys-dove-glide 1.24s ease-in-out 720ms infinite;
 }
-.gys-dove-body {
-  transform-box: view-box;
-  transform-origin: 286px 128px;
-  will-change: transform;
-  animation: gys-body-heave 1.18s ease-in-out infinite;
-}
+/* Lock both wings to their exact torso shoulder joints so neither wing ever detaches */
 .gys-wing-near {
   transform-box: view-box;
-  transform-origin: 270px 104px;
+  transform-origin: 296px 86px;
   will-change: transform;
-  animation: gys-wing-near-flap 1.18s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  animation: gys-wing-near-flap 1.24s cubic-bezier(0.37, 0, 0.63, 1) infinite;
 }
 .gys-wing-far {
   transform-box: view-box;
-  transform-origin: 348px 56px;
+  transform-origin: 362px 58px;
   will-change: transform;
-  animation: gys-wing-far-flap 1.18s cubic-bezier(0.37, 0, 0.63, 1) 75ms
+  animation: gys-wing-far-flap 1.24s cubic-bezier(0.37, 0, 0.63, 1) 70ms
     infinite;
 }
 .gys-arc {
@@ -302,7 +297,7 @@ html[data-theme="sepia"] .shell-startup-track > span {
   );
 }
 
-/* Act 1: Fluid S-curve glide arrival & organic counter-phase avian hover */
+/* Act 1: Fluid S-curve glide arrival & seamless shoulder-locked hover */
 @keyframes gys-dove-arrive {
   0% {
     transform: translate3d(-66px, 34px, 0) scale(0.78) rotate(-14deg);
@@ -368,49 +363,40 @@ html[data-theme="sepia"] .shell-startup-track > span {
     opacity: 0;
   }
 }
-@keyframes gys-body-heave {
-  0%,
-  100% {
-    transform: translate3d(0, 2px, 0) rotate(-1deg);
-  }
-  38% {
-    transform: translate3d(0, -4px, 0) rotate(1.6deg);
-  }
-  68% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-}
 @keyframes gys-wing-near-flap {
   0%,
   100% {
-    transform: rotate(16deg) scaleY(1.05);
+    transform: translate3d(1px, 1px, 0) rotate(9deg) scaleY(1.03);
   }
-  34% {
-    transform: rotate(-24deg) scaleY(0.82);
+  36% {
+    transform: translate3d(3px, 3px, 0) rotate(-12deg) scaleY(0.91);
   }
-  64% {
-    transform: rotate(8deg) scaleY(1.02);
+  68% {
+    transform: translate3d(1px, 1px, 0) rotate(4deg) scaleY(1.01);
   }
 }
 @keyframes gys-wing-far-flap {
   0%,
   100% {
-    transform: rotate(-14deg) scaleY(1.05);
+    transform: translate3d(-1px, 1px, 0) rotate(-8deg) scaleY(1.03);
   }
-  34% {
-    transform: rotate(21deg) scaleY(0.84);
+  36% {
+    transform: translate3d(-2px, 2px, 0) rotate(11deg) scaleY(0.92);
   }
-  64% {
-    transform: rotate(-6deg) scaleY(1.02);
+  68% {
+    transform: translate3d(-1px, 1px, 0) rotate(-4deg) scaleY(1.01);
   }
 }
 @keyframes gys-dove-glide {
   0%,
   100% {
-    transform: translate3d(-2px, 3px, 0) rotate(-1.6deg);
+    transform: translate3d(-2px, 3px, 0) rotate(-1.5deg);
   }
-  50% {
-    transform: translate3d(4px, -7px, 0) rotate(1.8deg);
+  38% {
+    transform: translate3d(3px, -7px, 0) rotate(1.8deg);
+  }
+  70% {
+    transform: translate3d(0, -1px, 0) rotate(0.2deg);
   }
 }
 @keyframes gys-arc-pulse {
@@ -454,42 +440,42 @@ html[data-theme="sepia"] .shell-startup-track > span {
 }
 @keyframes gys-wing-near-takeoff {
   0% {
-    transform: rotate(10deg) scaleY(1);
+    transform: translate3d(1px, 1px, 0) rotate(5deg) scaleY(1);
   }
   18% {
-    transform: rotate(28deg) scaleY(1.1);
+    transform: translate3d(0, 0, 0) rotate(13deg) scaleY(1.05);
   }
   36% {
-    transform: rotate(-30deg) scaleY(0.76);
+    transform: translate3d(3px, 4px, 0) rotate(-15deg) scaleY(0.88);
   }
   56% {
-    transform: rotate(22deg) scaleY(1.06);
+    transform: translate3d(1px, 1px, 0) rotate(11deg) scaleY(1.04);
   }
   76% {
-    transform: rotate(-24deg) scaleY(0.82);
+    transform: translate3d(3px, 3px, 0) rotate(-13deg) scaleY(0.9);
   }
   100% {
-    transform: rotate(12deg) scaleY(1);
+    transform: translate3d(1px, 1px, 0) rotate(6deg) scaleY(1);
   }
 }
 @keyframes gys-wing-far-takeoff {
   0% {
-    transform: rotate(-10deg) scaleY(1);
+    transform: translate3d(-1px, 1px, 0) rotate(-5deg) scaleY(1);
   }
   18% {
-    transform: rotate(-26deg) scaleY(1.1);
+    transform: translate3d(0, 0, 0) rotate(-12deg) scaleY(1.05);
   }
   36% {
-    transform: rotate(26deg) scaleY(0.78);
+    transform: translate3d(-2px, 3px, 0) rotate(13deg) scaleY(0.89);
   }
   56% {
-    transform: rotate(-20deg) scaleY(1.06);
+    transform: translate3d(-1px, 1px, 0) rotate(-10deg) scaleY(1.04);
   }
   76% {
-    transform: rotate(20deg) scaleY(0.84);
+    transform: translate3d(-2px, 2px, 0) rotate(11deg) scaleY(0.91);
   }
   100% {
-    transform: rotate(-10deg) scaleY(1);
+    transform: translate3d(-1px, 1px, 0) rotate(-5deg) scaleY(1);
   }
 }
 @keyframes gys-arc-trail-exit {
@@ -625,7 +611,6 @@ html[data-boot="ready"] .shell-startup-motes {
   .shell-startup-dove,
   .shell-startup-title,
   .shell-startup-track,
-  .gys-dove-body,
   .gys-wing-near,
   .gys-wing-far,
   .gys-arc {
