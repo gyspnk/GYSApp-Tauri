@@ -8,6 +8,7 @@ import {
   useState,
   useSyncExternalStore,
   type FormEvent,
+  type MouseEvent,
 } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { buildReportMailto, REPORT_EMAIL } from "./report-mailto.js";
@@ -1012,10 +1013,8 @@ export function MorePage({
         DISTRIBUTED_ASSET_DEFINITIONS.find((asset) => asset.code === code)
           ?.kind === "bible"
       ) {
-        const { prepareSqliteBibleRuntime } = await import(
-          "./bible-sql-runtime.js"
-        );
-        await prepareSqliteBibleRuntime();
+        const runtime = await import("./bible-sql-runtime.js");
+        await runtime.prepareSqliteBibleRuntime();
       }
       const manager = getDistributedAssetManager();
       await manager.install(code, {
@@ -1077,6 +1076,74 @@ export function MorePage({
     }
   };
 
+  const sectionAnims = useRef(new WeakMap<HTMLDetailsElement, Animation>());
+  const animateSettingToggle = useCallback((event: MouseEvent<HTMLElement>) => {
+    const summary = event.currentTarget;
+    const details = summary.parentElement;
+    if (!(details instanceof HTMLDetailsElement)) return;
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion || typeof details.animate !== "function") return;
+
+    event.preventDefault();
+    sectionAnims.current.get(details)?.cancel();
+    const isHymns = details.dataset.setting === "hymns";
+    const isClosing = details.open;
+    const summaryHeight = summary.offsetHeight;
+
+    if (isClosing) {
+      const startHeight = details.offsetHeight;
+      details.style.overflow = "hidden";
+      const anim = details.animate(
+        { height: [`${startHeight}px`, `${summaryHeight}px`] },
+        { duration: 220, easing: "cubic-bezier(0.4, 0, 0.2, 1)" },
+      );
+      sectionAnims.current.set(details, anim);
+      anim.onfinish = () => {
+        details.open = false;
+        if (isHymns) setHymnSettingsOpen(false);
+        details.style.overflow = "";
+        sectionAnims.current.delete(details);
+      };
+      anim.oncancel = () => {
+        details.style.overflow = "";
+        sectionAnims.current.delete(details);
+      };
+      return;
+    }
+
+    details.style.overflow = "hidden";
+    details.open = true;
+    if (isHymns) setHymnSettingsOpen(true);
+    const panel = summary.nextElementSibling;
+    requestAnimationFrame(() => {
+      const endHeight = details.offsetHeight;
+      const anim = details.animate(
+        { height: [`${summaryHeight}px`, `${endHeight}px`] },
+        { duration: 280, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+      );
+      if (panel instanceof HTMLElement && typeof panel.animate === "function") {
+        panel.animate(
+          [
+            { opacity: 0, transform: "translate3d(0, -8px, 0)" },
+            { opacity: 1, transform: "translate3d(0, 0, 0)" },
+          ],
+          { duration: 260, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+        );
+      }
+      sectionAnims.current.set(details, anim);
+      anim.onfinish = () => {
+        details.style.overflow = "";
+        sectionAnims.current.delete(details);
+      };
+      anim.oncancel = () => {
+        details.style.overflow = "";
+        sectionAnims.current.delete(details);
+      };
+    });
+  }, []);
+
   return (
     <div className="page more-page">
       {/* Every destination paints its own name; this page used to hide it and
@@ -1126,7 +1193,10 @@ export function MorePage({
           className="more-setting-section more-account-section"
           data-setting="account"
         >
-          <summary className="more-setting-row">
+          <summary
+            className="more-setting-row"
+            onClick={animateSettingToggle}
+          >
             <span className="more-setting-icon">
               <AccountAvatar />
             </span>
@@ -1299,7 +1369,10 @@ export function MorePage({
         </details>
 
         <details className="more-setting-section" data-setting="appearance">
-          <summary className="more-setting-row">
+          <summary
+            className="more-setting-row"
+            onClick={animateSettingToggle}
+          >
             <span className="more-setting-icon">
               <Icon name="sun" size={20} />
             </span>
@@ -1441,7 +1514,10 @@ export function MorePage({
         </h2>
 
         <details className="more-setting-section" data-setting="audio">
-          <summary className="more-setting-row">
+          <summary
+            className="more-setting-row"
+            onClick={animateSettingToggle}
+          >
             <span className="more-setting-icon">
               <Icon name="volume" size={20} />
             </span>
@@ -1464,7 +1540,10 @@ export function MorePage({
               setHymnSettingsOpen(event.currentTarget.open);
           }}
         >
-          <summary className="more-setting-row">
+          <summary
+            className="more-setting-row"
+            onClick={animateSettingToggle}
+          >
             <span className="more-setting-icon">
               <Icon name="music" size={20} />
             </span>
@@ -1531,7 +1610,10 @@ export function MorePage({
         </details>
 
         <details className="more-setting-section" data-setting="offline">
-          <summary className="more-setting-row">
+          <summary
+            className="more-setting-row"
+            onClick={animateSettingToggle}
+          >
             <span className="more-setting-icon">
               <Icon name="download" size={20} />
             </span>
@@ -1689,7 +1771,10 @@ export function MorePage({
         </details>
 
         <details className="more-setting-section" data-setting="backup">
-          <summary className="more-setting-row">
+          <summary
+            className="more-setting-row"
+            onClick={animateSettingToggle}
+          >
             <span className="more-setting-icon">
               <Icon name="copy" size={20} />
             </span>
@@ -1757,7 +1842,10 @@ export function MorePage({
         </h2>
 
         <details className="more-setting-section" data-setting="about">
-          <summary className="more-setting-row">
+          <summary
+            className="more-setting-row"
+            onClick={animateSettingToggle}
+          >
             <span className="more-setting-icon">
               <Icon name="checkCircle" size={20} />
             </span>
