@@ -25,6 +25,30 @@
   }
 }
 
+/* Top-most pointer-events-none interaction layer for tap/click halos & hover aura */
+.gys-interaction-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 40);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gys-interaction-overlay .gys-ambient-cursor-glow {
+  mix-blend-mode: normal;
+}
+
+.gys-interaction-overlay .gys-ambient-cursor-glow.is-active {
+  opacity: 0.44;
+}
+
+/* Ensure element press ripples & water droplets always render above inner card/button layers */
+.gys-ripple,
+.gys-ripple-ring,
+.gys-water-drop {
+  z-index: 4;
+}
+
 /* Prevent 512px PdfDetailLayer tile canvases from inheriting page-frame outline on mobile */
 .is-pdf-viewer .gys-pdf-overlay .pdf-page-frame .pdf-detail-layer > canvas {
   outline: none;

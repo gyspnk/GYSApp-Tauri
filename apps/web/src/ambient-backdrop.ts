@@ -2,8 +2,10 @@
  * Expressive yet serene Gereja Yesus Sejati sanctuary ambient backdrop.
  * Renders the authentic traced 6-path official GYS Dove SVG in the background
  * with slow passive wing-flapping colored dynamically by the app's active accent
- * (`var(--blue)` / `var(--gold)`), plus soft living-water rings, 10 floating
- * sanctuary motes, desktop cursor-following luminous aura, and gentle touch halo.
+ * (`var(--blue)` / `var(--gold)`), plus soft living-water rings and 10 floating
+ * sanctuary motes. Interactive cursor hover glow and tap/click touch halos are
+ * mounted in a dedicated top-most pointer-events-none overlay so they are never
+ * hidden underneath cards, boxes, drawers, or modals.
  * Automatically pauses all GPU animations when the window/tab is hidden or when
  * prefers-reduced-motion: reduce is active.
  */
@@ -89,27 +91,27 @@ export function installAmbientBackdrop(): () => void {
     motes.appendChild(mote);
   }
 
+  const emblem = document.createElement("div");
+  emblem.className = "gys-ambient-emblem";
+  emblem.appendChild(createOfficialDoveSvg());
+
+  root.append(ray, auraPrimary, auraSecondary, waterRings, motes, emblem);
+  document.body.prepend(root);
+
+  /* Dedicated top-most pointer-events-none layer so hover aura & tap/click halos
+     always render cleanly above cards, boxes, drawers, and modals. */
+  const interactionOverlay = document.createElement("div");
+  interactionOverlay.className = "gys-interaction-overlay";
+  interactionOverlay.setAttribute("aria-hidden", "true");
+
   const cursorGlow = document.createElement("div");
   cursorGlow.className = "gys-ambient-cursor-glow";
 
   const touchLayer = document.createElement("div");
   touchLayer.className = "gys-ambient-touch-layer";
 
-  const emblem = document.createElement("div");
-  emblem.className = "gys-ambient-emblem";
-  emblem.appendChild(createOfficialDoveSvg());
-
-  root.append(
-    ray,
-    auraPrimary,
-    auraSecondary,
-    waterRings,
-    motes,
-    cursorGlow,
-    touchLayer,
-    emblem,
-  );
-  document.body.prepend(root);
+  interactionOverlay.append(cursorGlow, touchLayer);
+  document.body.append(interactionOverlay);
 
   let rafId = 0;
   let targetX = -999;
@@ -188,5 +190,6 @@ export function installAmbientBackdrop(): () => void {
     );
     document.documentElement.classList.remove("is-tab-hidden");
     root.remove();
+    interactionOverlay.remove();
   };
 }

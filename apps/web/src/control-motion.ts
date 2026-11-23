@@ -1,13 +1,13 @@
 import { triggerElementRipple } from "./ripple.js";
 
 const RIPPLE_SELECTOR =
-  ".primary-button, .secondary-button, .quiet-button, .danger-button, .icon-button, .text-button, .home-portal, .more-library-link, .more-setting-row, .continue-item, .nav-item, .topbar-appearance-button, .account-button, .search-trigger, .accent-palette-item, .audio-setting-preview, .kidung-rail-row, .kidung-rail-toggle, .kidung-rail-expand-btn, .viewer-chrome-button, .hymn-action, .hymn-partitur-toggle, .hymn-more-actions-summary, .pdf-music-summary, .kidung-mode-cycle, .add-to-playlist-btn, .control-select-trigger, .control-select-option, .reader-context-button, .reader-context-book-picker, .lyrics-hdr-btn, .lyrics-ctrl-btn, .egys-provider, .pujian-title, .kidung-playlist-song, .kidung-queue-transport-btn, .kidung-queue-chip, .kidung-queue-quickadd-btn";
+  ".primary-button, .secondary-button, .quiet-button, .danger-button, .icon-button, .text-button, .home-portal, .more-library-link, .more-setting-row, .continue-item, .nav-item, .topbar-appearance-button, .account-button, .search-trigger, .accent-palette-item, .audio-setting-preview, .kidung-rail-row, .kidung-rail-toggle, .kidung-rail-expand-btn, .viewer-chrome-button, .hymn-action, .hymn-partitur-toggle, .hymn-more-actions-summary, .pdf-music-summary, .kidung-mode-cycle, .add-to-playlist-btn, .control-select-trigger, .control-select-option, .reader-context-button, .reader-context-book-picker, .lyrics-hdr-btn, .lyrics-ctrl-btn, .egys-provider, .pujian-title, .kidung-playlist-song, .kidung-queue-transport-btn, .kidung-queue-chip, .kidung-queue-quickadd-btn, .hamburger-item, .hamburger-drawer-close, .typography-step-btn, .faith-row-item, .literature-row, .suara-library-item";
 
 const SURFACE_PRESS_SELECTOR =
-  ".home-portal, .more-library-link, .more-setting-row, .continue-item, .kidung-rail-row, .pujian-title, .literature-row, .suara-library-item, .faith-row-item, .kidung-playlist-song, .kidung-saved-playlist-row";
+  ".home-portal, .more-library-link, .more-setting-row, .continue-item, .kidung-rail-row, .pujian-title, .literature-row, .suara-library-item, .faith-row-item, .kidung-playlist-song, .kidung-saved-playlist-row, .hamburger-item";
 
 const SPOTLIGHT_SELECTOR =
-  ".home-portal, .more-library-link, .continue-item, .primary-button, .pujian-item, .kidung-playlist-list > li, .kidung-saved-playlist-row, .kidung-queue-hero, .more-setting-row, .literature-row, .suara-library-item, .faith-row-item";
+  ".home-portal, .more-library-link, .continue-item, .primary-button, .pujian-item, .kidung-playlist-list > li, .kidung-saved-playlist-row, .kidung-queue-hero, .more-setting-row, .literature-row, .suara-library-item, .faith-row-item, .hamburger-item";
 
 const DISMISSABLE_DETAILS_SELECTOR =
   ".hymn-more-actions[open], .hymn-reader-settings[open], .media-advanced-controls[open], .pdf-music-menu[open], .faith-pdf-sources[open], .kidung-row-menu[open]";
