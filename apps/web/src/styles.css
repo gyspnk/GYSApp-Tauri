@@ -7,6 +7,26 @@
 @import "./styles/05-motion-and-print.css";
 @import "./styles/06-atmosphere-and-kidung.css";
 
+/* Disable native browser tap highlight & default blue focus ring on pointer press/hover */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:is(
+    button,
+    a,
+    summary,
+    input,
+    select,
+    textarea,
+    [role="button"],
+    [tabindex]
+  ):focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Seamless left-wing shoulder-socket pivot for the ambient GYS Dove */
 .gys-ambient-wing-near {
   transform-origin: 292px 92px;
@@ -93,7 +113,128 @@
   }
 }
 
-/* Polished Bible Menu Bacaan drawer: soft hairlines, frosted glass, and consistent row alignment */
+/* ── Bible Reader Header: single seamless frosted bar with zero extra inner underline ── */
+.topbar.is-reader-context {
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+  box-shadow: none;
+}
+
+.topbar.is-reader-context .reader-context-bar {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-bottom: 0;
+  gap: 10px;
+}
+
+.reader-context-book-picker {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 86%, var(--surface-soft));
+  box-shadow: var(--shadow-xs);
+  color: var(--navy);
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+
+.reader-context-book-picker:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--blue) 42%, var(--line));
+  background: var(--blue-soft);
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.reader-version-select-wrap .control-select-trigger {
+  min-height: 40px;
+  border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 84%, var(--surface-soft));
+  box-shadow: var(--shadow-xs);
+}
+
+.reader-context-actions {
+  gap: 8px;
+}
+
+.reader-context-actions .reader-context-button,
+.reader-context-actions .reader-hamburger-btn {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 84%, var(--surface-soft));
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── Full-Screen Immersive Blurred Quick Navigation Kitab (no outer box) ── */
+.quick-nav-drag-overlay {
+  z-index: calc(var(--z-modal) + 10);
+  background: color-mix(in srgb, var(--surface) 74%, transparent);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  backdrop-filter: blur(28px) saturate(1.6);
+}
+
+.quick-nav-columns-container {
+  max-width: 1200px;
+  width: 100%;
+  margin-inline: auto;
+  padding: max(20px, var(--safe-area-top)) clamp(16px, 4vw, 40px)
+    max(24px, env(safe-area-inset-bottom));
+}
+
+.quick-nav-column,
+.quick-nav-column.is-active-column {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.quick-nav-column-list {
+  gap: 6px;
+  padding: 0;
+  overflow: visible;
+}
+
+.quick-nav-item {
+  min-height: 36px;
+  padding: 4px 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 46%, transparent);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface) 48%, transparent);
+  color: var(--ink);
+  font-weight: 600;
+  justify-content: center;
+  text-align: center;
+}
+
+.quick-nav-item.is-selected {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: var(--on-accent);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transform: scale(1.06);
+}
+
+.quick-nav-multistep {
+  z-index: calc(var(--z-modal) + 12);
+  border: 1px solid color-mix(in srgb, var(--blue) 28%, var(--line));
+  background: color-mix(in srgb, var(--surface-glass) 92%, var(--surface));
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+}
+
+/* ── Polished Bible Menu Bacaan Drawer & Internal Settings Controls ── */
 .reader-hamburger-backdrop {
   background: rgba(8, 18, 36, 0.36);
   -webkit-backdrop-filter: blur(6px);
@@ -131,6 +272,10 @@
   gap: 16px;
 }
 
+.hamburger-section {
+  gap: 8px;
+}
+
 .hamburger-card {
   padding: 14px 16px;
   border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
@@ -161,6 +306,11 @@
   background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface));
   text-align: left;
   justify-items: start;
+}
+
+.hamburger-item.is-active {
+  border-color: color-mix(in srgb, var(--blue) 36%, var(--line));
+  background: color-mix(in srgb, var(--blue-soft) 68%, var(--surface));
 }
 
 .hamburger-item.speech-settings-toggle {
@@ -205,4 +355,51 @@
   padding: 0;
   border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
   background: var(--surface);
+}
+
+.drawer-speech-card {
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface-soft) 78%, var(--surface));
+  gap: 12px;
+}
+
+.drawer-speech-select,
+.drawer-speech-input {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--type-body-sm);
+}
+
+.drawer-speech-range {
+  min-height: 32px;
+}
+
+.drawer-speech-link {
+  margin: 0;
+  min-height: 0;
+}
+
+.drawer-speech-link a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--blue-soft) 60%, transparent);
+  color: var(--blue);
+  font-size: var(--type-body-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+
+.drawer-speech-link a:hover {
+  background: var(--blue-soft);
 }
