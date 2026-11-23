@@ -1,7 +1,9 @@
 import {
   lazy,
   Suspense,
+  useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -47,7 +49,6 @@ import {
   type EgysSessionTrace,
 } from "./egys.js";
 import { EgysGoogleButton } from "./egys-google-button.js";
-import { useCallback } from "react";
 import { EgysWhatsApp } from "./egys-whatsapp.js";
 import { loadEgysApple, signInEgysApple } from "./egys-apple.js";
 import { EgysLoginMethods } from "./egys-login-methods.js";
@@ -58,6 +59,7 @@ import { UiPreferencesRows } from "./ui-preferences-rows.js";
 import { REMINDER_CHANGE_EVENT } from "./daily-reminder.js";
 import { Icon, type IconName } from "./icons.js";
 import { AccountAvatar } from "./account-avatar.js";
+import { ConfirmDialog } from "./confirm-dialog.js";
 import {
   clearDiagnostics,
   getDiagnostics,
@@ -163,10 +165,14 @@ function DistributedAssetPanel({
   onInstall: (code: string) => void;
   onRemove: (code: string) => void;
 }) {
-  const groups = ASSET_GROUPS.map((group) => ({
-    ...group,
-    items: assets.filter((asset) => asset.kind === group.key),
-  })).filter((group) => group.items.length > 0);
+  const groups = useMemo(
+    () =>
+      ASSET_GROUPS.map((group) => ({
+        ...group,
+        items: assets.filter((asset) => asset.kind === group.key),
+      })).filter((group) => group.items.length > 0),
+    [assets],
+  );
 
   return (
     <article className="more-card more-card-wide distributed-assets-card">
@@ -209,13 +215,21 @@ function DistributedAssetPanel({
                   : 0;
               return (
                 <div className="distributed-asset-row" key={asset.code}>
-                  <div className="distributed-asset-copy">
+                  <div
+                    className="distributed-asset-copy"
+                    title={distributedAssetStateLabel(locale, asset)}
+                  >
                     <strong>{asset.title}</strong>
                     <small>
-                      {distributedAssetStateLabel(locale, asset)}
-                      {asset.sizeBytes
-                        ? ` · ${formatBytes(asset.sizeBytes, locale)}`
-                        : ""}
+                      {asset.state === "update"
+                        ? `${distributedAssetStateLabel(locale, asset)}${
+                            asset.sizeBytes
+                              ? ` · ${formatBytes(asset.sizeBytes, locale)}`
+                              : ""
+                          }`
+                        : asset.sizeBytes
+                          ? formatBytes(asset.sizeBytes, locale)
+                          : distributedAssetStateLabel(locale, asset)}
                     </small>
                     {busy && (
                       <progress
@@ -413,6 +427,9 @@ export function MorePage({
     () => localStorage.getItem("gys-report-draft") ?? "",
   );
   const [notice, setNotice] = useState("");
+  const [pendingConfirm, setPendingConfirm] = useState<
+    { kind: "asset"; code: string; title: string } | { kind: "reset" } | null
+  >(null);
   const [buildId, setBuildId] = useState<string | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticEvent[]>(() =>
     getDiagnostics(),
@@ -995,8 +1012,9 @@ export function MorePage({
         DISTRIBUTED_ASSET_DEFINITIONS.find((asset) => asset.code === code)
           ?.kind === "bible"
       ) {
-        const { prepareSqliteBibleRuntime } =
-          await import("./bible-sql-runtime.js");
+        const { prepareSqliteBibleRuntime } = await import(
+          "./bible-sql-runtime.js"
+        );
         await prepareSqliteBibleRuntime();
       }
       const manager = getDistributedAssetManager();
@@ -1019,12 +1037,18 @@ export function MorePage({
     }
   };
 
+  const requestRemoveDistributedAsset = (code: string) => {
+    if (distributedBusyCode) return;
+    const asset = distributedAssets.find((item) => item.code === code);
+    setPendingConfirm({
+      kind: "asset",
+      code,
+      title: asset?.title ?? code,
+    });
+  };
+
   const removeDistributedAsset = async (code: string) => {
-    if (
-      distributedBusyCode ||
-      !window.confirm(translate(locale, "more.confirmRemoveAsset"))
-    )
-      return;
+    if (distributedBusyCode) return;
     try {
       const manager = getDistributedAssetManager();
       await manager.remove(code);
@@ -1282,7 +1306,14 @@ export function MorePage({
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryAppearance")}</strong>
             </span>
-            <span className="more-setting-summary">{themeSummary}</span>
+            <span className="more-setting-summary more-setting-summary-accent">
+              <span
+                className="more-setting-accent-dot"
+                style={{ backgroundColor: accentColor }}
+                aria-hidden="true"
+              />
+              {themeSummary}
+            </span>
             <Icon name="chevronDown" size={18} />
           </summary>
           <article className="more-card more-card-wide appearance-card">
@@ -1440,6 +1471,9 @@ export function MorePage({
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryHymns")}</strong>
             </span>
+            {reminderTime && (
+              <span className="more-setting-summary">{reminderTime}</span>
+            )}
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
@@ -1625,7 +1659,7 @@ export function MorePage({
                   : {})}
                 {...(distributedError ? { error: distributedError } : {})}
                 onInstall={(code) => void installDistributedAsset(code)}
-                onRemove={(code) => void removeDistributedAsset(code)}
+                onRemove={(code) => requestRemoveDistributedAsset(code)}
               />
             </div>
             <section
@@ -1645,17 +1679,7 @@ export function MorePage({
                 <button
                   className="quiet-button danger-button"
                   type="button"
-                  onClick={() => {
-                    const confirmed = window.confirm(
-                      translate(locale, "more.confirmDeleteData"),
-                    );
-                    if (!confirmed) return;
-                    void clearAppData()
-                      .then(() => show(translate(locale, "more.dataReset")))
-                      .catch(() =>
-                        show(translate(locale, "more.resetIncomplete")),
-                      );
-                  }}
+                  onClick={() => setPendingConfirm({ kind: "reset" })}
                 >
                   {translate(locale, "more.resetDevice")}
                 </button>
@@ -1740,6 +1764,7 @@ export function MorePage({
             <span className="more-setting-copy">
               <strong>{translate(locale, "more.categoryAbout")}</strong>
             </span>
+            {buildId && <span className="more-setting-summary">{buildId}</span>}
             <Icon name="chevronDown" size={18} />
           </summary>
           <div className="more-settings-content">
@@ -1855,6 +1880,39 @@ export function MorePage({
           </div>
         </details>
       </section>
+
+      <ConfirmDialog
+        open={pendingConfirm !== null}
+        title={
+          pendingConfirm?.kind === "asset"
+            ? pendingConfirm.title
+            : translate(locale, "more.resetDevice")
+        }
+        body={
+          pendingConfirm?.kind === "asset"
+            ? translate(locale, "more.confirmRemoveAsset")
+            : translate(locale, "more.confirmDeleteData")
+        }
+        confirmLabel={
+          pendingConfirm?.kind === "asset"
+            ? translate(locale, "more.delete")
+            : translate(locale, "more.resetDevice")
+        }
+        cancelLabel={translate(locale, "common.cancel")}
+        onCancel={() => setPendingConfirm(null)}
+        onConfirm={() => {
+          const action = pendingConfirm;
+          setPendingConfirm(null);
+          if (!action) return;
+          if (action.kind === "asset") {
+            void removeDistributedAsset(action.code);
+            return;
+          }
+          void clearAppData()
+            .then(() => show(translate(locale, "more.dataReset")))
+            .catch(() => show(translate(locale, "more.resetIncomplete")));
+        }}
+      />
 
       {notice && (
         <div className="toast" role="status">
