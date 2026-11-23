@@ -93,13 +93,13 @@ function releaseBootSplash() {
     const splash = document.getElementById("boot-splash");
     if (!splash) return;
     splash.setAttribute("aria-hidden", "true");
-    window.setTimeout(() => splash.remove(), reducedMotion ? 40 : 1360);
+    window.setTimeout(() => splash.remove(), reducedMotion ? 40 : 1500);
   };
   if (reducedMotion) {
     trigger();
     return;
   }
-  window.setTimeout(trigger, 180);
+  window.setTimeout(trigger, 200);
 }
 
 async function waitForBootFonts(): Promise<void> {
